@@ -1,0 +1,33 @@
+{
+  "name": "hfg-particles",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:dev": "nodemon -i static/\\* -i js/\\* -i test/\\* server.js",
+    "test": "npm run lint && npm run tests",
+    "lint": "",
+    "tests": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suluke/hfg-particles.git"
+  },
+  "author": "Lukas & Lukas",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/suluke/hfg-particles/issues"
+  },
+  "homepage": "https://github.com/suluke/hfg-particles#readme",
+  "devDependencies": {
+    "express": "^4.15.2",
+    "express-middleware-rollup": "^1.1.1",
+    "font-awesome": "^4.7.0",
+    "fs-promise": "^2.0.2",
+    "node-sass-middleware": "^0.11.0",
+    "nodemon": "^1.11.0",
+    "rollup-plugin-buble": "^0.15.0"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,76 @@
+@import 'font-awesome/scss/font-awesome';
+
+html,
+body {
+  margin: 0px;
+  padding: 0px;
+  background-color: #333;
+}
+
+@mixin icon($fa-icon) {
+  @include fa-icon;
+  @extend .#{$fa-css-prefix};
+  &:before {
+    content: $fa-icon;
+  }
+}
+
+.btn-file-select {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+
+  & + label {
+    text-align: center;
+    cursor: pointer; /* "hand" cursor */
+
+    font-size: 1.25em;
+    font-weight: 700;
+    background-color: #eee;
+    position: fixed;
+    right: 5%;
+    bottom: 5%;
+    width: 100px;
+    height: 100px;
+    display: inline-block;
+    border-radius: 50%;
+    @include icon($fa-var-upload);
+    line-height: 100px;
+  }
+
+  &:focus + label,
+  & + label:hover {
+    background-color: #fff;
+  }
+  &:focus + label {
+    outline: 1px dotted #000;
+    outline: -webkit-focus-ring-color auto 5px;
+  }
+}
+
+.btn-fullscreen {
+  position: fixed;
+  top: 5%;
+  right: 5%;
+  width: 100px;
+  height: 100px;
+  display: inline-block;
+  @include icon($fa-var-expand); 
+  background-color: transparent;
+  border: none;
+  background-color: #eee;
+  border-radius: 50%;
+  &:focus,
+  &:hover {
+    background-color: #fff;
+  }
+}
+
+.main-canvas {
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
