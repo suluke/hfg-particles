@@ -3,109 +3,47 @@ import "./btn-fullscreen";
 import "./btn-select-image";
 import "./menu";
 import createRegl from 'regl';
+import * as shaders from './shaders';
 
 const canvas = document.getElementById('main-canvas');
-function resize() {
+const adjustCanvasSize = () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 }
-window.addEventListener('resize', resize);
-resize();
+window.addEventListener('resize', adjustCanvasSize);
+adjustCanvasSize();
 
-var regl = createRegl(canvas);
+const regl = createRegl(canvas);
 
 console.log("max texture size: " + regl.limits.maxTextureSize);
 console.log("point size dims: " + regl.limits.pointSizeDims[0] + " " + regl.limits.pointSizeDims[1]);
 
-var src_image = document.createElement("img");
+const src_image = document.createElement("img");
 src_image.src = "tron.jpg";
 
-src_image.onload = function()
-{
+src_image.onload = () => {
 
-var image = regl.texture({ data: src_image, mag: "linear", min: "linear" });
+  const image = regl.texture({ data: src_image, mag: "linear", min: "linear" });
 
-console.log(image.width + " x " + image.height);
+  console.log(image.width + " x " + image.height);
 
-var drawParticles = regl(
-{
-  vert: `
-  precision highp float;
-  
-  attribute vec2 texcoord;
-  
-  uniform sampler2D image;
-  uniform float time;
-  
-  varying vec3 c;
-  
-  vec3 rgb_to_hsv(vec3 rgb)
-  {
-    float c_max = max(max(rgb.r, rgb.g), rgb.b), c_min = min(min(rgb.r, rgb.g), rgb.b);
-  
-    float d = c_max - c_min;
+  const drawParticles = regl({
+    vert: shaders.vert,
+    frag: shaders.frag,
+    uniforms: { image: image, time : function(ctx) { return ctx.time; } },
+    depth: { enable: false },
+    blend: {
+      enable: true,
+      func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
+      equation: { rgb: "add", alpha: "add" }
+    },
+    attributes: { texcoord: Array.from(Array(image.width * image.height).keys()).map(i => [ (i % image.width + .5) / image.width, (~~(i / image.width) + .5) / image.height ] ) },
+    primitive: "points",
+    count: image.width * image.height
+  });
 
-    if(d < 0.00001 || c_max < 0.00001) return vec3(0, 0, c_min);
-
-    float h;
-    if(c_max == rgb.r) { h = (rgb.g - rgb.b) / d; if(h < 0.) h += 6.; }
-    else if(c_max == rgb.g) h = (rgb.b - rgb.r) / d + 2.;
-    else h = (rgb.r - rgb.g) / d + 4.;
-
-    return vec3(h * 60., d / c_max, c_max);
-  }
-  
-  vec2 direction_vector(float angle)
-  {
-    return vec2(cos(angle), sin(angle));
-  }
-  
-  void main()
-  {
-    vec2 tc = texcoord;
-    tc.y = 1. - tc.y;
-    c = texture2D(image, tc).rgb;
-
-    vec3 p = vec3(texcoord * vec2(2) - vec2(1), 0);
-    p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(rgb_to_hsv(c)[0] * 3.14159265 / 180.) * 0.2;
-
-    gl_PointSize = 16.;
-    gl_Position = vec4(p, 1);
-  } `,
-  
-  frag: `
-  precision highp float;
-  
-  varying vec3 c;
-  
-  void main()
-  {
-    float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);
-    gl_FragColor = vec4(c * v, 1);
-  } `,
-  
-  uniforms: { image: image, time : function(ctx) { return ctx.time; } },
-  
-  depth: { enable: false },
-  
-  blend:
-  {
-    enable: true,
-    func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
-    equation: { rgb: "add", alpha: "add" }
-  },
-  
-  attributes: { texcoord: Array.from(Array(image.width * image.height).keys()).map(i => [ (i % image.width + .5) / image.width, (~~(i / image.width) + .5) / image.height ] ) },
-  
-  primitive: "points",
-  count: image.width * image.height
-});
-
-regl.frame(function()
-{
-  regl.clear({color: [0, 0, 0, 1]});
-
-  drawParticles();
-});
-
+  regl.frame(() => {
+    regl.clear({color: [0, 0, 0, 1]});
+    drawParticles();
+  });
 };
