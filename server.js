@@ -3,6 +3,8 @@ const rollup          = require('express-middleware-rollup');
 const sass            = require('node-sass-middleware');
 const buble           = require('rollup-plugin-buble');
 const fs              = require('fs-promise');
+const resolve         = require('rollup-plugin-node-resolve');
+const commonjs        = require('rollup-plugin-commonjs');
 
 const path            = require('path');
 const PkgRoot         = __dirname;
@@ -16,7 +18,11 @@ const js = rollup({
   prefix: '/',
   serve: 'on-compile',
   rollupOpts: {
-    plugins: [buble()]
+    plugins: [
+      buble(),
+      resolve({ jsnext: true, main: true }),
+      commonjs()
+    ]
   }
 });
 
