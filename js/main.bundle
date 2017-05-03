@@ -1,9 +1,15 @@
 import "./polyfills/classlist";
-import "./btn-fullscreen";
-import "./btn-select-image";
+import FullscreenButton from "./btn-fullscreen";
+import SelectImgButton from "./btn-select-image";
+import ImgDragDrop from "./drag-n-drop";
 import "./menu";
 import createRegl from 'regl';
 import * as shaders from './shaders';
+
+// set up ui components
+const fullscreen = new FullscreenButton();
+const imgSelect = new SelectImgButton();
+const dragDrop = new ImgDragDrop();
 
 const canvas = document.getElementById('main-canvas');
 const adjustCanvasSize = () => {
@@ -47,3 +53,8 @@ src_image.onload = () => {
     drawParticles();
   });
 };
+
+imgSelect.addChangeListener(file => {
+  // TODO load the image as texture and use it in the effect
+  console.log(file);
+});
