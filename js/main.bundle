@@ -2,7 +2,6 @@ import "./polyfills/classlist";
 import "./btn-fullscreen";
 import "./btn-select-image";
 import "./menu";
-
 import createRegl from 'regl';
 
 var regl = createRegl(document.getElementById('main-canvas'));
