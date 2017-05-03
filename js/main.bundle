@@ -4,8 +4,15 @@ import "./btn-select-image";
 import "./menu";
 import createRegl from 'regl';
 
-var regl = createRegl(document.getElementById('main-canvas'));
-console.log(document.getElementById('main-canvas'));
+const canvas = document.getElementById('main-canvas');
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+var regl = createRegl(canvas);
 
 console.log("max texture size: " + regl.limits.maxTextureSize);
 console.log("point size dims: " + regl.limits.pointSizeDims[0] + " " + regl.limits.pointSizeDims[1]);
