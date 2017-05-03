@@ -2357,6 +2357,8 @@ body {
     overflow: hidden;
     clip: rect(1px, 1px, 1px, 1px); }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
+      cursor: pointer;
+      /* "hand" cursor */
       display: inline-block;
       font: normal normal normal 14px/1 FontAwesome;
       font-size: inherit;
@@ -2438,6 +2440,8 @@ body {
     outline: -webkit-focus-ring-color auto 5px; }
 
 .btn-fullscreen {
+  cursor: pointer;
+  /* "hand" cursor */
   position: fixed;
   top: 5%;
   right: 5%;
@@ -2472,3 +2476,17 @@ body {
   width: 100%;
   height: 100%;
   z-index: -1; }
+
+.file-drag-indicator {
+  display: none;
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  text-align: center;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  background-color: #eee; }
+  .dragging-file .file-drag-indicator {
+    display: block; }

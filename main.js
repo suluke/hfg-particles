@@ -60,6 +60,18 @@
   }
 })();
 
+var isFullscreen = function () {
+  return document.fullscreen || document.mozFullScreen ||
+    document.webkitIsFullScreen || document.msFullscreenElement;
+};
+var updateFullscreenClass = function () {
+  var fullscreenClass = 'fullscreen';
+  if (isFullscreen())
+    { document.documentElement.classList.add(fullscreenClass); }
+  else
+    { document.documentElement.classList.remove(fullscreenClass); }
+};
+
 var toggleFullScreen = function () {
   if ((document.fullScreenElement && document.fullScreenElement !== null) ||
    (!document.mozFullScreen && !document.webkitIsFullScreen)) {
@@ -81,42 +93,92 @@ var toggleFullScreen = function () {
   }
 };
 
-[].forEach.call(document.getElementsByClassName('btn-fullscreen'), function (elm) {
-  elm.addEventListener('click', toggleFullScreen);
-});
+var FullscreenButton = function FullscreenButton() {
+  [].forEach.call(document.getElementsByClassName('btn-fullscreen'), function (elm) {
+    elm.addEventListener('click', toggleFullScreen);
+  });
 
-var isFullscreen = function () {
-  return document.fullscreen || document.mozFullScreen ||
-    document.webkitIsFullScreen || document.msFullscreenElement;
-};
-var updateFullscreenClass = function () {
-  var fullscreenClass = 'fullscreen';
-  if (isFullscreen())
-    { document.documentElement.classList.add(fullscreenClass); }
-  else
-    { document.documentElement.classList.remove(fullscreenClass); }
+  document.addEventListener("fullscreenchange", updateFullscreenClass, false);
+  document.addEventListener("mozfullscreenchange", updateFullscreenClass, false);
+  document.addEventListener("webkitfullscreenchange", updateFullscreenClass, false);
+  document.addEventListener("msfullscreenchange", updateFullscreenClass, false);
+  updateFullscreenClass();
 };
 
-document.addEventListener("fullscreenchange", updateFullscreenClass, false);
-document.addEventListener("mozfullscreenchange", updateFullscreenClass, false);
-document.addEventListener("webkitfullscreenchange", updateFullscreenClass, false);
-document.addEventListener("msfullscreenchange", updateFullscreenClass, false);
-updateFullscreenClass();
+if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
+  throw new Error('The File APIs are not fully supported in this browser.');
+}
 
-if (window.File && window.FileReader && window.FileList && window.Blob) {
-  var handleFileSelect = function (evt) {
-    if (evt.target.files.length > 0) {
-      var file = evt.target.files[0];
-      console.log(file);
+var SelectImgButton = function SelectImgButton() {
+  var this$1 = this;
+
+  // properties:
+  this.changeListeners = [];
+    
+  var handleFileSelect = function (files) {
+    var file = null;
+    if (files.length > 0) {
+      file = files[0];
     }
+    this$1.changeListeners.forEach(function (listener) { return listener(file); });
+  };
+  [].forEach.call(document.getElementsByClassName('btn-file-select'), function (elm) {
+    elm.addEventListener('change', function (evt) { return handleFileSelect(evt.target.files); });
+  });
+};
+
+SelectImgButton.prototype.addChangeListener = function addChangeListener (listener) {
+  this.changeListeners.push(listener);
+};
+
+var ImgDragDrop = function ImgDragDrop() {
+  var dropbox = document.documentElement;
+  var dragClass = 'dragging-file';
+  var dragover = function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+  var leaveTimeout = 0;
+  var dragenter = function (e) {
+    console.log('enter');
+    console.log(e.target);
+    if (leaveTimeout !== 0) {
+      window.clearTimeout(leaveTimeout);
+      leaveTimeout = 0;
+    }
+    dropbox.classList.add(dragClass);
+    e.stopPropagation();
+    e.preventDefault();
+  };
+  var dragleave = function (e) {
+    if (leaveTimeout !== 0) {
+      window.clearTimeout(leaveTimeout);
+      leaveTimeout = 0;
+    }
+    leaveTimeout = window.setTimeout(function () {
+      console.log('leave');
+      console.log(e.target);
+      dropbox.classList.remove(dragClass);
+      leaveTimeout = 0;
+    }, 300);
+    e.stopPropagation();
+    e.preventDefault();
+  };
+  var drop = function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    var dt = e.dataTransfer;
+    var files = dt.files;
+
+    handleFileSelect(files);
   };
 
-  [].forEach.call(document.getElementsByClassName('btn-file-select'), function (elm) {
-    elm.addEventListener('change', handleFileSelect);
-  });
-} else {
-  alert('The File APIs are not fully supported in this browser.');
-}
+  dropbox.addEventListener("dragenter", dragenter, false);
+  dropbox.addEventListener("dragleave", dragleave, false);
+  dropbox.addEventListener("dragover", dragover, false);
+  dropbox.addEventListener("drop", drop, false);
+};
 
 var menu = document.getElementById('menu-container');
 var toggle = document.getElementById('toggle-menu-visible');
@@ -9643,8 +9705,24 @@ return wrapREGL;
 
 });
 
-var regl = regl$1(document.getElementById('main-canvas'));
-console.log(document.getElementById('main-canvas'));
+var vert = "\n  precision highp float;\n  \n  attribute vec2 texcoord;\n  \n  uniform sampler2D image;\n  uniform float time;\n  \n  varying vec3 c;\n  \n  vec3 rgb_to_hsv(vec3 rgb)\n  {\n    float c_max = max(max(rgb.r, rgb.g), rgb.b), c_min = min(min(rgb.r, rgb.g), rgb.b);\n  \n    float d = c_max - c_min;\n\n    if(d < 0.00001 || c_max < 0.00001) return vec3(0, 0, c_min);\n\n    float h;\n    if(c_max == rgb.r) { h = (rgb.g - rgb.b) / d; if(h < 0.) h += 6.; }\n    else if(c_max == rgb.g) h = (rgb.b - rgb.r) / d + 2.;\n    else h = (rgb.r - rgb.g) / d + 4.;\n\n    return vec3(h * 60., d / c_max, c_max);\n  }\n  \n  vec2 direction_vector(float angle)\n  {\n    return vec2(cos(angle), sin(angle));\n  }\n  \n  void main()\n  {\n    vec2 tc = texcoord;\n    tc.y = 1. - tc.y;\n    c = texture2D(image, tc).rgb;\n\n    vec3 p = vec3(texcoord * vec2(2) - vec2(1), 0);\n    p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(rgb_to_hsv(c)[0] * 3.14159265 / 180.) * 0.2;\n\n    gl_PointSize = 16.;\n    gl_Position = vec4(p, 1);\n  }\n";
+
+var frag = "\n  precision highp float;\n  \n  varying vec3 c;\n  \n  void main()\n  {\n    float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    gl_FragColor = vec4(c * v, 1);\n  }\n";
+
+// set up ui components
+var fullscreen = new FullscreenButton();
+var imgSelect = new SelectImgButton();
+var dragDrop = new ImgDragDrop();
+
+var canvas = document.getElementById('main-canvas');
+var adjustCanvasSize = function () {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+};
+window.addEventListener('resize', adjustCanvasSize);
+adjustCanvasSize();
+
+var regl = regl$1(canvas);
 
 console.log("max texture size: " + regl.limits.maxTextureSize);
 console.log("point size dims: " + regl.limits.pointSizeDims[0] + " " + regl.limits.pointSizeDims[1]);
@@ -9652,43 +9730,36 @@ console.log("point size dims: " + regl.limits.pointSizeDims[0] + " " + regl.limi
 var src_image = document.createElement("img");
 src_image.src = "tron.jpg";
 
-src_image.onload = function()
-{
+src_image.onload = function () {
 
-var image = regl.texture({ data: src_image, mag: "linear", min: "linear" });
+  var image = regl.texture({ data: src_image, mag: "linear", min: "linear" });
 
-console.log(image.width + " x " + image.height);
+  console.log(image.width + " x " + image.height);
 
-var drawParticles = regl(
-{
-	vert: "\n\tprecision highp float;\n\t\n\tattribute vec2 texcoord;\n\t\n\tuniform sampler2D image;\n\tuniform float time;\n\t\n\tvarying vec3 c;\n\t\n\tvec3 rgb_to_hsv(vec3 rgb)\n\t{\n\t\tfloat c_max = max(max(rgb.r, rgb.g), rgb.b), c_min = min(min(rgb.r, rgb.g), rgb.b);\n\t\n\t\tfloat d = c_max - c_min;\n\n\t\tif(d < 0.00001 || c_max < 0.00001) return vec3(0, 0, c_min);\n\n\t\tfloat h;\n\t\tif(c_max == rgb.r) { h = (rgb.g - rgb.b) / d; if(h < 0.) h += 6.; }\n\t\telse if(c_max == rgb.g) h = (rgb.b - rgb.r) / d + 2.;\n\t\telse h = (rgb.r - rgb.g) / d + 4.;\n\n\t\treturn vec3(h * 60., d / c_max, c_max);\n\t}\n\t\n\tvec2 direction_vector(float angle)\n\t{\n\t\treturn vec2(cos(angle), sin(angle));\n\t}\n\t\n\tvoid main()\n\t{\n\t\tvec2 tc = texcoord;\n\t\ttc.y = 1. - tc.y;\n\t\tc = texture2D(image, tc).rgb;\n\n\t\tvec3 p = vec3(texcoord * vec2(2) - vec2(1), 0);\n\t\tp.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(rgb_to_hsv(c)[0] * 3.14159265 / 180.) * 0.2;\n\n\t\tgl_PointSize = 16.;\n\t\tgl_Position = vec4(p, 1);\n\t} ",
-	
-	frag: "\n\tprecision highp float;\n\t\n\tvarying vec3 c;\n\t\n\tvoid main()\n\t{\n\t\tfloat v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n\t\tgl_FragColor = vec4(c * v, 1);\n\t} ",
-	
-	uniforms: { image: image, time : function(ctx) { return ctx.time; } },
-	
-	depth: { enable: false },
-	
-	blend:
-	{
-		enable: true,
-		func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
-		equation: { rgb: "add", alpha: "add" }
-	},
-	
-	attributes: { texcoord: Array.from(Array(image.width * image.height).keys()).map(function (i) { return [ (i % image.width + .5) / image.width, (~~(i / image.width) + .5) / image.height ]; } ) },
-	
-	primitive: "points",
-	count: image.width * image.height
-});
+  var drawParticles = regl({
+    vert: vert,
+    frag: frag,
+    uniforms: { image: image, time : function(ctx) { return ctx.time; } },
+    depth: { enable: false },
+    blend: {
+      enable: true,
+      func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
+      equation: { rgb: "add", alpha: "add" }
+    },
+    attributes: { texcoord: Array.from(Array(image.width * image.height).keys()).map(function (i) { return [ (i % image.width + .5) / image.width, (~~(i / image.width) + .5) / image.height ]; } ) },
+    primitive: "points",
+    count: image.width * image.height
+  });
 
-regl.frame(function()
-{
-	regl.clear({color: [0, 0, 0, 1]});
-
-	drawParticles();
-});
-
+  regl.frame(function () {
+    regl.clear({color: [0, 0, 0, 1]});
+    drawParticles();
+  });
 };
+
+imgSelect.addChangeListener(function (file) {
+  // TODO load the image as texture and use it in the effect
+  console.log(file);
+});
 
 }());
