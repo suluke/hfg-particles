@@ -1,1 +1,4 @@
+import "./polyfills/classlist";
 import "./btn-fullscreen";
+import "./btn-select-image";
+import "./menu";

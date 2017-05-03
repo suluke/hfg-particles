@@ -5,6 +5,10 @@ body {
   margin: 0px;
   padding: 0px;
   background-color: #333;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 @mixin icon($fa-icon) {
@@ -14,14 +18,67 @@ body {
     content: $fa-icon;
   }
 }
+@mixin visuallyhidden() {
+  position: absolute !important;
+  height: 0.1px;
+  width: 0.1px;
+  opacity: 0;
+  z-index: -1;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
+.menu-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 20%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
+  input[type=checkbox].toggle-menu-visible {
+    @include visuallyhidden;
+    & + label {
+      @include icon($fa-var-bars);
+      color: white;
+      font-size: 2em;
+      display: block;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+    &:checked + label {
+      z-index: 10;
+      color: #333;
+      right: 20px;
+      left: initial;
+      @include icon($fa-var-caret-square-o-left);
+      font-size: 2em;
+    }
+
+    & + label + .menu-content {
+      display: none;
+      z-index: 1;
+    }
+    &:checked ~ .menu-content {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #eee;
+      .menu-content-inner {
+        margin: 20px;
+      }
+    }
+  }
+}
 
 .btn-file-select {
-	width: 0.1px;
-	height: 0.1px;
-	opacity: 0;
-	overflow: hidden;
-	position: absolute;
-	z-index: -1;
+	@include visuallyhidden;
 
   & + label {
     text-align: center;
@@ -58,7 +115,7 @@ body {
   width: 100px;
   height: 100px;
   display: inline-block;
-  @include icon($fa-var-expand); 
+  @include icon($fa-var-expand);
   background-color: transparent;
   border: none;
   background-color: #eee;
@@ -66,6 +123,9 @@ body {
   &:focus,
   &:hover {
     background-color: #fff;
+  }
+  .fullscreen &  {
+     @include icon($fa-var-compress); 
   }
 }
 

@@ -22,3 +22,21 @@ const toggleFullScreen = () => {
 [].forEach.call(document.getElementsByClassName('btn-fullscreen'), (elm) => {
   elm.addEventListener('click', toggleFullScreen);
 });
+
+const isFullscreen = () => {
+  return document.fullscreen || document.mozFullScreen ||
+    document.webkitIsFullScreen || document.msFullscreenElement;
+};
+const updateFullscreenClass = () => {
+  const fullscreenClass = 'fullscreen';
+  if (isFullscreen())
+    document.documentElement.classList.add(fullscreenClass);
+  else
+    document.documentElement.classList.remove(fullscreenClass);
+};
+
+document.addEventListener("fullscreenchange", updateFullscreenClass, false);
+document.addEventListener("mozfullscreenchange", updateFullscreenClass, false);
+document.addEventListener("webkitfullscreenchange", updateFullscreenClass, false);
+document.addEventListener("msfullscreenchange", updateFullscreenClass, false);
+updateFullscreenClass();
