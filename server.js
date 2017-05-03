@@ -34,16 +34,16 @@ const css = sass({
 
 // Static file server
 const StaticPath = path.join(PkgRoot, StaticDir);
-const index   = (req, res) => {
-  res.sendFile(path.join(PkgRoot, 'index.html'));
-};
 const statics = express.static(StaticPath);
 
 fs.mkdirp(StaticPath)
 .then(() => fs.copy(path.join(PkgRoot, 'node_modules', 'font-awesome', 'fonts'), path.join(StaticPath, 'fonts')))
+.then(() => fs.copy(path.join(PkgRoot, 'index.html'), path.join(StaticPath, 'index.html')))
 .then(() => {
   const server = express();
-  server.get('/', index);
+  server.get('/', (req, res) => {
+    res.sendFile(path.join(PkgRoot, StaticDir, 'index.html'));
+  });
   server.use(js);
   server.use(css);
   server.use(statics);
