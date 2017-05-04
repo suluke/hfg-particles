@@ -9722,7 +9722,7 @@ var adjustCanvasSize = function () {
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
 
-var regl = regl$1(canvas);
+var regl = regl$1({canvas: canvas});
 
 console.log("max texture size: " + regl.limits.maxTextureSize);
 console.log("point size dims: " + regl.limits.pointSizeDims[0] + " " + regl.limits.pointSizeDims[1]);
@@ -9730,13 +9730,13 @@ console.log("point size dims: " + regl.limits.pointSizeDims[0] + " " + regl.limi
 var src_image = document.createElement("img");
 src_image.src = "tron.jpg";
 
+var command = null;
 src_image.onload = function () {
-
   var image = regl.texture({ data: src_image, mag: "linear", min: "linear" });
 
   console.log(image.width + " x " + image.height);
 
-  var drawParticles = regl({
+  command = regl({
     vert: vert,
     frag: frag,
     uniforms: { image: image, time : function(ctx) { return ctx.time; } },
@@ -9750,16 +9750,21 @@ src_image.onload = function () {
     primitive: "points",
     count: image.width * image.height
   });
-
-  regl.frame(function () {
-    regl.clear({color: [0, 0, 0, 1]});
-    drawParticles();
-  });
 };
 
+regl.frame(function () {
+  if (command === null)
+    { return; }
+  regl.clear({color: [0, 0, 0, 1]});
+  command();
+});
+
 imgSelect.addChangeListener(function (file) {
-  // TODO load the image as texture and use it in the effect
-  console.log(file);
+  var fr = new FileReader();
+  fr.onload = function () {
+    src_image.src = fr.result;
+  };
+  fr.readAsDataURL(file);
 });
 
 }());

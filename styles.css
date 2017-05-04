@@ -2340,6 +2340,7 @@ body {
 
 .menu-container {
   position: absolute;
+  height: 100%;
   top: 0;
   left: 0;
   display: block;
@@ -2388,9 +2389,7 @@ body {
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: #eee; }
-      .menu-container input[type=checkbox].toggle-menu-visible:checked ~ .menu-content .menu-content-inner {
-        margin: 20px; }
+      background-color: rgba(255, 255, 255, 0.9); }
 
 .btn-file-select {
   position: absolute !important;
@@ -2478,8 +2477,7 @@ body {
 @media (min-width: 320px) {
   /* smartphones, iPhone, portrait 480x320 phones */
   .menu-container {
-    width: 20%;
-    height: 100%; }
+    width: 100%; }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
       font-size: 50px;
       top: 20px;
@@ -2487,6 +2485,8 @@ body {
     .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
       right: 20px;
       left: initial; }
+    .menu-container .menu-content-inner {
+      margin: 20px; }
   .btn-fullscreen {
     font-size: 50px;
     top: 20px;
@@ -2502,8 +2502,7 @@ body {
 @media (min-width: 481px) {
   /* portrait e-readers (Nook/Kindle), smaller tablets @ 600 or @ 640 wide. */
   .menu-container {
-    width: 20%;
-    height: 100%; }
+    width: 100%; }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
       font-size: 80px;
       top: 20px;
@@ -2511,6 +2510,8 @@ body {
     .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
       right: 20px;
       left: initial; }
+    .menu-container .menu-content-inner {
+      margin: 20px; }
   .btn-fullscreen {
     font-size: 80px;
     top: 20px;
@@ -2526,8 +2527,7 @@ body {
 @media (min-width: 641px) {
   /* portrait tablets, portrait iPad, landscape e-readers, landscape 800x480 or 854x480 phones */
   .menu-container {
-    width: 20%;
-    height: 100%; }
+    width: 100%; }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
       font-size: 2.5cm;
       top: 1.5cm;
@@ -2535,6 +2535,8 @@ body {
     .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
       right: 1.5cm;
       left: initial; }
+    .menu-container .menu-content-inner {
+      margin: 1.5cm; }
   .btn-fullscreen {
     font-size: 2.5cm;
     top: 1.5cm;
@@ -2550,8 +2552,7 @@ body {
 @media (min-width: 961px) {
   /* tablet, landscape iPad, lo-res laptops ands desktops */
   .menu-container {
-    width: 20%;
-    height: 100%; }
+    width: 50%; }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
       font-size: 2cm;
       top: 1.5cm;
@@ -2559,6 +2560,8 @@ body {
     .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
       right: 1.5cm;
       left: initial; }
+    .menu-container .menu-content-inner {
+      margin: 1.5cm; }
   .btn-fullscreen {
     font-size: 2cm;
     top: 1.5cm;
@@ -2574,8 +2577,7 @@ body {
 @media (min-width: 1025px) {
   /* big landscape tablets, laptops, and desktops */
   .menu-container {
-    width: 20%;
-    height: 100%; }
+    width: 40%; }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
       font-size: 1.5cm;
       top: 1cm;
@@ -2583,6 +2585,8 @@ body {
     .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
       right: 1cm;
       left: initial; }
+    .menu-container .menu-content-inner {
+      margin: 1cm; }
   .btn-fullscreen {
     font-size: 1.5cm;
     top: 1cm;
@@ -2598,8 +2602,7 @@ body {
 @media (min-width: 1281px) {
   /* hi-res laptops and desktops */
   .menu-container {
-    width: 20%;
-    height: 100%; }
+    width: 30%; }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
       font-size: 1cm;
       top: 1cm;
@@ -2607,6 +2610,8 @@ body {
     .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
       right: 1cm;
       left: initial; }
+    .menu-container .menu-content-inner {
+      margin: 1cm; }
   .btn-fullscreen {
     font-size: 1cm;
     top: 1cm;
