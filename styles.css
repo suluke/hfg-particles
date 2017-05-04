@@ -12,7 +12,7 @@
   font-weight: normal;
   font-style: normal; }
 
-.fa, .menu-container input[type=checkbox].toggle-menu-visible + label, .menu-container input[type=checkbox].toggle-menu-visible:checked + label, .btn-file-select + label, .btn-fullscreen, .fullscreen .btn-fullscreen {
+.fa {
   display: inline-block;
   font: normal normal normal 14px/1 FontAwesome;
   font-size: inherit;
@@ -69,10 +69,10 @@
 .fa-pull-right {
   float: right; }
 
-.fa.fa-pull-left, .menu-container input[type=checkbox].toggle-menu-visible + label.fa-pull-left, .btn-file-select + label.fa-pull-left, .fa-pull-left.btn-fullscreen {
+.fa.fa-pull-left {
   margin-right: .3em; }
 
-.fa.fa-pull-right, .menu-container input[type=checkbox].toggle-menu-visible + label.fa-pull-right, .btn-file-select + label.fa-pull-right, .fa-pull-right.btn-fullscreen {
+.fa.fa-pull-right {
   margin-left: .3em; }
 
 /* Deprecated as of 4.4.0 */
@@ -82,10 +82,10 @@
 .pull-left {
   float: left; }
 
-.fa.pull-left, .menu-container input[type=checkbox].toggle-menu-visible + label.pull-left, .btn-file-select + label.pull-left, .pull-left.btn-fullscreen {
+.fa.pull-left {
   margin-right: .3em; }
 
-.fa.pull-right, .menu-container input[type=checkbox].toggle-menu-visible + label.pull-right, .btn-file-select + label.pull-right, .pull-right.btn-fullscreen {
+.fa.pull-right {
   margin-left: .3em; }
 
 .fa-spin {
@@ -2343,8 +2343,6 @@ body {
   top: 0;
   left: 0;
   display: block;
-  width: 20%;
-  height: 100%;
   overflow-y: auto;
   padding: 0;
   margin: 0; }
@@ -2357,34 +2355,27 @@ body {
     overflow: hidden;
     clip: rect(1px, 1px, 1px, 1px); }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
+      /* the default mixins set font-size, which interferes when changing icons depenging on state */
+      /* @include fa-icon; // in _mixins.scss */
+      /* @extend .fa; // in _core.scss*/
+      font-family: FontAwesome;
       cursor: pointer;
       /* "hand" cursor */
+      padding: 0;
+      color: #eee;
       display: inline-block;
-      font: normal normal normal 14px/1 FontAwesome;
-      font-size: inherit;
-      text-rendering: auto;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      color: white;
-      font-size: 2em;
-      display: block;
-      position: absolute;
-      top: 20px;
-      left: 20px; }
+      position: absolute; }
       .menu-container input[type=checkbox].toggle-menu-visible + label:before {
         content: ""; }
+      .menu-container input[type=checkbox].toggle-menu-visible + label:focus, .menu-container input[type=checkbox].toggle-menu-visible + label:hover {
+        color: #fff; }
     .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
       z-index: 10;
       color: #333;
-      right: 20px;
-      left: initial;
-      display: inline-block;
-      font: normal normal normal 14px/1 FontAwesome;
-      font-size: inherit;
-      text-rendering: auto;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      font-size: 2em; }
+      /* the default mixins set font-size, which interferes when changing icons depenging on state */
+      /* @include fa-icon; // in _mixins.scss */
+      /* @extend .fa; // in _core.scss*/
+      font-family: FontAwesome; }
       .menu-container input[type=checkbox].toggle-menu-visible:checked + label:before {
         content: ""; }
     .menu-container input[type=checkbox].toggle-menu-visible + label + .menu-content {
@@ -2410,65 +2401,55 @@ body {
   overflow: hidden;
   clip: rect(1px, 1px, 1px, 1px); }
   .btn-file-select + label {
-    text-align: center;
+    /* the default mixins set font-size, which interferes when changing icons depenging on state */
+    /* @include fa-icon; // in _mixins.scss */
+    /* @extend .fa; // in _core.scss*/
+    font-family: FontAwesome;
     cursor: pointer;
     /* "hand" cursor */
-    font-size: 1.25em;
-    font-weight: 700;
-    background-color: #eee;
-    position: fixed;
-    right: 5%;
-    bottom: 5%;
-    width: 100px;
-    height: 100px;
+    padding: 0;
+    color: #eee;
+    display: inline-block;
+    text-align: center;
+    position: absolute;
     display: inline-block;
     border-radius: 50%;
-    display: inline-block;
-    font: normal normal normal 14px/1 FontAwesome;
-    font-size: inherit;
-    text-rendering: auto;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    line-height: 100px; }
+    border: solid 2px #eee; }
     .btn-file-select + label:before {
       content: ""; }
+    .btn-file-select + label:focus, .btn-file-select + label:hover {
+      color: #fff; }
   .btn-file-select:focus + label,
   .btn-file-select + label:hover {
-    background-color: #fff; }
+    background-color: #fff;
+    border-color: #333;
+    color: #333; }
   .btn-file-select:focus + label {
     outline: 1px dotted #000;
     outline: -webkit-focus-ring-color auto 5px; }
 
 .btn-fullscreen {
+  /* the default mixins set font-size, which interferes when changing icons depenging on state */
+  /* @include fa-icon; // in _mixins.scss */
+  /* @extend .fa; // in _core.scss*/
+  font-family: FontAwesome;
   cursor: pointer;
   /* "hand" cursor */
-  position: fixed;
-  top: 5%;
-  right: 5%;
-  width: 100px;
-  height: 100px;
+  padding: 0;
+  color: #eee;
   display: inline-block;
-  display: inline-block;
-  font: normal normal normal 14px/1 FontAwesome;
-  font-size: inherit;
-  text-rendering: auto;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  position: absolute;
   background-color: transparent;
-  border: none;
-  background-color: #eee;
-  border-radius: 50%; }
+  border: none; }
   .btn-fullscreen:before {
     content: ""; }
   .btn-fullscreen:focus, .btn-fullscreen:hover {
-    background-color: #fff; }
+    color: #fff; }
   .fullscreen .btn-fullscreen {
-    display: inline-block;
-    font: normal normal normal 14px/1 FontAwesome;
-    font-size: inherit;
-    text-rendering: auto;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale; }
+    /* the default mixins set font-size, which interferes when changing icons depenging on state */
+    /* @include fa-icon; // in _mixins.scss */
+    /* @extend .fa; // in _core.scss*/
+    font-family: FontAwesome; }
     .fullscreen .btn-fullscreen:before {
       content: ""; }
 
@@ -2490,3 +2471,150 @@ body {
   background-color: #eee; }
   .dragging-file .file-drag-indicator {
     display: block; }
+
+/* ===================================================================
+ *
+ * =================================================================== */
+@media (min-width: 320px) {
+  /* smartphones, iPhone, portrait 480x320 phones */
+  .menu-container {
+    width: 20%;
+    height: 100%; }
+    .menu-container input[type=checkbox].toggle-menu-visible + label {
+      font-size: 3cm;
+      top: 2cm;
+      left: 2cm; }
+    .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
+      right: 2cm;
+      left: initial; }
+  .btn-fullscreen {
+    font-size: 3cm;
+    top: 2cm;
+    right: 2cm; }
+  .btn-file-select + label {
+    font-size: 3cm;
+    right: 2cm;
+    bottom: 2cm;
+    width: 4.5cm;
+    height: 4.5cm;
+    line-height: 4.5cm; } }
+
+@media (min-width: 481px) {
+  /* portrait e-readers (Nook/Kindle), smaller tablets @ 600 or @ 640 wide. */
+  .menu-container {
+    width: 20%;
+    height: 100%; }
+    .menu-container input[type=checkbox].toggle-menu-visible + label {
+      font-size: 3cm;
+      top: 2cm;
+      left: 2cm; }
+    .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
+      right: 2cm;
+      left: initial; }
+  .btn-fullscreen {
+    font-size: 3cm;
+    top: 2cm;
+    right: 2cm; }
+  .btn-file-select + label {
+    font-size: 3cm;
+    right: 2cm;
+    bottom: 2cm;
+    width: 4.5cm;
+    height: 4.5cm;
+    line-height: 4.5cm; } }
+
+@media (min-width: 641px) {
+  /* portrait tablets, portrait iPad, landscape e-readers, landscape 800x480 or 854x480 phones */
+  .menu-container {
+    width: 20%;
+    height: 100%; }
+    .menu-container input[type=checkbox].toggle-menu-visible + label {
+      font-size: 3cm;
+      top: 2cm;
+      left: 2cm; }
+    .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
+      right: 2cm;
+      left: initial; }
+  .btn-fullscreen {
+    font-size: 3cm;
+    top: 2cm;
+    right: 2cm; }
+  .btn-file-select + label {
+    font-size: 3cm;
+    right: 2cm;
+    bottom: 2cm;
+    width: 4.5cm;
+    height: 4.5cm;
+    line-height: 4.5cm; } }
+
+@media (min-width: 961px) {
+  /* tablet, landscape iPad, lo-res laptops ands desktops */
+  .menu-container {
+    width: 20%;
+    height: 100%; }
+    .menu-container input[type=checkbox].toggle-menu-visible + label {
+      font-size: 2cm;
+      top: 1.5cm;
+      left: 1.5cm; }
+    .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
+      right: 1.5cm;
+      left: initial; }
+  .btn-fullscreen {
+    font-size: 2cm;
+    top: 1.5cm;
+    right: 1.5cm; }
+  .btn-file-select + label {
+    font-size: 2cm;
+    right: 1.5cm;
+    bottom: 1.5cm;
+    width: 3cm;
+    height: 3cm;
+    line-height: 3cm; } }
+
+@media (min-width: 1025px) {
+  /* big landscape tablets, laptops, and desktops */
+  .menu-container {
+    width: 20%;
+    height: 100%; }
+    .menu-container input[type=checkbox].toggle-menu-visible + label {
+      font-size: 1.5cm;
+      top: 1cm;
+      left: 1cm; }
+    .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
+      right: 1cm;
+      left: initial; }
+  .btn-fullscreen {
+    font-size: 1.5cm;
+    top: 1cm;
+    right: 1cm; }
+  .btn-file-select + label {
+    font-size: 1.5cm;
+    right: 1cm;
+    bottom: 1cm;
+    width: 2.25cm;
+    height: 2.25cm;
+    line-height: 2.25cm; } }
+
+@media (min-width: 1281px) {
+  /* hi-res laptops and desktops */
+  .menu-container {
+    width: 20%;
+    height: 100%; }
+    .menu-container input[type=checkbox].toggle-menu-visible + label {
+      font-size: 1cm;
+      top: 1cm;
+      left: 1cm; }
+    .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
+      right: 1cm;
+      left: initial; }
+  .btn-fullscreen {
+    font-size: 1cm;
+    top: 1cm;
+    right: 1cm; }
+  .btn-file-select + label {
+    font-size: 1cm;
+    right: 1cm;
+    bottom: 1cm;
+    width: 1.5cm;
+    height: 1.5cm;
+    line-height: 1.5cm; } }
