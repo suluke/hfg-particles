@@ -4,6 +4,8 @@
 
   </head>
   <body>
+    <canvas id="main-canvas" class="main-canvas"></canvas>
+    
     <div id="menu-container" class="menu-container">
       <input type="checkbox"
         name="toggle-menu-visible"
@@ -19,7 +21,11 @@
     </div>
     
     <button type="button" class="btn-fullscreen"></button>
-    
+
+    <p class="file-drag-indicator">
+      <span class="file-drag-icon"></span>
+      Drop image file to load
+    </p>
     <input type="file"
       name="btn-file-select"
       id="btn-file-select"
@@ -28,13 +34,6 @@
       accept="image/*">
     <label for="btn-file-select" title="Select image"></label>
 
-    <canvas id="main-canvas" class="main-canvas"></canvas>
-    
-    <p class="file-drag-indicator">
-      <span class="file-drag-icon"></span>
-      Drop image file to load
-    </p>
-    
     <link rel=stylesheet href="styles.css">
     <script type="text/javascript" src="main.js"></script>
   </body>
