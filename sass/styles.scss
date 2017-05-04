@@ -2,8 +2,6 @@ $fa-font-path: "./fonts";
 @import 'font-awesome/scss/font-awesome';
 
 $main-text-color: #333;
-$button-edge-dist: 2em;
-$icon-btn-font-size: 2em;
 
 html,
 body {
@@ -17,8 +15,10 @@ body {
 }
 
 @mixin icon($fa-icon) {
-  @include fa-icon;
-  @extend .#{$fa-css-prefix};
+  /* the default mixins set font-size, which interferes when changing icons depenging on state */
+  /* @include fa-icon; // in _mixins.scss */
+  /* @extend .#{$fa-css-prefix}; // in _core.scss*/
+  font-family: FontAwesome;
   &:before {
     content: $fa-icon;
   }
@@ -32,12 +32,11 @@ body {
   overflow: hidden;
   clip: rect(1px, 1px, 1px, 1px);
 }
-@mixin icon-button($fa-icon, $font-size) {
+@mixin icon-button($fa-icon) {
   @include icon($fa-icon);
   cursor: pointer; /* "hand" cursor */
   padding: 0;
   color: #eee;
-  font-size: $font-size;
   display: inline-block;
   &:focus,
   &:hover {
@@ -50,26 +49,19 @@ body {
   top: 0;
   left: 0;
   display: block;
-  width: 20%;
-  height: 100%;
   overflow-y: auto;
   padding: 0;
   margin: 0;
   input[type=checkbox].toggle-menu-visible {
     @include visuallyhidden;
     & + label {
-      @include icon-button($fa-var-bars, $icon-btn-font-size);
+      @include icon-button($fa-var-bars);
       position: absolute;
-      top: $button-edge-dist;
-      left: $button-edge-dist;
     }
     &:checked + label {
       z-index: 10;
       color: #333;
-      right: $button-edge-dist;
-      left: initial;
       @include icon($fa-var-caret-square-o-left);
-      font-size: $icon-btn-font-size;
     }
 
     & + label + .menu-content {
@@ -94,19 +86,13 @@ body {
 .btn-file-select {
 	@include visuallyhidden;
   & + label {
-    $circle-size: 1.5 * $icon-btn-font-size;
-    @include icon-button($fa-var-upload, $icon-btn-font-size);
+    @include icon-button($fa-var-upload);
 
     text-align: center;
     position: absolute;
-    right: $button-edge-dist;
-    bottom: $button-edge-dist;
     display: inline-block;
-    width: $circle-size;
-    height: $circle-size;
     border-radius: 50%;
     border: solid 2px #eee;
-    line-height: $circle-size;
   }
 
   &:focus + label,
@@ -122,15 +108,12 @@ body {
 }
 
 .btn-fullscreen {
-  @include icon-button($fa-var-expand, $icon-btn-font-size);
+  @include icon-button($fa-var-expand);
   position: absolute;
-  top: $button-edge-dist;
-  right: $button-edge-dist;
   background-color: transparent;
   border: none;
   .fullscreen &  {
      @include icon($fa-var-compress);
-     font-size: $icon-btn-font-size;
   }
 }
 
@@ -154,4 +137,80 @@ body {
   .dragging-file & {
     display: block;
   }
+}
+
+
+/* ===================================================================
+ *
+ * =================================================================== */
+
+@mixin ui-elements($icon-btn-font-size, $button-edge-dist) {
+  .menu-container {
+    width: 20%;
+    height: 100%;
+    input[type=checkbox].toggle-menu-visible {
+      & + label {
+        font-size: $icon-btn-font-size;;
+        top: $button-edge-dist;
+        left: $button-edge-dist;
+      }
+      &:checked + label {
+        right: $button-edge-dist;
+        left: initial;
+      }
+    }
+  }
+  .btn-fullscreen {
+    font-size: $icon-btn-font-size;;
+    top: $button-edge-dist;
+    right: $button-edge-dist;
+  }
+  .btn-file-select + label {
+    font-size: $icon-btn-font-size;;
+    
+    right: $button-edge-dist;
+    bottom: $button-edge-dist;
+
+    $circle-size: 1.5 * $icon-btn-font-size;
+    width: $circle-size;
+    height: $circle-size;
+    line-height: $circle-size;
+  }
+}
+
+@media (min-width:320px)  {
+  /* smartphones, iPhone, portrait 480x320 phones */
+  $icon-btn-font-size: 3cm;
+  $button-edge-dist: 2cm;
+  @include ui-elements($icon-btn-font-size, $button-edge-dist);
+}
+@media (min-width:481px)  {
+  /* portrait e-readers (Nook/Kindle), smaller tablets @ 600 or @ 640 wide. */
+  $icon-btn-font-size: 3cm;
+  $button-edge-dist: 2cm;
+  @include ui-elements($icon-btn-font-size, $button-edge-dist);
+}
+@media (min-width:641px)  {
+  /* portrait tablets, portrait iPad, landscape e-readers, landscape 800x480 or 854x480 phones */
+  $icon-btn-font-size: 3cm;
+  $button-edge-dist: 2cm;
+  @include ui-elements($icon-btn-font-size, $button-edge-dist);
+}
+@media (min-width:961px)  {
+  /* tablet, landscape iPad, lo-res laptops ands desktops */
+  $icon-btn-font-size: 2cm;
+  $button-edge-dist: 1.5cm;
+  @include ui-elements($icon-btn-font-size, $button-edge-dist);
+}
+@media (min-width:1025px) {
+  /* big landscape tablets, laptops, and desktops */
+  $icon-btn-font-size: 1.5cm;
+  $button-edge-dist: 1cm;
+  @include ui-elements($icon-btn-font-size, $button-edge-dist);
+}
+@media (min-width:1281px) {
+  /* hi-res laptops and desktops */
+  $icon-btn-font-size: 1cm;
+  $button-edge-dist: 1cm;
+  @include ui-elements($icon-btn-font-size, $button-edge-dist);
 }
