@@ -1,6 +1,10 @@
 $fa-font-path: "./fonts";
 @import 'font-awesome/scss/font-awesome';
 
+$main-text-color: #333;
+$button-edge-dist: 2em;
+$icon-btn-font-size: 2em;
+
 html,
 body {
   margin: 0px;
@@ -28,6 +32,18 @@ body {
   overflow: hidden;
   clip: rect(1px, 1px, 1px, 1px);
 }
+@mixin icon-button($fa-icon, $font-size) {
+  @include icon($fa-icon);
+  cursor: pointer; /* "hand" cursor */
+  padding: 0;
+  color: #eee;
+  font-size: $font-size;
+  display: inline-block;
+  &:focus,
+  &:hover {
+    color: #fff;
+  }
+}
 
 .menu-container {
   position: absolute;
@@ -42,22 +58,18 @@ body {
   input[type=checkbox].toggle-menu-visible {
     @include visuallyhidden;
     & + label {
-      cursor: pointer; /* "hand" cursor */
-      @include icon($fa-var-bars);
-      color: white;
-      font-size: 2em;
-      display: block;
+      @include icon-button($fa-var-bars, $icon-btn-font-size);
       position: absolute;
-      top: 20px;
-      left: 20px;
+      top: $button-edge-dist;
+      left: $button-edge-dist;
     }
     &:checked + label {
       z-index: 10;
       color: #333;
-      right: 20px;
+      right: $button-edge-dist;
       left: initial;
       @include icon($fa-var-caret-square-o-left);
-      font-size: 2em;
+      font-size: $icon-btn-font-size;
     }
 
     & + label + .menu-content {
@@ -81,28 +93,27 @@ body {
 
 .btn-file-select {
 	@include visuallyhidden;
-
   & + label {
-    text-align: center;
-    cursor: pointer; /* "hand" cursor */
+    $circle-size: 1.5 * $icon-btn-font-size;
+    @include icon-button($fa-var-upload, $icon-btn-font-size);
 
-    font-size: 1.25em;
-    font-weight: 700;
-    background-color: #eee;
-    position: fixed;
-    right: 5%;
-    bottom: 5%;
-    width: 100px;
-    height: 100px;
+    text-align: center;
+    position: absolute;
+    right: $button-edge-dist;
+    bottom: $button-edge-dist;
     display: inline-block;
+    width: $circle-size;
+    height: $circle-size;
     border-radius: 50%;
-    @include icon($fa-var-upload);
-    line-height: 100px;
+    border: solid 2px #eee;
+    line-height: $circle-size;
   }
 
   &:focus + label,
   & + label:hover {
     background-color: #fff;
+    border-color: $main-text-color;
+    color: $main-text-color;
   }
   &:focus + label {
     outline: 1px dotted #000;
@@ -111,24 +122,15 @@ body {
 }
 
 .btn-fullscreen {
-  cursor: pointer; /* "hand" cursor */
-  position: fixed;
-  top: 5%;
-  right: 5%;
-  width: 100px;
-  height: 100px;
-  display: inline-block;
-  @include icon($fa-var-expand);
+  @include icon-button($fa-var-expand, $icon-btn-font-size);
+  position: absolute;
+  top: $button-edge-dist;
+  right: $button-edge-dist;
   background-color: transparent;
   border: none;
-  background-color: #eee;
-  border-radius: 50%;
-  &:focus,
-  &:hover {
-    background-color: #fff;
-  }
   .fullscreen &  {
-     @include icon($fa-var-compress); 
+     @include icon($fa-var-compress);
+     font-size: $icon-btn-font-size;
   }
 }
 
