@@ -109,75 +109,45 @@ if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
   throw new Error('The File APIs are not fully supported in this browser.');
 }
 
-var SelectImgButton = function SelectImgButton() {
+var ImgSelect = function ImgSelect() {
   var this$1 = this;
 
   // properties:
   this.changeListeners = [];
-    
-  var handleFileSelect = function (files) {
-    var file = null;
-    if (files.length > 0) {
-      file = files[0];
-    }
-    this$1.changeListeners.forEach(function (listener) { return listener(file); });
-  };
-  [].forEach.call(document.getElementsByClassName('btn-file-select'), function (elm) {
-    elm.addEventListener('change', function (evt) { return handleFileSelect(evt.target.files); });
-  });
-};
 
-SelectImgButton.prototype.addChangeListener = function addChangeListener (listener) {
-  this.changeListeners.push(listener);
-};
-
-var ImgDragDrop = function ImgDragDrop() {
-  var dropbox = document.documentElement;
+  // drag-n-drop support
+  var html = document.documentElement;
+  var input = document.getElementById('btn-file-select');
   var dragClass = 'dragging-file';
-  var dragover = function (e) {
-    e.stopPropagation();
-    e.preventDefault();
-  };
-  var leaveTimeout = 0;
   var dragenter = function (e) {
-    console.log('enter');
-    console.log(e.target);
-    if (leaveTimeout !== 0) {
-      window.clearTimeout(leaveTimeout);
-      leaveTimeout = 0;
-    }
-    dropbox.classList.add(dragClass);
+    html.classList.add(dragClass);
     e.stopPropagation();
     e.preventDefault();
   };
   var dragleave = function (e) {
-    if (leaveTimeout !== 0) {
-      window.clearTimeout(leaveTimeout);
-      leaveTimeout = 0;
+    html.classList.remove(dragClass);
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
+  html.addEventListener("dragenter", dragenter, false);
+  input.addEventListener("dragleave", dragleave, false);
+  // if we preventDefault on drop, the change event will not fire
+  input.addEventListener("drop", function (e) { html.classList.remove(dragClass); }, false);
+
+  // catch the change event
+  var handleFileSelect = function (evt) {
+    var file = null;
+    if (evt.target.files.length > 0) {
+      file = evt.target.files[0];
     }
-    leaveTimeout = window.setTimeout(function () {
-      console.log('leave');
-      console.log(e.target);
-      dropbox.classList.remove(dragClass);
-      leaveTimeout = 0;
-    }, 300);
-    e.stopPropagation();
-    e.preventDefault();
+    this$1.changeListeners.forEach(function (listener) { return listener(file); });
   };
-  var drop = function (e) {
-    e.stopPropagation();
-    e.preventDefault();
+  input.addEventListener('change', handleFileSelect);
+};
 
-    var dt = e.dataTransfer;
-    var files = dt.files;
-
-    handleFileSelect(files);
-  };
-
-  dropbox.addEventListener("dragenter", dragenter, false);
-  dropbox.addEventListener("dragleave", dragleave, false);
-  dropbox.addEventListener("dragover", dragover, false);
-  dropbox.addEventListener("drop", drop, false);
+ImgSelect.prototype.addChangeListener = function addChangeListener (listener) {
+  this.changeListeners.push(listener);
 };
 
 var menu = document.getElementById('menu-container');
@@ -9711,8 +9681,7 @@ var frag = "\n  precision highp float;\n  \n  varying vec3 c;\n  \n  void main()
 
 // set up ui components
 var fullscreen = new FullscreenButton();
-var imgSelect = new SelectImgButton();
-var dragDrop = new ImgDragDrop();
+var imgSelect = new ImgSelect();
 
 var canvas = document.getElementById('main-canvas');
 var adjustCanvasSize = function () {
