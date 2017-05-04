@@ -2481,23 +2481,23 @@ body {
     width: 20%;
     height: 100%; }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
-      font-size: 3cm;
-      top: 2cm;
-      left: 2cm; }
+      font-size: 50px;
+      top: 20px;
+      left: 20px; }
     .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
-      right: 2cm;
+      right: 20px;
       left: initial; }
   .btn-fullscreen {
-    font-size: 3cm;
-    top: 2cm;
-    right: 2cm; }
+    font-size: 50px;
+    top: 20px;
+    right: 20px; }
   .btn-file-select + label {
-    font-size: 3cm;
-    right: 2cm;
-    bottom: 2cm;
-    width: 4.5cm;
-    height: 4.5cm;
-    line-height: 4.5cm; } }
+    font-size: 50px;
+    right: 20px;
+    bottom: 20px;
+    width: 75px;
+    height: 75px;
+    line-height: 75px; } }
 
 @media (min-width: 481px) {
   /* portrait e-readers (Nook/Kindle), smaller tablets @ 600 or @ 640 wide. */
@@ -2505,23 +2505,23 @@ body {
     width: 20%;
     height: 100%; }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
-      font-size: 3cm;
-      top: 2cm;
-      left: 2cm; }
+      font-size: 80px;
+      top: 20px;
+      left: 20px; }
     .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
-      right: 2cm;
+      right: 20px;
       left: initial; }
   .btn-fullscreen {
-    font-size: 3cm;
-    top: 2cm;
-    right: 2cm; }
+    font-size: 80px;
+    top: 20px;
+    right: 20px; }
   .btn-file-select + label {
-    font-size: 3cm;
-    right: 2cm;
-    bottom: 2cm;
-    width: 4.5cm;
-    height: 4.5cm;
-    line-height: 4.5cm; } }
+    font-size: 80px;
+    right: 20px;
+    bottom: 20px;
+    width: 120px;
+    height: 120px;
+    line-height: 120px; } }
 
 @media (min-width: 641px) {
   /* portrait tablets, portrait iPad, landscape e-readers, landscape 800x480 or 854x480 phones */
@@ -2529,23 +2529,23 @@ body {
     width: 20%;
     height: 100%; }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
-      font-size: 3cm;
-      top: 2cm;
-      left: 2cm; }
+      font-size: 2.5cm;
+      top: 1.5cm;
+      left: 1.5cm; }
     .menu-container input[type=checkbox].toggle-menu-visible:checked + label {
-      right: 2cm;
+      right: 1.5cm;
       left: initial; }
   .btn-fullscreen {
-    font-size: 3cm;
-    top: 2cm;
-    right: 2cm; }
+    font-size: 2.5cm;
+    top: 1.5cm;
+    right: 1.5cm; }
   .btn-file-select + label {
-    font-size: 3cm;
-    right: 2cm;
-    bottom: 2cm;
-    width: 4.5cm;
-    height: 4.5cm;
-    line-height: 4.5cm; } }
+    font-size: 2.5cm;
+    right: 1.5cm;
+    bottom: 1.5cm;
+    width: 3.75cm;
+    height: 3.75cm;
+    line-height: 3.75cm; } }
 
 @media (min-width: 961px) {
   /* tablet, landscape iPad, lo-res laptops ands desktops */
