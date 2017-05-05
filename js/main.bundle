@@ -25,25 +25,91 @@ console.log("point size dims: " + regl.limits.pointSizeDims[0] + " " + regl.limi
 const src_image = document.createElement("img");
 src_image.src = "tron.jpg";
 
+const dbgBlitTextureCommand = regl({
+  vert: shaders.dbgBlit.vert,
+  frag: shaders.dbgBlit.frag,
+  uniforms: { texture: regl.prop('texture') },
+  viewport: { x: regl.prop('x'), y: regl.prop('y'), width: regl.prop('width'), height: regl.prop('height') },
+  attributes: { texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]] },
+  primitive: "triangle strip",
+  count: 4
+});
+
+function dbgBlitTexture(x, y, texture) {
+    dbgBlitTextureCommand({texture: texture, x: x, y: y, width: texture.width, height: texture.height});
+}
+
+function buildData() {
+  //TODO: dont use OpenGL Texture to get image pixels...
+  const texture = regl.texture({data: src_image, format: 'rgb', flipY: true});
+  const w = texture.width, h = texture.height;
+
+  const imagePixels = new Uint8Array(w * h * 4);
+  dbgBlitTexture(0, 0, texture);
+  regl._gl.readPixels(0, 0, w, h, regl._gl.RGBA, regl._gl.UNSIGNED_BYTE, imagePixels);
+
+  texture.destroy();
+
+  const pixelsCount = w * h;
+  const pixelIndices = Array.from(Array(pixelsCount).keys());
+  const texcoords = pixelIndices.map(i => [ (i % w + .5) / w, (~~(i / w) + .5) / h ] );
+
+  const color = new Array(w * h);
+  for(var y = 0; y < h; ++y) for(var x = 0; x < w; ++x) {
+    var pixel = imagePixels.slice((y * w + x) * 4, (y * w + x + 1) * 4);
+    color[y * w + x] = [pixel[0] / 255, pixel[1] / 255, pixel[2] / 255];
+  }
+
+  const hsv = new Array(w * h);
+  for(var y = 0; y < h; ++y) for(var x = 0; x < w; ++x) {
+    var pixel = imagePixels.slice((y * w + x) * 4, (y * w + x + 1) * 4);
+
+    var c_max = Math.max(pixel[0], pixel[1], pixel[2]);
+    var c_min = Math.min(pixel[0], pixel[1], pixel[2]);
+    var d = c_max - c_min;
+
+    if(d < 0.00001 || c_max < 0.00001) hsv[y * w + x] = [0, 0, c_max];
+
+    var _h = 0;
+    if(c_max == pixel[0]) { _h = (pixel[1] - pixel[2]) / d; if(_h < 0.) _h += 6.; }
+    else if(c_max == pixel[1]) _h = (pixel[2] - pixel[1]) / d + 2.;
+    else _h = (pixel[1] - pixel[2]) / d + 4.;
+
+    hsv[y * w + x] = [_h * 60., d / c_max, c_max];
+  }
+
+  return {
+    width: w,
+    height: h,
+    texcoordsBuffer: regl.buffer(texcoords),
+    rgbBuffer: regl.buffer(color),
+    hsvBuffer: regl.buffer(hsv)
+  };
+}
+
 let command = null;
 src_image.onload = () => {
-  const image = regl.texture({ data: src_image, mag: "linear", min: "linear" });
-
-  console.log(image.width + " x " + image.height);
+  const data = buildData();
 
   command = regl({
     vert: shaders.vert,
     frag: shaders.frag,
-    uniforms: { image: image, time : function(ctx) { return ctx.time; } },
+    uniforms: {
+      time : function(ctx) { return ctx.time; }
+    },
     depth: { enable: false },
     blend: {
       enable: true,
       func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
       equation: { rgb: "add", alpha: "add" }
     },
-    attributes: { texcoord: Array.from(Array(image.width * image.height).keys()).map(i => [ (i % image.width + .5) / image.width, (~~(i / image.width) + .5) / image.height ] ) },
+    attributes: {
+      texcoord: data.texcoordsBuffer,
+      rgb: data.rgbBuffer,
+      hsv: data.hsvBuffer
+    },
     primitive: "points",
-    count: image.width * image.height
+    count: data.width * data.height
   });
 };
 
