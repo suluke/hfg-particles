@@ -1,6 +1,7 @@
 import "./polyfills/classlist";
 import FullscreenButton from "./btn-fullscreen";
 import ImgSelect from "./image-select";
+import InactivityMonitor from './inactivity-monitor';
 import "./menu";
 import createRegl from 'regl';
 import * as shaders from './shaders';
@@ -8,6 +9,7 @@ import * as shaders from './shaders';
 // set up ui components
 const fullscreen = new FullscreenButton();
 const imgSelect = new ImgSelect();
+const inactivityMonitor = new InactivityMonitor();
 
 const canvas = document.getElementById('main-canvas');
 const adjustCanvasSize = () => {

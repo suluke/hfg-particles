@@ -158,6 +158,17 @@ body {
   }
 }
 
+.btn-fullscreen,
+.btn-file-select + label,
+.toggle-menu-visible + label {
+  $transition-time: 1s;
+  -webkit-transition: opacity $transition-time;
+  transition: opacity $transition-time;
+  .user-inactive & {
+    opacity: 0;
+  }
+}
+
 
 /* ===================================================================
  *
