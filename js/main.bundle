@@ -5,6 +5,9 @@ import InactivityMonitor from './inactivity-monitor';
 import "./menu";
 import createRegl from 'regl';
 import * as shaders from './shaders';
+import config from './config';
+
+console.log(config);
 
 // set up ui components
 const fullscreen = new FullscreenButton();
