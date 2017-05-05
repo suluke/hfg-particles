@@ -163,7 +163,7 @@ var InactivityMonitor = function InactivityMonitor() {
   };
   var onActivity = function () {
     if (this$1.timeout !== undefined)
-      { clearTimeout(this$1.timeout); }
+      { window.clearTimeout(this$1.timeout); }
     this$1.timeout = window.setTimeout(onInactivity, inactivityTimeout);
     document.documentElement.classList.remove(inactivityClass);
   };
@@ -9707,6 +9707,13 @@ var dbgBlit = {
 var vert = "\n  precision highp float;\n\n  attribute vec2 texcoord;\n  attribute vec3 rgb;\n  attribute vec3 hsv;\n\n  uniform float time;\n\n  varying vec3 c;\n\n  vec2 direction_vector(float angle)\n  {\n    return vec2(cos(angle), sin(angle));\n  }\n\n  void main()\n  {\n    c = rgb;\n\n    vec3 p = vec3(texcoord * vec2(2) - vec2(1), 0);\n    p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(hsv.x * 3.14159265 / 180.) * 0.2;\n\n    gl_PointSize = 16.;\n    gl_Position = vec4(p, 1);\n  }\n";
 
 var frag = "\n  precision highp float;\n\n  varying vec3 c;\n\n  void main()\n  {\n    float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    gl_FragColor = vec4(c * v, 1);\n  }\n";
+
+var config = {
+  timestamp: '2017-05-05T20:32:50.095Z',
+  git_rev: '09dfeae'
+};
+
+console.log(config);
 
 // set up ui components
 var fullscreen = new FullscreenButton();
