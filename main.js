@@ -150,6 +150,29 @@ ImgSelect.prototype.addChangeListener = function addChangeListener (listener) {
   this.changeListeners.push(listener);
 };
 
+var InactivityMonitor = function InactivityMonitor() {
+  var this$1 = this;
+
+  this.timeout = undefined;
+
+  var inactivityTimeout = 3000;
+  var inactivityClass = 'user-inactive';
+
+  var onInactivity = function () {
+    document.documentElement.classList.add(inactivityClass);
+  };
+  var onActivity = function () {
+    if (this$1.timeout !== undefined)
+      { clearTimeout(this$1.timeout); }
+    this$1.timeout = window.setTimeout(onInactivity, inactivityTimeout);
+    document.documentElement.classList.remove(inactivityClass);
+  };
+  window.onload = onActivity;
+  // DOM Events
+  document.addEventListener('mousemove', onActivity);
+  document.addEventListener('keypress', onActivity);
+};
+
 var menu = document.getElementById('menu-container');
 var toggle = document.getElementById('toggle-menu-visible');
 
@@ -9675,13 +9698,20 @@ return wrapREGL;
 
 });
 
-var vert = "\n  precision highp float;\n  \n  attribute vec2 texcoord;\n  \n  uniform sampler2D image;\n  uniform float time;\n  \n  varying vec3 c;\n  \n  vec3 rgb_to_hsv(vec3 rgb)\n  {\n    float c_max = max(max(rgb.r, rgb.g), rgb.b), c_min = min(min(rgb.r, rgb.g), rgb.b);\n  \n    float d = c_max - c_min;\n\n    if(d < 0.00001 || c_max < 0.00001) return vec3(0, 0, c_min);\n\n    float h;\n    if(c_max == rgb.r) { h = (rgb.g - rgb.b) / d; if(h < 0.) h += 6.; }\n    else if(c_max == rgb.g) h = (rgb.b - rgb.r) / d + 2.;\n    else h = (rgb.r - rgb.g) / d + 4.;\n\n    return vec3(h * 60., d / c_max, c_max);\n  }\n  \n  vec2 direction_vector(float angle)\n  {\n    return vec2(cos(angle), sin(angle));\n  }\n  \n  void main()\n  {\n    vec2 tc = texcoord;\n    tc.y = 1. - tc.y;\n    c = texture2D(image, tc).rgb;\n\n    vec3 p = vec3(texcoord * vec2(2) - vec2(1), 0);\n    p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(rgb_to_hsv(c)[0] * 3.14159265 / 180.) * 0.2;\n\n    gl_PointSize = 16.;\n    gl_Position = vec4(p, 1);\n  }\n";
+var dbgBlit = {
+  vert: "\n    precision highp float;\n    attribute vec2 texcoord;\n    varying vec2 f_texcoord;\n    void main()\n    {\n      f_texcoord = texcoord;\n      gl_Position = vec4(texcoord * vec2(2) - vec2(1), 0, 1);\n    }\n  ",
 
-var frag = "\n  precision highp float;\n  \n  varying vec3 c;\n  \n  void main()\n  {\n    float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    gl_FragColor = vec4(c * v, 1);\n  }\n";
+  frag: "\n    precision highp float;\n    uniform sampler2D texture;\n    varying vec2 f_texcoord;\n    void main()\n    {\n      gl_FragColor = texture2D(texture, f_texcoord);\n    }\n  "
+};
+
+var vert = "\n  precision highp float;\n\n  attribute vec2 texcoord;\n  attribute vec3 rgb;\n  attribute vec3 hsv;\n\n  uniform float time;\n\n  varying vec3 c;\n\n  vec2 direction_vector(float angle)\n  {\n    return vec2(cos(angle), sin(angle));\n  }\n\n  void main()\n  {\n    c = rgb;\n\n    vec3 p = vec3(texcoord * vec2(2) - vec2(1), 0);\n    p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(hsv.x * 3.14159265 / 180.) * 0.2;\n\n    gl_PointSize = 16.;\n    gl_Position = vec4(p, 1);\n  }\n";
+
+var frag = "\n  precision highp float;\n\n  varying vec3 c;\n\n  void main()\n  {\n    float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    gl_FragColor = vec4(c * v, 1);\n  }\n";
 
 // set up ui components
 var fullscreen = new FullscreenButton();
 var imgSelect = new ImgSelect();
+var inactivityMonitor = new InactivityMonitor();
 
 var canvas = document.getElementById('main-canvas');
 var adjustCanvasSize = function () {
@@ -9699,25 +9729,89 @@ console.log("point size dims: " + regl.limits.pointSizeDims[0] + " " + regl.limi
 var src_image = document.createElement("img");
 src_image.src = "tron.jpg";
 
+var dbgBlitTextureCommand = regl({
+  vert: dbgBlit.vert,
+  frag: dbgBlit.frag,
+  uniforms: { texture: regl.prop('texture') },
+  viewport: { x: regl.prop('x'), y: regl.prop('y'), width: regl.prop('width'), height: regl.prop('height') },
+  attributes: { texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]] },
+  primitive: "triangle strip",
+  count: 4
+});
+function dbgBlitTexture(x, y, texture) {
+    dbgBlitTextureCommand({texture: texture, x: x, y: y, width: texture.width, height: texture.height});
+}
+
+function buildData() {
+  //TODO: dont use OpenGL Texture to get image pixels...
+  var texture = regl.texture({data: src_image, format: 'rgb', flipY: true});
+  var w = texture.width, h = texture.height;
+
+  var imagePixels = new Uint8Array(w * h * 4);
+  dbgBlitTexture(0, 0, texture);
+  regl._gl.readPixels(0, 0, w, h, regl._gl.RGBA, regl._gl.UNSIGNED_BYTE, imagePixels);
+
+  texture.destroy();
+
+
+  var pixelIndices = Array.from(Array(w * h).keys());
+
+  var texcoords = pixelIndices.map(function (i) { return [ (i % w + .5) / w, (~~(i / w) + .5) / h ]; } );
+
+  var rgb = pixelIndices.map(function (i) {
+    var pixel = imagePixels.slice(i * 4, i * 4 + 4);
+    return [pixel[0] / 255, pixel[1] / 255, pixel[2] / 255];
+  });
+
+  var hsv = pixelIndices.map(function (i) {
+    var pixel = imagePixels.slice(i * 4, i * 4 + 4);
+
+    var c_max = Math.max(pixel[0], pixel[1], pixel[2]);
+    var c_min = Math.min(pixel[0], pixel[1], pixel[2]);
+    var d = c_max - c_min;
+
+    if(d < 0.00001 || c_max < 0.00001) { return [0, 0, c_max]; }
+
+    var _h = 0;
+    if(c_max == pixel[0]) { _h = (pixel[1] - pixel[2]) / d; if(_h < 0.) { _h += 6.; } }
+    else if(c_max == pixel[1]) { _h = (pixel[2] - pixel[1]) / d + 2.; }
+    else { _h = (pixel[1] - pixel[2]) / d + 4.; }
+
+    return [_h * 60., d / c_max, c_max];
+  });
+
+  return {
+    width: w,
+    height: h,
+    texcoordsBuffer: regl.buffer(texcoords),
+    rgbBuffer: regl.buffer(rgb),
+    hsvBuffer: regl.buffer(hsv)
+  };
+}
+
 var command = null;
 src_image.onload = function () {
-  var image = regl.texture({ data: src_image, mag: "linear", min: "linear" });
-
-  console.log(image.width + " x " + image.height);
+  var data = buildData();
 
   command = regl({
     vert: vert,
     frag: frag,
-    uniforms: { image: image, time : function(ctx) { return ctx.time; } },
+    uniforms: {
+      time : function(ctx) { return ctx.time; }
+    },
     depth: { enable: false },
     blend: {
       enable: true,
       func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
       equation: { rgb: "add", alpha: "add" }
     },
-    attributes: { texcoord: Array.from(Array(image.width * image.height).keys()).map(function (i) { return [ (i % image.width + .5) / image.width, (~~(i / image.width) + .5) / image.height ]; } ) },
+    attributes: {
+      texcoord: data.texcoordsBuffer,
+      rgb: data.rgbBuffer,
+      hsv: data.hsvBuffer
+    },
     primitive: "points",
-    count: image.width * image.height
+    count: data.width * data.height
   });
 };
 

@@ -2489,6 +2489,16 @@ body {
   .dragging-file .file-drag-indicator {
     display: block; }
 
+.btn-fullscreen,
+.btn-file-select + label,
+.toggle-menu-visible + label {
+  -webkit-transition: opacity 1s;
+  transition: opacity 1s; }
+  .user-inactive .btn-fullscreen, .user-inactive
+  .btn-file-select + label, .user-inactive
+  .toggle-menu-visible + label {
+    opacity: 0; }
+
 /* ===================================================================
  *
  * =================================================================== */
