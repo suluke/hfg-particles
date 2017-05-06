@@ -114,10 +114,11 @@ var ImgSelect = function ImgSelect() {
 
   // properties:
   this.changeListeners = [];
+  this.input = document.getElementById('btn-file-select');
 
   // drag-n-drop support
   var html = document.documentElement;
-  var input = document.getElementById('btn-file-select');
+  var input = this.input;
   var dragClass = 'dragging-file';
   var dragenter = function (e) {
     html.classList.add(dragClass);
@@ -149,6 +150,9 @@ var ImgSelect = function ImgSelect() {
 ImgSelect.prototype.addChangeListener = function addChangeListener (listener) {
   this.changeListeners.push(listener);
 };
+ImgSelect.prototype.clear = function clear () {
+  this.input.value = null;
+};
 
 var InactivityMonitor = function InactivityMonitor() {
   var this$1 = this;
@@ -171,6 +175,49 @@ var InactivityMonitor = function InactivityMonitor() {
   // DOM Events
   document.addEventListener('mousemove', onActivity);
   document.addEventListener('keypress', onActivity);
+};
+
+var ImgDimWarn = function ImgDimWarn() {
+  var this$1 = this;
+
+  var ignoreWarnBtnClass = "btn-img-dim-warn-ignore";
+  var cancelLoadBtnClass = "btn-img-dim-warn-cancel";
+    
+  var parser = document.createElement('body');
+  // Object properties
+  this.resolve = null;
+  this.reject = null;
+  parser.innerHTML = "\n      <div class=\"img-dim-warn-backdrop\">\n        <div class=\"img-dim-warn-popup\">\n          The image you selected is very large. Loading it may cause the\n          site to become very slow/unresponsive. <br/>\n          Do you still want to proceed?<br/>\n          <button type=\"button\" class=\"" + ignoreWarnBtnClass + "\">Yes, load big image</button>\n          <button type=\"button\" class=\"" + cancelLoadBtnClass + "\">Cancel</button>\n          <input type=\"checkbox\"\n            name=\"toggle-advanced-load-options\"\n            id=\"toggle-advanced-load-options\"\n            class=\"toggle-advanced-load-options\"/>\n          <label for=\"toggle-advanced-load-options\"\n            class=\"btn-toggle-advanced-load-options\"\n            title=\"Toggle advanced options\"\n          ></label>\n          <div>\n            Scale image to size before loading: <br/>\n            width: <input type=\"number\" /><br/>\n            height: <input type=\"number\" /><br/>\n            <button type=\"button\">Load scaled image</button>\n          </div>\n        </div>\n      </div>\n    ";
+  this.dialogElm = parser.childNodes[1]; // Whitespace in template causes 'text' nodes to be in parser
+    
+  var loadBtn = this.dialogElm.querySelector(("." + ignoreWarnBtnClass));
+  loadBtn.addEventListener('click', function () {
+    this$1.hide();
+    this$1.resolve();
+  });
+  var cancelBtn = this.dialogElm.querySelector(("." + cancelLoadBtnClass));
+  cancelBtn.addEventListener('click', function () {
+    this$1.hide();
+    this$1.reject();
+  });
+};
+ImgDimWarn.prototype.verify = function verify (img) {
+    var this$1 = this;
+
+  var tooManyPixels = 1024 * 768; // TODO Magic number
+  return new Promise(function (res, rej) {
+    if (img.naturalWidth * img.naturalHeight >= tooManyPixels) {
+      this$1.resolve = res;
+      this$1.reject = rej;
+      console.log('Show warning');
+      document.body.appendChild(this$1.dialogElm);
+    } else {
+      res();
+    }
+  });
+};
+ImgDimWarn.prototype.hide = function hide () {
+  document.body.removeChild(this.dialogElm);
 };
 
 var menu = document.getElementById('menu-container');
@@ -9709,16 +9756,20 @@ var vert = "\n  precision highp float;\n\n  attribute vec2 texcoord;\n  attribut
 var frag = "\n  precision highp float;\n\n  varying vec3 c;\n\n  void main()\n  {\n    float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    gl_FragColor = vec4(c * v, 1);\n  }\n";
 
 var config = {
-  timestamp: '2017-05-05T20:32:50.095Z',
-  git_rev: '09dfeae'
+  timestamp: '2017-05-06T14:39:23.592Z',
+  git_rev: 'd8463e1'
 };
 
 console.log(config);
+
+// some constants
+var imageLoadingClass = 'loading-image';
 
 // set up ui components
 var fullscreen = new FullscreenButton();
 var imgSelect = new ImgSelect();
 var inactivityMonitor = new InactivityMonitor();
+var imgDimWarn = new ImgDimWarn();
 
 var canvas = document.getElementById('main-canvas');
 var adjustCanvasSize = function () {
@@ -9771,7 +9822,7 @@ function buildData() {
   });
 
   var hsv = pixelIndices.map(function (i) {
-    var pixel = imagePixels.slice(i * 4, i * 4 + 4);
+    var pixel = rgb[i];
 
     var c_max = Math.max(pixel[0], pixel[1], pixel[2]);
     var c_min = Math.min(pixel[0], pixel[1], pixel[2]);
@@ -9779,12 +9830,12 @@ function buildData() {
 
     if(d < 0.00001 || c_max < 0.00001) { return [0, 0, c_max]; }
 
-    var _h = 0;
-    if(c_max == pixel[0]) { _h = (pixel[1] - pixel[2]) / d; if(_h < 0.) { _h += 6.; } }
-    else if(c_max == pixel[1]) { _h = (pixel[2] - pixel[1]) / d + 2.; }
-    else { _h = (pixel[1] - pixel[2]) / d + 4.; }
+    var _h;
+    if(c_max == pixel[0]) { _h = (pixel[1] - pixel[2]) / d; if(_h < 0) { _h += 6; } }
+    else if(c_max == pixel[1]) { _h = (pixel[2] - pixel[0]) / d + 2; }
+    else { _h = (pixel[0] - pixel[1]) / d + 4; }
 
-    return [_h * 60., d / c_max, c_max];
+    return [_h * 60, d / c_max, c_max];
   });
 
   return {
@@ -9798,27 +9849,36 @@ function buildData() {
 
 var command = null;
 src_image.onload = function () {
-  var data = buildData();
+  imgDimWarn.verify(src_image)
+  .then(function () {
+    var data = buildData();
 
-  command = regl({
-    vert: vert,
-    frag: frag,
-    uniforms: {
-      time : function(ctx) { return ctx.time; }
-    },
-    depth: { enable: false },
-    blend: {
-      enable: true,
-      func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
-      equation: { rgb: "add", alpha: "add" }
-    },
-    attributes: {
-      texcoord: data.texcoordsBuffer,
-      rgb: data.rgbBuffer,
-      hsv: data.hsvBuffer
-    },
-    primitive: "points",
-    count: data.width * data.height
+    command = regl({
+      vert: vert,
+      frag: frag,
+      uniforms: {
+        time : function(ctx) { return ctx.time; }
+      },
+      depth: { enable: false },
+      blend: {
+        enable: true,
+        func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
+        equation: { rgb: "add", alpha: "add" }
+      },
+      attributes: {
+        texcoord: data.texcoordsBuffer,
+        rgb: data.rgbBuffer,
+        hsv: data.hsvBuffer
+      },
+      primitive: "points",
+      count: data.width * data.height
+    });
+  }, function () {
+    /* User canceled loading image */
+    imgSelect.clear();
+  })
+  .then(function () {
+    document.documentElement.classList.remove(imageLoadingClass);
   });
 };
 
@@ -9830,11 +9890,21 @@ regl.frame(function () {
 });
 
 imgSelect.addChangeListener(function (file) {
-  var fr = new FileReader();
-  fr.onload = function () {
-    src_image.src = fr.result;
-  };
-  fr.readAsDataURL(file);
+  // Prevent messed-up app states caused by multiple parallel image loads
+  if (!document.documentElement.classList.contains(imageLoadingClass)) {
+    document.documentElement.classList.add(imageLoadingClass);
+    var fr = new FileReader();
+    fr.onload = function () {
+      console.log(fr.result.substring(0, 100));
+      if (fr.result == 'data:') {
+        console.log('Shit');
+        document.documentElement.classList.remove(imageLoadingClass);
+        return;
+      }
+      src_image.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  }
 });
 
 }());
