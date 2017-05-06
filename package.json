@@ -7,8 +7,9 @@
     "start": "node server.js",
     "start:dev": "nodemon -i static/\\* -i js/\\* -i test/\\* server.js",
     "test": "npm run lint && npm run tests",
-    "lint": "",
-    "tests": ""
+    "lint": "$(npm bin)/eslint js || true",
+    "format": "$(npm bin)/eslint --fix js || true",
+    "tests": "echo 'no tests available yet'"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,9 @@
   "devDependencies": {
     "express": "^4.15.2",
     "express-middleware-rollup": "^1.1.1",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
     "font-awesome": "^4.7.0",
     "fs-promise": "^2.0.2",
     "git-rev": "^0.2.1",
