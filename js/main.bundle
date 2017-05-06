@@ -110,7 +110,7 @@ src_image.onload = () => {
       depth: { enable: false },
       blend: {
         enable: true,
-        func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
+        func: { srcRGB: "src alpha", srcAlpha: 1, dstRGB: "one minus src alpha", dstAlpha: 1 },
         equation: { rgb: "add", alpha: "add" }
       },
       attributes: {

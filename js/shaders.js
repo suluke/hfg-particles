@@ -57,6 +57,6 @@ export const frag = `
   void main()
   {
     float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);
-    gl_FragColor = vec4(c * v, 1);
+    gl_FragColor = vec4(c, v);
   }
 `;
