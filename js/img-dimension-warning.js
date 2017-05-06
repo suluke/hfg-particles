@@ -1,8 +1,8 @@
 export default class ImgDimWarn {
   constructor() {
-    const ignoreWarnBtnClass = "btn-img-dim-warn-ignore";
-    const cancelLoadBtnClass = "btn-img-dim-warn-cancel";
-    
+    const ignoreWarnBtnClass = 'btn-img-dim-warn-ignore';
+    const cancelLoadBtnClass = 'btn-img-dim-warn-cancel';
+
     const parser = document.createElement('body');
     // Object properties
     this.resolve = null;
@@ -32,8 +32,10 @@ export default class ImgDimWarn {
         </div>
       </div>
     `;
-    this.dialogElm = parser.childNodes[1]; // Whitespace in template causes 'text' nodes to be in parser
-    
+    // Whitespace in template causes 'text' nodes to be in parser, so index
+    // becomes 1
+    this.dialogElm = parser.childNodes[1];
+
     const loadBtn = this.dialogElm.querySelector(`.${ignoreWarnBtnClass}`);
     loadBtn.addEventListener('click', () => {
       this.hide();

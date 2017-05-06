@@ -9,8 +9,9 @@ export default class InactivityMonitor {
       document.documentElement.classList.add(inactivityClass);
     };
     const onActivity = () => {
-      if (this.timeout !== undefined)
+      if (this.timeout !== undefined) {
         window.clearTimeout(this.timeout);
+      }
       this.timeout = window.setTimeout(onInactivity, inactivityTimeout);
       document.documentElement.classList.remove(inactivityClass);
     };

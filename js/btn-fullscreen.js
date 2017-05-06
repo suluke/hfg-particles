@@ -1,13 +1,12 @@
-const isFullscreen = () => {
-  return document.fullscreen || document.mozFullScreen ||
+const isFullscreen = () => document.fullscreen || document.mozFullScreen ||
     document.webkitIsFullScreen || document.msFullscreenElement;
-};
 const updateFullscreenClass = () => {
   const fullscreenClass = 'fullscreen';
-  if (isFullscreen())
+  if (isFullscreen()) {
     document.documentElement.classList.add(fullscreenClass);
-  else
+  } else {
     document.documentElement.classList.remove(fullscreenClass);
+  }
 };
 
 const toggleFullScreen = () => {
@@ -20,14 +19,12 @@ const toggleFullScreen = () => {
     } else if (document.documentElement.webkitRequestFullScreen) {
       document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
     }
-  } else {
-    if (document.cancelFullScreen) {
-      document.cancelFullScreen();
-    } else if (document.mozCancelFullScreen) {
-      document.mozCancelFullScreen();
-    } else if (document.webkitCancelFullScreen) {
-      document.webkitCancelFullScreen();
-    }
+  } else if (document.cancelFullScreen) {
+    document.cancelFullScreen();
+  } else if (document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if (document.webkitCancelFullScreen) {
+    document.webkitCancelFullScreen();
   }
 };
 
@@ -37,10 +34,10 @@ export default class FullscreenButton {
       elm.addEventListener('click', toggleFullScreen);
     });
 
-    document.addEventListener("fullscreenchange", updateFullscreenClass, false);
-    document.addEventListener("mozfullscreenchange", updateFullscreenClass, false);
-    document.addEventListener("webkitfullscreenchange", updateFullscreenClass, false);
-    document.addEventListener("msfullscreenchange", updateFullscreenClass, false);
+    document.addEventListener('fullscreenchange', updateFullscreenClass, false);
+    document.addEventListener('mozfullscreenchange', updateFullscreenClass, false);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenClass, false);
+    document.addEventListener('msfullscreenchange', updateFullscreenClass, false);
     updateFullscreenClass();
   }
-};
+}

@@ -12,21 +12,23 @@ export default class ImgSelect {
     const html = document.documentElement;
     const input = this.input;
     const dragClass = 'dragging-file';
-    const dragenter = e => {
+    const dragenter = (e) => {
       html.classList.add(dragClass);
       e.stopPropagation();
       e.preventDefault();
-    }
-    const dragleave = e => {
+    };
+    const dragleave = (e) => {
       html.classList.remove(dragClass);
       e.stopPropagation();
       e.preventDefault();
-    }
+    };
 
-    html.addEventListener("dragenter", dragenter, false);
-    input.addEventListener("dragleave", dragleave, false);
+    html.addEventListener('dragenter', dragenter, false);
+    input.addEventListener('dragleave', dragleave, false);
     // if we preventDefault on drop, the change event will not fire
-    input.addEventListener("drop", (e) => { html.classList.remove(dragClass) }, false);
+    input.addEventListener('drop', (/* e */) => {
+      html.classList.remove(dragClass);
+    }, false);
 
     // catch the change event
     const handleFileSelect = (evt) => {
@@ -45,4 +47,4 @@ export default class ImgSelect {
   clear() {
     this.input.value = null;
   }
-};
+}
