@@ -1,0 +1,16 @@
+@import 'mixins/modal';
+
+.file-drag-indicator {
+  display: none;
+  @include modal;
+  &:before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    height: 100%;
+    width: 1px;
+  }
+  .dragging-file & {
+    display: block;
+  }
+}

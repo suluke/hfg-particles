@@ -6,10 +6,11 @@ export default class ImgSelect {
   constructor() {
     // properties:
     this.changeListeners = [];
+    this.input = document.getElementById('btn-file-select');
 
     // drag-n-drop support
     const html = document.documentElement;
-    const input = document.getElementById('btn-file-select');
+    const input = this.input;
     const dragClass = 'dragging-file';
     const dragenter = e => {
       html.classList.add(dragClass);
@@ -40,5 +41,8 @@ export default class ImgSelect {
 
   addChangeListener(listener) {
     this.changeListeners.push(listener);
+  }
+  clear() {
+    this.input.value = null;
   }
 };

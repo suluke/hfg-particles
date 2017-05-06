@@ -1,0 +1,28 @@
+@import 'mixins/modal';
+@import 'mixins/hide';
+
+.img-dim-warn-backdrop {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+
+  .img-dim-warn-popup {
+    @include modal;
+  }
+
+  .toggle-advanced-load-options {
+    @include visuallyhidden;
+    & + label + div {
+      display: none;
+    }
+    &:checked + label + div {
+      display: block;
+    }
+  }
+  .btn-toggle-advanced-load-options {
+    @include icon($fa-var-caret-square-o-down);
+  }
+}

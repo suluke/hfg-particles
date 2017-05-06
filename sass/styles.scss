@@ -1,6 +1,11 @@
 $fa-font-path: "./fonts";
 @import 'font-awesome/scss/font-awesome';
 
+@import 'mixins/hide';
+@import 'mixins/icons';
+@import 'drag-and-drop';
+@import 'img-dimension-warning';
+
 $main-text-color: #333;
 
 html,
@@ -12,36 +17,6 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-}
-
-@mixin icon($fa-icon) {
-  /* the default mixins set font-size, which interferes when changing icons depenging on state */
-  /* @include fa-icon; // in _mixins.scss */
-  /* @extend .#{$fa-css-prefix}; // in _core.scss*/
-  font-family: FontAwesome;
-  &:before {
-    content: $fa-icon;
-  }
-}
-@mixin visuallyhidden() {
-  position: absolute;
-  width: 0.1px;
-  height: 0.1px;
-  opacity: 0;
-  z-index: -1;
-  overflow: hidden;
-  clip: rect(1px, 1px, 1px, 1px);
-}
-@mixin icon-button($fa-icon) {
-  @include icon($fa-icon);
-  cursor: pointer; /* "hand" cursor */
-  padding: 0;
-  color: #eee;
-  display: inline-block;
-  &:focus,
-  &:hover {
-    color: #fff;
-  }
 }
 
 .menu-container {
@@ -131,31 +106,6 @@ body {
   width: 100%;
   height: 100%;
   z-index: -1;
-}
-
-.file-drag-indicator {
-  display: none;
-  position: absolute;
-  width: 50%;
-  height: 50%;
-  text-align: center;
-  vertical-align: middle;
-  &:before {
-    content: "";
-    display: inline-block;
-    vertical-align: middle;
-    height: 100%;
-    width: 1px;
-  }
-  top: 50%;
-  left: 50%;
-  -webkit-transform: translate(-50%, -50%);
-  -ms-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
-  background-color: #eee;
-  .dragging-file & {
-    display: block;
-  }
 }
 
 .btn-fullscreen,

@@ -1,0 +1,20 @@
+@mixin icon($fa-icon) {
+  /* the default mixins set font-size, which interferes when changing icons depenging on state */
+  /* @include fa-icon; // in _mixins.scss */
+  /* @extend .#{$fa-css-prefix}; // in _core.scss*/
+  font-family: FontAwesome;
+  &:before {
+    content: $fa-icon;
+  }
+}
+@mixin icon-button($fa-icon) {
+  @include icon($fa-icon);
+  cursor: pointer; /* "hand" cursor */
+  padding: 0;
+  color: #eee;
+  display: inline-block;
+  &:focus,
+  &:hover {
+    color: #fff;
+  }
+}

@@ -2,6 +2,7 @@ import "./polyfills/classlist";
 import FullscreenButton from "./btn-fullscreen";
 import ImgSelect from "./image-select";
 import InactivityMonitor from './inactivity-monitor';
+import ImgDimWarn from './img-dimension-warning';
 import "./menu";
 import createRegl from 'regl';
 import * as shaders from './shaders';
@@ -9,10 +10,14 @@ import config from './config';
 
 console.log(config);
 
+// some constants
+const imageLoadingClass = 'loading-image';
+
 // set up ui components
 const fullscreen = new FullscreenButton();
 const imgSelect = new ImgSelect();
 const inactivityMonitor = new InactivityMonitor();
+const imgDimWarn = new ImgDimWarn();
 
 const canvas = document.getElementById('main-canvas');
 const adjustCanvasSize = () => {
@@ -92,27 +97,37 @@ function buildData() {
 
 let command = null;
 src_image.onload = () => {
-  const data = buildData();
+  imgDimWarn.verify(src_image)
+  .then(() => {
+    const data = buildData();
 
-  command = regl({
-    vert: shaders.vert,
-    frag: shaders.frag,
-    uniforms: {
-      time : function(ctx) { return ctx.time; }
-    },
-    depth: { enable: false },
-    blend: {
-      enable: true,
-      func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
-      equation: { rgb: "add", alpha: "add" }
-    },
-    attributes: {
-      texcoord: data.texcoordsBuffer,
-      rgb: data.rgbBuffer,
-      hsv: data.hsvBuffer
-    },
-    primitive: "points",
-    count: data.width * data.height
+    command = regl({
+      vert: shaders.vert,
+      frag: shaders.frag,
+      uniforms: {
+        time : function(ctx) { return ctx.time; }
+      },
+      depth: { enable: false },
+      blend: {
+        enable: true,
+        func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
+        equation: { rgb: "add", alpha: "add" }
+      },
+      attributes: {
+        texcoord: data.texcoordsBuffer,
+        rgb: data.rgbBuffer,
+        hsv: data.hsvBuffer
+      },
+      primitive: "points",
+      count: data.width * data.height
+    });
+  }, () => {
+    /* User canceled loading image */
+    imgSelect.clear(); // If we don't clear, changeListeners may not fire if same image is selected again
+  })
+  .then(() => {
+    // do this both on cancel and on accept (= .finally())
+    document.documentElement.classList.remove(imageLoadingClass);
   });
 };
 
@@ -124,9 +139,14 @@ regl.frame(() => {
 });
 
 imgSelect.addChangeListener(file => {
-  var fr = new FileReader();
-  fr.onload = () => {
-    src_image.src = fr.result;
-  }
-  fr.readAsDataURL(file);
+  // Prevent messed-up app states caused by multiple parallel image loads
+  if (!document.documentElement.classList.contains(imageLoadingClass)) {
+    document.documentElement.classList.add(imageLoadingClass);
+    var fr = new FileReader();
+    fr.onload = () => {
+      src_image.src = fr.result;
+    };
+    // TODO Add onerror listeners
+    fr.readAsDataURL(file);
+  };
 });
