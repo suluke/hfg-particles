@@ -65,7 +65,7 @@ function buildData() {
   });
 
   const hsv = pixelIndices.map(i => {
-    var pixel = imagePixels.slice(i * 4, i * 4 + 4);
+    var pixel = rgb[i];
 
     var c_max = Math.max(pixel[0], pixel[1], pixel[2]);
     var c_min = Math.min(pixel[0], pixel[1], pixel[2]);
@@ -73,12 +73,12 @@ function buildData() {
 
     if(d < 0.00001 || c_max < 0.00001) return [0, 0, c_max];
 
-    var _h = 0;
-    if(c_max == pixel[0]) { _h = (pixel[1] - pixel[2]) / d; if(_h < 0.) _h += 6.; }
-    else if(c_max == pixel[1]) _h = (pixel[2] - pixel[1]) / d + 2.;
-    else _h = (pixel[1] - pixel[2]) / d + 4.;
+    var _h;
+    if(c_max == pixel[0]) { _h = (pixel[1] - pixel[2]) / d; if(_h < 0) _h += 6; }
+    else if(c_max == pixel[1]) _h = (pixel[2] - pixel[0]) / d + 2;
+    else _h = (pixel[0] - pixel[1]) / d + 4;
 
-    return [_h * 60., d / c_max, c_max];
+    return [_h * 60, d / c_max, c_max];
   });
 
   return {
