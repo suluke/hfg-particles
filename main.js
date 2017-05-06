@@ -2,12 +2,10 @@
 'use strict';
 
 // Source: https://gist.github.com/k-gun/c2ea7c49edf7b757fe9561ba37cb19ca
-(function() {
+(function setupClasslistPolyfill() {
   // helpers
-  var regExp = function(name) {
-    return new RegExp('(^| )'+ name +'( |$)');
-  };
-  var forEach = function(list, fn, scope) {
+  var regExp = function (name) { return new RegExp(("(^| )" + name + "( |$)")); };
+  var forEach = function (list, fn, scope) {
     for (var i = 0; i < list.length; i++) {
       fn.call(scope, list[i]);
     }
@@ -19,36 +17,45 @@
   }
 
   ClassList.prototype = {
-    add: function() {
-      forEach(arguments, function(name) {
-        if (!this.contains(name)) {
-          this.element.className += this.element.className.length > 0 ? ' ' + name : name;
+    add: function add() {
+      var this$1 = this;
+      var args = [], len = arguments.length;
+      while ( len-- ) args[ len ] = arguments[ len ];
+
+      forEach(args, function (name) {
+        if (!this$1.contains(name)) {
+          this$1.element.className += this$1.element.className.length > 0 ? (" " + name) : name;
         }
       }, this);
     },
-    remove: function() {
-      forEach(arguments, function(name) {
-        this.element.className =
-          this.element.className.replace(regExp(name), '');
+    remove: function remove() {
+      var this$1 = this;
+      var args = [], len = arguments.length;
+      while ( len-- ) args[ len ] = arguments[ len ];
+
+      forEach(args, function (name) {
+        this$1.element.className =
+          this$1.element.className.replace(regExp(name), '');
       }, this);
     },
-    toggle: function(name) {
-      return this.contains(name) 
+    toggle: function toggle(name) {
+      return this.contains(name)
         ? (this.remove(name), false) : (this.add(name), true);
     },
-    contains: function(name) {
+    contains: function contains(name) {
       return regExp(name).test(this.element.className);
     },
     // bonus..
-    replace: function(oldName, newName) {
-      this.remove(oldName), this.add(newName);
+    replace: function replace(oldName, newName) {
+      this.remove(oldName);
+      this.add(newName);
     }
   };
 
   // IE8/9, Safari
   if (!('classList' in Element.prototype)) {
     Object.defineProperty(Element.prototype, 'classList', {
-      get: function() {
+      get: function get() {
         return new ClassList(this);
       }
     });
@@ -58,18 +65,17 @@
   if (window.DOMTokenList && DOMTokenList.prototype.replace == null) {
     DOMTokenList.prototype.replace = ClassList.prototype.replace;
   }
-})();
+}());
 
-var isFullscreen = function () {
-  return document.fullscreen || document.mozFullScreen ||
-    document.webkitIsFullScreen || document.msFullscreenElement;
-};
+var isFullscreen = function () { return document.fullscreen || document.mozFullScreen ||
+    document.webkitIsFullScreen || document.msFullscreenElement; };
 var updateFullscreenClass = function () {
   var fullscreenClass = 'fullscreen';
-  if (isFullscreen())
-    { document.documentElement.classList.add(fullscreenClass); }
-  else
-    { document.documentElement.classList.remove(fullscreenClass); }
+  if (isFullscreen()) {
+    document.documentElement.classList.add(fullscreenClass);
+  } else {
+    document.documentElement.classList.remove(fullscreenClass);
+  }
 };
 
 var toggleFullScreen = function () {
@@ -82,14 +88,12 @@ var toggleFullScreen = function () {
     } else if (document.documentElement.webkitRequestFullScreen) {
       document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
     }
-  } else {
-    if (document.cancelFullScreen) {
-      document.cancelFullScreen();
-    } else if (document.mozCancelFullScreen) {
-      document.mozCancelFullScreen();
-    } else if (document.webkitCancelFullScreen) {
-      document.webkitCancelFullScreen();
-    }
+  } else if (document.cancelFullScreen) {
+    document.cancelFullScreen();
+  } else if (document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if (document.webkitCancelFullScreen) {
+    document.webkitCancelFullScreen();
   }
 };
 
@@ -98,10 +102,10 @@ var FullscreenButton = function FullscreenButton() {
     elm.addEventListener('click', toggleFullScreen);
   });
 
-  document.addEventListener("fullscreenchange", updateFullscreenClass, false);
-  document.addEventListener("mozfullscreenchange", updateFullscreenClass, false);
-  document.addEventListener("webkitfullscreenchange", updateFullscreenClass, false);
-  document.addEventListener("msfullscreenchange", updateFullscreenClass, false);
+  document.addEventListener('fullscreenchange', updateFullscreenClass, false);
+  document.addEventListener('mozfullscreenchange', updateFullscreenClass, false);
+  document.addEventListener('webkitfullscreenchange', updateFullscreenClass, false);
+  document.addEventListener('msfullscreenchange', updateFullscreenClass, false);
   updateFullscreenClass();
 };
 
@@ -131,10 +135,12 @@ var ImgSelect = function ImgSelect() {
     e.preventDefault();
   };
 
-  html.addEventListener("dragenter", dragenter, false);
-  input.addEventListener("dragleave", dragleave, false);
+  html.addEventListener('dragenter', dragenter, false);
+  input.addEventListener('dragleave', dragleave, false);
   // if we preventDefault on drop, the change event will not fire
-  input.addEventListener("drop", function (e) { html.classList.remove(dragClass); }, false);
+  input.addEventListener('drop', function (/* e */) {
+    html.classList.remove(dragClass);
+  }, false);
 
   // catch the change event
   var handleFileSelect = function (evt) {
@@ -166,8 +172,9 @@ var InactivityMonitor = function InactivityMonitor() {
     document.documentElement.classList.add(inactivityClass);
   };
   var onActivity = function () {
-    if (this$1.timeout !== undefined)
-      { window.clearTimeout(this$1.timeout); }
+    if (this$1.timeout !== undefined) {
+      window.clearTimeout(this$1.timeout);
+    }
     this$1.timeout = window.setTimeout(onInactivity, inactivityTimeout);
     document.documentElement.classList.remove(inactivityClass);
   };
@@ -180,16 +187,18 @@ var InactivityMonitor = function InactivityMonitor() {
 var ImgDimWarn = function ImgDimWarn() {
   var this$1 = this;
 
-  var ignoreWarnBtnClass = "btn-img-dim-warn-ignore";
-  var cancelLoadBtnClass = "btn-img-dim-warn-cancel";
-    
+  var ignoreWarnBtnClass = 'btn-img-dim-warn-ignore';
+  var cancelLoadBtnClass = 'btn-img-dim-warn-cancel';
+
   var parser = document.createElement('body');
   // Object properties
   this.resolve = null;
   this.reject = null;
   parser.innerHTML = "\n      <div class=\"img-dim-warn-backdrop\">\n        <div class=\"img-dim-warn-popup\">\n          The image you selected is very large. Loading it may cause the\n          site to become very slow/unresponsive. <br/>\n          Do you still want to proceed?<br/>\n          <button type=\"button\" class=\"" + ignoreWarnBtnClass + "\">Yes, load big image</button>\n          <button type=\"button\" class=\"" + cancelLoadBtnClass + "\">Cancel</button>\n          <input type=\"checkbox\"\n            name=\"toggle-advanced-load-options\"\n            id=\"toggle-advanced-load-options\"\n            class=\"toggle-advanced-load-options\"/>\n          <label for=\"toggle-advanced-load-options\"\n            class=\"btn-toggle-advanced-load-options\"\n            title=\"Toggle advanced options\"\n          ></label>\n          <div>\n            Scale image to size before loading: <br/>\n            width: <input type=\"number\" /><br/>\n            height: <input type=\"number\" /><br/>\n            <button type=\"button\">Load scaled image</button>\n          </div>\n        </div>\n      </div>\n    ";
-  this.dialogElm = parser.childNodes[1]; // Whitespace in template causes 'text' nodes to be in parser
-    
+  // Whitespace in template causes 'text' nodes to be in parser, so index
+  // becomes 1
+  this.dialogElm = parser.childNodes[1];
+
   var loadBtn = this.dialogElm.querySelector(("." + ignoreWarnBtnClass));
   loadBtn.addEventListener('click', function () {
     this$1.hide();
@@ -9753,11 +9762,11 @@ var dbgBlit = {
 
 var vert = "\n  precision highp float;\n\n  attribute vec2 texcoord;\n  attribute vec3 rgb;\n  attribute vec3 hsv;\n\n  uniform float time;\n\n  varying vec3 c;\n\n  vec2 direction_vector(float angle)\n  {\n    return vec2(cos(angle), sin(angle));\n  }\n\n  void main()\n  {\n    c = rgb;\n\n    vec3 p = vec3(texcoord * vec2(2) - vec2(1), 0);\n    p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(hsv.x * 3.14159265 / 180.) * 0.2;\n\n    gl_PointSize = 16.;\n    gl_Position = vec4(p, 1);\n  }\n";
 
-var frag = "\n  precision highp float;\n\n  varying vec3 c;\n\n  void main()\n  {\n    float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    gl_FragColor = vec4(c * v, 1);\n  }\n";
+var frag = "\n  precision highp float;\n\n  varying vec3 c;\n\n  void main()\n  {\n    float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    gl_FragColor = vec4(c, v);\n  }\n";
 
 var config = {
-  timestamp: '2017-05-06T14:39:23.592Z',
-  git_rev: 'd8463e1'
+  timestamp: '2017-05-06T16:45:41.144Z',
+  git_rev: 'bf63415'
 };
 
 console.log(config);
@@ -9862,7 +9871,7 @@ src_image.onload = function () {
       depth: { enable: false },
       blend: {
         enable: true,
-        func: { srcRGB: "one", srcAlpha: "one", dstRGB: "one", dstAlpha: "one" },
+        func: { srcRGB: "src alpha", srcAlpha: 1, dstRGB: "one minus src alpha", dstAlpha: 1 },
         equation: { rgb: "add", alpha: "add" }
       },
       attributes: {
@@ -9875,9 +9884,10 @@ src_image.onload = function () {
     });
   }, function () {
     /* User canceled loading image */
-    imgSelect.clear();
+    imgSelect.clear(); // If we don't clear, changeListeners may not fire if same image is selected again
   })
   .then(function () {
+    // do this both on cancel and on accept (= .finally())
     document.documentElement.classList.remove(imageLoadingClass);
   });
 };
@@ -9895,14 +9905,9 @@ imgSelect.addChangeListener(function (file) {
     document.documentElement.classList.add(imageLoadingClass);
     var fr = new FileReader();
     fr.onload = function () {
-      console.log(fr.result.substring(0, 100));
-      if (fr.result == 'data:') {
-        console.log('Shit');
-        document.documentElement.classList.remove(imageLoadingClass);
-        return;
-      }
       src_image.src = fr.result;
     };
+    // TODO Add onerror listeners
     fr.readAsDataURL(file);
   }
 });
