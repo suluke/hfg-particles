@@ -49,6 +49,7 @@ export default class ImgDimWarn {
   }
   verify(img) {
     const tooManyPixels = 1024 * 768; // TODO Magic number
+
     return new Promise((res, rej) => {
       if (img.naturalWidth * img.naturalHeight >= tooManyPixels) {
         this.resolve = res;

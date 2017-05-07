@@ -1,7 +1,7 @@
 // Source: https://gist.github.com/k-gun/c2ea7c49edf7b757fe9561ba37cb19ca
 (function setupClasslistPolyfill() {
   // helpers
-  const regExp = name => new RegExp(`(^| )${name}( |$)`);
+  const regExp = (name) => new RegExp(`(^| )${name}( |$)`);
   const forEach = (list, fn, scope) => {
     for (let i = 0; i < list.length; i++) {
       fn.call(scope, list[i]);

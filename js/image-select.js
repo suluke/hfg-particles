@@ -36,7 +36,7 @@ export default class ImgSelect {
       if (evt.target.files.length > 0) {
         file = evt.target.files[0];
       }
-      this.changeListeners.forEach(listener => listener(file));
+      this.changeListeners.forEach((listener) => listener(file));
     };
     input.addEventListener('change', handleFileSelect);
   }

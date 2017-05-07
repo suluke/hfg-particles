@@ -1,10 +1,10 @@
-import "./polyfills/classlist";
-import FullscreenButton from "./btn-fullscreen";
-import ImgSelect from "./image-select";
+import createRegl from 'regl';
+import './polyfills/classlist';
+import FullscreenButton from './btn-fullscreen';
+import ImgSelect from './image-select';
 import InactivityMonitor from './inactivity-monitor';
 import ImgDimWarn from './img-dimension-warning';
-import "./menu";
-import createRegl from 'regl';
+import './menu';
 import * as shaders from './shaders';
 import config from './config';
 
@@ -23,17 +23,17 @@ const canvas = document.getElementById('main-canvas');
 const adjustCanvasSize = () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-}
+};
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
 
-const regl = createRegl({canvas});
+const regl = createRegl({ canvas });
 
-console.log("max texture size: " + regl.limits.maxTextureSize);
-console.log("point size dims: " + regl.limits.pointSizeDims[0] + " " + regl.limits.pointSizeDims[1]);
+console.log(`max texture size: ${regl.limits.maxTextureSize}`);
+console.log(`point size dims: ${regl.limits.pointSizeDims[0]} ${regl.limits.pointSizeDims[1]}`);
 
-const src_image = document.createElement("img");
-src_image.src = "tron.jpg";
+const srcImage = document.createElement('img');
+srcImage.src = 'tron.jpg';
 
 const dbgBlitTextureCommand = regl({
   vert: shaders.dbgBlit.vert,
@@ -41,17 +41,18 @@ const dbgBlitTextureCommand = regl({
   uniforms: { texture: regl.prop('texture') },
   viewport: { x: regl.prop('x'), y: regl.prop('y'), width: regl.prop('width'), height: regl.prop('height') },
   attributes: { texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]] },
-  primitive: "triangle strip",
+  primitive: 'triangle strip',
   count: 4
 });
 function dbgBlitTexture(x, y, texture) {
-    dbgBlitTextureCommand({texture: texture, x: x, y: y, width: texture.width, height: texture.height});
+  dbgBlitTextureCommand({ texture, x, y, width: texture.width, height: texture.height });
 }
 
 function buildData() {
-  //TODO: dont use OpenGL Texture to get image pixels...
-  const texture = regl.texture({data: src_image, format: 'rgb', flipY: true});
-  const w = texture.width, h = texture.height;
+  // TODO: dont use OpenGL Texture to get image pixels...
+  const texture = regl.texture({ data: srcImage, format: 'rgb', flipY: true });
+  const w = texture.width;
+  const h = texture.height;
 
   const imagePixels = new Uint8Array(w * h * 4);
   dbgBlitTexture(0, 0, texture);
@@ -62,28 +63,40 @@ function buildData() {
 
   const pixelIndices = Array.from(Array(w * h).keys());
 
-  const texcoords = pixelIndices.map(i => [ (i % w + .5) / w, (~~(i / w) + .5) / h ] );
+  // http://stackoverflow.com/a/596503/1468532
+  // https://jsperf.com/float-to-int-conversion-comparison/16
+  const texcoords = pixelIndices.map((i) => [((i % w) + 0.5) / w, (Math.floor(i / w) + 0.5) / h]);
 
-  const rgb = pixelIndices.map(i => {
-    var pixel = imagePixels.slice(i * 4, i * 4 + 4);
+  const rgb = pixelIndices.map((i) => {
+    const pixel = imagePixels.slice(i * 4, (i * 4) + 4);
+
     return [pixel[0] / 255, pixel[1] / 255, pixel[2] / 255];
   });
 
-  const hsv = pixelIndices.map(i => {
-    var pixel = rgb[i];
+  const hsv = pixelIndices.map((i) => {
+    const pixel = rgb[i];
 
-    var c_max = Math.max(pixel[0], pixel[1], pixel[2]);
-    var c_min = Math.min(pixel[0], pixel[1], pixel[2]);
-    var d = c_max - c_min;
+    const cMax = Math.max(pixel[0], pixel[1], pixel[2]);
+    const cMin = Math.min(pixel[0], pixel[1], pixel[2]);
+    const d = cMax - cMin;
 
-    if(d < 0.00001 || c_max < 0.00001) return [0, 0, c_max];
+    if (d < 0.00001 || cMax < 0.00001) {
+      return [0, 0, cMax];
+    }
 
-    var _h;
-    if(c_max == pixel[0]) { _h = (pixel[1] - pixel[2]) / d; if(_h < 0) _h += 6; }
-    else if(c_max == pixel[1]) _h = (pixel[2] - pixel[0]) / d + 2;
-    else _h = (pixel[0] - pixel[1]) / d + 4;
+    let _h;
+    if (cMax === pixel[0]) {
+      _h = (pixel[1] - pixel[2]) / d;
+      if (_h < 0) {
+        _h += 6;
+      }
+    } else if (cMax === pixel[1]) {
+      _h = ((pixel[2] - pixel[0]) / d) + 2;
+    } else {
+      _h = ((pixel[0] - pixel[1]) / d) + 4;
+    }
 
-    return [_h * 60, d / c_max, c_max];
+    return [_h * 60, d / cMax, cMax];
   });
 
   return {
@@ -96,8 +109,8 @@ function buildData() {
 }
 
 let command = null;
-src_image.onload = () => {
-  imgDimWarn.verify(src_image)
+srcImage.onload = () => {
+  imgDimWarn.verify(srcImage)
   .then(() => {
     const data = buildData();
 
@@ -105,25 +118,28 @@ src_image.onload = () => {
       vert: shaders.vert,
       frag: shaders.frag,
       uniforms: {
-        time : function(ctx) { return ctx.time; }
+        time(ctx) {
+          return ctx.time;
+        }
       },
       depth: { enable: false },
       blend: {
         enable: true,
-        func: { srcRGB: "src alpha", srcAlpha: 1, dstRGB: "one minus src alpha", dstAlpha: 1 },
-        equation: { rgb: "add", alpha: "add" }
+        func: { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 },
+        equation: { rgb: 'add', alpha: 'add' }
       },
       attributes: {
         texcoord: data.texcoordsBuffer,
         rgb: data.rgbBuffer,
         hsv: data.hsvBuffer
       },
-      primitive: "points",
+      primitive: 'points',
       count: data.width * data.height
     });
   }, () => {
     /* User canceled loading image */
-    imgSelect.clear(); // If we don't clear, changeListeners may not fire if same image is selected again
+    // If we don't clear, changeListeners may not fire if same image is selected again
+    imgSelect.clear();
   })
   .then(() => {
     // do this both on cancel and on accept (= .finally())
@@ -132,21 +148,22 @@ src_image.onload = () => {
 };
 
 regl.frame(() => {
-  if (command === null)
+  if (command === null) {
     return;
-  regl.clear({color: [0, 0, 0, 1]});
+  }
+  regl.clear({ color: [0, 0, 0, 1] });
   command();
 });
 
-imgSelect.addChangeListener(file => {
+imgSelect.addChangeListener((file) => {
   // Prevent messed-up app states caused by multiple parallel image loads
   if (!document.documentElement.classList.contains(imageLoadingClass)) {
     document.documentElement.classList.add(imageLoadingClass);
-    var fr = new FileReader();
+    const fr = new FileReader();
     fr.onload = () => {
-      src_image.src = fr.result;
+      srcImage.src = fr.result;
     };
     // TODO Add onerror listeners
     fr.readAsDataURL(file);
-  };
+  }
 });
