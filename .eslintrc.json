@@ -1,5 +1,5 @@
 {
-  "extends": "airbnb/base",
+  "extends": ["eslint:recommended", "airbnb-base"],
   "env": {
     "browser": true,
     "es6": true
@@ -9,24 +9,31 @@
     "sourceType": "module"
   },
   "rules": {
+    "arrow-parens": ["error", "always"],
     "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
     "comma-dangle": "off",
+    "curly": ["error", "all"],
     "eqeqeq": "error",
     "global-strict": ["off", "always"],
     "import/no-extraneous-dependencies": ["error", {"optionalDependencies": true}],
+    "max-statements-per-line": "error",
     "new-cap": ["error", {
       "newIsCap": true,
       "capIsNew": true,
       "newIsCapExceptions": [],
       "capIsNewExceptions": []
     }],
+    "newline-before-return": "error",
+    "no-bitwise": ["error", { "int32Hint": true }],
     "no-console": "off",
     "no-multi-spaces": ["error", {"exceptions": { "ImportDeclaration": true }}],
     "no-param-reassign": "warn",
     "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+    "no-underscore-dangle": "off",
     "no-unused-vars": "warn",
     "no-use-before-define": "warn",
     "no-warning-comments": ["warn", { "terms": ["todo", "fixme", "urgent", "fix"], "location": "anywhere"}],
+    "nonblock-statement-body-position": ["warn", "below"],
     "quotes": ["error", "single", {"avoidEscape": true, "allowTemplateLiterals": true}],
     "space-before-function-paren": ["error", "never"],
     "strict": ["off", "global"]
