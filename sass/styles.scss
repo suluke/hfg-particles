@@ -54,6 +54,32 @@ body {
       background-color: rgba(255, 255, 255, 0.9);;
     }
   }
+  .menu-btn-apply {
+    display: block;
+    position: absolute;
+    height: 7%;
+    min-height: 20px;
+    width: 100%;
+    bottom: 0;
+    border: none;
+    background-color: #5CB85C;
+    color: #eee;
+    cursor: pointer;
+    &[disabled] {
+      cursor: not-allowed;
+    }
+    font-size: 110%;
+    &:hover,
+    &:focus {
+      background-color: #449D44;
+    }
+    &[disabled] {
+       &:hover,
+        &:focus {
+          background-color: #5CB85C;
+        }
+    }
+  }
 }
 
 .btn-file-select {

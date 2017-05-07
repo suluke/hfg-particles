@@ -4,7 +4,7 @@ import FullscreenButton from './btn-fullscreen';
 import ImgSelect from './image-select';
 import InactivityMonitor from './inactivity-monitor';
 import ImgDimWarn from './img-dimension-warning';
-import './menu';
+import MainMenu from './menu';
 import * as shaders from './shaders';
 import config from './config';
 
@@ -14,6 +14,7 @@ console.log(config);
 const imageLoadingClass = 'loading-image';
 
 // set up ui components
+const menu = new MainMenu();
 const fullscreen = new FullscreenButton();
 const imgSelect = new ImgSelect();
 const inactivityMonitor = new InactivityMonitor();
@@ -147,11 +148,12 @@ srcImage.onload = () => {
   });
 };
 
+let glClearColor = [0, 0, 0, 1];
 regl.frame(() => {
   if (command === null) {
     return;
   }
-  regl.clear({ color: [0, 0, 0, 1] });
+  regl.clear({ color: glClearColor });
   command();
 });
 
@@ -166,4 +168,9 @@ imgSelect.addChangeListener((file) => {
     // TODO Add onerror listeners
     fr.readAsDataURL(file);
   }
+});
+
+menu.addChangeListener((state) => {
+  console.log(state);
+  glClearColor = state.glClearColor;
 });

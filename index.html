@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
   </head>
   <body>
     <canvas id="main-canvas" class="main-canvas"></canvas>
@@ -16,8 +16,19 @@
       <div class="menu-content">
         <div class="menu-content-inner">
           <h1>Particles</h1>
+          <fieldset id="menu-bg-color-control">
+            <label>
+              Background color:
+              <input type="color" value="#000000" />
+            </label>
+          </fieldset>
         </div>
-      </div>  
+        <button type="button"
+          id="menu-btn-apply"
+          class="menu-btn-apply"
+          disabled
+        >Apply</button>
+      </div>
     </div>
     
     <button type="button" class="btn-fullscreen"></button>
