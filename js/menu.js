@@ -41,7 +41,7 @@ class ParticleSizeControl extends Control {
 
   updateState(state) {
     // eslint-disable-next-line no-param-reassign
-    state.particleSize = parseInt(this.input.value) / 100;
+    state.particleSize = parseInt(this.input.value, 10) / 100;
   }
 }
 

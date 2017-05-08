@@ -1,17 +1,17 @@
-import createRegl from 'regl';
 import './polyfills/classlist';
 import FullscreenButton from './btn-fullscreen';
 import ImgSelect from './image-select';
 import InactivityMonitor from './inactivity-monitor';
 import ImgDimWarn from './img-dimension-warning';
 import MainMenu from './menu';
-import * as shaders from './shaders';
+import Renderer from './renderer';
 import config from './config';
 
 console.log(config);
 
 // some constants
 const imageLoadingClass = 'loading-image';
+const canvas = document.getElementById('main-canvas');
 
 // set up ui components
 const menu = new MainMenu();
@@ -19,8 +19,8 @@ const fullscreen = new FullscreenButton();
 const imgSelect = new ImgSelect();
 const inactivityMonitor = new InactivityMonitor();
 const imgDimWarn = new ImgDimWarn();
+const renderer = new Renderer(canvas);
 
-const canvas = document.getElementById('main-canvas');
 const adjustCanvasSize = () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -28,133 +28,12 @@ const adjustCanvasSize = () => {
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
 
-const regl = createRegl({ canvas });
-
-console.log(`max texture size: ${regl.limits.maxTextureSize}`);
-console.log(`point size dims: ${regl.limits.pointSizeDims[0]} ${regl.limits.pointSizeDims[1]}`);
-
 const srcImage = document.createElement('img');
 srcImage.src = 'tron.jpg';
-
-const dbgBlitTextureCommand = regl({
-  vert: shaders.dbgBlit.vert,
-  frag: shaders.dbgBlit.frag,
-  uniforms: { texture: regl.prop('texture') },
-  viewport: { x: regl.prop('x'), y: regl.prop('y'), width: regl.prop('width'), height: regl.prop('height') },
-  attributes: { texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]] },
-  primitive: 'triangle strip',
-  count: 4
-});
-function dbgBlitTexture() {
-  const texture = regl.texture({ data: srcImage, format: 'rgb', flipY: true });
-  dbgBlitTextureCommand({ texture, x: 0, y: 0, width: texture.width, height: texture.height });
-}
-
-function buildData() {
-  const dataCanvas = document.createElement('canvas');
-  const dataContext = dataCanvas.getContext('2d');
-  dataCanvas.width = srcImage.naturalWidth;
-  dataCanvas.height = srcImage.naturalHeight;
-  // flipped y-axis
-  dataContext.translate(0, srcImage.naturalHeight);
-  dataContext.scale(1, -1);
-  dataContext.drawImage(srcImage, 0, 0);
-  const imgData = dataContext.getImageData(0, 0, srcImage.naturalWidth, srcImage.naturalHeight);
-  const w = imgData.width;
-  const h = imgData.height;
-
-  const imagePixels = imgData.data;
-  // dbgBlitTexture();
-
-  const pixelIndices = Array.from(Array(w * h).keys());
-
-  const texcoords = pixelIndices.map((i) => [((i % w) + 0.5) / w, (Math.floor(i / w) + 0.5) / h]);
-
-  const rgb = pixelIndices.map((i) => {
-    const pixel = imagePixels.slice(i * 4, (i * 4) + 4);
-
-    return [pixel[0] / 255, pixel[1] / 255, pixel[2] / 255];
-  });
-
-  const hsv = pixelIndices.map((i) => {
-    const pixel = rgb[i];
-
-    const cMax = Math.max(pixel[0], pixel[1], pixel[2]);
-    const cMin = Math.min(pixel[0], pixel[1], pixel[2]);
-    const d = cMax - cMin;
-
-    if (d < 0.00001 || cMax < 0.00001) {
-      return [0, 0, cMax];
-    }
-
-    let _h;
-    if (cMax === pixel[0]) {
-      _h = (pixel[1] - pixel[2]) / d;
-      if (_h < 0) {
-        _h += 6;
-      }
-    } else if (cMax === pixel[1]) {
-      _h = ((pixel[2] - pixel[0]) / d) + 2;
-    } else {
-      _h = ((pixel[0] - pixel[1]) / d) + 4;
-    }
-
-    return [_h * 60, d / cMax, cMax];
-  });
-
-  return {
-    width: w,
-    height: h,
-    texcoordsBuffer: regl.buffer(texcoords),
-    rgbBuffer: regl.buffer(rgb),
-    hsvBuffer: regl.buffer(hsv)
-  };
-}
-
-let command = null;
-let state = {
-  glClearColor: [0, 0, 0, 1],
-  particleSize: 1
-};
 srcImage.onload = () => {
   imgDimWarn.verify(srcImage)
   .then(() => {
-    const data = buildData();
-
-    command = regl({
-      vert: shaders.vert,
-      frag: shaders.frag,
-      uniforms: {
-        time(ctx) {
-          return ctx.time;
-        },
-        aspect(ctx) {
-          return data.height / data.width;
-        },
-        VP(ctx) {
-          return [2, 0, 0, 0,
-            0, 2 * (ctx.viewportWidth / ctx.viewportHeight), 0, 0,
-            0, 0, 1, 0,
-            -1, -1, 0, 1];
-        },
-        particleSize(ctx) {
-          return ctx.viewportWidth / data.width * 2 * state.particleSize;
-        }
-      },
-      depth: { enable: false },
-      blend: {
-        enable: true,
-        func: { srcRGB: 'one', srcAlpha: 'one', dstRGB: 'one', dstAlpha: 'one' },
-        equation: { rgb: 'add', alpha: 'add' }
-      },
-      attributes: {
-        texcoord: data.texcoordsBuffer,
-        rgb: data.rgbBuffer,
-        hsv: data.hsvBuffer
-      },
-      primitive: 'points',
-      count: data.width * data.height
-    });
+    renderer.loadImage(srcImage);
   }, () => {
     /* User canceled loading image */
     // If we don't clear, changeListeners may not fire if same image is selected again
@@ -165,14 +44,6 @@ srcImage.onload = () => {
     document.documentElement.classList.remove(imageLoadingClass);
   });
 };
-
-regl.frame(() => {
-  if (command === null) {
-    return;
-  }
-  regl.clear({ color: state.glClearColor });
-  command();
-});
 
 imgSelect.addChangeListener((file) => {
   // Prevent messed-up app states caused by multiple parallel image loads
@@ -187,7 +58,7 @@ imgSelect.addChangeListener((file) => {
   }
 });
 
-menu.addChangeListener((newState) => {
-  console.log(newState);
-  state = newState;
+menu.addChangeListener((state) => {
+  console.log(state);
+  renderer.setState(state);
 });
