@@ -31,6 +31,8 @@ export const vert = `
   uniform float aspect;
   uniform mat4 VP;
 
+  uniform float particleSize;
+
   uniform float time;
 
   varying vec3 c;
@@ -47,7 +49,7 @@ export const vert = `
     vec3 p = vec3(texcoord * vec2(1, aspect), 0);
     p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(hsv.x * 3.14159265 / 180.) * 0.1;
 
-    gl_PointSize = 16.;
+    gl_PointSize = max(particleSize, 0.);
     gl_Position = VP * vec4(p, 1);
   }
 `;

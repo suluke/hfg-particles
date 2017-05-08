@@ -130,6 +130,9 @@ srcImage.onload = () => {
             0, 2, 0, 0,
             0, 0, 1, 0,
             -1, -1, 0, 1];
+        },
+        particleSize(ctx) {
+          return ctx.viewportWidth / data.width * 2.;
         }
       },
       depth: { enable: false },
