@@ -110,6 +110,10 @@ function buildData() {
 }
 
 let command = null;
+let state = {
+  glClearColor: [0, 0, 0, 1],
+  particleSize: 1
+};
 srcImage.onload = () => {
   imgDimWarn.verify(srcImage)
   .then(() => {
@@ -132,7 +136,7 @@ srcImage.onload = () => {
             -1, -1, 0, 1];
         },
         particleSize(ctx) {
-          return ctx.viewportWidth / data.width * 2;
+          return ctx.viewportWidth / data.width * 2 * state.particleSize;
         }
       },
       depth: { enable: false },
@@ -160,12 +164,11 @@ srcImage.onload = () => {
   });
 };
 
-let glClearColor = [0, 0, 0, 1];
 regl.frame(() => {
   if (command === null) {
     return;
   }
-  regl.clear({ color: glClearColor });
+  regl.clear({ color: state.glClearColor });
   command();
 });
 
@@ -182,7 +185,7 @@ imgSelect.addChangeListener((file) => {
   }
 });
 
-menu.addChangeListener((state) => {
-  console.log(state);
-  glClearColor = state.glClearColor;
+menu.addChangeListener((newState) => {
+  console.log(newState);
+  state = newState;
 });

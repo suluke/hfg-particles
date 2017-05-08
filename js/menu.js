@@ -28,7 +28,24 @@ class BgColorPicker extends Control {
   }
 }
 
-const ControlsList = [BgColorPicker];
+class ParticleSizeControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-particle-size-control');
+    this.input = this.elm.querySelector('input[type="number"]');
+
+    this.input.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    // eslint-disable-next-line no-param-reassign
+    state.particleSize = parseInt(this.input.value) / 100;
+  }
+}
+
+const ControlsList = [BgColorPicker, ParticleSizeControl];
 
 export default class MainMenu {
   constructor() {
