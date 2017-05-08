@@ -45,27 +45,29 @@ const dbgBlitTextureCommand = regl({
   primitive: 'triangle strip',
   count: 4
 });
-function dbgBlitTexture(x, y, texture) {
-  dbgBlitTextureCommand({ texture, x, y, width: texture.width, height: texture.height });
+function dbgBlitTexture() {
+  const texture = regl.texture({ data: srcImage, format: 'rgb', flipY: true });
+  dbgBlitTextureCommand({ texture, x: 0, y: 0, width: texture.width, height: texture.height });
 }
 
 function buildData() {
-  // TODO: dont use OpenGL Texture to get image pixels...
-  const texture = regl.texture({ data: srcImage, format: 'rgb', flipY: true });
-  const w = texture.width;
-  const h = texture.height;
+  const dataCanvas = document.createElement('canvas');
+  const dataContext = dataCanvas.getContext('2d');
+  dataCanvas.width = srcImage.naturalWidth;
+  dataCanvas.height = srcImage.naturalHeight;
+  // flipped y-axis
+  dataContext.translate(0, srcImage.naturalHeight);
+  dataContext.scale(1, -1);
+  dataContext.drawImage(srcImage, 0, 0);
+  const imgData = dataContext.getImageData(0, 0, srcImage.naturalWidth, srcImage.naturalHeight);
+  const w = imgData.width;
+  const h = imgData.height;
 
-  const imagePixels = new Uint8Array(w * h * 4);
-  dbgBlitTexture(0, 0, texture);
-  regl._gl.readPixels(0, 0, w, h, regl._gl.RGBA, regl._gl.UNSIGNED_BYTE, imagePixels);
-
-  texture.destroy();
-
+  const imagePixels = imgData.data;
+  // dbgBlitTexture();
 
   const pixelIndices = Array.from(Array(w * h).keys());
 
-  // http://stackoverflow.com/a/596503/1468532
-  // https://jsperf.com/float-to-int-conversion-comparison/16
   const texcoords = pixelIndices.map((i) => [((i % w) + 0.5) / w, (Math.floor(i / w) + 0.5) / h]);
 
   const rgb = pixelIndices.map((i) => {
