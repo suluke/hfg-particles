@@ -121,6 +121,15 @@ srcImage.onload = () => {
       uniforms: {
         time(ctx) {
           return ctx.time;
+        },
+        aspect(ctx) {
+          return (ctx.viewportWidth / ctx.viewportHeight) / (data.width / data.height);
+        },
+        VP(ctx) {
+          return [2, 0, 0, 0,
+            0, 2, 0, 0,
+            0, 0, 1, 0,
+            -1, -1, 0, 1];
         }
       },
       depth: { enable: false },

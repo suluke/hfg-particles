@@ -28,6 +28,9 @@ export const vert = `
   attribute vec3 rgb;
   attribute vec3 hsv;
 
+  uniform float aspect;
+  uniform mat4 VP;
+
   uniform float time;
 
   varying vec3 c;
@@ -41,11 +44,11 @@ export const vert = `
   {
     c = rgb;
 
-    vec3 p = vec3(texcoord * vec2(2) - vec2(1), 0);
-    p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(hsv.x * 3.14159265 / 180.) * 0.2;
+    vec3 p = vec3(texcoord * vec2(1, aspect), 0);
+    p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(hsv.x * 3.14159265 / 180.) * 0.1;
 
     gl_PointSize = 16.;
-    gl_Position = vec4(p, 1);
+    gl_Position = VP * vec4(p, 1);
   }
 `;
 
