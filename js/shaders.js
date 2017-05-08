@@ -1,4 +1,4 @@
-export const dbgBlit = {
+export const DbgBlit = {
   vert: `
     precision highp float;
     attribute vec2 texcoord;
@@ -65,3 +65,55 @@ export const frag = `
     gl_FragColor = vec4(c * v, 1);
   }
 `;
+
+export class ShaderBuilder {
+  static buildDefault() {
+    return { vert, frag };
+  }
+  static build(state) {
+    const shaders = ShaderBuilder.buildDefault();
+    if (state.particleCollision === 'blend') {
+      shaders.frag = `
+        precision highp float;
+
+        varying vec3 c;
+
+        void main()
+        {
+          float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);
+          gl_FragColor = vec4(c, v);
+        }
+      `;
+    }
+    return shaders;
+  }
+}
+
+export class PipelineBuilder {
+  static buildDefault() {
+    const shaders = ShaderBuilder.buildDefault();
+
+    return {
+      vert: shaders.vert,
+      frag: shaders.frag,
+      depth: { enable: false },
+      blend: {
+        enable: true,
+        func: { srcRGB: 'one', srcAlpha: 'one', dstRGB: 'one', dstAlpha: 'one' },
+        equation: { rgb: 'add', alpha: 'add' }
+      },
+      primitive: 'points'
+    };
+  }
+
+  static build(state) {
+    const dflt = PipelineBuilder.buildDefault();
+    const shaders = ShaderBuilder.build(state);
+    dflt.vert = shaders.vert;
+    dflt.frag = shaders.frag;
+    if (state.particleCollision === 'blend') {
+      dflt.blend.func = { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 };
+    }
+    return dflt;
+  }
+}

@@ -1,5 +1,5 @@
 import createRegl from 'regl';
-import * as shaders from './shaders';
+import { PipelineBuilder, DbgBlit } from './shaders';
 
 export default class Renderer {
   constructor(canvas) {
@@ -8,14 +8,15 @@ export default class Renderer {
     const regl = this.regl;
     console.log(`max texture size: ${regl.limits.maxTextureSize}`);
     console.log(`point size dims: ${regl.limits.pointSizeDims[0]} ${regl.limits.pointSizeDims[1]}`);
+    this.imageData = null;
     this.state = {
       glClearColor: [0, 0, 0, 1],
       particleSize: 1
     };
     this.command = null;
     this.dbgBlitTextureCommand = regl({
-      vert: shaders.dbgBlit.vert,
-      frag: shaders.dbgBlit.frag,
+      vert: DbgBlit.vert,
+      frag: DbgBlit.frag,
       uniforms: { texture: regl.prop('texture') },
       viewport: { x: regl.prop('x'), y: regl.prop('y'), width: regl.prop('width'), height: regl.prop('height') },
       attributes: { texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]] },
@@ -38,7 +39,7 @@ export default class Renderer {
     });
   }
 
-  buildData(img) {
+  loadImageData(img) {
     const dataCanvas = document.createElement('canvas');
     const dataContext = dataCanvas.getContext('2d');
     dataCanvas.width = img.naturalWidth;
@@ -90,21 +91,21 @@ export default class Renderer {
       return [_h * 60, d / cMax, cMax];
     });
 
-    return {
+    this.imageData = {
       width: w,
       height: h,
       texcoordsBuffer: this.regl.buffer(texcoords),
       rgbBuffer: this.regl.buffer(rgb),
       hsvBuffer: this.regl.buffer(hsv)
     };
+
+    return this.imageData;
   }
 
-  loadImage(img) {
-    const data = this.buildData(img);
-
-    this.command = this.regl({
-      vert: shaders.vert,
-      frag: shaders.frag,
+  rebuildCommand() {
+    const data = this.imageData;
+    const pipeline = PipelineBuilder.build(this.state);
+    const cmd = Object.assign(pipeline, {
       uniforms: {
         time(ctx) {
           return ctx.time;
@@ -122,23 +123,26 @@ export default class Renderer {
           return (ctx.viewportWidth / data.width) * 2 * this.state.particleSize;
         }
       },
-      depth: { enable: false },
-      blend: {
-        enable: true,
-        func: { srcRGB: 'one', srcAlpha: 'one', dstRGB: 'one', dstAlpha: 'one' },
-        equation: { rgb: 'add', alpha: 'add' }
-      },
       attributes: {
         texcoord: data.texcoordsBuffer,
         rgb: data.rgbBuffer,
         hsv: data.hsvBuffer
       },
-      primitive: 'points',
       count: data.width * data.height
     });
+    this.command = this.regl(cmd);
+  }
+
+  loadImage(img) {
+    this.loadImageData(img);
+    this.rebuildCommand();
   }
 
   setState(state) {
+    const oldState = this.state;
     this.state = state;
+    if (state.particleCollision !== oldState.particleCollision) {
+      this.rebuildCommand();
+    }
   }
 }

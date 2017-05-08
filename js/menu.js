@@ -45,7 +45,24 @@ class ParticleSizeControl extends Control {
   }
 }
 
-const ControlsList = [BgColorPicker, ParticleSizeControl];
+class ParticleCollisionControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-particle-collision-effect');
+    this.select = this.elm.querySelector('select');
+
+    this.select.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    // eslint-disable-next-line no-param-reassign
+    state.particleCollision = this.select.value;
+  }
+}
+
+const ControlsList = [BgColorPicker, ParticleSizeControl, ParticleCollisionControl];
 
 export default class MainMenu {
   constructor() {
