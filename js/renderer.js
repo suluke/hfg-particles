@@ -22,7 +22,9 @@ export default class Renderer {
     });
   }
 
-  loadImageData(img) {
+  createImageData(img) {
+    this.destroyImageData();
+
     const dataCanvas = document.createElement('canvas');
     const dataContext = dataCanvas.getContext('2d');
     dataCanvas.width = img.naturalWidth;
@@ -82,8 +84,15 @@ export default class Renderer {
       rgbBuffer: this.regl.buffer(rgb),
       hsvBuffer: this.regl.buffer(hsv)
     };
+  }
 
-    return this.imageData;
+  destroyImageData() {
+    if (this.imageData !== null) {
+      this.imageData.texcoordsBuffer.destroy();
+      this.imageData.rgbBuffer.destroy();
+      this.imageData.hsvBuffer.destroy();
+      this.imageData = null;
+    }
   }
 
   rebuildCommand() {
@@ -118,7 +127,7 @@ export default class Renderer {
   }
 
   loadImage(img) {
-    this.loadImageData(img);
+    this.createImageData(img);
     this.rebuildCommand();
   }
 
