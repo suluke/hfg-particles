@@ -1102,6 +1102,17 @@ var index = function (cstr) {
     return res;
 };
 
+var config = {
+  timestamp: '2017-05-09T19:42:14.993Z',
+  git_rev: 'c3180bf',
+  export_schema_version: 0
+};
+
+/**
+ * Base class of all controls participating in the main menu
+ * This is rather for documenting the common interface than
+ * offering concrete functionality for reuse.
+ */
 var Control = function Control(menu) {
   this.menu = menu;
 };
@@ -1109,7 +1120,14 @@ var Control = function Control(menu) {
 Control.prototype.updateState = function updateState (/* state */) {
   throw new Error('Method not implemented');
 };
+// eslint-disable-next-line class-methods-use-this
+Control.prototype.applyState = function applyState (/* state */) {
+  throw new Error('Method not implemented');
+};
 
+/**
+ *
+ */
 var BgColorPicker = (function (Control) {
   function BgColorPicker(menu) {
     var this$1 = this;
@@ -1129,19 +1147,31 @@ var BgColorPicker = (function (Control) {
 
   BgColorPicker.prototype.updateState = function updateState (state) {
     // eslint-disable-next-line no-param-reassign
-    state.glClearColor = index(this.input.value)
+    state.backgroundColor = index(this.input.value)
       .rgba.map(function (val, i) { return (i === 3 ? val : val / 256); });
+  };
+
+  BgColorPicker.prototype.applyState = function applyState (state) {
+    var ref = state.backgroundColor.map(function (val, i) { return (i === 3 ? val : val * 256); });
+    var r = ref[0];
+    var g = ref[1];
+    var b = ref[2];
+    var a = ref[3];
+    this.input.value = index(("rgba(" + r + ", " + g + ", " + b + ", " + a + ")")).hex;
   };
 
   return BgColorPicker;
 }(Control));
 
-var ParticleSizeControl = (function (Control) {
-  function ParticleSizeControl(menu) {
+/**
+ *
+ */
+var ParticleScalingControl = (function (Control) {
+  function ParticleScalingControl(menu) {
     var this$1 = this;
 
     Control.call(this, menu);
-    this.elm = document.getElementById('menu-particle-size-control');
+    this.elm = document.getElementById('menu-particle-scaling-control');
     this.input = this.elm.querySelector('input[type="number"]');
 
     this.input.addEventListener('change', function () {
@@ -1149,24 +1179,31 @@ var ParticleSizeControl = (function (Control) {
     });
   }
 
-  if ( Control ) ParticleSizeControl.__proto__ = Control;
-  ParticleSizeControl.prototype = Object.create( Control && Control.prototype );
-  ParticleSizeControl.prototype.constructor = ParticleSizeControl;
+  if ( Control ) ParticleScalingControl.__proto__ = Control;
+  ParticleScalingControl.prototype = Object.create( Control && Control.prototype );
+  ParticleScalingControl.prototype.constructor = ParticleScalingControl;
 
-  ParticleSizeControl.prototype.updateState = function updateState (state) {
+  ParticleScalingControl.prototype.updateState = function updateState (state) {
     // eslint-disable-next-line no-param-reassign
-    state.particleSize = parseInt(this.input.value, 10) / 100;
+    state.particleScaling = parseInt(this.input.value, 10) / 100;
   };
 
-  return ParticleSizeControl;
+  ParticleScalingControl.prototype.applyState = function applyState (state) {
+    this.input.value = state.particleScaling * 100;
+  };
+
+  return ParticleScalingControl;
 }(Control));
 
-var ParticleCollisionControl = (function (Control) {
-  function ParticleCollisionControl(menu) {
+/**
+ *
+ */
+var ParticleOverlapControl = (function (Control) {
+  function ParticleOverlapControl(menu) {
     var this$1 = this;
 
     Control.call(this, menu);
-    this.elm = document.getElementById('menu-particle-collision-effect');
+    this.elm = document.getElementById('menu-particle-overlap-control');
     this.select = this.elm.querySelector('select');
 
     this.select.addEventListener('change', function () {
@@ -1174,19 +1211,142 @@ var ParticleCollisionControl = (function (Control) {
     });
   }
 
-  if ( Control ) ParticleCollisionControl.__proto__ = Control;
-  ParticleCollisionControl.prototype = Object.create( Control && Control.prototype );
-  ParticleCollisionControl.prototype.constructor = ParticleCollisionControl;
+  if ( Control ) ParticleOverlapControl.__proto__ = Control;
+  ParticleOverlapControl.prototype = Object.create( Control && Control.prototype );
+  ParticleOverlapControl.prototype.constructor = ParticleOverlapControl;
 
-  ParticleCollisionControl.prototype.updateState = function updateState (state) {
+  ParticleOverlapControl.prototype.updateState = function updateState (state) {
     // eslint-disable-next-line no-param-reassign
-    state.particleCollision = this.select.value;
+    state.particleOverlap = this.select.value;
   };
 
-  return ParticleCollisionControl;
+  ParticleOverlapControl.prototype.applyState = function applyState (state) {
+    this.select.value = state.particleOverlap;
+  };
+
+  return ParticleOverlapControl;
 }(Control));
 
-var ControlsList = [BgColorPicker, ParticleSizeControl, ParticleCollisionControl];
+/**
+ *
+ */
+var ExportAppstateButton = (function (Control) {
+  function ExportAppstateButton(menu) {
+    var this$1 = this;
+
+    Control.call(this, menu);
+    this.elm = document.getElementById('menu-btn-exportstate');
+    this.elm.addEventListener('click', function () {
+      var toExport = Object.assign({
+        schemaVersion: config.export_schema_version
+      }, this$1.menu.submittedState);
+      ExportAppstateButton.saveJson('particles.json', JSON.stringify(toExport, null, 2));
+    });
+  }
+
+  if ( Control ) ExportAppstateButton.__proto__ = Control;
+  ExportAppstateButton.prototype = Object.create( Control && Control.prototype );
+  ExportAppstateButton.prototype.constructor = ExportAppstateButton;
+  ExportAppstateButton.saveJson = function saveJson (filename, data) {
+    var blob = new Blob([data], { type: 'application/json' });
+    if (navigator.msSaveOrOpenBlob) {
+      navigator.msSaveBlob(blob, filename);
+    } else {
+      var elm = document.createElement('a');
+      elm.href = URL.createObjectURL(blob);
+      elm.download = filename;
+      document.body.appendChild(elm);
+      elm.click();
+      document.body.removeChild(elm);
+    }
+  };
+  // eslint-disable-next-line class-methods-use-this
+  ExportAppstateButton.prototype.updateState = function updateState (/* state */) {};
+  // eslint-disable-next-line class-methods-use-this
+  ExportAppstateButton.prototype.applyState = function applyState (/* state */) {};
+
+  return ExportAppstateButton;
+}(Control));
+
+/**
+ *
+ */
+var ImportAppstateButton = (function (Control) {
+  function ImportAppstateButton(menu) {
+    var this$1 = this;
+
+    Control.call(this, menu);
+    this.FR = new FileReader();
+    this.elm = document.getElementById('menu-btn-importstate');
+    this.input = this.elm.querySelector('input[type="file"]');
+    this.input.addEventListener('change', function (evt) {
+      var file = null;
+      if (evt.target.files.length > 0) {
+        file = evt.target.files[0];
+      } else {
+        return;
+      }
+      this$1.FR.onload = function () {
+        var text = this$1.FR.result;
+        var json = null;
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          // TODO correct error handling
+          console.log('Error reading user json file');
+          console.log(e);
+
+          return;
+        }
+        this$1.menu.applyState(json);
+        this$1.menu.submit();
+        this$1.input.value = null;
+      };
+      this$1.FR.readAsText(file);
+    });
+  }
+
+  if ( Control ) ImportAppstateButton.__proto__ = Control;
+  ImportAppstateButton.prototype = Object.create( Control && Control.prototype );
+  ImportAppstateButton.prototype.constructor = ImportAppstateButton;
+  // eslint-disable-next-line class-methods-use-this
+  ImportAppstateButton.prototype.updateState = function updateState (/* state */) {};
+  // eslint-disable-next-line class-methods-use-this
+  ImportAppstateButton.prototype.applyState = function applyState (/* state */) {};
+
+  return ImportAppstateButton;
+}(Control));
+
+/**
+ *
+ */
+var ResetAppstateButton = (function (Control) {
+  function ResetAppstateButton(menu) {
+    var this$1 = this;
+
+    Control.call(this, menu);
+    this.elm = document.getElementById('menu-btn-resetstate');
+    this.elm.addEventListener('click', function () {
+      this$1.menu.applyState(this$1.menu.defaultState);
+      this$1.menu.submit();
+    });
+  }
+
+  if ( Control ) ResetAppstateButton.__proto__ = Control;
+  ResetAppstateButton.prototype = Object.create( Control && Control.prototype );
+  ResetAppstateButton.prototype.constructor = ResetAppstateButton;
+  // eslint-disable-next-line class-methods-use-this
+  ResetAppstateButton.prototype.updateState = function updateState (/* state */) {};
+  // eslint-disable-next-line class-methods-use-this
+  ResetAppstateButton.prototype.applyState = function applyState (/* state */) {};
+
+  return ResetAppstateButton;
+}(Control));
+
+var ControlsList = [
+  BgColorPicker, ParticleScalingControl, ParticleOverlapControl,
+  ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
+];
 
 var MainMenu = function MainMenu() {
   var this$1 = this;
@@ -1197,6 +1357,7 @@ var MainMenu = function MainMenu() {
   this.applyBtn = document.getElementById('menu-btn-apply');
   this.controls = [];
   this.changeListeners = [];
+  this.submittedState = null; // defaults will be read later
 
   var menu = this.menu;
   var toggle = this.toggle;
@@ -1209,23 +1370,49 @@ var MainMenu = function MainMenu() {
     }
   });
   applyBtn.addEventListener('click', function () {
-    this$1.applyBtn.disabled = true;
     // Apply closes menu if covering full width
     if (this$1.isCoverFullWidth()) {
-      toggle.checked = false;
+      this$1.toggle.checked = false;
     }
-    var state = {};
-    for (var i = 0; i < this$1.controls.length; i++) {
-      this$1.controls[i].updateState(state);
-    }
-    for (var i$1 = 0; i$1 < this$1.changeListeners.length; i$1++) {
-      this$1.changeListeners[i$1](state);
-    }
+    this$1.submit();
   });
 
   for (var i = 0; i < ControlsList.length; i++) {
     this$1.addControl(ControlsList[i]);
   }
+
+  this.defaultState = this.readState();
+  this.submittedState = this.defaultState;
+};
+
+MainMenu.prototype.applyState = function applyState (state) {
+    var this$1 = this;
+
+  for (var i = 0; i < this.controls.length; i++) {
+    this$1.controls[i].applyState(state);
+  }
+};
+
+MainMenu.prototype.readState = function readState () {
+    var this$1 = this;
+
+  var state = {};
+  for (var i = 0; i < this.controls.length; i++) {
+    this$1.controls[i].updateState(state);
+  }
+
+  return state;
+};
+
+MainMenu.prototype.submit = function submit () {
+    var this$1 = this;
+
+  this.applyBtn.disabled = true;
+  var state = this.readState();
+  for (var i = 0; i < this.changeListeners.length; i++) {
+    this$1.changeListeners[i](state);
+  }
+  this.submittedState = state;
 };
 
 MainMenu.prototype.addControl = function addControl (CtrlClass) {
@@ -1258,7 +1445,7 @@ function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
 
-var regl = createCommonjsModule(function (module, exports) {
+var regl$1 = createCommonjsModule(function (module, exports) {
 (function (global, factory) {
 	module.exports = factory();
 }(commonjsGlobal, (function () { 'use strict';
@@ -10764,13 +10951,7 @@ return wrapREGL;
 
 });
 
-var DbgBlit = {
-  vert: "\n    precision highp float;\n    attribute vec2 texcoord;\n    varying vec2 f_texcoord;\n    void main()\n    {\n      f_texcoord = texcoord;\n      gl_Position = vec4(texcoord * vec2(2) - vec2(1), 0, 1);\n    }\n  ",
-
-  frag: "\n    precision highp float;\n    uniform sampler2D texture;\n    varying vec2 f_texcoord;\n    void main()\n    {\n      gl_FragColor = texture2D(texture, f_texcoord);\n    }\n  "
-};
-
-var vert = "\n  precision highp float;\n\n  attribute vec2 texcoord;\n  attribute vec3 rgb;\n  attribute vec3 hsv;\n\n  uniform float aspect;\n  uniform mat4 VP;\n\n  uniform float particleSize;\n\n  uniform float time;\n\n  varying vec3 c;\n\n  vec2 direction_vector(float angle)\n  {\n    return vec2(cos(angle), sin(angle));\n  }\n\n  void main()\n  {\n    c = rgb;\n\n    vec3 p = vec3(texcoord * vec2(1, aspect), 0);\n    p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(hsv.x * 3.14159265 / 180.) * 0.1;\n\n    gl_PointSize = max(particleSize, 0.);\n    gl_Position = VP * vec4(p, 1);\n  }\n";
+var vert = "\n  precision highp float;\n\n  attribute vec2 texcoord;\n  attribute vec3 rgb;\n  attribute vec3 hsv;\n\n  uniform float invImageAspectRatio;\n\n  uniform mat4 viewProjectionMatrix;\n\n  uniform float particleSize;\n\n  uniform float time;\n\n  varying vec3 c;\n\n  vec2 direction_vector(float angle)\n  {\n    return vec2(cos(angle), sin(angle));\n  }\n\n  void main()\n  {\n    c = rgb;\n\n    vec3 p = vec3(texcoord * vec2(1, invImageAspectRatio), 0);\n    p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(hsv.x * 3.14159265 / 180.) * 0.1;\n\n    gl_PointSize = max(particleSize, 0.);\n    gl_Position = viewProjectionMatrix * vec4(p, 1);\n  }\n";
 
 var frag = "\n  precision highp float;\n\n  varying vec3 c;\n\n  void main()\n  {\n    float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    gl_FragColor = vec4(c * v, 1);\n  }\n";
 
@@ -10781,7 +10962,7 @@ ShaderBuilder.buildDefault = function buildDefault () {
 };
 ShaderBuilder.build = function build (state) {
   var shaders = ShaderBuilder.buildDefault();
-  if (state.particleCollision === 'blend') {
+  if (state.particleOverlap === 'alpha blend') {
     shaders.frag = "\n        precision highp float;\n\n        varying vec3 c;\n\n        void main()\n        {\n          float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n          gl_FragColor = vec4(c, v);\n        }\n      ";
   }
   return shaders;
@@ -10810,7 +10991,7 @@ PipelineBuilder.build = function build (state) {
   var shaders = ShaderBuilder.build(state);
   dflt.vert = shaders.vert;
   dflt.frag = shaders.frag;
-  if (state.particleCollision === 'blend') {
+  if (state.particleOverlap === 'alpha blend') {
     dflt.blend.func = { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 };
   }
   return dflt;
@@ -10820,42 +11001,27 @@ var Renderer = function Renderer(canvas) {
   var this$1 = this;
 
   this.canvas = canvas;
-  this.regl = regl({ canvas: canvas });
-  var regl$$1 = this.regl;
-  console.log(("max texture size: " + (regl$$1.limits.maxTextureSize)));
-  console.log(("point size dims: " + (regl$$1.limits.pointSizeDims[0]) + " " + (regl$$1.limits.pointSizeDims[1])));
+  this.regl = regl$1({ canvas: canvas });
+  console.log(("max texture size: " + (this.regl.limits.maxTextureSize)));
+  console.log(("point size dims: " + (this.regl.limits.pointSizeDims[0]) + " " + (this.regl.limits.pointSizeDims[1])));
   this.imageData = null;
   this.state = {
-    glClearColor: [0, 0, 0, 1],
-    particleSize: 1
+    backgroundColor: [0, 0, 0, 1],
+    particleScaling: 1
   };
   this.command = null;
-  this.dbgBlitTextureCommand = regl$$1({
-    vert: DbgBlit.vert,
-    frag: DbgBlit.frag,
-    uniforms: { texture: regl$$1.prop('texture') },
-    viewport: { x: regl$$1.prop('x'), y: regl$$1.prop('y'), width: regl$$1.prop('width'), height: regl$$1.prop('height') },
-    attributes: { texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]] },
-    primitive: 'triangle strip',
-    count: 4
-  });
-  regl$$1.frame(function () {
+  this.regl.frame(function () {
     if (this$1.command === null) {
       return;
     }
-    regl$$1.clear({ color: this$1.state.glClearColor });
+    this$1.regl.clear({ color: this$1.state.backgroundColor });
     this$1.command();
   });
 };
 
-Renderer.prototype.dbgBlitTexture = function dbgBlitTexture (img) {
-  var texture = this.regl.texture({ data: img, format: 'rgb', flipY: true });
-  this.dbgBlitTextureCommand({
-    texture: texture, x: 0, y: 0, width: texture.width, height: texture.height
-  });
-};
+Renderer.prototype.createImageData = function createImageData (img) {
+  this.destroyImageData();
 
-Renderer.prototype.loadImageData = function loadImageData (img) {
   var dataCanvas = document.createElement('canvas');
   var dataContext = dataCanvas.getContext('2d');
   dataCanvas.width = img.naturalWidth;
@@ -10865,11 +11031,11 @@ Renderer.prototype.loadImageData = function loadImageData (img) {
   dataContext.scale(1, -1);
   dataContext.drawImage(img, 0, 0);
   var imgData = dataContext.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
+
   var w = imgData.width;
   var h = imgData.height;
 
   var imagePixels = imgData.data;
-  // this.dbgBlitTexture();
 
   var pixelIndices = Array.from(Array(w * h).keys());
 
@@ -10910,12 +11076,20 @@ Renderer.prototype.loadImageData = function loadImageData (img) {
   this.imageData = {
     width: w,
     height: h,
+    aspectRatio: w / h,
     texcoordsBuffer: this.regl.buffer(texcoords),
     rgbBuffer: this.regl.buffer(rgb),
     hsvBuffer: this.regl.buffer(hsv)
   };
+};
 
-  return this.imageData;
+Renderer.prototype.destroyImageData = function destroyImageData () {
+  if (this.imageData !== null) {
+    this.imageData.texcoordsBuffer.destroy();
+    this.imageData.rgbBuffer.destroy();
+    this.imageData.hsvBuffer.destroy();
+    this.imageData = null;
+  }
 };
 
 Renderer.prototype.rebuildCommand = function rebuildCommand () {
@@ -10926,17 +11100,17 @@ Renderer.prototype.rebuildCommand = function rebuildCommand () {
       time: function time(ctx) {
         return ctx.time;
       },
-      aspect: function aspect(/* ctx */) {
-        return data.height / data.width;
+      invImageAspectRatio: function invImageAspectRatio(/* ctx */) {
+        return 1 / data.aspectRatio;
       },
-      VP: function VP(ctx) {
+      viewProjectionMatrix: function viewProjectionMatrix(ctx) {
         return [2, 0, 0, 0,
           0, 2 * (ctx.viewportWidth / ctx.viewportHeight), 0, 0,
           0, 0, 1, 0,
           -1, -1, 0, 1];
       },
       particleSize: function particleSize(ctx) {
-        return (ctx.viewportWidth / data.width) * 2 * this.state.particleSize;
+        return (ctx.viewportWidth / data.width) * 2 * this.state.particleScaling;
       }
     },
     attributes: {
@@ -10950,21 +11124,16 @@ Renderer.prototype.rebuildCommand = function rebuildCommand () {
 };
 
 Renderer.prototype.loadImage = function loadImage (img) {
-  this.loadImageData(img);
+  this.createImageData(img);
   this.rebuildCommand();
 };
 
 Renderer.prototype.setState = function setState (state) {
   var oldState = this.state;
   this.state = state;
-  if (state.particleCollision !== oldState.particleCollision) {
+  if (state.particleOverlap !== oldState.particleOverlap) {
     this.rebuildCommand();
   }
-};
-
-var config = {
-  timestamp: '2017-05-08T19:37:43.978Z',
-  git_rev: 'c0e2b4b'
 };
 
 console.log(config);
@@ -11019,7 +11188,6 @@ imgSelect.addChangeListener(function (file) {
 });
 
 menu.addChangeListener(function (state) {
-  console.log(state);
   renderer.setState(state);
 });
 
