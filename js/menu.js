@@ -1,5 +1,11 @@
 import parseColor from 'parse-color'; // used by BgColorPicker
+import config from './config';
 
+/**
+ * Base class of all controls participating in the main menu
+ * This is rather for documenting the common interface than
+ * offering concrete functionality for reuse.
+ */
 class Control {
   constructor(menu) {
     this.menu = menu;
@@ -8,8 +14,15 @@ class Control {
   updateState(/* state */) {
     throw new Error('Method not implemented');
   }
+  // eslint-disable-next-line class-methods-use-this
+  applyState(/* state */) {
+    throw new Error('Method not implemented');
+  }
 }
 
+/**
+ *
+ */
 class BgColorPicker extends Control {
   constructor(menu) {
     super(menu);
@@ -26,8 +39,16 @@ class BgColorPicker extends Control {
     state.backgroundColor = parseColor(this.input.value)
       .rgba.map((val, i) => (i === 3 ? val : val / 256));
   }
+
+  applyState(state) {
+    const [r, g, b, a] = state.backgroundColor.map((val, i) => (i === 3 ? val : val * 256));
+    this.input.value = parseColor(`rgba(${r}, ${g}, ${b}, ${a})`).hex;
+  }
 }
 
+/**
+ *
+ */
 class ParticleScalingControl extends Control {
   constructor(menu) {
     super(menu);
@@ -43,12 +64,19 @@ class ParticleScalingControl extends Control {
     // eslint-disable-next-line no-param-reassign
     state.particleScaling = parseInt(this.input.value, 10) / 100;
   }
+
+  applyState(state) {
+    this.input.value = state.particleScaling * 100;
+  }
 }
 
-class RenderModeControl extends Control {
+/**
+ *
+ */
+class ParticleOverlapControl extends Control {
   constructor(menu) {
     super(menu);
-    this.elm = document.getElementById('menu-render-mode-control');
+    this.elm = document.getElementById('menu-particle-overlap-control');
     this.select = this.elm.querySelector('select');
 
     this.select.addEventListener('change', () => {
@@ -58,11 +86,110 @@ class RenderModeControl extends Control {
 
   updateState(state) {
     // eslint-disable-next-line no-param-reassign
-    state.renderMode = this.select.value;
+    state.particleCollision = this.select.value;
+  }
+
+  applyState(state) {
+    this.select.value = state.particleCollision;
   }
 }
 
-const ControlsList = [BgColorPicker, ParticleScalingControl, RenderModeControl];
+/**
+ *
+ */
+class ExportAppstateButton extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-btn-exportstate');
+    this.elm.addEventListener('click', () => {
+      const toExport = Object.assign({
+        schemaVersion: config.export_schema_version
+      }, this.menu.submittedState);
+      ExportAppstateButton.saveJson('particles.json', JSON.stringify(toExport, null, 2));
+    });
+  }
+  static saveJson(filename, data) {
+    const blob = new Blob([data], { type: 'application/json' });
+    if (navigator.msSaveOrOpenBlob) {
+      navigator.msSaveBlob(blob, filename);
+    } else {
+      const elm = document.createElement('a');
+      elm.href = URL.createObjectURL(blob);
+      elm.download = filename;
+      document.body.appendChild(elm);
+      elm.click();
+      document.body.removeChild(elm);
+    }
+  }
+  // eslint-disable-next-line class-methods-use-this
+  updateState(/* state */) {}
+  // eslint-disable-next-line class-methods-use-this
+  applyState(/* state */) {}
+}
+
+/**
+ *
+ */
+class ImportAppstateButton extends Control {
+  constructor(menu) {
+    super(menu);
+    this.FR = new FileReader();
+    this.elm = document.getElementById('menu-btn-importstate');
+    this.input = this.elm.querySelector('input[type="file"]');
+    this.input.addEventListener('change', (evt) => {
+      let file = null;
+      if (evt.target.files.length > 0) {
+        file = evt.target.files[0];
+      } else {
+        return;
+      }
+      this.FR.onload = () => {
+        const text = this.FR.result;
+        let json = null;
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          // TODO correct error handling
+          console.log('Error reading user json file');
+          console.log(e);
+
+          return;
+        }
+        this.menu.applyState(json);
+        this.menu.submit();
+        this.input.value = null;
+      };
+      this.FR.readAsText(file);
+    });
+  }
+  // eslint-disable-next-line class-methods-use-this
+  updateState(/* state */) {}
+  // eslint-disable-next-line class-methods-use-this
+  applyState(/* state */) {}
+}
+
+/**
+ *
+ */
+class ResetAppstateButton extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-btn-resetstate');
+    this.elm.addEventListener('click', () => {
+      this.menu.applyState(this.menu.defaultState);
+      this.menu.submit();
+    });
+  }
+  // eslint-disable-next-line class-methods-use-this
+  updateState(/* state */) {}
+  // eslint-disable-next-line class-methods-use-this
+  applyState(/* state */) {}
+}
+
+const ControlsList = [
+  BgColorPicker, ParticleScalingControl, ParticleOverlapControl,
+  ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
+];
 
 export default class MainMenu {
   constructor() {
@@ -72,6 +199,7 @@ export default class MainMenu {
     this.applyBtn = document.getElementById('menu-btn-apply');
     this.controls = [];
     this.changeListeners = [];
+    this.submittedState = null; // defaults will be read later
 
     const menu = this.menu;
     const toggle = this.toggle;
@@ -84,23 +212,43 @@ export default class MainMenu {
       }
     });
     applyBtn.addEventListener('click', () => {
-      this.applyBtn.disabled = true;
       // Apply closes menu if covering full width
       if (this.isCoverFullWidth()) {
-        toggle.checked = false;
+        this.toggle.checked = false;
       }
-      const state = {};
-      for (let i = 0; i < this.controls.length; i++) {
-        this.controls[i].updateState(state);
-      }
-      for (let i = 0; i < this.changeListeners.length; i++) {
-        this.changeListeners[i](state);
-      }
+      this.submit();
     });
 
     for (let i = 0; i < ControlsList.length; i++) {
       this.addControl(ControlsList[i]);
     }
+
+    this.defaultState = this.readState();
+    this.submittedState = this.defaultState;
+  }
+
+  applyState(state) {
+    for (let i = 0; i < this.controls.length; i++) {
+      this.controls[i].applyState(state);
+    }
+  }
+
+  readState() {
+    const state = {};
+    for (let i = 0; i < this.controls.length; i++) {
+      this.controls[i].updateState(state);
+    }
+
+    return state;
+  }
+
+  submit() {
+    this.applyBtn.disabled = true;
+    const state = this.readState();
+    for (let i = 0; i < this.changeListeners.length; i++) {
+      this.changeListeners[i](state);
+    }
+    this.submittedState = state;
   }
 
   addControl(CtrlClass) {

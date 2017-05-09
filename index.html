@@ -25,14 +25,20 @@
               Particle size:
               <input type="number" value="100" />%
             </label><br/>
-            <label id="menu-render-mode-control">
-              Particle blending:
+            <label id="menu-particle-overlap-control">
+              Particle overlap:
               <select>
-                <option value="add" selected>additive</option>
-                <option value="alpha blend">alpha blend</option>
+                <option value="add" selected>glow</option>
+                <option value="alpha blend">blend</option>
               </select>
             </label>
           </fieldset>
+          <label id="menu-btn-importstate" class="menu-btn-importstate">
+            Load
+            <input type="file" accept=".json,application/json"/>
+          </label>
+          <button type="button" id="menu-btn-exportstate" class="menu-btn-exportstate">Save</button>
+          <button type="button" id="menu-btn-resetstate" class="menu-btn-resetstate">Reset</button>
         </div>
         <button type="button"
           id="menu-btn-apply"

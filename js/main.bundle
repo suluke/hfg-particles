@@ -59,6 +59,5 @@ imgSelect.addChangeListener((file) => {
 });
 
 menu.addChangeListener((state) => {
-  console.log(state);
   renderer.setState(state);
 });
