@@ -23,15 +23,15 @@ class BgColorPicker extends Control {
 
   updateState(state) {
     // eslint-disable-next-line no-param-reassign
-    state.glClearColor = parseColor(this.input.value)
+    state.backgroundColor = parseColor(this.input.value)
       .rgba.map((val, i) => (i === 3 ? val : val / 256));
   }
 }
 
-class ParticleSizeControl extends Control {
+class ParticleScalingControl extends Control {
   constructor(menu) {
     super(menu);
-    this.elm = document.getElementById('menu-particle-size-control');
+    this.elm = document.getElementById('menu-particle-scaling-control');
     this.input = this.elm.querySelector('input[type="number"]');
 
     this.input.addEventListener('change', () => {
@@ -41,14 +41,14 @@ class ParticleSizeControl extends Control {
 
   updateState(state) {
     // eslint-disable-next-line no-param-reassign
-    state.particleSize = parseInt(this.input.value, 10) / 100;
+    state.particleScaling = parseInt(this.input.value, 10) / 100;
   }
 }
 
-class ParticleCollisionControl extends Control {
+class RenderModeControl extends Control {
   constructor(menu) {
     super(menu);
-    this.elm = document.getElementById('menu-particle-collision-effect');
+    this.elm = document.getElementById('menu-render-mode-control');
     this.select = this.elm.querySelector('select');
 
     this.select.addEventListener('change', () => {
@@ -58,11 +58,11 @@ class ParticleCollisionControl extends Control {
 
   updateState(state) {
     // eslint-disable-next-line no-param-reassign
-    state.particleCollision = this.select.value;
+    state.renderMode = this.select.value;
   }
 }
 
-const ControlsList = [BgColorPicker, ParticleSizeControl, ParticleCollisionControl];
+const ControlsList = [BgColorPicker, ParticleScalingControl, RenderModeControl];
 
 export default class MainMenu {
   constructor() {

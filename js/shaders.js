@@ -1,26 +1,3 @@
-export const DbgBlit = {
-  vert: `
-    precision highp float;
-    attribute vec2 texcoord;
-    varying vec2 f_texcoord;
-    void main()
-    {
-      f_texcoord = texcoord;
-      gl_Position = vec4(texcoord * vec2(2) - vec2(1), 0, 1);
-    }
-  `,
-
-  frag: `
-    precision highp float;
-    uniform sampler2D texture;
-    varying vec2 f_texcoord;
-    void main()
-    {
-      gl_FragColor = texture2D(texture, f_texcoord);
-    }
-  `
-};
-
 export const vert = `
   precision highp float;
 
@@ -28,8 +5,9 @@ export const vert = `
   attribute vec3 rgb;
   attribute vec3 hsv;
 
-  uniform float aspect;
-  uniform mat4 VP;
+  uniform float invImageAspectRatio;
+
+  uniform mat4 viewProjectionMatrix;
 
   uniform float particleSize;
 
@@ -46,11 +24,11 @@ export const vert = `
   {
     c = rgb;
 
-    vec3 p = vec3(texcoord * vec2(1, aspect), 0);
+    vec3 p = vec3(texcoord * vec2(1, invImageAspectRatio), 0);
     p.xy += ((sin(time * 3.14159265 / 2.) + 1.) / 2.) * direction_vector(hsv.x * 3.14159265 / 180.) * 0.1;
 
     gl_PointSize = max(particleSize, 0.);
-    gl_Position = VP * vec4(p, 1);
+    gl_Position = viewProjectionMatrix * vec4(p, 1);
   }
 `;
 
@@ -72,7 +50,7 @@ export class ShaderBuilder {
   }
   static build(state) {
     const shaders = ShaderBuilder.buildDefault();
-    if (state.particleCollision === 'blend') {
+    if (state.renderMode === 'alpha blend') {
       shaders.frag = `
         precision highp float;
 
@@ -111,7 +89,7 @@ export class PipelineBuilder {
     const shaders = ShaderBuilder.build(state);
     dflt.vert = shaders.vert;
     dflt.frag = shaders.frag;
-    if (state.particleCollision === 'blend') {
+    if (state.renderMode === 'alpha blend') {
       dflt.blend.func = { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 };
     }
     return dflt;

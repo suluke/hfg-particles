@@ -1,41 +1,24 @@
 import createRegl from 'regl';
-import { PipelineBuilder, DbgBlit } from './shaders';
+import { PipelineBuilder } from './shaders';
 
 export default class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
     this.regl = createRegl({ canvas });
-    const regl = this.regl;
-    console.log(`max texture size: ${regl.limits.maxTextureSize}`);
-    console.log(`point size dims: ${regl.limits.pointSizeDims[0]} ${regl.limits.pointSizeDims[1]}`);
+    console.log(`max texture size: ${this.regl.limits.maxTextureSize}`);
+    console.log(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
     this.imageData = null;
     this.state = {
-      glClearColor: [0, 0, 0, 1],
-      particleSize: 1
+      backgroundColor: [0, 0, 0, 1],
+      particleScaling: 1
     };
     this.command = null;
-    this.dbgBlitTextureCommand = regl({
-      vert: DbgBlit.vert,
-      frag: DbgBlit.frag,
-      uniforms: { texture: regl.prop('texture') },
-      viewport: { x: regl.prop('x'), y: regl.prop('y'), width: regl.prop('width'), height: regl.prop('height') },
-      attributes: { texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]] },
-      primitive: 'triangle strip',
-      count: 4
-    });
-    regl.frame(() => {
+    this.regl.frame(() => {
       if (this.command === null) {
         return;
       }
-      regl.clear({ color: this.state.glClearColor });
+      this.regl.clear({ color: this.state.backgroundColor });
       this.command();
-    });
-  }
-
-  dbgBlitTexture(img) {
-    const texture = this.regl.texture({ data: img, format: 'rgb', flipY: true });
-    this.dbgBlitTextureCommand({
-      texture, x: 0, y: 0, width: texture.width, height: texture.height
     });
   }
 
@@ -49,11 +32,11 @@ export default class Renderer {
     dataContext.scale(1, -1);
     dataContext.drawImage(img, 0, 0);
     const imgData = dataContext.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
+
     const w = imgData.width;
     const h = imgData.height;
 
     const imagePixels = imgData.data;
-    // this.dbgBlitTexture();
 
     const pixelIndices = Array.from(Array(w * h).keys());
 
@@ -94,6 +77,7 @@ export default class Renderer {
     this.imageData = {
       width: w,
       height: h,
+      aspectRatio: w / h,
       texcoordsBuffer: this.regl.buffer(texcoords),
       rgbBuffer: this.regl.buffer(rgb),
       hsvBuffer: this.regl.buffer(hsv)
@@ -110,17 +94,17 @@ export default class Renderer {
         time(ctx) {
           return ctx.time;
         },
-        aspect(/* ctx */) {
-          return data.height / data.width;
+        invImageAspectRatio(/* ctx */) {
+          return 1 / data.aspectRatio;
         },
-        VP(ctx) {
+        viewProjectionMatrix(ctx) {
           return [2, 0, 0, 0,
             0, 2 * (ctx.viewportWidth / ctx.viewportHeight), 0, 0,
             0, 0, 1, 0,
             -1, -1, 0, 1];
         },
         particleSize(ctx) {
-          return (ctx.viewportWidth / data.width) * 2 * this.state.particleSize;
+          return (ctx.viewportWidth / data.width) * 2 * this.state.particleScaling;
         }
       },
       attributes: {
@@ -141,7 +125,7 @@ export default class Renderer {
   setState(state) {
     const oldState = this.state;
     this.state = state;
-    if (state.particleCollision !== oldState.particleCollision) {
+    if (state.renderMode !== oldState.renderMode) {
       this.rebuildCommand();
     }
   }
