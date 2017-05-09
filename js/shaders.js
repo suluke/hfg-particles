@@ -50,7 +50,7 @@ export class ShaderBuilder {
   }
   static build(state) {
     const shaders = ShaderBuilder.buildDefault();
-    if (state.renderMode === 'alpha blend') {
+    if (state.particleOverlap === 'alpha blend') {
       shaders.frag = `
         precision highp float;
 
@@ -89,7 +89,7 @@ export class PipelineBuilder {
     const shaders = ShaderBuilder.build(state);
     dflt.vert = shaders.vert;
     dflt.frag = shaders.frag;
-    if (state.renderMode === 'alpha blend') {
+    if (state.particleOverlap === 'alpha blend') {
       dflt.blend.func = { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 };
     }
     return dflt;

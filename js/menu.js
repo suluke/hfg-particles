@@ -86,11 +86,11 @@ class ParticleOverlapControl extends Control {
 
   updateState(state) {
     // eslint-disable-next-line no-param-reassign
-    state.particleCollision = this.select.value;
+    state.particleOverlap = this.select.value;
   }
 
   applyState(state) {
-    this.select.value = state.particleCollision;
+    this.select.value = state.particleOverlap;
   }
 }
 

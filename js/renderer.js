@@ -134,7 +134,7 @@ export default class Renderer {
   setState(state) {
     const oldState = this.state;
     this.state = state;
-    if (state.renderMode !== oldState.renderMode) {
+    if (state.particleOverlap !== oldState.particleOverlap) {
       this.rebuildCommand();
     }
   }
