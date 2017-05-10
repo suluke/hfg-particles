@@ -1,5 +1,4 @@
 import createRegl from 'regl';
-import { PipelineBuilder } from './shaders';
 
 export default class Renderer {
   constructor(canvas) {
@@ -9,12 +8,11 @@ export default class Renderer {
     console.log(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
     console.log(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
     this.imageData = null;
-    this.state = {
-      backgroundColor: [0, 0, 0, 1],
-      particleScaling: 1
-    };
+    this.state = null;
     this.command = null;
     this.regl.frame(() => {
+      this.oldTime = this.currentTime;
+      this.currentTime = this.regl.now();
       if (this.command === null) {
         return;
       }
@@ -74,7 +72,7 @@ export default class Renderer {
         _h = ((pixel[0] - pixel[1]) / d) + 4;
       }
 
-      return [_h * 60, d / cMax, cMax];
+      return [_h * 60 * (Math.PI / 180), d / cMax, cMax];
     });
 
     this.imageData = {
@@ -96,35 +94,161 @@ export default class Renderer {
     }
   }
 
-  rebuildCommand() {
-    const data = this.imageData;
-    const pipeline = PipelineBuilder.build(this.state);
-    const cmd = Object.assign(pipeline, {
-      uniforms: {
-        time(ctx) {
-          return ctx.time;
-        },
-        invImageAspectRatio(/* ctx */) {
-          return 1 / data.aspectRatio;
-        },
-        viewProjectionMatrix(ctx) {
-          const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) / (data.width / data.height);
-          return [2, 0, 0, 0,
-            0, 2 * (ctx.viewportWidth / ctx.viewportHeight), 0, 0,
-            0, 0, 1, 0,
-            -1, underscan * 2 - 1, 0, 1];
-        },
-        particleSize(ctx) {
-          return (ctx.viewportWidth / data.width) * 2 * this.state.particleScaling;
+  assembleVertexShader() {
+    let result = `
+      precision highp float;
+
+      attribute vec2 texcoord;
+      attribute vec3 rgb;
+      attribute vec3 hsv;
+
+      uniform float invImageAspectRatio;
+      uniform mat4 viewProjectionMatrix;
+
+      uniform float particleSize;
+
+      uniform float hueDisplaceDistance;
+      uniform float hueDisplaceTime;
+      uniform float hueDisplaceDirectionOffset;
+      uniform float hueDisplaceScaleByValue;
+      uniform float hueDisplaceRotate;
+
+      varying vec3 color;
+
+      const float PI = 3.14159265;
+
+      vec2 getDirectionVector(float angle) {
+        return vec2(cos(angle), sin(angle));
+      }
+
+      void main() {
+        vec3 position = vec3(texcoord, 0);
+        position.y *= invImageAspectRatio;
+    `;
+
+    if (this.state.hueDisplaceDistance != 0) {
+      result += `{
+          float angle = hsv[0] + hueDisplaceDirectionOffset + hueDisplaceRotate * hueDisplaceTime;
+          float offset = (-cos(hueDisplaceTime * 2. * PI) + 1.) / 2.;
+          position.xy += offset * getDirectionVector(angle) * hueDisplaceDistance * (1. - hueDisplaceScaleByValue * (1. - hsv[2]));
+        }
+      `;
+    }
+
+    result += `
+        color = rgb;
+        gl_PointSize = max(particleSize, 0.);
+        gl_Position = viewProjectionMatrix * vec4(position, 1.);
+      }
+    `;
+
+    return result;
+  }
+
+  assembleFragmentShader() {
+    let result = `
+      precision highp float;
+
+      varying vec3 color;
+
+      void main() {
+        float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);
+    `;
+
+    switch(this.state.particleOverlap) {
+      case 'add':
+      result += 'gl_FragColor = vec4(color * v, 1);\n';
+      break;
+
+      case 'alpha blend':
+      result += 'gl_FragColor = vec4(color, v);\n';
+      break;
+    }
+
+    result += `
+      }
+    `;
+
+    return result;
+  }
+
+  assembleCommand() {
+    console.log(this.state);
+
+    const vert = this.assembleVertexShader();
+    const frag = this.assembleFragmentShader();
+
+    let result = {
+      primitive: 'points',
+      count: this.imageData.width * this.imageData.height,
+      attributes: {
+        texcoord: this.imageData.texcoordsBuffer,
+        rgb: this.imageData.rgbBuffer,
+        hsv: this.imageData.hsvBuffer
+      },
+      vert, frag,
+      depth: { enable: false }
+    }
+
+    switch(this.state.particleOverlap) {
+      case 'add':
+      result.blend = {
+        enable: true,
+        func: { src: 'one', dst: 'one' }
+      };
+      break;
+
+      case 'alpha blend':
+      result.blend = {
+        enable: true,
+        func: { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
+      };
+      break;
+    }
+
+    result.uniforms = {
+      invImageAspectRatio: 1 / this.imageData.aspectRatio,
+      viewProjectionMatrix(ctx) {
+        const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) / (this.imageData.width / this.imageData.height);
+        return [2, 0, 0, 0,
+          0, 2 * (ctx.viewportWidth / ctx.viewportHeight), 0, 0,
+          0, 0, 1, 0,
+          -1, underscan * 2 - 1, 0, 1];
+      },
+      particleSize(ctx) {
+        return (ctx.viewportWidth / this.imageData.width) * 2 * this.state.particleScaling;
+      },
+      hueDisplaceDistance() {
+        return this.state.hueDisplaceDistance;
+      },
+      hueDisplaceTime(ctx) {
+        const t = ctx.time / this.state.hueDisplacePeriod;
+        return t - Math.floor(t);
+      },
+      hueDisplaceDirectionOffset() {
+        if (this.state.hueDisplaceRandomDirectionOffset) {
+          if (this.hueDisplaceRandomDirectionOffsetValue === undefined
+            || Math.floor(this.oldTime / this.state.hueDisplacePeriod) != Math.floor(this.currentTime / this.state.hueDisplacePeriod)) {
+            this.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
+          }
+          return this.hueDisplaceRandomDirectionOffsetValue;
+        } else {
+          return 0;
         }
       },
-      attributes: {
-        texcoord: data.texcoordsBuffer,
-        rgb: data.rgbBuffer,
-        hsv: data.hsvBuffer
+      hueDisplaceScaleByValue() {
+        return this.state.hueDisplaceScaleByValue;
       },
-      count: data.width * data.height
-    });
+      hueDisplaceRotate() {
+        return this.state.hueDisplaceRotate * 2 * Math.PI;
+      },
+    };
+
+    return result;
+  }
+
+  rebuildCommand() {
+    let cmd = this.assembleCommand();
     this.command = this.regl(cmd);
   }
 
@@ -136,7 +260,7 @@ export default class Renderer {
   setState(state) {
     const oldState = this.state;
     this.state = state;
-    if (state.particleOverlap !== oldState.particleOverlap) {
+    if (this.imageData !== null /*&& state.particleOverlap !== oldState.particleOverlap*/) {
       this.rebuildCommand();
     }
   }

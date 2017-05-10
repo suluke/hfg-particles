@@ -28,6 +28,8 @@ const adjustCanvasSize = () => {
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
 
+renderer.setState(menu.defaultState);
+
 const srcImage = document.createElement('img');
 srcImage.src = 'tron.jpg';
 srcImage.onload = () => {

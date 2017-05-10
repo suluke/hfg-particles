@@ -106,11 +106,11 @@ class HueDisplaceDistanceControl extends Control {
   }
 
   updateState(state) {
-    state.hueDisplaceDistance = parseInt(this.input.value);
+    state.hueDisplaceDistance = parseInt(this.input.value) / 100;
   }
 
   applyState(state) {
-    this.input.value = state.hueDisplaceDistance;
+    this.input.value = state.hueDisplaceDistance * 100;
   }
 }
 
