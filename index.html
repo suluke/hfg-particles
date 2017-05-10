@@ -33,6 +33,29 @@
               </select>
             </label>
           </fieldset>
+          <fieldset>
+              <legend>Displace by hue</legend>
+              <label id="menu-hue-displace-distance">
+                Distance:
+                <input type="number" value="100" />
+              </label><br/>
+              <label id="menu-hue-displace-period">
+                Period:
+                <input type="number" value="1000" />ms
+              </label><br/>
+              <label id="menu-hue-displace-scale-by-value">
+                Scale by brightness:
+                <input type="number" value="0" />%
+              </label><br/>
+              <label id="menu-hue-displace-random-direction-offset">
+                Random direction offset:
+                <input type="checkbox" checked />
+              </label><br/>
+              <label id="menu-hue-displace-rotate">
+                Rotate:
+                <input type="number" value="0" />%
+              </label>
+            </fieldset>
           <label id="menu-btn-importstate" class="menu-btn-importstate">
             Load
             <input type="file" accept=".json,application/json"/>

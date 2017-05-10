@@ -94,6 +94,106 @@ class ParticleOverlapControl extends Control {
   }
 }
 
+class HueDisplaceDistanceControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-hue-displace-distance');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.hueDisplaceDistance = parseInt(this.input.value);
+  }
+
+  applyState(state) {
+    this.input.value = state.hueDisplaceDistance;
+  }
+}
+
+class HueDisplacePeriodControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-hue-displace-period');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.hueDisplacePeriod = parseInt(this.input.value) / 1000;
+  }
+
+  applyState(state) {
+    this.input.value = state.hueDisplacePeriod * 1000;
+  }
+}
+
+class HueDisplaceScaleByValueControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-hue-displace-scale-by-value');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.hueDisplaceScaleByValue = parseInt(this.input.value) / 100;
+  }
+
+  applyState(state) {
+    this.input.value = state.hueDisplaceScaleByValue * 100;
+  }
+}
+
+class HueDisplaceRandomDirectionOffsetControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-hue-displace-random-direction-offset');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.hueDisplaceRandomDirectionOffset = this.input.checked;
+  }
+
+  applyState(state) {
+    this.input.checked = state.hueDisplaceRandomDirectionOffset;
+  }
+}
+
+class HueDisplaceRotateControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-hue-displace-rotate');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.hueDisplaceRotate = parseInt(this.input.value) / 100;
+  }
+
+  applyState(state) {
+    this.input.value = state.hueDisplaceRotate * 100;
+  }
+}
+
 /**
  *
  */
@@ -188,6 +288,7 @@ class ResetAppstateButton extends Control {
 
 const ControlsList = [
   BgColorPicker, ParticleScalingControl, ParticleOverlapControl,
+  HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl, HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
