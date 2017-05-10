@@ -107,10 +107,11 @@ export default class Renderer {
           return 1 / data.aspectRatio;
         },
         viewProjectionMatrix(ctx) {
+          const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) / (data.width / data.height);
           return [2, 0, 0, 0,
             0, 2 * (ctx.viewportWidth / ctx.viewportHeight), 0, 0,
             0, 0, 1, 0,
-            -1, -1, 0, 1];
+            -1, underscan * 2 - 1, 0, 1];
         },
         particleSize(ctx) {
           return (ctx.viewportWidth / data.width) * 2 * this.state.particleScaling;
