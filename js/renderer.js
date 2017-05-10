@@ -7,6 +7,7 @@ export default class Renderer {
     this.regl = createRegl({ canvas });
     console.log(`max texture size: ${this.regl.limits.maxTextureSize}`);
     console.log(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
+    console.log(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
     this.imageData = null;
     this.state = {
       backgroundColor: [0, 0, 0, 1],
