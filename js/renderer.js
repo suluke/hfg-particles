@@ -257,6 +257,7 @@ export default class Renderer {
   setState(state) {
     const oldState = this.state;
     this.state = state;
+    //TODO: rebuild command only when necessary
     if (this.imageData !== null /*&& state.particleOverlap !== oldState.particleOverlap*/) {
       this.rebuildCommand();
     }
