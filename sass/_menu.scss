@@ -6,7 +6,7 @@
   top: 0;
   left: 0;
   display: block;
-  overflow-y: auto;
+  overflow-y: hidden;
   padding: 0;
   margin: 0;
   input[type=checkbox].toggle-menu-visible {
@@ -33,6 +33,20 @@
       width: 100%;
       height: 100%;
       background-color: rgba(255, 255, 255, 0.9);;
+    }
+  }
+
+  .menu-content-inner {
+    overflow-y: scroll;
+    height: 100%;
+    /* This asserts that menu items won't be
+     * hidden by apply button if a scroll bar
+     * becomes visible */
+    &:after {
+      content: "";
+      display: block;
+      height: 10%;
+      min-height: 20px;
     }
   }
 
@@ -88,14 +102,5 @@
           background-color: #5CB85C;
         }
     }
-  }
-  /* This asserts that menu items won't be
-   * hidden by apply button if a scroll bar
-   * becomes visible */
-  .menu-content:after {
-    content: "";
-    display: block;
-    height: 10%;
-    min-height: 20px;
   }
 }

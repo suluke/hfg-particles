@@ -103,7 +103,21 @@ body {
       }
     }
     .menu-content-inner {
-      margin: $button-edge-dist;
+      /* Vertical padding is not allowed
+       * because we only have the space
+       * between top and apply button */
+      padding: 0 $button-edge-dist;
+      /* but we can fake with :before and :after */
+      &:before {
+        content: "";
+        display: block;
+        margin-bottom: $button-edge-dist;
+      }
+      &:after {
+        content: "";
+        display: block;
+        margin-top: $button-edge-dist;
+      }
     }
   }
   .btn-fullscreen {
