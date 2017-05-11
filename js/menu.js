@@ -194,6 +194,106 @@ class HueDisplaceRotateControl extends Control {
   }
 }
 
+class AttractEnableControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-attract-enable');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.attractEnable = this.input.checked;
+  }
+
+  applyState(state) {
+    this.input.checked = state.attractEnable;
+  }
+}
+
+class AttractOffsetModeControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-attract-offset-mode');
+    this.select = this.elm.querySelector('select');
+
+    this.select.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.attractOffsetMode = this.select.value;
+  }
+
+  applyState(state) {
+    this.select.value = state.attractOffsetMode;
+  }
+}
+
+class AttractOffsetStrengthControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-attract-offset-strength');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.attractOffsetStrength = this.input.value;
+  }
+
+  applyState(state) {
+    this.input.checked = state.attractOffsetStrength;
+  }
+}
+
+class AttractTimeControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-attract-time');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.attractTime = this.input.value / 1000;
+  }
+
+  applyState(state) {
+    this.input.checked = state.attractTime * 1000;
+  }
+}
+
+class AttractTargetControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-attract-target');
+    this.select = this.elm.querySelector('select');
+
+    this.select.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.attractTarget = this.select.value;
+  }
+
+  applyState(state) {
+    this.select.value = state.attractTarget;
+  }
+}
+
 /**
  *
  */
@@ -289,6 +389,7 @@ class ResetAppstateButton extends Control {
 const ControlsList = [
   BgColorPicker, ParticleScalingControl, ParticleOverlapControl,
   HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl, HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
+  AttractEnableControl, AttractOffsetModeControl, AttractOffsetStrengthControl, AttractTimeControl, AttractTargetControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
