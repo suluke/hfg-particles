@@ -32,7 +32,6 @@ export default class ImgSelect {
       html.classList.remove(dragClass);
       const fileItem = [].find.call(e.dataTransfer.items, (item) => item.kind === 'file');
       if (fileItem) {
-        [].forEach.call(e.dataTransfer.items, (item) => console.log(item));
         this.fileToUrl(fileItem.getAsFile())
         .then((url) => {
           this.changeListeners.forEach((listener) => listener(url));
@@ -55,6 +54,23 @@ export default class ImgSelect {
       }
     });
 
+    // Try to catch clipboard pastes
+    [].forEach.call(document.body.querySelectorAll('.img-paste-box'), (box) => {
+      box.addEventListener('paste', (e) => {
+        const fileItem = [].find.call(e.clipboardData.items, (item) => item.kind === 'file');
+        if (fileItem) {
+          this.fileToUrl(fileItem.getAsFile())
+          .then((url) => {
+            this.changeListeners.forEach((listener) => listener(url));
+          }, (msg) => {
+            // TODO
+            console.error(msg);
+          });
+        }
+        e.preventDefault();
+      });
+    });
+
     // catch the change event
     input.addEventListener('change', (evt) => {
       const file = evt.target.files[0];
@@ -62,6 +78,9 @@ export default class ImgSelect {
         this.fileToUrl(file)
         .then((url) => {
           this.changeListeners.forEach((listener) => listener(url));
+        }, (msg) => {
+          // TODO
+          console.error(msg);
         });
       }
     });
