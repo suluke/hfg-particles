@@ -111,7 +111,6 @@ export default class Renderer {
       uniform float hueDisplaceTime;
       uniform float hueDisplaceDirectionOffset;
       uniform float hueDisplaceScaleByValue;
-      uniform float hueDisplaceRotate;
 
       varying vec3 color;
 
@@ -128,8 +127,8 @@ export default class Renderer {
 
     if (this.state.hueDisplaceDistance != 0) {
       result += `{
-          float angle = hsv[0] + hueDisplaceDirectionOffset + hueDisplaceRotate * hueDisplaceTime;
-          float offset = (-cos(hueDisplaceTime * 2. * PI) + 1.) / 2.;
+          float angle = hsv[0] + hueDisplaceDirectionOffset;
+          float offset = (-cos(hueDisplaceTime) + 1.) / 2.;
           position.xy += offset * getDirectionVector(angle) * hueDisplaceDistance * (1. - hueDisplaceScaleByValue * (1. - hsv[2]));
         }
       `;
@@ -223,25 +222,23 @@ export default class Renderer {
       },
       hueDisplaceTime(ctx) {
         const t = ctx.time / this.state.hueDisplacePeriod;
-        return t - Math.floor(t);
+        return (t - Math.floor(t)) * 2 * Math.PI;
       },
-      hueDisplaceDirectionOffset() {
+      hueDisplaceDirectionOffset(ctx) {
+        const t = ctx.time / this.state.hueDisplacePeriod;
+        let result = this.state.hueDisplaceRotate * (t - Math.floor(t)) * 2 * Math.PI;
         if (this.state.hueDisplaceRandomDirectionOffset) {
           if (this.hueDisplaceRandomDirectionOffsetValue === undefined
             || Math.floor(this.oldTime / this.state.hueDisplacePeriod) != Math.floor(this.currentTime / this.state.hueDisplacePeriod)) {
             this.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
           }
-          return this.hueDisplaceRandomDirectionOffsetValue;
-        } else {
-          return 0;
+          result += this.hueDisplaceRandomDirectionOffsetValue;
         }
+        return result;
       },
       hueDisplaceScaleByValue() {
         return this.state.hueDisplaceScaleByValue;
-      },
-      hueDisplaceRotate() {
-        return this.state.hueDisplaceRotate * 2 * Math.PI;
-      },
+      }
     };
 
     return result;
