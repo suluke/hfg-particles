@@ -22,17 +22,6 @@ body {
 
 .btn-file-select {
 	@include visuallyhidden;
-  /* Make fullscreen (but still invisible) on file drag */
-  .dragging-file & {
-    display: block;
-    position: absolute;
-    z-index: 20;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    clip: initial;
-  }
   
   & + label {
     @include icon-button($fa-var-upload);

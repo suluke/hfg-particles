@@ -31,6 +31,7 @@ adjustCanvasSize();
 renderer.setState(menu.defaultState);
 
 const srcImage = document.createElement('img');
+srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
 srcImage.src = 'tron.jpg';
 srcImage.onload = () => {
   imgDimWarn.verify(srcImage)
@@ -47,16 +48,11 @@ srcImage.onload = () => {
   });
 };
 
-imgSelect.addChangeListener((file) => {
+imgSelect.addChangeListener((url) => {
   // Prevent messed-up app states caused by multiple parallel image loads
   if (!document.documentElement.classList.contains(imageLoadingClass)) {
+    srcImage.src = url;
     document.documentElement.classList.add(imageLoadingClass);
-    const fr = new FileReader();
-    fr.onload = () => {
-      srcImage.src = fr.result;
-    };
-    // TODO Add onerror listeners
-    fr.readAsDataURL(file);
   }
 });
 

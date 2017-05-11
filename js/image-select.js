@@ -7,38 +7,78 @@ export default class ImgSelect {
     // properties:
     this.changeListeners = [];
     this.input = document.getElementById('btn-file-select');
+    this.FR = new FileReader();
 
     // drag-n-drop support
     const html = document.documentElement;
     const input = this.input;
     const dragClass = 'dragging-file';
-    const dragenter = (e) => {
+    html.addEventListener('dragenter', (e) => {
       html.classList.add(dragClass);
       e.stopPropagation();
       e.preventDefault();
-    };
-    const dragleave = (e) => {
-      html.classList.remove(dragClass);
+    });
+    html.addEventListener('dragleave', (e) => {
+      if (e.clientX === 0 && e.clientY === 0) {
+        html.classList.remove(dragClass);
+      }
       e.stopPropagation();
       e.preventDefault();
-    };
-
-    html.addEventListener('dragenter', dragenter, false);
-    input.addEventListener('dragleave', dragleave, false);
-    // if we preventDefault on drop, the change event will not fire
-    input.addEventListener('drop', (/* e */) => {
+    });
+    // needed to prevent browser redirect to dropped file:
+    // http://stackoverflow.com/a/6756680/1468532
+    html.addEventListener('dragover', (e) => { e.preventDefault(); });
+    html.addEventListener('drop', (e) => {
       html.classList.remove(dragClass);
-    }, false);
+      const fileItem = [].find.call(e.dataTransfer.items, (item) => item.kind === 'file');
+      if (fileItem) {
+        [].forEach.call(e.dataTransfer.items, (item) => console.log(item));
+        this.fileToUrl(fileItem.getAsFile())
+        .then((url) => {
+          this.changeListeners.forEach((listener) => listener(url));
+        }, (msg) => {
+          // TODO
+          console.error(msg);
+        });
+        e.preventDefault();
+
+        return;
+      }
+      const urlItem = [].find.call(e.dataTransfer.items, (item) => (item.kind === 'string' && item.type === 'text/uri-list'));
+      if (urlItem) {
+        urlItem.getAsString((url) => {
+          this.changeListeners.forEach((listener) => listener(url));
+        });
+        e.preventDefault();
+
+        return;
+      }
+    });
 
     // catch the change event
-    const handleFileSelect = (evt) => {
-      let file = null;
-      if (evt.target.files.length > 0) {
-        file = evt.target.files[0];
+    input.addEventListener('change', (evt) => {
+      const file = evt.target.files[0];
+      if (file) {
+        this.fileToUrl(file)
+        .then((url) => {
+          this.changeListeners.forEach((listener) => listener(url));
+        });
       }
-      this.changeListeners.forEach((listener) => listener(file));
-    };
-    input.addEventListener('change', handleFileSelect);
+    });
+  }
+
+  fileToUrl(file) {
+    return new Promise((res, rej) => {
+      // TODO why would this be null?
+      if (file === null) {
+        rej('File was null');
+      }
+      this.FR.onload = () => {
+        res(this.FR.result);
+      };
+      // TODO Add onerror listeners
+      this.FR.readAsDataURL(file);
+    });
   }
 
   addChangeListener(listener) {
