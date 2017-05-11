@@ -72,6 +72,9 @@ body {
   z-index: -1;
 }
 
+/*
+ * Hide menu buttons on inactivity
+ */
 .btn-fullscreen,
 .btn-file-select + label,
 .toggle-menu-visible + label {
@@ -82,7 +85,10 @@ body {
     opacity: 0;
   }
 }
-
+/* But not the 'close menu' button ;) */
+.toggle-menu-visible:checked + label {
+  opacity: 1;
+}
 
 /* ===================================================================
  *
