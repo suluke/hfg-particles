@@ -84,37 +84,7 @@ body {
  * =================================================================== */
 
 @mixin ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width) {
-  .menu-container {
-    width: $menu-width;
-    input[type=checkbox].toggle-menu-visible {
-      & + label {
-        font-size: $icon-btn-font-size;;
-        top: $button-edge-dist;
-        left: $button-edge-dist;
-      }
-      &:checked + label {
-        right: $button-edge-dist;
-        left: initial;
-      }
-    }
-    .menu-content-inner {
-      /* Vertical padding is not allowed
-       * because we only have the space
-       * between top and apply button */
-      padding: 0 $button-edge-dist;
-      /* but we can fake with :before and :after */
-      &:before {
-        content: "";
-        display: block;
-        margin-bottom: $button-edge-dist;
-      }
-      &:after {
-        content: "";
-        display: block;
-        margin-top: $button-edge-dist;
-      }
-    }
-  }
+  @include menu-responsiveness($icon-btn-font-size, $button-edge-dist, $menu-width);
   .btn-fullscreen {
     font-size: $icon-btn-font-size;;
     top: $button-edge-dist;
