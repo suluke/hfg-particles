@@ -47,6 +47,9 @@ srcImage.onload = () => {
     document.documentElement.classList.remove(imageLoadingClass);
   });
 };
+srcImage.onerror = () => {
+  document.documentElement.classList.remove(imageLoadingClass);
+};
 
 imgSelect.addChangeListener((url) => {
   // Prevent messed-up app states caused by multiple parallel image loads

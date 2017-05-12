@@ -92,10 +92,13 @@ export default class ImgSelect {
       if (file === null) {
         rej('File was null');
       }
+      if (this.FR.readyState === 1) {
+        this.FR.abort();
+      }
       this.FR.onload = () => {
         res(this.FR.result);
       };
-      // TODO Add onerror listeners
+      this.FR.onerror = rej;
       this.FR.readAsDataURL(file);
     });
   }

@@ -54,7 +54,6 @@ export default class ImgDimWarn {
       if (img.naturalWidth * img.naturalHeight >= tooManyPixels) {
         this.resolve = res;
         this.reject = rej;
-        console.log('Show warning');
         document.body.appendChild(this.dialogElm);
       } else {
         res();
