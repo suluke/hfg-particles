@@ -194,6 +194,7 @@ class HueDisplaceRotateControl extends Control {
   }
 }
 
+/*
 class AttractEnableControl extends Control {
   constructor(menu) {
     super(menu);
@@ -293,6 +294,7 @@ class AttractTargetControl extends Control {
     this.select.value = state.attractTarget;
   }
 }
+*/
 
 /**
  *
@@ -389,7 +391,7 @@ class ResetAppstateButton extends Control {
 const ControlsList = [
   BgColorPicker, ParticleScalingControl, ParticleOverlapControl,
   HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl, HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
-  AttractEnableControl, AttractOffsetModeControl, AttractOffsetStrengthControl, AttractTimeControl, AttractTargetControl,
+  //AttractEnableControl, AttractOffsetModeControl, AttractOffsetStrengthControl, AttractTimeControl, AttractTargetControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
