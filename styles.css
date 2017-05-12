@@ -2350,6 +2350,17 @@
   .dragging-file .file-drag-indicator {
     display: block; }
 
+.img-paste-box {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+  border: none;
+  outline: none; }
+
 .img-dim-warn-backdrop {
   position: absolute;
   width: 100%;
@@ -2395,12 +2406,9 @@
   top: 0;
   left: 0;
   display: block;
-  overflow-y: auto;
+  overflow-y: hidden;
   padding: 0;
-  margin: 0;
-  /* This asserts that menu items won't be
-   * hidden by apply button if a scroll bar
-   * becomes visible */ }
+  margin: 0; }
   .menu-container input[type=checkbox].toggle-menu-visible {
     position: absolute;
     width: 0.1px;
@@ -2444,6 +2452,17 @@
       width: 100%;
       height: 100%;
       background-color: rgba(255, 255, 255, 0.9); }
+  .menu-container .menu-content-inner {
+    overflow-y: scroll;
+    height: 100%;
+    /* This asserts that menu items won't be
+     * hidden by apply button if a scroll bar
+     * becomes visible */ }
+    .menu-container .menu-content-inner:after {
+      content: "";
+      display: block;
+      height: 10%;
+      min-height: 20px; }
   .menu-container .menu-btn-importstate {
     background-color: #eee;
     border-color: #555;
@@ -2503,11 +2522,6 @@
       background-color: #449D44; }
     .menu-container .menu-btn-apply[disabled]:hover, .menu-container .menu-btn-apply[disabled]:focus {
       background-color: #5CB85C; }
-  .menu-container .menu-content:after {
-    content: "";
-    display: block;
-    height: 10%;
-    min-height: 20px; }
 
 html,
 body {
@@ -2526,17 +2540,7 @@ body {
   opacity: 0;
   z-index: -1;
   overflow: hidden;
-  clip: rect(1px, 1px, 1px, 1px);
-  /* Make fullscreen (but still invisible) on file drag */ }
-  .dragging-file .btn-file-select {
-    display: block;
-    position: absolute;
-    z-index: 20;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    clip: initial; }
+  clip: rect(1px, 1px, 1px, 1px); }
   .btn-file-select + label {
     /* the default mixins set font-size, which interferes when changing icons depenging on state */
     /* @include fa-icon; // in _mixins.scss */
@@ -2595,6 +2599,9 @@ body {
   height: 100%;
   z-index: -1; }
 
+/*
+ * Hide menu buttons on inactivity
+ */
 .btn-fullscreen,
 .btn-file-select + label,
 .toggle-menu-visible + label {
@@ -2604,6 +2611,10 @@ body {
   .btn-file-select + label, .user-inactive
   .toggle-menu-visible + label {
     opacity: 0; }
+
+/* But not the 'close menu' button ;) */
+.toggle-menu-visible:checked + label {
+  opacity: 1; }
 
 /* ===================================================================
  *
@@ -2620,7 +2631,19 @@ body {
       right: 20px;
       left: initial; }
     .menu-container .menu-content-inner {
-      margin: 20px; }
+      /* Vertical padding is not allowed
+       * because we only have the space
+       * between top and apply button */
+      padding: 0 20px;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 20px; }
+      .menu-container .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 20px; }
   .btn-fullscreen {
     font-size: 50px;
     top: 20px;
@@ -2645,7 +2668,19 @@ body {
       right: 20px;
       left: initial; }
     .menu-container .menu-content-inner {
-      margin: 20px; }
+      /* Vertical padding is not allowed
+       * because we only have the space
+       * between top and apply button */
+      padding: 0 20px;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 20px; }
+      .menu-container .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 20px; }
   .btn-fullscreen {
     font-size: 80px;
     top: 20px;
@@ -2670,7 +2705,19 @@ body {
       right: 1.5cm;
       left: initial; }
     .menu-container .menu-content-inner {
-      margin: 1.5cm; }
+      /* Vertical padding is not allowed
+       * because we only have the space
+       * between top and apply button */
+      padding: 0 1.5cm;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 1.5cm; }
+      .menu-container .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 1.5cm; }
   .btn-fullscreen {
     font-size: 2.5cm;
     top: 1.5cm;
@@ -2695,7 +2742,19 @@ body {
       right: 1.5cm;
       left: initial; }
     .menu-container .menu-content-inner {
-      margin: 1.5cm; }
+      /* Vertical padding is not allowed
+       * because we only have the space
+       * between top and apply button */
+      padding: 0 1.5cm;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 1.5cm; }
+      .menu-container .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 1.5cm; }
   .btn-fullscreen {
     font-size: 2cm;
     top: 1.5cm;
@@ -2720,7 +2779,19 @@ body {
       right: 1cm;
       left: initial; }
     .menu-container .menu-content-inner {
-      margin: 1cm; }
+      /* Vertical padding is not allowed
+       * because we only have the space
+       * between top and apply button */
+      padding: 0 1cm;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 1cm; }
+      .menu-container .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 1cm; }
   .btn-fullscreen {
     font-size: 1.5cm;
     top: 1cm;
@@ -2745,7 +2816,19 @@ body {
       right: 1cm;
       left: initial; }
     .menu-container .menu-content-inner {
-      margin: 1cm; }
+      /* Vertical padding is not allowed
+       * because we only have the space
+       * between top and apply button */
+      padding: 0 1cm;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 1cm; }
+      .menu-container .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 1cm; }
   .btn-fullscreen {
     font-size: 1cm;
     top: 1cm;
