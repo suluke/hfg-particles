@@ -69,6 +69,15 @@ export default class ImgSelect {
         }
         e.preventDefault();
       });
+      // Also undo effects of contenteditable="true" - we really only
+      // want it for "paste" option in context menu
+      box.addEventListener('keydown', (e) => {
+        if (e.key.length > 1) {// no text input
+          return;
+        }
+        e.preventDefault();
+        return false;
+      });
     });
 
     // catch the change event
