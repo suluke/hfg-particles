@@ -1,11 +1,7 @@
 @import 'mixins/hide';
 
 .menu-container {
-  position: absolute;
-  height: 100%;
-  top: 0;
-  left: 0;
-  display: block;
+  display: inline-block;
   overflow-y: hidden;
   padding: 0;
   margin: 0;
@@ -30,7 +26,6 @@
       position: absolute;
       top: 0;
       left: 0;
-      width: 100%;
       height: 100%;
       background-color: rgba(255, 255, 255, 0.9);;
     }
@@ -107,7 +102,9 @@
 
 @mixin menu-responsiveness($icon-btn-font-size, $button-edge-dist, $menu-width) {
   .menu-container {
-    width: $menu-width;
+    .menu-content {
+      width: $menu-width;
+    }
     input[type=checkbox].toggle-menu-visible {
       & + label {
         font-size: $icon-btn-font-size;;
@@ -115,8 +112,9 @@
         left: $button-edge-dist;
       }
       &:checked + label {
-        right: $button-edge-dist;
-        left: initial;
+        left: $menu-width;
+        transform: translateX(-100%);
+        margin-left: -$button-edge-dist;
       }
     }
     .menu-content-inner {

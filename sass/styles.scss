@@ -105,28 +105,28 @@ body {
 
 @media (min-width:320px)  {
   /* smartphones, iPhone, portrait 480x320 phones */
-  $icon-btn-font-size: 50px;
+  $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 20px;
   $menu-width: 100%;
   @include ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width);
 }
 @media (min-width:481px)  {
   /* portrait e-readers (Nook/Kindle), smaller tablets @ 600 or @ 640 wide. */
-  $icon-btn-font-size: 80px;
+  $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 20px;
   $menu-width: 100%;
   @include ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width);
 }
 @media (min-width:641px)  {
   /* portrait tablets, portrait iPad, landscape e-readers, landscape 800x480 or 854x480 phones */
-  $icon-btn-font-size: 2.5cm;
+  $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 1.5cm;
   $menu-width: 100%;
   @include ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width);
 }
 @media (min-width:961px)  {
   /* tablet, landscape iPad, lo-res laptops ands desktops */
-  $icon-btn-font-size: 2cm;
+  $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 1.5cm;
   $menu-width: 50%;
   @include ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width);
