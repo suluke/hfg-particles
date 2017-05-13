@@ -139,7 +139,9 @@ var ImgSelect = function ImgSelect() {
   });
   // needed to prevent browser redirect to dropped file:
   // http://stackoverflow.com/a/6756680/1468532
-  html.addEventListener('dragover', function (e) { e.preventDefault(); });
+  html.addEventListener('dragover', function (e) {
+    e.preventDefault();
+  });
   html.addEventListener('drop', function (e) {
     html.classList.remove(dragClass);
     var fileItem = [].find.call(e.dataTransfer.items, function (item) { return item.kind === 'file'; });
@@ -161,8 +163,6 @@ var ImgSelect = function ImgSelect() {
         this$1.changeListeners.forEach(function (listener) { return listener(url); });
       });
       e.preventDefault();
-
-      return;
     }
   });
 
@@ -184,11 +184,10 @@ var ImgSelect = function ImgSelect() {
     // Also undo effects of contenteditable="true" - we really only
     // want it for "paste" option in context menu
     box.addEventListener('keydown', function (e) {
-      if (e.key.length > 1) {// no text input
+      if (e.key.length > 1) { // no text input
         return;
       }
       e.preventDefault();
-      return false;
     });
   });
 
@@ -1175,8 +1174,8 @@ var index = function (cstr) {
 };
 
 var config = {
-  timestamp: '2017-05-12T08:24:22.462Z',
-  git_rev: 'd546e27',
+  timestamp: '2017-05-13T12:28:54.355Z',
+  git_rev: '9d869a7',
   export_schema_version: 0
 };
 
@@ -1317,7 +1316,8 @@ var HueDisplaceDistanceControl = (function (Control) {
   HueDisplaceDistanceControl.prototype.constructor = HueDisplaceDistanceControl;
 
   HueDisplaceDistanceControl.prototype.updateState = function updateState (state) {
-    state.hueDisplaceDistance = parseInt(this.input.value) / 100;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceDistance = parseInt(this.input.value, 10) / 100;
   };
 
   HueDisplaceDistanceControl.prototype.applyState = function applyState (state) {
@@ -1345,7 +1345,8 @@ var HueDisplacePeriodControl = (function (Control) {
   HueDisplacePeriodControl.prototype.constructor = HueDisplacePeriodControl;
 
   HueDisplacePeriodControl.prototype.updateState = function updateState (state) {
-    state.hueDisplacePeriod = parseInt(this.input.value) / 1000;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplacePeriod = parseInt(this.input.value, 10) / 1000;
   };
 
   HueDisplacePeriodControl.prototype.applyState = function applyState (state) {
@@ -1373,7 +1374,8 @@ var HueDisplaceScaleByValueControl = (function (Control) {
   HueDisplaceScaleByValueControl.prototype.constructor = HueDisplaceScaleByValueControl;
 
   HueDisplaceScaleByValueControl.prototype.updateState = function updateState (state) {
-    state.hueDisplaceScaleByValue = parseInt(this.input.value) / 100;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceScaleByValue = parseInt(this.input.value, 10) / 100;
   };
 
   HueDisplaceScaleByValueControl.prototype.applyState = function applyState (state) {
@@ -1401,6 +1403,7 @@ var HueDisplaceRandomDirectionOffsetControl = (function (Control) {
   HueDisplaceRandomDirectionOffsetControl.prototype.constructor = HueDisplaceRandomDirectionOffsetControl;
 
   HueDisplaceRandomDirectionOffsetControl.prototype.updateState = function updateState (state) {
+    // eslint-disable-next-line no-param-reassign
     state.hueDisplaceRandomDirectionOffset = this.input.checked;
   };
 
@@ -1429,7 +1432,8 @@ var HueDisplaceRotateControl = (function (Control) {
   HueDisplaceRotateControl.prototype.constructor = HueDisplaceRotateControl;
 
   HueDisplaceRotateControl.prototype.updateState = function updateState (state) {
-    state.hueDisplaceRotate = parseInt(this.input.value) / 100;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceRotate = parseInt(this.input.value, 10) / 100;
   };
 
   HueDisplaceRotateControl.prototype.applyState = function applyState (state) {
@@ -1659,8 +1663,10 @@ var ResetAppstateButton = (function (Control) {
 
 var ControlsList = [
   BgColorPicker, ParticleScalingControl, ParticleOverlapControl,
-  HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl, HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
-  //AttractEnableControl, AttractOffsetModeControl, AttractOffsetStrengthControl, AttractTimeControl, AttractTargetControl,
+  HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl,
+  HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
+  // AttractEnableControl, AttractOffsetModeControl, AttractOffsetStrengthControl,
+  // AttractTimeControl, AttractTargetControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
@@ -11365,7 +11371,7 @@ Renderer.prototype.destroyImageData = function destroyImageData () {
 Renderer.prototype.assembleVertexShader = function assembleVertexShader () {
   var result = "\n      precision highp float;\n\n      attribute vec2 texcoord;\n      attribute vec3 rgb;\n      attribute vec3 hsv;\n\n      uniform float invImageAspectRatio;\n      uniform mat4 viewProjectionMatrix;\n\n      uniform float particleSize;\n\n      uniform float hueDisplaceDistance;\n      uniform float hueDisplaceTime;\n      uniform float hueDisplaceDirectionOffset;\n      uniform float hueDisplaceScaleByValue;\n\n      varying vec3 color;\n\n      const float PI = 3.14159265;\n\n      vec2 getDirectionVector(float angle) {\n        return vec2(cos(angle), sin(angle));\n      }\n\n      void main() {\n        vec3 position = vec3(texcoord, 0);\n        position.y *= invImageAspectRatio;\n    ";
 
-  if (this.state.hueDisplaceDistance != 0) {
+  if (this.state.hueDisplaceDistance !== 0) {
     result += "{\n          float angle = hsv[0] + hueDisplaceDirectionOffset;\n          float offset = (-cos(hueDisplaceTime) + 1.) / 2.;\n          position.xy += offset * getDirectionVector(angle) * hueDisplaceDistance * (1. - hueDisplaceScaleByValue * (1. - hsv[2]));\n        }\n      ";
   }
 
@@ -11377,14 +11383,15 @@ Renderer.prototype.assembleVertexShader = function assembleVertexShader () {
 Renderer.prototype.assembleFragmentShader = function assembleFragmentShader () {
   var result = "\n      precision highp float;\n\n      varying vec3 color;\n\n      void main() {\n        float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    ";
 
-  switch(this.state.particleOverlap) {
+  switch (this.state.particleOverlap) {
     case 'add':
-    result += 'gl_FragColor = vec4(color * v, 1);\n';
-    break;
-
+      result += 'gl_FragColor = vec4(color * v, 1);\n';
+      break;
     case 'alpha blend':
-    result += 'gl_FragColor = vec4(color, v);\n';
-    break;
+      result += 'gl_FragColor = vec4(color, v);\n';
+      break;
+    default:
+      throw new Error(("Unknown particle overlap mode: " + (this.state.particleOverlap)));
   }
 
   result += "\n      }\n    ";
@@ -11406,34 +11413,40 @@ Renderer.prototype.assembleCommand = function assembleCommand () {
       rgb: this.imageData.rgbBuffer,
       hsv: this.imageData.hsvBuffer
     },
-    vert: vert, frag: frag,
+    vert: vert,
+    frag: frag,
     depth: { enable: false }
   };
 
-  switch(this.state.particleOverlap) {
+  switch (this.state.particleOverlap) {
     case 'add':
-    result.blend = {
-      enable: true,
-      func: { src: 'one', dst: 'one' }
-    };
-    break;
-
+      result.blend = {
+        enable: true,
+        func: { src: 'one', dst: 'one' }
+      };
+      break;
     case 'alpha blend':
-    result.blend = {
-      enable: true,
-      func: { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
-    };
-    break;
+      result.blend = {
+        enable: true,
+        func: { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
+      };
+      break;
+    default:
+      throw new Error(("Unknown particle overlap mode: " + (this.state.particleOverlap)));
   }
 
   result.uniforms = {
     invImageAspectRatio: 1 / this.imageData.aspectRatio,
     viewProjectionMatrix: function viewProjectionMatrix(ctx) {
-      var underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) / (this.imageData.width / this.imageData.height);
-      return [2, 0, 0, 0,
+      var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
+                            (this.imageData.width / this.imageData.height));
+
+      return [
+        2, 0, 0, 0,
         0, 2 * (ctx.viewportWidth / ctx.viewportHeight), 0, 0,
         0, 0, 1, 0,
-        -1, underscan * 2 - 1, 0, 1];
+        -1, (underscan * 2) - 1, 0, 1
+      ];
     },
     particleSize: function particleSize(ctx) {
       return (ctx.viewportWidth / this.imageData.width) * 2 * this.state.particleScaling;
@@ -11443,19 +11456,23 @@ Renderer.prototype.assembleCommand = function assembleCommand () {
     },
     hueDisplaceTime: function hueDisplaceTime(ctx) {
       var t = ctx.time / this.state.hueDisplacePeriod;
+
       return (t - Math.floor(t)) * 2 * Math.PI;
     },
     hueDisplaceDirectionOffset: function hueDisplaceDirectionOffset(ctx) {
       var t = ctx.time / this.state.hueDisplacePeriod;
-      var result = this.state.hueDisplaceRotate * (t - Math.floor(t)) * 2 * Math.PI;
+      var offset = this.state.hueDisplaceRotate * (t - Math.floor(t)) * 2 * Math.PI;
       if (this.state.hueDisplaceRandomDirectionOffset) {
         if (this.hueDisplaceRandomDirectionOffsetValue === undefined
-          || Math.floor(this.oldTime / this.state.hueDisplacePeriod) != Math.floor(this.currentTime / this.state.hueDisplacePeriod)) {
+          || Math.floor(this.oldTime / this.state.hueDisplacePeriod)
+          !== Math.floor(this.currentTime / this.state.hueDisplacePeriod)
+        ) {
           this.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
         }
-        result += this.hueDisplaceRandomDirectionOffsetValue;
+        offset += this.hueDisplaceRandomDirectionOffsetValue;
       }
-      return result;
+
+      return offset;
     },
     hueDisplaceScaleByValue: function hueDisplaceScaleByValue() {
       return this.state.hueDisplaceScaleByValue;
@@ -11478,8 +11495,8 @@ Renderer.prototype.loadImage = function loadImage (img) {
 Renderer.prototype.setState = function setState (state) {
   var oldState = this.state;
   this.state = state;
-  //TODO: rebuild command only when necessary
-  if (this.imageData !== null /*&& state.particleOverlap !== oldState.particleOverlap*/) {
+  // TODO: rebuild command only when necessary
+  if (this.imageData !== null /* && state.particleOverlap !== oldState.particleOverlap */) {
     this.rebuildCommand();
   }
 };
