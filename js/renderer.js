@@ -125,7 +125,7 @@ export default class Renderer {
         position.y *= invImageAspectRatio;
     `;
 
-    if (this.state.hueDisplaceDistance != 0) {
+    if (this.state.hueDisplaceDistance !== 0) {
       result += `{
           float angle = hsv[0] + hueDisplaceDirectionOffset;
           float offset = (-cos(hueDisplaceTime) + 1.) / 2.;
@@ -154,14 +154,15 @@ export default class Renderer {
         float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);
     `;
 
-    switch(this.state.particleOverlap) {
+    switch (this.state.particleOverlap) {
       case 'add':
-      result += 'gl_FragColor = vec4(color * v, 1);\n';
-      break;
-
+        result += 'gl_FragColor = vec4(color * v, 1);\n';
+        break;
       case 'alpha blend':
-      result += 'gl_FragColor = vec4(color, v);\n';
-      break;
+        result += 'gl_FragColor = vec4(color, v);\n';
+        break;
+      default:
+        throw new Error(`Unknown particle overlap mode: ${this.state.particleOverlap}`);
     }
 
     result += `
@@ -177,7 +178,7 @@ export default class Renderer {
     const vert = this.assembleVertexShader();
     const frag = this.assembleFragmentShader();
 
-    let result = {
+    const result = {
       primitive: 'points',
       count: this.imageData.width * this.imageData.height,
       attributes: {
@@ -185,34 +186,40 @@ export default class Renderer {
         rgb: this.imageData.rgbBuffer,
         hsv: this.imageData.hsvBuffer
       },
-      vert, frag,
+      vert,
+      frag,
       depth: { enable: false }
-    }
+    };
 
-    switch(this.state.particleOverlap) {
+    switch (this.state.particleOverlap) {
       case 'add':
-      result.blend = {
-        enable: true,
-        func: { src: 'one', dst: 'one' }
-      };
-      break;
-
+        result.blend = {
+          enable: true,
+          func: { src: 'one', dst: 'one' }
+        };
+        break;
       case 'alpha blend':
-      result.blend = {
-        enable: true,
-        func: { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
-      };
-      break;
+        result.blend = {
+          enable: true,
+          func: { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
+        };
+        break;
+      default:
+        throw new Error(`Unknown particle overlap mode: ${this.state.particleOverlap}`);
     }
 
     result.uniforms = {
       invImageAspectRatio: 1 / this.imageData.aspectRatio,
       viewProjectionMatrix(ctx) {
-        const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) / (this.imageData.width / this.imageData.height);
-        return [2, 0, 0, 0,
+        const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
+                              (this.imageData.width / this.imageData.height));
+
+        return [
+          2, 0, 0, 0,
           0, 2 * (ctx.viewportWidth / ctx.viewportHeight), 0, 0,
           0, 0, 1, 0,
-          -1, underscan * 2 - 1, 0, 1];
+          -1, (underscan * 2) - 1, 0, 1
+        ];
       },
       particleSize(ctx) {
         return (ctx.viewportWidth / this.imageData.width) * 2 * this.state.particleScaling;
@@ -222,19 +229,23 @@ export default class Renderer {
       },
       hueDisplaceTime(ctx) {
         const t = ctx.time / this.state.hueDisplacePeriod;
+
         return (t - Math.floor(t)) * 2 * Math.PI;
       },
       hueDisplaceDirectionOffset(ctx) {
         const t = ctx.time / this.state.hueDisplacePeriod;
-        let result = this.state.hueDisplaceRotate * (t - Math.floor(t)) * 2 * Math.PI;
+        let offset = this.state.hueDisplaceRotate * (t - Math.floor(t)) * 2 * Math.PI;
         if (this.state.hueDisplaceRandomDirectionOffset) {
           if (this.hueDisplaceRandomDirectionOffsetValue === undefined
-            || Math.floor(this.oldTime / this.state.hueDisplacePeriod) != Math.floor(this.currentTime / this.state.hueDisplacePeriod)) {
+            || Math.floor(this.oldTime / this.state.hueDisplacePeriod)
+            !== Math.floor(this.currentTime / this.state.hueDisplacePeriod)
+          ) {
             this.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
           }
-          result += this.hueDisplaceRandomDirectionOffsetValue;
+          offset += this.hueDisplaceRandomDirectionOffsetValue;
         }
-        return result;
+
+        return offset;
       },
       hueDisplaceScaleByValue() {
         return this.state.hueDisplaceScaleByValue;
@@ -245,7 +256,7 @@ export default class Renderer {
   }
 
   rebuildCommand() {
-    let cmd = this.assembleCommand();
+    const cmd = this.assembleCommand();
     this.command = this.regl(cmd);
   }
 
@@ -257,8 +268,8 @@ export default class Renderer {
   setState(state) {
     const oldState = this.state;
     this.state = state;
-    //TODO: rebuild command only when necessary
-    if (this.imageData !== null /*&& state.particleOverlap !== oldState.particleOverlap*/) {
+    // TODO: rebuild command only when necessary
+    if (this.imageData !== null /* && state.particleOverlap !== oldState.particleOverlap */) {
       this.rebuildCommand();
     }
   }

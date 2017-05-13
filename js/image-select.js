@@ -27,7 +27,9 @@ export default class ImgSelect {
     });
     // needed to prevent browser redirect to dropped file:
     // http://stackoverflow.com/a/6756680/1468532
-    html.addEventListener('dragover', (e) => { e.preventDefault(); });
+    html.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
     html.addEventListener('drop', (e) => {
       html.classList.remove(dragClass);
       const fileItem = [].find.call(e.dataTransfer.items, (item) => item.kind === 'file');
@@ -49,8 +51,6 @@ export default class ImgSelect {
           this.changeListeners.forEach((listener) => listener(url));
         });
         e.preventDefault();
-
-        return;
       }
     });
 
@@ -72,11 +72,10 @@ export default class ImgSelect {
       // Also undo effects of contenteditable="true" - we really only
       // want it for "paste" option in context menu
       box.addEventListener('keydown', (e) => {
-        if (e.key.length > 1) {// no text input
+        if (e.key.length > 1) { // no text input
           return;
         }
         e.preventDefault();
-        return false;
       });
     });
 

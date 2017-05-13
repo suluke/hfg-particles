@@ -106,7 +106,8 @@ class HueDisplaceDistanceControl extends Control {
   }
 
   updateState(state) {
-    state.hueDisplaceDistance = parseInt(this.input.value) / 100;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceDistance = parseInt(this.input.value, 10) / 100;
   }
 
   applyState(state) {
@@ -126,7 +127,8 @@ class HueDisplacePeriodControl extends Control {
   }
 
   updateState(state) {
-    state.hueDisplacePeriod = parseInt(this.input.value) / 1000;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplacePeriod = parseInt(this.input.value, 10) / 1000;
   }
 
   applyState(state) {
@@ -146,7 +148,8 @@ class HueDisplaceScaleByValueControl extends Control {
   }
 
   updateState(state) {
-    state.hueDisplaceScaleByValue = parseInt(this.input.value) / 100;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceScaleByValue = parseInt(this.input.value, 10) / 100;
   }
 
   applyState(state) {
@@ -166,6 +169,7 @@ class HueDisplaceRandomDirectionOffsetControl extends Control {
   }
 
   updateState(state) {
+    // eslint-disable-next-line no-param-reassign
     state.hueDisplaceRandomDirectionOffset = this.input.checked;
   }
 
@@ -186,7 +190,8 @@ class HueDisplaceRotateControl extends Control {
   }
 
   updateState(state) {
-    state.hueDisplaceRotate = parseInt(this.input.value) / 100;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceRotate = parseInt(this.input.value, 10) / 100;
   }
 
   applyState(state) {
@@ -390,8 +395,10 @@ class ResetAppstateButton extends Control {
 
 const ControlsList = [
   BgColorPicker, ParticleScalingControl, ParticleOverlapControl,
-  HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl, HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
-  //AttractEnableControl, AttractOffsetModeControl, AttractOffsetStrengthControl, AttractTimeControl, AttractTargetControl,
+  HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl,
+  HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
+  // AttractEnableControl, AttractOffsetModeControl, AttractOffsetStrengthControl,
+  // AttractTimeControl, AttractTargetControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 

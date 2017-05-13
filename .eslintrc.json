@@ -17,6 +17,7 @@
     "eqeqeq": "error",
     "global-strict": ["off", "always"],
     "import/no-extraneous-dependencies": ["error", {"optionalDependencies": true}],
+    "indent": ["error", 2, { "SwitchCase": 1, "ArrayExpression": 1, "ObjectExpression": 1 }],
     "max-statements-per-line": "error",
     "new-cap": ["error", {
       "newIsCap": true,
