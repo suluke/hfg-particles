@@ -1,5 +1,9 @@
 import createRegl from 'regl';
 
+function fract(x) {
+  return x - Math.floor(x);
+}
+
 export default class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -112,6 +116,10 @@ export default class Renderer {
       uniform float hueDisplaceDirectionOffset;
       uniform float hueDisplaceScaleByValue;
 
+      uniform float convergeTime;
+      uniform float convergeSpeed;
+      uniform float convergeMaxTravelTime;
+
       varying vec3 color;
 
       const float PI = 3.14159265;
@@ -121,8 +129,10 @@ export default class Renderer {
       }
 
       void main() {
-        vec3 position = vec3(texcoord, 0);
-        position.y *= invImageAspectRatio;
+        vec3 initialPosition = vec3(texcoord, 0);
+        initialPosition.y *= invImageAspectRatio;
+        
+        vec3 position = initialPosition;
     `;
 
     if (this.state.hueDisplaceDistance !== 0) {
@@ -130,6 +140,31 @@ export default class Renderer {
           float angle = hsv[0] + hueDisplaceDirectionOffset;
           float offset = (-cos(hueDisplaceTime) + 1.) / 2.;
           position.xy += offset * getDirectionVector(angle) * hueDisplaceDistance * (1. - hueDisplaceScaleByValue * (1. - hsv[2]));
+        }
+      `;
+    }
+
+    if (this.state.convergeEnable) {
+      result += `{
+          vec2 target = ` + { "center": "vec2(.5, .5)", "color wheel": "vec2(.5, .5) + getDirectionVector(hsv[0] + convergeTime) * vec2(.4 * invImageAspectRatio, .4)" }[this.state.convergeTarget] + `;
+          target.y *= invImageAspectRatio;
+          
+          vec2 d = target - initialPosition.xy;
+          float d_len = length(d);
+          
+          float stop_t = sqrt(2. * d_len / convergeSpeed);
+
+          if(convergeTime < stop_t) {
+            float t = min(convergeTime, stop_t);
+            position.xy += .5 * d / d_len * convergeSpeed * t * t;
+          } else if(convergeTime < convergeMaxTravelTime) {
+            position.xy += d;
+          } else {
+            float t = convergeTime - convergeMaxTravelTime;
+            //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));
+            //position.xy += mix(d, vec2(0.), t * t);
+            position.xy += mix(d, vec2(0.), -cos(t / convergeMaxTravelTime * PI) * .5 + .5);
+          }
         }
       `;
     }
@@ -228,13 +263,10 @@ export default class Renderer {
         return this.state.hueDisplaceDistance;
       },
       hueDisplaceTime(ctx) {
-        const t = ctx.time / this.state.hueDisplacePeriod;
-
-        return (t - Math.floor(t)) * 2 * Math.PI;
+        return fract(ctx.time / this.state.hueDisplacePeriod) * 2 * Math.PI;
       },
       hueDisplaceDirectionOffset(ctx) {
-        const t = ctx.time / this.state.hueDisplacePeriod;
-        let offset = this.state.hueDisplaceRotate * (t - Math.floor(t)) * 2 * Math.PI;
+        let result = this.state.hueDisplaceRotate * fract(ctx.time / this.state.hueDisplacePeriod) * 2 * Math.PI;
         if (this.state.hueDisplaceRandomDirectionOffset) {
           if (this.hueDisplaceRandomDirectionOffsetValue === undefined
             || Math.floor(this.oldTime / this.state.hueDisplacePeriod)
@@ -242,13 +274,23 @@ export default class Renderer {
           ) {
             this.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
           }
-          offset += this.hueDisplaceRandomDirectionOffsetValue;
+          result += this.hueDisplaceRandomDirectionOffsetValue;
         }
 
-        return offset;
+        return result;
       },
       hueDisplaceScaleByValue() {
         return this.state.hueDisplaceScaleByValue;
+      },
+      convergeTime(ctx) {
+        const period = 2 * Math.sqrt(2 / this.state.convergeSpeed);
+        return fract(ctx.time / period) * period;
+      },
+      convergeSpeed() {
+        return this.state.convergeSpeed;
+      },
+      convergeMaxTravelTime() {
+        return Math.sqrt(2 / this.state.convergeSpeed);
       }
     };
 

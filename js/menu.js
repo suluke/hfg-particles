@@ -199,11 +199,10 @@ class HueDisplaceRotateControl extends Control {
   }
 }
 
-/*
-class AttractEnableControl extends Control {
+class ConvergeEnableControl extends Control {
   constructor(menu) {
     super(menu);
-    this.elm = document.getElementById('menu-attract-enable');
+    this.elm = document.getElementById('menu-converge-enable');
     this.input = this.elm.querySelector('input');
 
     this.input.addEventListener('change', () => {
@@ -212,18 +211,38 @@ class AttractEnableControl extends Control {
   }
 
   updateState(state) {
-    state.attractEnable = this.input.checked;
+    state.convergeEnable = this.input.checked;
   }
 
   applyState(state) {
-    this.input.checked = state.attractEnable;
+    this.input.checked = state.convergeEnable;
   }
 }
 
-class AttractOffsetModeControl extends Control {
+class ConvergeSpeedControl extends Control {
   constructor(menu) {
     super(menu);
-    this.elm = document.getElementById('menu-attract-offset-mode');
+    this.elm = document.getElementById('menu-converge-speed');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.convergeSpeed = parseInt(this.input.value, 10) / 1000;
+  }
+
+  applyState(state) {
+    this.input.checked = state.convergeSpeed * 1000;
+  }
+}
+
+class ConvergeTargetControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-converge-target');
     this.select = this.elm.querySelector('select');
 
     this.select.addEventListener('change', () => {
@@ -232,74 +251,13 @@ class AttractOffsetModeControl extends Control {
   }
 
   updateState(state) {
-    state.attractOffsetMode = this.select.value;
+    state.convergeTarget = this.select.value;
   }
 
   applyState(state) {
-    this.select.value = state.attractOffsetMode;
+    this.select.value = state.convergeTarget;
   }
 }
-
-class AttractOffsetStrengthControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-attract-offset-strength');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    state.attractOffsetStrength = this.input.value;
-  }
-
-  applyState(state) {
-    this.input.checked = state.attractOffsetStrength;
-  }
-}
-
-class AttractTimeControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-attract-time');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    state.attractTime = this.input.value / 1000;
-  }
-
-  applyState(state) {
-    this.input.checked = state.attractTime * 1000;
-  }
-}
-
-class AttractTargetControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-attract-target');
-    this.select = this.elm.querySelector('select');
-
-    this.select.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    state.attractTarget = this.select.value;
-  }
-
-  applyState(state) {
-    this.select.value = state.attractTarget;
-  }
-}
-*/
 
 /**
  *
@@ -395,10 +353,8 @@ class ResetAppstateButton extends Control {
 
 const ControlsList = [
   BgColorPicker, ParticleScalingControl, ParticleOverlapControl,
-  HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl,
-  HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
-  // AttractEnableControl, AttractOffsetModeControl, AttractOffsetStrengthControl,
-  // AttractTimeControl, AttractTargetControl,
+  HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl, HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
+  ConvergeEnableControl, ConvergeSpeedControl, ConvergeTargetControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
