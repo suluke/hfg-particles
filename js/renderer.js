@@ -107,7 +107,9 @@ export default class Renderer {
       attribute vec3 hsv;
 
       uniform float invImageAspectRatio;
+      uniform float invScreenAspectRatio;
       uniform mat4 viewProjectionMatrix;
+      uniform mat4 invViewProjectionMatrix;
 
       uniform float particleSize;
 
@@ -147,9 +149,9 @@ export default class Renderer {
 
     if (this.state.convergeEnable) {
       result += `{
-          vec2 target = ` + { "center": "vec2(.5, .5)", "color wheel": "vec2(.5, .5) + getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.4 * invImageAspectRatio, .4)" }[this.state.convergeTarget] + `;
-          target.y *= invImageAspectRatio;
-          
+          vec2 screenTarget = ` + { "center": "vec2(0., 0.)", "color wheel": "getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)" }[this.state.convergeTarget] + `;
+          vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;
+
           vec2 d = target - initialPosition.xy;
           float d_len = length(d);
           
@@ -246,15 +248,31 @@ export default class Renderer {
 
     result.uniforms = {
       invImageAspectRatio: 1 / this.imageData.aspectRatio,
+      invScreenAspectRatio(ctx) {
+        return ctx.viewportHeight / ctx.viewportWidth;
+      },
       viewProjectionMatrix(ctx) {
-        const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                              (this.imageData.width / this.imageData.height));
+        const aspect = ctx.viewportWidth / ctx.viewportHeight;
+        const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
+                              (this.imageData.width / this.imageData.height);
 
         return [
           2, 0, 0, 0,
-          0, 2 * (ctx.viewportWidth / ctx.viewportHeight), 0, 0,
+          0, 2 * aspect, 0, 0,
           0, 0, 1, 0,
-          -1, (underscan * 2) - 1, 0, 1
+          -1, underscan * 2 - 1, 0, 1
+        ];
+      },
+      invViewProjectionMatrix(ctx) {
+        const aspect = ctx.viewportWidth / ctx.viewportHeight;
+        const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
+                              (this.imageData.width / this.imageData.height);
+
+        return [
+          .5, 0, 0, 0,
+          0, .5 / aspect, 0, 0,
+          0, 0, 1, 0,
+          .5, -.5 * (underscan * 2 - 1) / aspect, 0, 1
         ];
       },
       particleSize(ctx) {
