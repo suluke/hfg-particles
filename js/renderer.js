@@ -118,6 +118,7 @@ export default class Renderer {
 
       uniform float convergeTime;
       uniform float convergeSpeed;
+      uniform float convergeRotationSpeed;
       uniform float convergeMaxTravelTime;
 
       varying vec3 color;
@@ -146,7 +147,7 @@ export default class Renderer {
 
     if (this.state.convergeEnable) {
       result += `{
-          vec2 target = ` + { "center": "vec2(.5, .5)", "color wheel": "vec2(.5, .5) + getDirectionVector(hsv[0] + convergeTime) * vec2(.4 * invImageAspectRatio, .4)" }[this.state.convergeTarget] + `;
+          vec2 target = ` + { "center": "vec2(.5, .5)", "color wheel": "vec2(.5, .5) + getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.4 * invImageAspectRatio, .4)" }[this.state.convergeTarget] + `;
           target.y *= invImageAspectRatio;
           
           vec2 d = target - initialPosition.xy;
@@ -288,6 +289,9 @@ export default class Renderer {
       },
       convergeSpeed() {
         return this.state.convergeSpeed;
+      },
+      convergeRotationSpeed() {
+        return this.state.convergeRotationSpeed;
       },
       convergeMaxTravelTime() {
         return Math.sqrt(2 / this.state.convergeSpeed);

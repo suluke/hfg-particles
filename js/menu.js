@@ -239,6 +239,26 @@ class ConvergeSpeedControl extends Control {
   }
 }
 
+class ConvergeRotationSpeedControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-converge-rotation-speed');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    state.convergeRotationSpeed = parseInt(this.input.value, 10) / 100;
+  }
+
+  applyState(state) {
+    this.input.checked = state.convergeRotationSpeed * 100;
+  }
+}
+
 class ConvergeTargetControl extends Control {
   constructor(menu) {
     super(menu);
@@ -354,7 +374,7 @@ class ResetAppstateButton extends Control {
 const ControlsList = [
   BgColorPicker, ParticleScalingControl, ParticleOverlapControl,
   HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl, HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
-  ConvergeEnableControl, ConvergeSpeedControl, ConvergeTargetControl,
+  ConvergeEnableControl, ConvergeSpeedControl, ConvergeRotationSpeedControl, ConvergeTargetControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
