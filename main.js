@@ -261,12 +261,15 @@ var ImgDimWarn = function ImgDimWarn() {
 
   var ignoreWarnBtnClass = 'btn-img-dim-warn-ignore';
   var cancelLoadBtnClass = 'btn-img-dim-warn-cancel';
+  var scaledLoadBtnClass = 'btn-img-dim-warn-scale';
+  var scaledLoadXInputClass = 'img-dim-x';
+  var scaledLoadYInputClass = 'img-dim-y';
 
   var parser = document.createElement('body');
   // Object properties
   this.resolve = null;
   this.reject = null;
-  parser.innerHTML = "\n      <div class=\"img-dim-warn-backdrop\">\n        <div class=\"img-dim-warn-popup\">\n          The image you selected is very large. Loading it may cause the\n          site to become very slow/unresponsive. <br/>\n          Do you still want to proceed?<br/>\n          <button type=\"button\" class=\"" + ignoreWarnBtnClass + "\">Yes, load big image</button>\n          <button type=\"button\" class=\"" + cancelLoadBtnClass + "\">Cancel</button>\n          <input type=\"checkbox\"\n            name=\"toggle-advanced-load-options\"\n            id=\"toggle-advanced-load-options\"\n            class=\"toggle-advanced-load-options\"/>\n          <label for=\"toggle-advanced-load-options\"\n            class=\"btn-toggle-advanced-load-options\"\n            title=\"Toggle advanced options\"\n          ></label>\n          <div>\n            Scale image to size before loading: <br/>\n            width: <input type=\"number\" /><br/>\n            height: <input type=\"number\" /><br/>\n            <button type=\"button\">Load scaled image</button>\n          </div>\n        </div>\n      </div>\n    ";
+  parser.innerHTML = "\n      <div class=\"img-dim-warn-backdrop\">\n        <div class=\"img-dim-warn-popup\">\n          The image you selected is very large. Loading it may cause the\n          site to become very slow/unresponsive. <br/>\n          Do you still want to proceed?<br/>\n          <button type=\"button\" class=\"" + ignoreWarnBtnClass + "\">Yes, load big image</button>\n          <button type=\"button\" class=\"" + cancelLoadBtnClass + "\">Cancel</button>\n          <input type=\"checkbox\"\n            name=\"toggle-advanced-load-options\"\n            id=\"toggle-advanced-load-options\"\n            class=\"toggle-advanced-load-options\"/>\n          <label for=\"toggle-advanced-load-options\"\n            class=\"btn-toggle-advanced-load-options\"\n            title=\"Toggle advanced options\"\n          ></label>\n          <div>\n            Scale image to size before loading: <br/>\n            width: <input type=\"number\" class=\"" + scaledLoadXInputClass + "\"/><br/>\n            height: <input type=\"number\" class=\"" + scaledLoadYInputClass + "\"/><br/>\n            <button type=\"button\" class=\"" + scaledLoadBtnClass + "\">Load scaled image</button>\n          </div>\n        </div>\n      </div>\n    ";
   // Whitespace in template causes 'text' nodes to be in parser, so index
   // becomes 1
   this.dialogElm = parser.childNodes[1];
@@ -274,26 +277,46 @@ var ImgDimWarn = function ImgDimWarn() {
   var loadBtn = this.dialogElm.querySelector(("." + ignoreWarnBtnClass));
   loadBtn.addEventListener('click', function () {
     this$1.hide();
-    this$1.resolve();
+    this$1.resolve({
+      xParticlesCount: parseInt(this$1.xParticlesInput.value, 10),
+      yParticlesCount: parseInt(this$1.yParticlesInput.value, 10)
+    });
   });
   var cancelBtn = this.dialogElm.querySelector(("." + cancelLoadBtnClass));
   cancelBtn.addEventListener('click', function () {
     this$1.hide();
     this$1.reject();
   });
+  var loadScaledBtn = this.dialogElm.querySelector(("." + scaledLoadBtnClass));
+  loadScaledBtn.addEventListener('click', function () {
+    this$1.hide();
+    this$1.resolve({
+      xParticlesCount: parseInt(this$1.xParticlesInput.value, 10),
+      yParticlesCount: parseInt(this$1.yParticlesInput.value, 10)
+    });
+  });
+  this.xParticlesInput = this.dialogElm.querySelector(("." + scaledLoadXInputClass));
+  this.yParticlesInput = this.dialogElm.querySelector(("." + scaledLoadYInputClass));
 };
-ImgDimWarn.prototype.verify = function verify (img) {
+ImgDimWarn.prototype.verify = function verify (img, menu) {
     var this$1 = this;
 
   var tooManyPixels = 1024 * 768; // TODO Magic number
+  this.menu = menu;
 
   return new Promise(function (res, rej) {
     if (img.naturalWidth * img.naturalHeight >= tooManyPixels) {
       this$1.resolve = res;
       this$1.reject = rej;
+      this$1.xParticlesInput.value = "" + (img.naturalWidth);
+      this$1.yParticlesInput.value = "" + (img.naturalHeight);
+        
       document.body.appendChild(this$1.dialogElm);
     } else {
-      res();
+      res({
+        xParticlesCount: img.naturalWidth,
+        yParticlesCount: img.naturalHeight
+      });
     }
   });
 };
@@ -1174,8 +1197,8 @@ var index = function (cstr) {
 };
 
 var config = {
-  timestamp: '2017-05-13T12:28:54.355Z',
-  git_rev: '9d869a7',
+  timestamp: '2017-05-15T17:22:16.266Z',
+  git_rev: 'dcd0106',
   export_schema_version: 0
 };
 
@@ -1232,6 +1255,44 @@ var BgColorPicker = (function (Control) {
   };
 
   return BgColorPicker;
+}(Control));
+
+/**
+ *
+ */
+var ParticleCountControl = (function (Control) {
+  function ParticleCountControl(menu) {
+    var this$1 = this;
+
+    Control.call(this, menu);
+    this.xInput = document.getElementById('menu-particles-x');
+    this.yInput = document.getElementById('menu-particles-y');
+
+    this.xInput.addEventListener('change', function () {
+      this$1.menu.notifyStateChange();
+    });
+    this.yInput.addEventListener('change', function () {
+      this$1.menu.notifyStateChange();
+    });
+  }
+
+  if ( Control ) ParticleCountControl.__proto__ = Control;
+  ParticleCountControl.prototype = Object.create( Control && Control.prototype );
+  ParticleCountControl.prototype.constructor = ParticleCountControl;
+
+  ParticleCountControl.prototype.updateState = function updateState (state) {
+    // eslint-disable-next-line no-param-reassign
+    state.xParticlesCount = parseInt(this.xInput.value, 10);
+    // eslint-disable-next-line no-param-reassign
+    state.yParticlesCount = parseInt(this.yInput.value, 10);
+  };
+
+  ParticleCountControl.prototype.applyState = function applyState (state) {
+    this.xInput.value = state.xParticlesCount;
+    this.yInput.value = state.yParticlesCount;
+  };
+
+  return ParticleCountControl;
 }(Control));
 
 /**
@@ -1443,107 +1504,117 @@ var HueDisplaceRotateControl = (function (Control) {
   return HueDisplaceRotateControl;
 }(Control));
 
-/*
-class AttractEnableControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-attract-enable');
+var ConvergeEnableControl = (function (Control) {
+  function ConvergeEnableControl(menu) {
+    var this$1 = this;
+
+    Control.call(this, menu);
+    this.elm = document.getElementById('menu-converge-enable');
     this.input = this.elm.querySelector('input');
 
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
+    this.input.addEventListener('change', function () {
+      this$1.menu.notifyStateChange();
     });
   }
 
-  updateState(state) {
-    state.attractEnable = this.input.checked;
+  if ( Control ) ConvergeEnableControl.__proto__ = Control;
+  ConvergeEnableControl.prototype = Object.create( Control && Control.prototype );
+  ConvergeEnableControl.prototype.constructor = ConvergeEnableControl;
+
+  ConvergeEnableControl.prototype.updateState = function updateState (state) {
+    state.convergeEnable = this.input.checked;
+  };
+
+  ConvergeEnableControl.prototype.applyState = function applyState (state) {
+    this.input.checked = state.convergeEnable;
+  };
+
+  return ConvergeEnableControl;
+}(Control));
+
+var ConvergeSpeedControl = (function (Control) {
+  function ConvergeSpeedControl(menu) {
+    var this$1 = this;
+
+    Control.call(this, menu);
+    this.elm = document.getElementById('menu-converge-speed');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', function () {
+      this$1.menu.notifyStateChange();
+    });
   }
 
-  applyState(state) {
-    this.input.checked = state.attractEnable;
-  }
-}
+  if ( Control ) ConvergeSpeedControl.__proto__ = Control;
+  ConvergeSpeedControl.prototype = Object.create( Control && Control.prototype );
+  ConvergeSpeedControl.prototype.constructor = ConvergeSpeedControl;
 
-class AttractOffsetModeControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-attract-offset-mode');
+  ConvergeSpeedControl.prototype.updateState = function updateState (state) {
+    state.convergeSpeed = parseInt(this.input.value, 10) / 1000;
+  };
+
+  ConvergeSpeedControl.prototype.applyState = function applyState (state) {
+    this.input.checked = state.convergeSpeed * 1000;
+  };
+
+  return ConvergeSpeedControl;
+}(Control));
+
+var ConvergeRotationSpeedControl = (function (Control) {
+  function ConvergeRotationSpeedControl(menu) {
+    var this$1 = this;
+
+    Control.call(this, menu);
+    this.elm = document.getElementById('menu-converge-rotation-speed');
+    this.input = this.elm.querySelector('input');
+
+    this.input.addEventListener('change', function () {
+      this$1.menu.notifyStateChange();
+    });
+  }
+
+  if ( Control ) ConvergeRotationSpeedControl.__proto__ = Control;
+  ConvergeRotationSpeedControl.prototype = Object.create( Control && Control.prototype );
+  ConvergeRotationSpeedControl.prototype.constructor = ConvergeRotationSpeedControl;
+
+  ConvergeRotationSpeedControl.prototype.updateState = function updateState (state) {
+    state.convergeRotationSpeed = parseInt(this.input.value, 10) / 100;
+  };
+
+  ConvergeRotationSpeedControl.prototype.applyState = function applyState (state) {
+    this.input.checked = state.convergeRotationSpeed * 100;
+  };
+
+  return ConvergeRotationSpeedControl;
+}(Control));
+
+var ConvergeTargetControl = (function (Control) {
+  function ConvergeTargetControl(menu) {
+    var this$1 = this;
+
+    Control.call(this, menu);
+    this.elm = document.getElementById('menu-converge-target');
     this.select = this.elm.querySelector('select');
 
-    this.select.addEventListener('change', () => {
-      this.menu.notifyStateChange();
+    this.select.addEventListener('change', function () {
+      this$1.menu.notifyStateChange();
     });
   }
 
-  updateState(state) {
-    state.attractOffsetMode = this.select.value;
-  }
+  if ( Control ) ConvergeTargetControl.__proto__ = Control;
+  ConvergeTargetControl.prototype = Object.create( Control && Control.prototype );
+  ConvergeTargetControl.prototype.constructor = ConvergeTargetControl;
 
-  applyState(state) {
-    this.select.value = state.attractOffsetMode;
-  }
-}
+  ConvergeTargetControl.prototype.updateState = function updateState (state) {
+    state.convergeTarget = this.select.value;
+  };
 
-class AttractOffsetStrengthControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-attract-offset-strength');
-    this.input = this.elm.querySelector('input');
+  ConvergeTargetControl.prototype.applyState = function applyState (state) {
+    this.select.value = state.convergeTarget;
+  };
 
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    state.attractOffsetStrength = this.input.value;
-  }
-
-  applyState(state) {
-    this.input.checked = state.attractOffsetStrength;
-  }
-}
-
-class AttractTimeControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-attract-time');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    state.attractTime = this.input.value / 1000;
-  }
-
-  applyState(state) {
-    this.input.checked = state.attractTime * 1000;
-  }
-}
-
-class AttractTargetControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-attract-target');
-    this.select = this.elm.querySelector('select');
-
-    this.select.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    state.attractTarget = this.select.value;
-  }
-
-  applyState(state) {
-    this.select.value = state.attractTarget;
-  }
-}
-*/
+  return ConvergeTargetControl;
+}(Control));
 
 /**
  *
@@ -1662,11 +1733,9 @@ var ResetAppstateButton = (function (Control) {
 }(Control));
 
 var ControlsList = [
-  BgColorPicker, ParticleScalingControl, ParticleOverlapControl,
-  HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl,
-  HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
-  // AttractEnableControl, AttractOffsetModeControl, AttractOffsetStrengthControl,
-  // AttractTimeControl, AttractTargetControl,
+  BgColorPicker, ParticleCountControl, ParticleScalingControl, ParticleOverlapControl,
+  HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl, HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
+  ConvergeEnableControl, ConvergeSpeedControl, ConvergeRotationSpeedControl, ConvergeTargetControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
@@ -11273,6 +11342,10 @@ return wrapREGL;
 
 });
 
+function fract(x) {
+  return x - Math.floor(x);
+}
+
 var Renderer = function Renderer(canvas) {
   var this$1 = this;
 
@@ -11281,7 +11354,7 @@ var Renderer = function Renderer(canvas) {
   console.log(("max texture size: " + (this.regl.limits.maxTextureSize)));
   console.log(("point size dims: " + (this.regl.limits.pointSizeDims[0]) + " " + (this.regl.limits.pointSizeDims[1])));
   console.log(("max uniforms: " + (this.regl.limits.maxVertexUniforms) + " " + (this.regl.limits.maxFragmentUniforms)));
-  this.imageData = null;
+  this.particleData = null;
   this.state = null;
   this.command = null;
   this.regl.frame(function () {
@@ -11295,30 +11368,40 @@ var Renderer = function Renderer(canvas) {
   });
 };
 
-Renderer.prototype.createImageData = function createImageData (img) {
-  this.destroyImageData();
-
-  var dataCanvas = document.createElement('canvas');
-  var dataContext = dataCanvas.getContext('2d');
-  dataCanvas.width = img.naturalWidth;
-  dataCanvas.height = img.naturalHeight;
+Renderer.prototype.loadImageData = function loadImageData (img) {
+  var fullresCanvas = document.createElement('canvas');
+  var fullresContext = fullresCanvas.getContext('2d');
+  fullresCanvas.width = img.naturalWidth;
+  fullresCanvas.height = img.naturalHeight;
   // flipped y-axis
-  dataContext.translate(0, img.naturalHeight);
-  dataContext.scale(1, -1);
-  dataContext.drawImage(img, 0, 0);
-  var imgData = dataContext.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
+  fullresContext.translate(0, img.naturalHeight);
+  fullresContext.scale(1, -1);
+  fullresContext.drawImage(img, 0, 0);
+  this.imgData = fullresCanvas;
+};
 
-  var w = imgData.width;
-  var h = imgData.height;
+Renderer.prototype.createParticleData = function createParticleData () {
+  this.destroyParticleData();
+    
+  var imgData = this.imgData;
+  var scalingCanvas = document.createElement('canvas');
+  var scalingContext = scalingCanvas.getContext('2d');
+  scalingCanvas.width = this.state.xParticlesCount || imgData.width;
+  scalingCanvas.height = this.state.yParticlesCount || imgData.height;
+  scalingContext.drawImage(imgData, 0, 0, scalingCanvas.width, scalingCanvas.height);
+  var scaledData = scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
 
-  var imagePixels = imgData.data;
+  var w = scaledData.width;
+  var h = scaledData.height;
+
+  var particlePixels = scaledData.data;
 
   var pixelIndices = Array.from(Array(w * h).keys());
 
   var texcoords = pixelIndices.map(function (i) { return [((i % w) + 0.5) / w, (Math.floor(i / w) + 0.5) / h]; });
 
   var rgb = pixelIndices.map(function (i) {
-    var pixel = imagePixels.slice(i * 4, (i * 4) + 4);
+    var pixel = particlePixels.slice(i * 4, (i * 4) + 4);
 
     return [pixel[0] / 255, pixel[1] / 255, pixel[2] / 255];
   });
@@ -11349,7 +11432,7 @@ Renderer.prototype.createImageData = function createImageData (img) {
     return [_h * 60 * (Math.PI / 180), d / cMax, cMax];
   });
 
-  this.imageData = {
+  this.particleData = {
     width: w,
     height: h,
     aspectRatio: w / h,
@@ -11359,20 +11442,24 @@ Renderer.prototype.createImageData = function createImageData (img) {
   };
 };
 
-Renderer.prototype.destroyImageData = function destroyImageData () {
-  if (this.imageData !== null) {
-    this.imageData.texcoordsBuffer.destroy();
-    this.imageData.rgbBuffer.destroy();
-    this.imageData.hsvBuffer.destroy();
-    this.imageData = null;
+Renderer.prototype.destroyParticleData = function destroyParticleData () {
+  if (this.particleData !== null) {
+    this.particleData.texcoordsBuffer.destroy();
+    this.particleData.rgbBuffer.destroy();
+    this.particleData.hsvBuffer.destroy();
+    this.particleData = null;
   }
 };
 
 Renderer.prototype.assembleVertexShader = function assembleVertexShader () {
-  var result = "\n      precision highp float;\n\n      attribute vec2 texcoord;\n      attribute vec3 rgb;\n      attribute vec3 hsv;\n\n      uniform float invImageAspectRatio;\n      uniform mat4 viewProjectionMatrix;\n\n      uniform float particleSize;\n\n      uniform float hueDisplaceDistance;\n      uniform float hueDisplaceTime;\n      uniform float hueDisplaceDirectionOffset;\n      uniform float hueDisplaceScaleByValue;\n\n      varying vec3 color;\n\n      const float PI = 3.14159265;\n\n      vec2 getDirectionVector(float angle) {\n        return vec2(cos(angle), sin(angle));\n      }\n\n      void main() {\n        vec3 position = vec3(texcoord, 0);\n        position.y *= invImageAspectRatio;\n    ";
+  var result = "\n      precision highp float;\n\n      attribute vec2 texcoord;\n      attribute vec3 rgb;\n      attribute vec3 hsv;\n\n      uniform float invImageAspectRatio;\n      uniform float invScreenAspectRatio;\n      uniform mat4 viewProjectionMatrix;\n      uniform mat4 invViewProjectionMatrix;\n\n      uniform float particleSize;\n\n      uniform float hueDisplaceDistance;\n      uniform float hueDisplaceTime;\n      uniform float hueDisplaceDirectionOffset;\n      uniform float hueDisplaceScaleByValue;\n\n      uniform float convergeTime;\n      uniform float convergeSpeed;\n      uniform float convergeRotationSpeed;\n      uniform float convergeMaxTravelTime;\n\n      varying vec3 color;\n\n      const float PI = 3.14159265;\n\n      vec2 getDirectionVector(float angle) {\n        return vec2(cos(angle), sin(angle));\n      }\n\n      void main() {\n        vec3 initialPosition = vec3(texcoord, 0);\n        initialPosition.y *= invImageAspectRatio;\n        \n        vec3 position = initialPosition;\n    ";
 
   if (this.state.hueDisplaceDistance !== 0) {
     result += "{\n          float angle = hsv[0] + hueDisplaceDirectionOffset;\n          float offset = (-cos(hueDisplaceTime) + 1.) / 2.;\n          position.xy += offset * getDirectionVector(angle) * hueDisplaceDistance * (1. - hueDisplaceScaleByValue * (1. - hsv[2]));\n        }\n      ";
+  }
+
+  if (this.state.convergeEnable) {
+    result += "{\n          vec2 screenTarget = " + { "center": "vec2(0., 0.)", "color wheel": "getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)" }[this.state.convergeTarget] + ";\n          vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n          vec2 d = target - initialPosition.xy;\n          float d_len = length(d);\n          \n          float stop_t = sqrt(2. * d_len / convergeSpeed);\n\n          if(convergeTime < stop_t) {\n            float t = min(convergeTime, stop_t);\n            position.xy += .5 * d / d_len * convergeSpeed * t * t;\n          } else if(convergeTime < convergeMaxTravelTime) {\n            position.xy += d;\n          } else {\n            float t = convergeTime - convergeMaxTravelTime;\n            //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n            //position.xy += mix(d, vec2(0.), t * t);\n            position.xy += mix(d, vec2(0.), -cos(t / convergeMaxTravelTime * PI) * .5 + .5);\n          }\n        }\n      ";
   }
 
   result += "\n        color = rgb;\n        gl_PointSize = max(particleSize, 0.);\n        gl_Position = viewProjectionMatrix * vec4(position, 1.);\n      }\n    ";
@@ -11407,11 +11494,11 @@ Renderer.prototype.assembleCommand = function assembleCommand () {
 
   var result = {
     primitive: 'points',
-    count: this.imageData.width * this.imageData.height,
+    count: this.particleData.width * this.particleData.height,
     attributes: {
-      texcoord: this.imageData.texcoordsBuffer,
-      rgb: this.imageData.rgbBuffer,
-      hsv: this.imageData.hsvBuffer
+      texcoord: this.particleData.texcoordsBuffer,
+      rgb: this.particleData.rgbBuffer,
+      hsv: this.particleData.hsvBuffer
     },
     vert: vert,
     frag: frag,
@@ -11436,32 +11523,45 @@ Renderer.prototype.assembleCommand = function assembleCommand () {
   }
 
   result.uniforms = {
-    invImageAspectRatio: 1 / this.imageData.aspectRatio,
+    invImageAspectRatio: 1 / this.particleData.aspectRatio,
+    invScreenAspectRatio: function invScreenAspectRatio(ctx) {
+      return ctx.viewportHeight / ctx.viewportWidth;
+    },
     viewProjectionMatrix: function viewProjectionMatrix(ctx) {
-      var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.imageData.width / this.imageData.height));
+      var aspect = ctx.viewportWidth / ctx.viewportHeight;
+      var underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
+                            (this.particleData.width / this.particleData.height);
 
       return [
         2, 0, 0, 0,
-        0, 2 * (ctx.viewportWidth / ctx.viewportHeight), 0, 0,
+        0, 2 * aspect, 0, 0,
         0, 0, 1, 0,
-        -1, (underscan * 2) - 1, 0, 1
+        -1, underscan * 2 - 1, 0, 1
+      ];
+    },
+    invViewProjectionMatrix: function invViewProjectionMatrix(ctx) {
+      var aspect = ctx.viewportWidth / ctx.viewportHeight;
+      var underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
+                            (this.particleData.width / this.particleData.height);
+
+      return [
+        .5, 0, 0, 0,
+        0, .5 / aspect, 0, 0,
+        0, 0, 1, 0,
+        .5, -.5 * (underscan * 2 - 1) / aspect, 0, 1
       ];
     },
     particleSize: function particleSize(ctx) {
-      return (ctx.viewportWidth / this.imageData.width) * 2 * this.state.particleScaling;
+      return (ctx.viewportWidth / this.particleData.width) * 2 * this.state.particleScaling;
     },
     hueDisplaceDistance: function hueDisplaceDistance() {
       return this.state.hueDisplaceDistance;
     },
     hueDisplaceTime: function hueDisplaceTime(ctx) {
-      var t = ctx.time / this.state.hueDisplacePeriod;
-
-      return (t - Math.floor(t)) * 2 * Math.PI;
+      return fract(ctx.time / this.state.hueDisplacePeriod) * 2 * Math.PI;
     },
     hueDisplaceDirectionOffset: function hueDisplaceDirectionOffset(ctx) {
-      var t = ctx.time / this.state.hueDisplacePeriod;
-      var offset = this.state.hueDisplaceRotate * (t - Math.floor(t)) * 2 * Math.PI;
+      var result = this.state.hueDisplaceRotate * fract(ctx.time / this.state.hueDisplacePeriod) * 2 * Math.PI;
       if (this.state.hueDisplaceRandomDirectionOffset) {
         if (this.hueDisplaceRandomDirectionOffsetValue === undefined
           || Math.floor(this.oldTime / this.state.hueDisplacePeriod)
@@ -11469,13 +11569,26 @@ Renderer.prototype.assembleCommand = function assembleCommand () {
         ) {
           this.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
         }
-        offset += this.hueDisplaceRandomDirectionOffsetValue;
+        result += this.hueDisplaceRandomDirectionOffsetValue;
       }
 
-      return offset;
+      return result;
     },
     hueDisplaceScaleByValue: function hueDisplaceScaleByValue() {
       return this.state.hueDisplaceScaleByValue;
+    },
+    convergeTime: function convergeTime(ctx) {
+      var period = 2 * Math.sqrt(2 / this.state.convergeSpeed);
+      return fract(ctx.time / period) * period;
+    },
+    convergeSpeed: function convergeSpeed() {
+      return this.state.convergeSpeed;
+    },
+    convergeRotationSpeed: function convergeRotationSpeed() {
+      return this.state.convergeRotationSpeed;
+    },
+    convergeMaxTravelTime: function convergeMaxTravelTime() {
+      return Math.sqrt(2 / this.state.convergeSpeed);
     }
   };
 
@@ -11488,7 +11601,8 @@ Renderer.prototype.rebuildCommand = function rebuildCommand () {
 };
 
 Renderer.prototype.loadImage = function loadImage (img) {
-  this.createImageData(img);
+  this.loadImageData(img);
+  this.createParticleData();
   this.rebuildCommand();
 };
 
@@ -11496,9 +11610,8 @@ Renderer.prototype.setState = function setState (state) {
   var oldState = this.state;
   this.state = state;
   // TODO: rebuild command only when necessary
-  if (this.imageData !== null /* && state.particleOverlap !== oldState.particleOverlap */) {
-    this.rebuildCommand();
-  }
+  this.createParticleData();
+  this.rebuildCommand();
 };
 
 console.log(config);
@@ -11522,15 +11635,23 @@ var adjustCanvasSize = function () {
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
 
-renderer.setState(menu.defaultState);
+menu.addChangeListener(function (state) {
+  renderer.setState(state);
+});
 
 var srcImage = document.createElement('img');
 srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
 srcImage.src = 'tron.jpg';
 srcImage.onload = function () {
-  imgDimWarn.verify(srcImage)
-  .then(function () {
-    renderer.loadImage(srcImage);
+  imgDimWarn.verify(srcImage, menu)
+  .then(function (ref) {
+    var xParticlesCount = ref.xParticlesCount;
+    var yParticlesCount = ref.yParticlesCount;
+
+    renderer.loadImageData(srcImage);
+    var state = Object.assign({}, menu.submittedState, {xParticlesCount: xParticlesCount, yParticlesCount: yParticlesCount});
+    menu.applyState(state);
+    menu.submit();
   }, function () {
     /* User canceled loading image */
     // If we don't clear, changeListeners may not fire if same image is selected again
@@ -11551,10 +11672,6 @@ imgSelect.addChangeListener(function (url) {
     srcImage.src = url;
     document.documentElement.classList.add(imageLoadingClass);
   }
-});
-
-menu.addChangeListener(function (state) {
-  renderer.setState(state);
 });
 
 }());
