@@ -28,15 +28,16 @@ const adjustCanvasSize = () => {
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
 
-renderer.setState(menu.defaultState);
-
 const srcImage = document.createElement('img');
 srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
 srcImage.src = 'tron.jpg';
 srcImage.onload = () => {
   imgDimWarn.verify(srcImage)
-  .then(() => {
-    renderer.loadImage(srcImage);
+  .then(({xParticlesCount, yParticlesCount}) => {
+    renderer.loadImageData(srcImage);
+    const state = Object.assign({}, menu.submittedState, {xParticlesCount, yParticlesCount});
+    menu.applyState(state);
+    menu.submit();
   }, () => {
     /* User canceled loading image */
     // If we don't clear, changeListeners may not fire if same image is selected again

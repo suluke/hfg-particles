@@ -2,6 +2,9 @@ export default class ImgDimWarn {
   constructor() {
     const ignoreWarnBtnClass = 'btn-img-dim-warn-ignore';
     const cancelLoadBtnClass = 'btn-img-dim-warn-cancel';
+    const scaledLoadBtnClass = 'btn-img-dim-warn-scale';
+    const scaledLoadXInputClass = 'img-dim-x';
+    const scaledLoadYInputClass = 'img-dim-y';
 
     const parser = document.createElement('body');
     // Object properties
@@ -25,9 +28,9 @@ export default class ImgDimWarn {
           ></label>
           <div>
             Scale image to size before loading: <br/>
-            width: <input type="number" /><br/>
-            height: <input type="number" /><br/>
-            <button type="button">Load scaled image</button>
+            width: <input type="number" class="${scaledLoadXInputClass}"/><br/>
+            height: <input type="number" class="${scaledLoadYInputClass}"/><br/>
+            <button type="button" class="${scaledLoadBtnClass}">Load scaled image</button>
           </div>
         </div>
       </div>
@@ -39,13 +42,26 @@ export default class ImgDimWarn {
     const loadBtn = this.dialogElm.querySelector(`.${ignoreWarnBtnClass}`);
     loadBtn.addEventListener('click', () => {
       this.hide();
-      this.resolve();
+      this.resolve({
+        xParticlesCount: parseInt(this.xParticlesInput.value, 10),
+        yParticlesCount: parseInt(this.yParticlesInput.value, 10)
+      });
     });
     const cancelBtn = this.dialogElm.querySelector(`.${cancelLoadBtnClass}`);
     cancelBtn.addEventListener('click', () => {
       this.hide();
       this.reject();
     });
+    const loadScaledBtn = this.dialogElm.querySelector(`.${scaledLoadBtnClass}`);
+    loadScaledBtn.addEventListener('click', () => {
+      this.hide();
+      this.resolve({
+        xParticlesCount: parseInt(this.xParticlesInput.value, 10),
+        yParticlesCount: parseInt(this.yParticlesInput.value, 10)
+      });
+    });
+    this.xParticlesInput = this.dialogElm.querySelector(`.${scaledLoadXInputClass}`)
+    this.yParticlesInput = this.dialogElm.querySelector(`.${scaledLoadYInputClass}`)
   }
   verify(img) {
     const tooManyPixels = 1024 * 768; // TODO Magic number
@@ -54,9 +70,15 @@ export default class ImgDimWarn {
       if (img.naturalWidth * img.naturalHeight >= tooManyPixels) {
         this.resolve = res;
         this.reject = rej;
+        this.xParticlesInput.value = `${img.naturalWidth}`;
+        this.yParticlesInput.value = `${img.naturalHeight}`;
+        
         document.body.appendChild(this.dialogElm);
       } else {
-        res();
+        res({
+          xParticlesCount: img.naturalWidth,
+          yParticlesCount: img.naturalHeight
+        });
       }
     });
   }

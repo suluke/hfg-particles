@@ -49,6 +49,36 @@ class BgColorPicker extends Control {
 /**
  *
  */
+class ParticleCountControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.xInput = document.getElementById('menu-particles-x');
+    this.yInput = document.getElementById('menu-particles-y');
+
+    this.xInput.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+    this.yInput.addEventListener('change', () => {
+      this.menu.notifyStateChange();
+    });
+  }
+
+  updateState(state) {
+    // eslint-disable-next-line no-param-reassign
+    state.xParticlesCount = parseInt(this.xInput.value, 10);
+    // eslint-disable-next-line no-param-reassign
+    state.yParticlesCount = parseInt(this.yInput.value, 10);
+  }
+
+  applyState(state) {
+    this.xInput.value = state.xParticlesCount;
+    this.yInput.value = state.yParticlesCount;
+  }
+}
+
+/**
+ *
+ */
 class ParticleScalingControl extends Control {
   constructor(menu) {
     super(menu);
@@ -372,7 +402,7 @@ class ResetAppstateButton extends Control {
 }
 
 const ControlsList = [
-  BgColorPicker, ParticleScalingControl, ParticleOverlapControl,
+  BgColorPicker, ParticleCountControl, ParticleScalingControl, ParticleOverlapControl,
   HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl, HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
   ConvergeEnableControl, ConvergeSpeedControl, ConvergeRotationSpeedControl, ConvergeTargetControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton

@@ -11,7 +11,7 @@ export default class Renderer {
     console.log(`max texture size: ${this.regl.limits.maxTextureSize}`);
     console.log(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
     console.log(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
-    this.imageData = null;
+    this.particleData = null;
     this.state = null;
     this.command = null;
     this.regl.frame(() => {
@@ -25,30 +25,40 @@ export default class Renderer {
     });
   }
 
-  createImageData(img) {
-    this.destroyImageData();
-
-    const dataCanvas = document.createElement('canvas');
-    const dataContext = dataCanvas.getContext('2d');
-    dataCanvas.width = img.naturalWidth;
-    dataCanvas.height = img.naturalHeight;
+  loadImageData(img) {
+    const fullresCanvas = document.createElement('canvas');
+    const fullresContext = fullresCanvas.getContext('2d');
+    fullresCanvas.width = img.naturalWidth;
+    fullresCanvas.height = img.naturalHeight;
     // flipped y-axis
-    dataContext.translate(0, img.naturalHeight);
-    dataContext.scale(1, -1);
-    dataContext.drawImage(img, 0, 0);
-    const imgData = dataContext.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
+    fullresContext.translate(0, img.naturalHeight);
+    fullresContext.scale(1, -1);
+    fullresContext.drawImage(img, 0, 0);
+    this.imgData = fullresCanvas;
+  }
 
-    const w = imgData.width;
-    const h = imgData.height;
+  createParticleData() {
+    this.destroyParticleData();
+    
+    const imgData = this.imgData;
+    const scalingCanvas = document.createElement('canvas');
+    const scalingContext = scalingCanvas.getContext('2d');
+    scalingCanvas.width = this.state.xParticlesCount || imgData.width;
+    scalingCanvas.height = this.state.yParticlesCount || imgData.height;
+    scalingContext.drawImage(imgData, 0, 0, scalingCanvas.width, scalingCanvas.height);
+    const scaledData = scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
 
-    const imagePixels = imgData.data;
+    const w = scaledData.width;
+    const h = scaledData.height;
+
+    const particlePixels = scaledData.data;
 
     const pixelIndices = Array.from(Array(w * h).keys());
 
     const texcoords = pixelIndices.map((i) => [((i % w) + 0.5) / w, (Math.floor(i / w) + 0.5) / h]);
 
     const rgb = pixelIndices.map((i) => {
-      const pixel = imagePixels.slice(i * 4, (i * 4) + 4);
+      const pixel = particlePixels.slice(i * 4, (i * 4) + 4);
 
       return [pixel[0] / 255, pixel[1] / 255, pixel[2] / 255];
     });
@@ -79,7 +89,7 @@ export default class Renderer {
       return [_h * 60 * (Math.PI / 180), d / cMax, cMax];
     });
 
-    this.imageData = {
+    this.particleData = {
       width: w,
       height: h,
       aspectRatio: w / h,
@@ -89,12 +99,12 @@ export default class Renderer {
     };
   }
 
-  destroyImageData() {
-    if (this.imageData !== null) {
-      this.imageData.texcoordsBuffer.destroy();
-      this.imageData.rgbBuffer.destroy();
-      this.imageData.hsvBuffer.destroy();
-      this.imageData = null;
+  destroyParticleData() {
+    if (this.particleData !== null) {
+      this.particleData.texcoordsBuffer.destroy();
+      this.particleData.rgbBuffer.destroy();
+      this.particleData.hsvBuffer.destroy();
+      this.particleData = null;
     }
   }
 
@@ -218,11 +228,11 @@ export default class Renderer {
 
     const result = {
       primitive: 'points',
-      count: this.imageData.width * this.imageData.height,
+      count: this.particleData.width * this.particleData.height,
       attributes: {
-        texcoord: this.imageData.texcoordsBuffer,
-        rgb: this.imageData.rgbBuffer,
-        hsv: this.imageData.hsvBuffer
+        texcoord: this.particleData.texcoordsBuffer,
+        rgb: this.particleData.rgbBuffer,
+        hsv: this.particleData.hsvBuffer
       },
       vert,
       frag,
@@ -247,14 +257,14 @@ export default class Renderer {
     }
 
     result.uniforms = {
-      invImageAspectRatio: 1 / this.imageData.aspectRatio,
+      invImageAspectRatio: 1 / this.particleData.aspectRatio,
       invScreenAspectRatio(ctx) {
         return ctx.viewportHeight / ctx.viewportWidth;
       },
       viewProjectionMatrix(ctx) {
         const aspect = ctx.viewportWidth / ctx.viewportHeight;
         const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                              (this.imageData.width / this.imageData.height);
+                              (this.particleData.width / this.particleData.height);
 
         return [
           2, 0, 0, 0,
@@ -266,7 +276,7 @@ export default class Renderer {
       invViewProjectionMatrix(ctx) {
         const aspect = ctx.viewportWidth / ctx.viewportHeight;
         const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                              (this.imageData.width / this.imageData.height);
+                              (this.particleData.width / this.particleData.height);
 
         return [
           .5, 0, 0, 0,
@@ -276,7 +286,7 @@ export default class Renderer {
         ];
       },
       particleSize(ctx) {
-        return (ctx.viewportWidth / this.imageData.width) * 2 * this.state.particleScaling;
+        return (ctx.viewportWidth / this.particleData.width) * 2 * this.state.particleScaling;
       },
       hueDisplaceDistance() {
         return this.state.hueDisplaceDistance;
@@ -325,7 +335,8 @@ export default class Renderer {
   }
 
   loadImage(img) {
-    this.createImageData(img);
+    this.loadImageData(img);
+    this.createParticleData();
     this.rebuildCommand();
   }
 
@@ -333,8 +344,7 @@ export default class Renderer {
     const oldState = this.state;
     this.state = state;
     // TODO: rebuild command only when necessary
-    if (this.imageData !== null /* && state.particleOverlap !== oldState.particleOverlap */) {
-      this.rebuildCommand();
-    }
+    this.createParticleData();
+    this.rebuildCommand();
   }
 }
