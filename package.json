@@ -9,7 +9,8 @@
     "test": "npm run lint && npm run tests",
     "lint": "$(npm bin)/eslint --ext .js,.bundle js || true",
     "format": "$(npm bin)/eslint --fix --ext .js,.bundle js || true",
-    "tests": "echo 'no tests available yet'"
+    "tests": "echo 'no tests available yet'",
+    "deploy": "cd static && (git commit -am \"Update build to commit $(cd .. && git rev-parse --short HEAD)\" || true) && git push"
   },
   "repository": {
     "type": "git",
