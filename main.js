@@ -298,11 +298,10 @@ var ImgDimWarn = function ImgDimWarn() {
   this.xParticlesInput = this.dialogElm.querySelector(("." + scaledLoadXInputClass));
   this.yParticlesInput = this.dialogElm.querySelector(("." + scaledLoadYInputClass));
 };
-ImgDimWarn.prototype.verify = function verify (img, menu) {
+ImgDimWarn.prototype.verify = function verify (img) {
     var this$1 = this;
 
   var tooManyPixels = 1024 * 768; // TODO Magic number
-  this.menu = menu;
 
   return new Promise(function (res, rej) {
     if (img.naturalWidth * img.naturalHeight >= tooManyPixels) {
@@ -1197,8 +1196,8 @@ var index = function (cstr) {
 };
 
 var config = {
-  timestamp: '2017-05-15T17:22:16.266Z',
-  git_rev: 'dcd0106',
+  timestamp: '2017-05-16T09:12:38.402Z',
+  git_rev: '803e1ce',
   export_schema_version: 0
 };
 
@@ -11435,7 +11434,7 @@ Renderer.prototype.createParticleData = function createParticleData () {
   this.particleData = {
     width: w,
     height: h,
-    aspectRatio: w / h,
+    aspectRatio: imgData.width / imgData.height,
     texcoordsBuffer: this.regl.buffer(texcoords),
     rgbBuffer: this.regl.buffer(rgb),
     hsvBuffer: this.regl.buffer(hsv)
@@ -11530,7 +11529,7 @@ Renderer.prototype.assembleCommand = function assembleCommand () {
     viewProjectionMatrix: function viewProjectionMatrix(ctx) {
       var aspect = ctx.viewportWidth / ctx.viewportHeight;
       var underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.particleData.width / this.particleData.height);
+                            (this.particleData.aspectRatio);
 
       return [
         2, 0, 0, 0,
@@ -11542,7 +11541,7 @@ Renderer.prototype.assembleCommand = function assembleCommand () {
     invViewProjectionMatrix: function invViewProjectionMatrix(ctx) {
       var aspect = ctx.viewportWidth / ctx.viewportHeight;
       var underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.particleData.width / this.particleData.height);
+                            (this.particleData.aspectRatio);
 
       return [
         .5, 0, 0, 0,
@@ -11635,15 +11634,11 @@ var adjustCanvasSize = function () {
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
 
-menu.addChangeListener(function (state) {
-  renderer.setState(state);
-});
-
 var srcImage = document.createElement('img');
 srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
 srcImage.src = 'tron.jpg';
 srcImage.onload = function () {
-  imgDimWarn.verify(srcImage, menu)
+  imgDimWarn.verify(srcImage)
   .then(function (ref) {
     var xParticlesCount = ref.xParticlesCount;
     var yParticlesCount = ref.yParticlesCount;
@@ -11672,6 +11667,10 @@ imgSelect.addChangeListener(function (url) {
     srcImage.src = url;
     document.documentElement.classList.add(imageLoadingClass);
   }
+});
+
+menu.addChangeListener(function (state) {
+  renderer.setState(state);
 });
 
 }());
