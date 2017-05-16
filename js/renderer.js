@@ -92,7 +92,7 @@ export default class Renderer {
     this.particleData = {
       width: w,
       height: h,
-      aspectRatio: w / h,
+      aspectRatio: imgData.width / imgData.height,
       texcoordsBuffer: this.regl.buffer(texcoords),
       rgbBuffer: this.regl.buffer(rgb),
       hsvBuffer: this.regl.buffer(hsv)
@@ -264,7 +264,7 @@ export default class Renderer {
       viewProjectionMatrix(ctx) {
         const aspect = ctx.viewportWidth / ctx.viewportHeight;
         const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                              (this.particleData.width / this.particleData.height);
+                              (this.particleData.aspectRatio);
 
         return [
           2, 0, 0, 0,
@@ -276,7 +276,7 @@ export default class Renderer {
       invViewProjectionMatrix(ctx) {
         const aspect = ctx.viewportWidth / ctx.viewportHeight;
         const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                              (this.particleData.width / this.particleData.height);
+                              (this.particleData.aspectRatio);
 
         return [
           .5, 0, 0, 0,
