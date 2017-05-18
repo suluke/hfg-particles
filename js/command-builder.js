@@ -38,10 +38,8 @@ class Shader {
 }
 
 export default class CommandBuilder {
-  constructor(renderer) {
+  constructor() {
     this.effects = [new HueDisplace(), new Converge()];
-    this.regl = renderer.regl;
-    this.renderer = renderer;
   }
   rebuildCommand(particleData, state) {
     this.state = state;
@@ -80,7 +78,7 @@ export default class CommandBuilder {
       vec3 position = initialPosition;
     `;
     for (let i = 0; i < this.effects.length; i++) {
-      this.effects[i].insertIntoVertexShader(vertexShader, this);
+      this.effects[i].insertIntoVertexShader(vertexShader, this.state);
     }
 
     vertexShader.mainBody += `

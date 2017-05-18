@@ -1,8 +1,8 @@
 import Effect, {fract} from './effect';
 
 export default class HueDisplaceEffect extends Effect {
-  insertIntoVertexShader(vertexShader, ctx) {
-    if (ctx.state.hueDisplaceDistance !== 0) {
+  insertIntoVertexShader(vertexShader, state) {
+    if (state.hueDisplaceDistance !== 0) {
       vertexShader.uniforms += `
         uniform float hueDisplaceDistance;
         uniform float hueDisplaceTime;
@@ -19,29 +19,29 @@ export default class HueDisplaceEffect extends Effect {
     }
   }
 
-  insertUniforms(uniforms, ctx) {
-    uniforms.hueDisplaceDistance = () => {
-      return ctx.state.hueDisplaceDistance;
+  insertUniforms(uniforms) {
+    uniforms.hueDisplaceDistance = (ctx, props) => {
+      return props.state.hueDisplaceDistance;
     };
-    uniforms.hueDisplaceTime = (reglctx) => {
-      return fract(reglctx.time / ctx.state.hueDisplacePeriod) * 2 * Math.PI;
+    uniforms.hueDisplaceTime = (ctx, props) => {
+      return fract(ctx.time / props.state.hueDisplacePeriod) * 2 * Math.PI;
     };
-    uniforms.hueDisplaceDirectionOffset = (reglctx) => {
-      let result = ctx.state.hueDisplaceRotate * fract(reglctx.time / ctx.state.hueDisplacePeriod) * 2 * Math.PI;
-      if (ctx.state.hueDisplaceRandomDirectionOffset) {
-        if (ctx.hueDisplaceRandomDirectionOffsetValue === undefined
-          || Math.floor(ctx.renderer.oldTime / ctx.state.hueDisplacePeriod)
-          !== Math.floor(ctx.renderer.currentTime / ctx.state.hueDisplacePeriod)
+    uniforms.hueDisplaceDirectionOffset = (ctx, props) => {
+      let result = props.state.hueDisplaceRotate * fract(ctx.time / props.state.hueDisplacePeriod) * 2 * Math.PI;
+      if (props.state.hueDisplaceRandomDirectionOffset) {
+        if (props.hueDisplaceRandomDirectionOffsetValue === undefined
+          || Math.floor(props.renderer.oldTime / props.state.hueDisplacePeriod)
+          !== Math.floor(props.renderer.currentTime / props.state.hueDisplacePeriod)
         ) {
-          ctx.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
+          props.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
         }
-        result += ctx.hueDisplaceRandomDirectionOffsetValue;
+        result += props.hueDisplaceRandomDirectionOffsetValue;
       }
 
       return result;
     };
-    uniforms.hueDisplaceScaleByValue = () => {
-      return ctx.state.hueDisplaceScaleByValue;
+    uniforms.hueDisplaceScaleByValue = (ctx, props) => {
+      return props.state.hueDisplaceScaleByValue;
     };
   }
 }

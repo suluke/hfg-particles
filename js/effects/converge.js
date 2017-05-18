@@ -1,8 +1,8 @@
 import Effect, {fract} from './effect';
 
 export default class ConvergeEffect extends Effect {
-  insertIntoVertexShader(vertexShader, ctx) {
-    if (ctx.state.convergeEnable) {
+  insertIntoVertexShader(vertexShader, state) {
+    if (state.convergeEnable) {
       vertexShader.uniforms += `
         uniform float convergeTime;
         uniform float convergeSpeed;
@@ -11,7 +11,7 @@ export default class ConvergeEffect extends Effect {
       `;
       vertexShader.mainBody += `
         {
-          vec2 screenTarget = ` + { "center": "vec2(0., 0.)", "color wheel": "getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)" }[ctx.state.convergeTarget] + `;
+          vec2 screenTarget = ` + { "center": "vec2(0., 0.)", "color wheel": "getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)" }[state.convergeTarget] + `;
           vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;
 
           vec2 d = target - initialPosition.xy;
@@ -35,19 +35,19 @@ export default class ConvergeEffect extends Effect {
     }
   }
 
-  insertUniforms(uniforms, ctx) {
-    uniforms.convergeTime = (reglctx) => {
-      const period = 2 * Math.sqrt(2 / ctx.state.convergeSpeed);
-      return fract(reglctx.time / period) * period;
+  insertUniforms(uniforms) {
+    uniforms.convergeTime = (ctx, props) => {
+      const period = 2 * Math.sqrt(2 / props.state.convergeSpeed);
+      return fract(ctx.time / period) * period;
     };
-    uniforms.convergeSpeed = () => {
-      return ctx.state.convergeSpeed;
+    uniforms.convergeSpeed = (ctx, props) => {
+      return props.state.convergeSpeed;
     };
-    uniforms.convergeRotationSpeed = () => {
-      return ctx.state.convergeRotationSpeed;
+    uniforms.convergeRotationSpeed = (ctx, props) => {
+      return props.state.convergeRotationSpeed;
     };
-    uniforms.convergeMaxTravelTime = () => {
-      return Math.sqrt(2 / ctx.state.convergeSpeed);
+    uniforms.convergeMaxTravelTime = (ctx, props) => {
+      return Math.sqrt(2 / props.state.convergeSpeed);
     };
   }
 }

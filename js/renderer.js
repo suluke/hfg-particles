@@ -11,7 +11,9 @@ export default class Renderer {
     this.particleData = null;
     this.state = null;
     this.command = null;
-    this.commandBuilder = new CommandBuilder(this);
+    this.commandBuilder = new CommandBuilder();
+    this.oldTime = this.regl.now();
+    this.currentTime = this.regl.now();
     this.regl.frame(() => {
       this.oldTime = this.currentTime;
       this.currentTime = this.regl.now();
@@ -19,7 +21,12 @@ export default class Renderer {
         return;
       }
       this.regl.clear({ color: this.state.backgroundColor });
-      this.command();
+      this.command({
+        state: this.state,
+        particleData: this.particleData,
+        oldTime: this.oldTime,
+        currentTime: this.currentTime,
+      });
     });
   }
 
@@ -98,6 +105,7 @@ export default class Renderer {
   }
 
   destroyParticleData() {
+    this.command = null;
     if (this.particleData !== null) {
       this.particleData.texcoordsBuffer.destroy();
       this.particleData.rgbBuffer.destroy();

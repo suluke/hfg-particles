@@ -2,13 +2,10 @@
  * Interface for effects
  */
 export default class Effect {
-  insertUniforms(/* uniforms, ctx */) {
+  insertUniforms(/* uniforms */) {
     throw new Error('Method not implemented');
   }
-  insertIntoFragmentShader(/* fragmentShader, ctx */) {
-    throw new Error('Method not implemented');
-  }
-  insertIntoVertexShader(/* vertexShader, ctx */) {
+  insertIntoVertexShader(/* vertexShader, state */) {
     throw new Error('Method not implemented');
   }
 }
