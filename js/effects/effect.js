@@ -8,6 +8,10 @@ export default class Effect {
   insertIntoVertexShader(/* vertexShader, state */) {
     throw new Error('Method not implemented');
   }
+  static getId() {
+    // Static + this = JS <3
+    return this.name;
+  }
 }
 
 export function fract(x) {

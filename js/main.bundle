@@ -7,11 +7,18 @@ import MainMenu from './menu';
 import Renderer from './renderer';
 import config from './config';
 
+import * as effects from './effects/index';
+
 console.log(config);
 
 // some constants
 const imageLoadingClass = 'loading-image';
 const canvas = document.getElementById('main-canvas');
+
+const effectList = Object.values(effects);
+for (let i = 0; i < effectList.length; i++) {
+  console.log(`Registered effect: ${effectList[i].getId()}`);
+}
 
 // set up ui components
 const menu = new MainMenu();
