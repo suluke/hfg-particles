@@ -29,13 +29,14 @@ export default class HueDisplaceEffect extends Effect {
     uniforms.hueDisplaceDirectionOffset = (ctx, props) => {
       let result = props.state.hueDisplaceRotate * fract(ctx.time / props.state.hueDisplacePeriod) * 2 * Math.PI;
       if (props.state.hueDisplaceRandomDirectionOffset) {
-        if (props.hueDisplaceRandomDirectionOffsetValue === undefined
-          || Math.floor(props.renderer.oldTime / props.state.hueDisplacePeriod)
-          !== Math.floor(props.renderer.currentTime / props.state.hueDisplacePeriod)
+        // TODO It's really ugly that this effect writes into the global state
+        if (props.state.hueDisplaceRandomDirectionOffsetValue === undefined
+          || Math.floor(props.oldTime / props.state.hueDisplacePeriod)
+          !== Math.floor(props.currentTime / props.state.hueDisplacePeriod)
         ) {
-          props.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
+          props.state.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
         }
-        result += props.hueDisplaceRandomDirectionOffsetValue;
+        result += props.state.hueDisplaceRandomDirectionOffsetValue;
       }
 
       return result;
