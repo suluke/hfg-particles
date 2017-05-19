@@ -1,6 +1,8 @@
 import parseColor from 'parse-color'; // used by BgColorPicker
 import config from './config';
 
+import * as effects from './effects/index';
+
 /**
  * Base class of all controls participating in the main menu
  * This is rather for documenting the common interface than
@@ -412,6 +414,7 @@ export default class MainMenu {
   constructor() {
     this.menu = document.getElementById('menu-container');
     this.menuContent = this.menu.querySelector('.menu-content');
+    this.effectList = this.menu.querySelector('#menu-effect-list');
     this.toggle = document.getElementById('toggle-menu-visible');
     this.applyBtn = document.getElementById('menu-btn-apply');
     this.controls = [];
@@ -439,6 +442,17 @@ export default class MainMenu {
     for (let i = 0; i < ControlsList.length; i++) {
       this.addControl(ControlsList[i]);
     }
+
+    const effectListElms = document.createDocumentFragment();
+    const parser = document.createElement('body');
+    for (let effect in effects) {
+      parser.innerHTML = `
+        <li>${effects[effect].getId()}</li>
+      `;
+      const elm = parser.childNodes[1];
+      effectListElms.appendChild(elm);
+    }
+    this.effectList.appendChild(effectListElms);
 
     this.defaultState = this.readState();
     this.submittedState = this.defaultState;
