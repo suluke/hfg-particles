@@ -15,9 +15,8 @@ console.log(config);
 const imageLoadingClass = 'loading-image';
 const canvas = document.getElementById('main-canvas');
 
-const effectList = Object.values(effects);
-for (let i = 0; i < effectList.length; i++) {
-  console.log(`Registered effect: ${effectList[i].getId()}`);
+for (var effect in effects) {
+  console.log(`Registered effect: ${effects[effect].getId()}`);
 }
 
 // set up ui components
