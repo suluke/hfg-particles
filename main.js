@@ -1196,8 +1196,8 @@ var index = function (cstr) {
 };
 
 var config = {
-  timestamp: '2017-05-16T09:12:38.402Z',
-  git_rev: '803e1ce',
+  timestamp: '2017-05-19T08:51:59.462Z',
+  git_rev: 'b24d320',
   export_schema_version: 0
 };
 
@@ -1840,7 +1840,7 @@ var regl$1 = createCommonjsModule(function (module, exports) {
 	module.exports = factory();
 }(commonjsGlobal, (function () { 'use strict';
 
-var arrayTypes =  {
+var arrayTypes = {
 	"[object Int8Array]": 5120,
 	"[object Int16Array]": 5122,
 	"[object Int32Array]": 5124,
@@ -3218,7 +3218,7 @@ function transpose (
   }
 }
 
-function wrapBufferState (gl, stats, config) {
+function wrapBufferState (gl, stats, config, attributeState) {
   var bufferCount = 0;
   var bufferSet = {};
 
@@ -3370,6 +3370,16 @@ function wrapBufferState (gl, stats, config) {
 
     var handle = buffer.buffer;
     check$1(handle, 'buffer must not be deleted already');
+
+    // fix dangling enabled vertex attrib arrays
+    for (var i = 0; i < attributeState.state.length; ++i) {
+      var binding = attributeState.state[i];
+      if (binding.buffer === buffer) {
+        gl.disableVertexAttribArray(i);
+        binding.buffer = null;
+      }
+    }
+
     gl.deleteBuffer(handle);
     buffer.buffer = null;
     delete bufferSet[buffer.id];
@@ -6698,7 +6708,6 @@ function wrapAttributeState (
   gl,
   extensions,
   limits,
-  bufferState,
   stringStore) {
   var NUM_ATTRIBUTES = limits.maxAttributes;
   var attributeBindings = new Array(NUM_ATTRIBUTES);
@@ -10824,14 +10833,13 @@ function wrapREGL (args) {
   };
 
   var limits = wrapLimits(gl, extensions);
-  var bufferState = wrapBufferState(gl, stats$$1, config);
-  var elementState = wrapElementsState(gl, extensions, bufferState, stats$$1);
   var attributeState = wrapAttributeState(
     gl,
     extensions,
     limits,
-    bufferState,
     stringStore);
+  var bufferState = wrapBufferState(gl, stats$$1, config, attributeState);
+  var elementState = wrapElementsState(gl, extensions, bufferState, stats$$1);
   var shaderState = wrapShaderState(gl, stringStore, stats$$1, config);
   var textureState = createTextureSet(
     gl,
@@ -11341,9 +11349,242 @@ return wrapREGL;
 
 });
 
+/**
+ * Interface for effects
+ */
+var Effect = function Effect () {};
+
+Effect.prototype.insertUniforms = function insertUniforms (/* uniforms */) {
+  throw new Error('Method not implemented');
+};
+Effect.prototype.insertIntoVertexShader = function insertIntoVertexShader (/* vertexShader, state */) {
+  throw new Error('Method not implemented');
+};
+Effect.getId = function getId () {
+  // Static + this = JS <3
+  return this.name;
+};
+
 function fract(x) {
   return x - Math.floor(x);
 }
+
+var HueDisplaceEffect = (function (Effect$$1) {
+  function HueDisplaceEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) HueDisplaceEffect.__proto__ = Effect$$1;
+  HueDisplaceEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  HueDisplaceEffect.prototype.constructor = HueDisplaceEffect;
+
+  HueDisplaceEffect.prototype.insertIntoVertexShader = function insertIntoVertexShader (vertexShader, state) {
+    if (state.hueDisplaceDistance !== 0) {
+      vertexShader.uniforms += "\n        uniform float hueDisplaceDistance;\n        uniform float hueDisplaceTime;\n        uniform float hueDisplaceDirectionOffset;\n        uniform float hueDisplaceScaleByValue;\n      ";
+      vertexShader.mainBody += "\n        {\n          float angle = hsv[0] + hueDisplaceDirectionOffset;\n          float offset = (-cos(hueDisplaceTime) + 1.) / 2.;\n          position.xy += offset * getDirectionVector(angle) * hueDisplaceDistance * (1. - hueDisplaceScaleByValue * (1. - hsv[2]));\n        }\n      ";
+    }
+  };
+
+  HueDisplaceEffect.prototype.insertUniforms = function insertUniforms (uniforms) {
+    uniforms.hueDisplaceDistance = function (ctx, props) {
+      return props.state.hueDisplaceDistance;
+    };
+    uniforms.hueDisplaceTime = function (ctx, props) {
+      return fract(ctx.time / props.state.hueDisplacePeriod) * 2 * Math.PI;
+    };
+    uniforms.hueDisplaceDirectionOffset = function (ctx, props) {
+      var result = props.state.hueDisplaceRotate * fract(ctx.time / props.state.hueDisplacePeriod) * 2 * Math.PI;
+      if (props.state.hueDisplaceRandomDirectionOffset) {
+        // TODO It's really ugly that this effect writes into the global state
+        if (props.state.hueDisplaceRandomDirectionOffsetValue === undefined
+          || Math.floor(props.oldTime / props.state.hueDisplacePeriod)
+          !== Math.floor(props.currentTime / props.state.hueDisplacePeriod)
+        ) {
+          props.state.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
+        }
+        result += props.state.hueDisplaceRandomDirectionOffsetValue;
+      }
+
+      return result;
+    };
+    uniforms.hueDisplaceScaleByValue = function (ctx, props) {
+      return props.state.hueDisplaceScaleByValue;
+    };
+  };
+
+  return HueDisplaceEffect;
+}(Effect));
+
+var ConvergeEffect = (function (Effect$$1) {
+  function ConvergeEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) ConvergeEffect.__proto__ = Effect$$1;
+  ConvergeEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ConvergeEffect.prototype.constructor = ConvergeEffect;
+
+  ConvergeEffect.prototype.insertIntoVertexShader = function insertIntoVertexShader (vertexShader, state) {
+    if (state.convergeEnable) {
+      vertexShader.uniforms += "\n        uniform float convergeTime;\n        uniform float convergeSpeed;\n        uniform float convergeRotationSpeed;\n        uniform float convergeMaxTravelTime;\n      ";
+      vertexShader.mainBody += "\n        {\n          vec2 screenTarget = " + { "center": "vec2(0., 0.)", "color wheel": "getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)" }[state.convergeTarget] + ";\n          vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n          vec2 d = target - initialPosition.xy;\n          float d_len = length(d);\n          \n          float stop_t = sqrt(2. * d_len / convergeSpeed);\n\n          if(convergeTime < stop_t) {\n            float t = min(convergeTime, stop_t);\n            position.xy += .5 * d / d_len * convergeSpeed * t * t;\n          } else if(convergeTime < convergeMaxTravelTime) {\n            position.xy += d;\n          } else {\n            float t = convergeTime - convergeMaxTravelTime;\n            //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n            //position.xy += mix(d, vec2(0.), t * t);\n            position.xy += mix(d, vec2(0.), -cos(t / convergeMaxTravelTime * PI) * .5 + .5);\n          }\n        }\n      ";
+    }
+  };
+
+  ConvergeEffect.prototype.insertUniforms = function insertUniforms (uniforms) {
+    uniforms.convergeTime = function (ctx, props) {
+      var period = 2 * Math.sqrt(2 / props.state.convergeSpeed);
+      return fract(ctx.time / period) * period;
+    };
+    uniforms.convergeSpeed = function (ctx, props) {
+      return props.state.convergeSpeed;
+    };
+    uniforms.convergeRotationSpeed = function (ctx, props) {
+      return props.state.convergeRotationSpeed;
+    };
+    uniforms.convergeMaxTravelTime = function (ctx, props) {
+      return Math.sqrt(2 / props.state.convergeSpeed);
+    };
+  };
+
+  return ConvergeEffect;
+}(Effect));
+
+var Shader = function Shader() {
+  this.attributes = '';
+  this.uniforms = '';
+  this.varyings = '';
+  this.globals = '';
+  this.functions = '';
+  this.mainBody = '';
+};
+
+Shader.prototype.compile = function compile () {
+  return ("\n      precision highp float;\n    \n      // Attributes\n      " + (this.attributes) + "\n\n      // Uniforms\n      " + (this.uniforms) + "\n\n      // Varyings\n      " + (this.varyings) + "\n\n      // Globals\n      " + (this.globals) + "\n\n      // Functions\n      " + (this.functions) + "\n\n      void main() {\n        " + (this.mainBody) + "\n      }\n    ");
+};
+
+var CommandBuilder = function CommandBuilder() {
+  this.effects = [new HueDisplaceEffect(), new ConvergeEffect()];
+};
+CommandBuilder.prototype.rebuildCommand = function rebuildCommand (particleData, state) {
+  this.state = state;
+  this.particleData = particleData;
+  return this.assembleCommand();
+};
+CommandBuilder.prototype.assembleVertexShader = function assembleVertexShader () {
+    var this$1 = this;
+
+  var vertexShader = new Shader();
+
+  vertexShader.attributes += "\n      attribute vec2 texcoord;\n      attribute vec3 rgb;\n      attribute vec3 hsv;\n    ";
+  vertexShader.uniforms += "\n      uniform float invImageAspectRatio;\n      uniform float invScreenAspectRatio;\n      uniform mat4 viewProjectionMatrix;\n      uniform mat4 invViewProjectionMatrix;\n\n      uniform float particleSize;\n    ";
+  vertexShader.varyings += 'varying vec3 color;\n';
+  vertexShader.globals += 'const float PI = 3.14159265;\n';
+  // TODO make functions a dict (= set) so that users can add them on
+  // demand without defining them more than once
+  vertexShader.functions += "\n      vec2 getDirectionVector(float angle) {\n        return vec2(cos(angle), sin(angle));\n      }\n    ";
+  vertexShader.mainBody += "\n      vec3 initialPosition = vec3(texcoord, 0);\n      initialPosition.y *= invImageAspectRatio;\n      \n      vec3 position = initialPosition;\n    ";
+  for (var i = 0; i < this.effects.length; i++) {
+    this$1.effects[i].insertIntoVertexShader(vertexShader, this$1.state);
+  }
+
+  vertexShader.mainBody += "\n      color = rgb;\n      gl_PointSize = max(particleSize, 0.);\n      gl_Position = viewProjectionMatrix * vec4(position, 1.);\n    ";
+
+  return vertexShader.compile();
+};
+
+CommandBuilder.prototype.assembleFragmentShader = function assembleFragmentShader () {
+  var fragmentShader = new Shader();
+  fragmentShader.varyings += 'varying vec3 color;\n';
+  fragmentShader.mainBody += "\n      float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    ";
+  var colorAssign = {
+    'add':       'gl_FragColor = vec4(color * v, 1);\n',
+    'alpha blend': 'gl_FragColor = vec4(color, v);\n'
+  }[this.state.particleOverlap];
+  if (!colorAssign) {
+      throw new Error(("Unknown particle overlap mode: " + (this.state.particleOverlap)));
+  }
+  fragmentShader.mainBody += colorAssign;
+
+  return fragmentShader.compile();
+};
+
+CommandBuilder.prototype.assembleCommand = function assembleCommand () {
+    var this$1 = this;
+
+  var vert = this.assembleVertexShader();
+  var frag = this.assembleFragmentShader();
+
+  var result = {
+    primitive: 'points',
+    count: this.particleData.width * this.particleData.height,
+    attributes: {
+      texcoord: this.particleData.texcoordsBuffer,
+      rgb: this.particleData.rgbBuffer,
+      hsv: this.particleData.hsvBuffer
+    },
+    vert: vert,
+    frag: frag,
+    depth: { enable: false }
+  };
+
+  switch (this.state.particleOverlap) {
+    case 'add':
+      result.blend = {
+        enable: true,
+        func: { src: 'one', dst: 'one' }
+      };
+      break;
+    case 'alpha blend':
+      result.blend = {
+        enable: true,
+        func: { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
+      };
+      break;
+    default:
+      throw new Error(("Unknown particle overlap mode: " + (this.state.particleOverlap)));
+  }
+
+  result.uniforms = {
+    invImageAspectRatio: 1 / this.particleData.aspectRatio,
+    invScreenAspectRatio: function invScreenAspectRatio(ctx) {
+      return ctx.viewportHeight / ctx.viewportWidth;
+    },
+    viewProjectionMatrix: function viewProjectionMatrix(ctx) {
+      var aspect = ctx.viewportWidth / ctx.viewportHeight;
+      var underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
+                            (this.particleData.aspectRatio);
+
+      return [
+        2, 0, 0, 0,
+        0, 2 * aspect, 0, 0,
+        0, 0, 1, 0,
+        -1, underscan * 2 - 1, 0, 1
+      ];
+    },
+    invViewProjectionMatrix: function invViewProjectionMatrix(ctx) {
+      var aspect = ctx.viewportWidth / ctx.viewportHeight;
+      var underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
+                            (this.particleData.aspectRatio);
+
+      return [
+        .5, 0, 0, 0,
+        0, .5 / aspect, 0, 0,
+        0, 0, 1, 0,
+        .5, -.5 * (underscan * 2 - 1) / aspect, 0, 1
+      ];
+    },
+    particleSize: function particleSize(ctx) {
+      return (ctx.viewportWidth / this.particleData.width) * 2 * this.state.particleScaling;
+    },
+  };
+
+  for (var i = 0; i < this.effects.length; i++) {
+    this$1.effects[i].insertUniforms(result.uniforms, this$1);
+  }
+
+  return result;
+};
 
 var Renderer = function Renderer(canvas) {
   var this$1 = this;
@@ -11356,6 +11597,9 @@ var Renderer = function Renderer(canvas) {
   this.particleData = null;
   this.state = null;
   this.command = null;
+  this.commandBuilder = new CommandBuilder();
+  this.oldTime = this.regl.now();
+  this.currentTime = this.regl.now();
   this.regl.frame(function () {
     this$1.oldTime = this$1.currentTime;
     this$1.currentTime = this$1.regl.now();
@@ -11363,7 +11607,12 @@ var Renderer = function Renderer(canvas) {
       return;
     }
     this$1.regl.clear({ color: this$1.state.backgroundColor });
-    this$1.command();
+    this$1.command({
+      state: this$1.state,
+      particleData: this$1.particleData,
+      oldTime: this$1.oldTime,
+      currentTime: this$1.currentTime,
+    });
   });
 };
 
@@ -11442,6 +11691,7 @@ Renderer.prototype.createParticleData = function createParticleData () {
 };
 
 Renderer.prototype.destroyParticleData = function destroyParticleData () {
+  this.command = null;
   if (this.particleData !== null) {
     this.particleData.texcoordsBuffer.destroy();
     this.particleData.rgbBuffer.destroy();
@@ -11450,152 +11700,8 @@ Renderer.prototype.destroyParticleData = function destroyParticleData () {
   }
 };
 
-Renderer.prototype.assembleVertexShader = function assembleVertexShader () {
-  var result = "\n      precision highp float;\n\n      attribute vec2 texcoord;\n      attribute vec3 rgb;\n      attribute vec3 hsv;\n\n      uniform float invImageAspectRatio;\n      uniform float invScreenAspectRatio;\n      uniform mat4 viewProjectionMatrix;\n      uniform mat4 invViewProjectionMatrix;\n\n      uniform float particleSize;\n\n      uniform float hueDisplaceDistance;\n      uniform float hueDisplaceTime;\n      uniform float hueDisplaceDirectionOffset;\n      uniform float hueDisplaceScaleByValue;\n\n      uniform float convergeTime;\n      uniform float convergeSpeed;\n      uniform float convergeRotationSpeed;\n      uniform float convergeMaxTravelTime;\n\n      varying vec3 color;\n\n      const float PI = 3.14159265;\n\n      vec2 getDirectionVector(float angle) {\n        return vec2(cos(angle), sin(angle));\n      }\n\n      void main() {\n        vec3 initialPosition = vec3(texcoord, 0);\n        initialPosition.y *= invImageAspectRatio;\n        \n        vec3 position = initialPosition;\n    ";
-
-  if (this.state.hueDisplaceDistance !== 0) {
-    result += "{\n          float angle = hsv[0] + hueDisplaceDirectionOffset;\n          float offset = (-cos(hueDisplaceTime) + 1.) / 2.;\n          position.xy += offset * getDirectionVector(angle) * hueDisplaceDistance * (1. - hueDisplaceScaleByValue * (1. - hsv[2]));\n        }\n      ";
-  }
-
-  if (this.state.convergeEnable) {
-    result += "{\n          vec2 screenTarget = " + { "center": "vec2(0., 0.)", "color wheel": "getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)" }[this.state.convergeTarget] + ";\n          vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n          vec2 d = target - initialPosition.xy;\n          float d_len = length(d);\n          \n          float stop_t = sqrt(2. * d_len / convergeSpeed);\n\n          if(convergeTime < stop_t) {\n            float t = min(convergeTime, stop_t);\n            position.xy += .5 * d / d_len * convergeSpeed * t * t;\n          } else if(convergeTime < convergeMaxTravelTime) {\n            position.xy += d;\n          } else {\n            float t = convergeTime - convergeMaxTravelTime;\n            //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n            //position.xy += mix(d, vec2(0.), t * t);\n            position.xy += mix(d, vec2(0.), -cos(t / convergeMaxTravelTime * PI) * .5 + .5);\n          }\n        }\n      ";
-  }
-
-  result += "\n        color = rgb;\n        gl_PointSize = max(particleSize, 0.);\n        gl_Position = viewProjectionMatrix * vec4(position, 1.);\n      }\n    ";
-
-  return result;
-};
-
-Renderer.prototype.assembleFragmentShader = function assembleFragmentShader () {
-  var result = "\n      precision highp float;\n\n      varying vec3 color;\n\n      void main() {\n        float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    ";
-
-  switch (this.state.particleOverlap) {
-    case 'add':
-      result += 'gl_FragColor = vec4(color * v, 1);\n';
-      break;
-    case 'alpha blend':
-      result += 'gl_FragColor = vec4(color, v);\n';
-      break;
-    default:
-      throw new Error(("Unknown particle overlap mode: " + (this.state.particleOverlap)));
-  }
-
-  result += "\n      }\n    ";
-
-  return result;
-};
-
-Renderer.prototype.assembleCommand = function assembleCommand () {
-  console.log(this.state);
-
-  var vert = this.assembleVertexShader();
-  var frag = this.assembleFragmentShader();
-
-  var result = {
-    primitive: 'points',
-    count: this.particleData.width * this.particleData.height,
-    attributes: {
-      texcoord: this.particleData.texcoordsBuffer,
-      rgb: this.particleData.rgbBuffer,
-      hsv: this.particleData.hsvBuffer
-    },
-    vert: vert,
-    frag: frag,
-    depth: { enable: false }
-  };
-
-  switch (this.state.particleOverlap) {
-    case 'add':
-      result.blend = {
-        enable: true,
-        func: { src: 'one', dst: 'one' }
-      };
-      break;
-    case 'alpha blend':
-      result.blend = {
-        enable: true,
-        func: { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
-      };
-      break;
-    default:
-      throw new Error(("Unknown particle overlap mode: " + (this.state.particleOverlap)));
-  }
-
-  result.uniforms = {
-    invImageAspectRatio: 1 / this.particleData.aspectRatio,
-    invScreenAspectRatio: function invScreenAspectRatio(ctx) {
-      return ctx.viewportHeight / ctx.viewportWidth;
-    },
-    viewProjectionMatrix: function viewProjectionMatrix(ctx) {
-      var aspect = ctx.viewportWidth / ctx.viewportHeight;
-      var underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.particleData.aspectRatio);
-
-      return [
-        2, 0, 0, 0,
-        0, 2 * aspect, 0, 0,
-        0, 0, 1, 0,
-        -1, underscan * 2 - 1, 0, 1
-      ];
-    },
-    invViewProjectionMatrix: function invViewProjectionMatrix(ctx) {
-      var aspect = ctx.viewportWidth / ctx.viewportHeight;
-      var underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.particleData.aspectRatio);
-
-      return [
-        .5, 0, 0, 0,
-        0, .5 / aspect, 0, 0,
-        0, 0, 1, 0,
-        .5, -.5 * (underscan * 2 - 1) / aspect, 0, 1
-      ];
-    },
-    particleSize: function particleSize(ctx) {
-      return (ctx.viewportWidth / this.particleData.width) * 2 * this.state.particleScaling;
-    },
-    hueDisplaceDistance: function hueDisplaceDistance() {
-      return this.state.hueDisplaceDistance;
-    },
-    hueDisplaceTime: function hueDisplaceTime(ctx) {
-      return fract(ctx.time / this.state.hueDisplacePeriod) * 2 * Math.PI;
-    },
-    hueDisplaceDirectionOffset: function hueDisplaceDirectionOffset(ctx) {
-      var result = this.state.hueDisplaceRotate * fract(ctx.time / this.state.hueDisplacePeriod) * 2 * Math.PI;
-      if (this.state.hueDisplaceRandomDirectionOffset) {
-        if (this.hueDisplaceRandomDirectionOffsetValue === undefined
-          || Math.floor(this.oldTime / this.state.hueDisplacePeriod)
-          !== Math.floor(this.currentTime / this.state.hueDisplacePeriod)
-        ) {
-          this.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
-        }
-        result += this.hueDisplaceRandomDirectionOffsetValue;
-      }
-
-      return result;
-    },
-    hueDisplaceScaleByValue: function hueDisplaceScaleByValue() {
-      return this.state.hueDisplaceScaleByValue;
-    },
-    convergeTime: function convergeTime(ctx) {
-      var period = 2 * Math.sqrt(2 / this.state.convergeSpeed);
-      return fract(ctx.time / period) * period;
-    },
-    convergeSpeed: function convergeSpeed() {
-      return this.state.convergeSpeed;
-    },
-    convergeRotationSpeed: function convergeRotationSpeed() {
-      return this.state.convergeRotationSpeed;
-    },
-    convergeMaxTravelTime: function convergeMaxTravelTime() {
-      return Math.sqrt(2 / this.state.convergeSpeed);
-    }
-  };
-
-  return result;
-};
-
 Renderer.prototype.rebuildCommand = function rebuildCommand () {
-  var cmd = this.assembleCommand();
+  var cmd = this.commandBuilder.rebuildCommand(this.particleData, this.state);
   this.command = this.regl(cmd);
 };
 
@@ -11613,11 +11719,22 @@ Renderer.prototype.setState = function setState (state) {
   this.rebuildCommand();
 };
 
+
+
+var effects = Object.freeze({
+	HueDisplaceEffect: HueDisplaceEffect,
+	ConvergeEffect: ConvergeEffect
+});
+
 console.log(config);
 
 // some constants
 var imageLoadingClass = 'loading-image';
 var canvas = document.getElementById('main-canvas');
+
+for (var effect in effects) {
+  console.log(("Registered effect: " + (effects[effect].getId())));
+}
 
 // set up ui components
 var menu = new MainMenu();
