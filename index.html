@@ -91,6 +91,9 @@
               </select>
             </label>
           </fieldset>
+          <ul id="menu-effect-list">
+            
+          </ul>
           <label id="menu-btn-importstate" class="menu-btn-importstate">
             Load
             <input type="file" accept=".json,application/json"/>
@@ -105,6 +108,36 @@
         >Apply</button>
       </div>
       <div class="menu-timeline-container">
+        <span class="menu-timeline-current-time">00:00</span>
+        <button class="menu-timeline-zoom-in" type="button" title="zoom in">+</button>
+        <button class="menu-timeline-zoom-out" type="button" title="zoom out">-</button>
+        <div class="menu-timeline-timeticks"></div>
+        <div class="menu-timeline-position-indicator"></div>
+        <ul class="menu-timeline-tracks">
+          <li>
+            <section>
+              <h3>Track 1</h3>
+              <ol>
+                <li draggable="true" style="width: 100px;">Hue Displace</li>
+              </ol>
+            </section>
+          </li>
+          <li>
+            <section>
+              <h3>Track 2</h3>
+              <ol>
+                <li draggable="true" style="width: 100px;">Converge</li>
+              </ol>
+            </section>
+          </li>
+          <li>
+            <section>
+              <h3>Track 3</h3>
+              <ol>
+              </ol>
+            </section>
+          </li>
+        </ul>
       </div>
     </div>
     

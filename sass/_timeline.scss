@@ -1,0 +1,41 @@
+.menu-timeline-container {
+  $timeline-first-column-width: 10%;
+
+  .menu-timeline-position-indicator {
+    display: block;
+    position: absolute;
+    left: $timeline-first-column-width;
+    width: 0px;
+    height: 100%;
+    border: solid 1px #f00;
+  }
+  .menu-timeline-tracks {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+   & > li > section {
+      border: solid 1px #333;
+      & > h3,
+      & > ol {
+        display: inline-block;
+      }
+      & > h3 {
+        width: $timeline-first-column-width;
+        &:after {
+          content: ":";
+        }
+      }
+      & > ol {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        & > li {
+          text-align: center;
+          display: inline-block;
+          border: solid 1px #000;
+        }
+      }
+    }
+  }
+}

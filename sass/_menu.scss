@@ -169,11 +169,13 @@ $menu-apply-btn-height: 10%;
         width: $menu-width;
         height: 100% - $menu-height;
         bottom: $menu-apply-btn-height;
+        border-top: solid 1px #333;
       } @else {
         left: $menu-width;
         width: 100% - $menu-width;
         height: $timeline-height;
         bottom: 0;
+        border-top: none;
       }
     }
   }
