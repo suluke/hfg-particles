@@ -1,5 +1,8 @@
 @import 'mixins/hide';
 
+$menu-background-color: rgba(255, 255, 255, 0.9);
+$menu-apply-btn-height: 10%;
+
 .menu-container {
   display: inline-block;
   overflow-y: hidden;
@@ -16,66 +19,81 @@
       color: #333;
       @include icon($fa-var-caret-square-o-left);
     }
-
-    & + label + .menu-content {
+    /**
+     * Menu hide/show toggle implementation
+     */
+    & ~ .menu-content,
+    & ~ .menu-timeline-container {
       display: none;
       z-index: 1;
     }
-    &:checked ~ .menu-content {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      background-color: rgba(255, 255, 255, 0.9);;
+    &:checked {
+      & ~ .menu-content,
+      & ~ .menu-timeline-container {
+        display: block;
+      }
     }
   }
 
-  .menu-content-inner {
-    overflow-y: scroll;
+  .menu-content {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
-    /* This asserts that menu items won't be
-     * hidden by apply button if a scroll bar
-     * becomes visible */
-    &:after {
-      content: "";
-      display: block;
-      height: 10%;
-      min-height: 20px;
+    .menu-content-inner {
+      background-color: $menu-background-color;
+      overflow-y: scroll;
+      /* This asserts that menu items won't be
+       * hidden by apply button if a scroll bar
+       * becomes visible */
+      &:after {
+        content: "";
+        display: block;
+        height: 10%;
+        min-height: 20px;
+      }
+      /**
+       * Load/Store/Reset Buttons
+       */
+      @mixin load-store-btn {
+        background-color: #eee;
+        border-color: #555;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        padding: 5px;
+        font-size: 1em;
+        margin: 5px;
+        &:focus,
+        &:hover {
+          background-color: #fff;
+        }
+      }
+      .menu-btn-importstate {
+        @include load-store-btn
+        & > input[type="file"] {
+          @include visuallyhidden;
+        }
+      }
+      .menu-btn-exportstate {
+        @include load-store-btn
+      }
+      .menu-btn-resetstate {
+        @include load-store-btn
+      }
     }
   }
 
-  @mixin load-store-btn {
-    background-color: #eee;
-    border-color: #555;
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 5px;
-    padding: 5px;
-    font-size: 1em;
-    margin: 5px;
-    &:focus,
-    &:hover {
-      background-color: #fff;
-    }
+  .menu-timeline-container {
+    position: absolute;
+    overflow-y: scroll;
+    background-color: $menu-background-color;
   }
-  .menu-btn-importstate {
-    @include load-store-btn
-    & > input[type="file"] {
-      @include visuallyhidden;
-    }
-  }
-  .menu-btn-exportstate {
-    @include load-store-btn
-  }
-  .menu-btn-resetstate {
-    @include load-store-btn
-  }
-  
+
   .menu-btn-apply {
     display: block;
     position: absolute;
-    height: 10%;
+    height: $menu-apply-btn-height;
     min-height: 20px;
     width: 100%;
     bottom: 0;
@@ -92,19 +110,22 @@
       background-color: #449D44;
     }
     &[disabled] {
-       &:hover,
-        &:focus {
-          background-color: #5CB85C;
-        }
+      &:hover,
+      &:focus {
+        background-color: #5CB85C;
+      }
     }
   }
 }
 
-@mixin menu-responsiveness($icon-btn-font-size, $button-edge-dist, $menu-width) {
+@mixin menu-responsiveness(
+  $icon-btn-font-size,
+  $button-edge-dist,
+  $menu-width,
+  $menu-height,
+  $timeline-height
+) {
   .menu-container {
-    .menu-content {
-      width: $menu-width;
-    }
     input[type=checkbox].toggle-menu-visible {
       & + label {
         font-size: $icon-btn-font-size;;
@@ -117,21 +138,42 @@
         margin-left: -$button-edge-dist;
       }
     }
-    .menu-content-inner {
-      /* Vertical padding is not allowed
-       * because we only have the space
-       * between top and apply button */
-      padding: 0 $button-edge-dist;
-      /* but we can fake with :before and :after */
-      &:before {
-        content: "";
-        display: block;
-        margin-bottom: $button-edge-dist;
+    .menu-content {
+      width: $menu-width;
+      .menu-content-inner {
+        @if $menu-width == 100% {
+          height: $menu-height - $menu-apply-btn-height;
+        } @else {
+          height: $menu-height;
+        }
+        /* Vertical padding is not allowed
+         * because we only have the space
+         * between top and apply button */
+        padding: 0 $button-edge-dist;
+        /* but we can fake with :before and :after */
+        &:before {
+          content: "";
+          display: block;
+          margin-bottom: $button-edge-dist;
+        }
+        &:after {
+          content: "";
+          display: block;
+          margin-top: $button-edge-dist;
+        }
       }
-      &:after {
-        content: "";
-        display: block;
-        margin-top: $button-edge-dist;
+    }
+    .menu-timeline-container {
+      @if $menu-width == 100% {
+        left: 0;
+        width: $menu-width;
+        height: 100% - $menu-height;
+        bottom: $menu-apply-btn-height;
+      } @else {
+        left: $menu-width;
+        width: 100% - $menu-width;
+        height: $timeline-height;
+        bottom: 0;
       }
     }
   }

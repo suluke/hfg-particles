@@ -83,8 +83,20 @@ body {
  *
  * =================================================================== */
 
-@mixin ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width) {
-  @include menu-responsiveness($icon-btn-font-size, $button-edge-dist, $menu-width);
+@mixin ui-elements(
+  $icon-btn-font-size,
+  $button-edge-dist,
+  $menu-width, /* in percent */
+  $menu-height: 100%, /* in percent */
+  $timeline-height: 30% /* in percent */
+) {
+  @include menu-responsiveness(
+    $icon-btn-font-size,
+    $button-edge-dist,
+    $menu-width,
+    $menu-height,
+    $timeline-height
+  );
   .btn-fullscreen {
     font-size: $icon-btn-font-size;;
     top: $button-edge-dist;
@@ -108,40 +120,88 @@ body {
   $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 20px;
   $menu-width: 100%;
-  @include ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width);
+  $menu-height: 60%;
+  $timeline-height: 30%;
+  @include ui-elements(
+    $icon-btn-font-size,
+    $button-edge-dist,
+    $menu-width,
+    $menu-height,
+    $timeline-height
+  );
 }
 @media (min-width:481px)  {
   /* portrait e-readers (Nook/Kindle), smaller tablets @ 600 or @ 640 wide. */
   $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 20px;
   $menu-width: 100%;
-  @include ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width);
+  $menu-height: 60%;
+  $timeline-height: 30%;
+  @include ui-elements(
+    $icon-btn-font-size,
+    $button-edge-dist,
+    $menu-width,
+    $menu-height,
+    $timeline-height
+  );
 }
 @media (min-width:641px)  {
   /* portrait tablets, portrait iPad, landscape e-readers, landscape 800x480 or 854x480 phones */
   $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 1.5cm;
   $menu-width: 100%;
-  @include ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width);
+  $menu-height: 60%;
+  $timeline-height: 30%;
+  @include ui-elements(
+    $icon-btn-font-size,
+    $button-edge-dist,
+    $menu-width,
+    $menu-height,
+    $timeline-height
+  );
 }
 @media (min-width:961px)  {
   /* tablet, landscape iPad, lo-res laptops ands desktops */
   $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 1.5cm;
   $menu-width: 50%;
-  @include ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width);
+  $menu-height: 100%;
+  $timeline-height: 30%;
+  @include ui-elements(
+    $icon-btn-font-size,
+    $button-edge-dist,
+    $menu-width,
+    $menu-height,
+    $timeline-height
+  );
 }
 @media (min-width:1025px) {
   /* big landscape tablets, laptops, and desktops */
   $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 1cm;
   $menu-width: 40%;
-  @include ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width);
+  $menu-height: 100%;
+  $timeline-height: 30%;
+  @include ui-elements(
+    $icon-btn-font-size,
+    $button-edge-dist,
+    $menu-width,
+    $menu-height,
+    $timeline-height
+  );
 }
 @media (min-width:1281px) {
   /* hi-res laptops and desktops */
   $icon-btn-font-size: 1cm;
   $button-edge-dist: 1cm;
   $menu-width: 30%;
-  @include ui-elements($icon-btn-font-size, $button-edge-dist, $menu-width);
+  $menu-height: 100%;
+  $timeline-height: 30%;
+  @include ui-elements(
+    $icon-btn-font-size,
+    $button-edge-dist,
+    $menu-width,
+    $menu-height,
+    $timeline-height
+  );
 }
