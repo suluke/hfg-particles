@@ -13,6 +13,10 @@ export default class Effect {
     return this.name;
   }
 
+  static getDisplayName() {
+    throw new Error('Method not implemented');
+  }
+
   static getConfigUI() {
     throw new Error('Method not implemented');
   }

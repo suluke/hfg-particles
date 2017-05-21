@@ -1,15 +1,11 @@
 @import 'mixins/modal';
+@import 'mixins/centering';
 
 .file-drag-indicator {
   display: none;
   @include modal;
-  &:before {
-    content: "";
-    display: inline-block;
-    vertical-align: middle;
-    height: 100%;
-    width: 1px;
-  }
+  z-index: 0;
+  @include vCenterText;
   .dragging-file & {
     display: block;
   }

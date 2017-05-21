@@ -1,3 +1,5 @@
+@import 'mixins/centering';
+
 .menu-timeline-container {
   overflow-y: scroll;
   .menu-timeline-content {
@@ -39,18 +41,15 @@
               display: inline-block;
               border: solid 1px #000;
               box-sizing: border-box;
-              &:before {
-                content: "";
-                display: inline-block;
-                height: 100%;
-                vertical-align: middle;
-              }
+              @include vCenterText;
               & > button {
                 width: 100%;
                 height: 100%;
                 background: #eee;
                 border: none;
                 text-align: left;
+                text-overflow: ellipsis;
+                overflow: hidden;
               }
             }
           }

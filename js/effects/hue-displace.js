@@ -125,6 +125,10 @@ export default class HueDisplaceEffect extends Effect {
     uniforms.hueDisplaceScaleByValue = () => instance.config.scaleByValue;
   }
 
+  static getDisplayName() {
+    return 'Hue Displace';
+  }
+
   static getConfigUI() {
     if (!this._configUI) {
       this._configUI = new HueDisplaceConfigUI();

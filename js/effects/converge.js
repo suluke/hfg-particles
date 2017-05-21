@@ -113,6 +113,10 @@ export default class ConvergeEffect extends Effect {
     uniforms.convergeMaxTravelTime = () => Math.sqrt(2 / instance.config.speed);
   }
 
+  static getDisplayName() {
+    return 'Converge';
+  }
+
   static getConfigUI() {
     if (!this._configUI) {
       this._configUI = new ConvergeConfigUI();

@@ -1,4 +1,5 @@
 @import 'mixins/hide';
+@import 'mixins/centering';
 
 $menu-background-color: rgba(255, 255, 255, 0.9);
 $menu-apply-btn-height: 10%;
@@ -52,6 +53,34 @@ $menu-apply-btn-height: 10%;
         height: 10%;
         min-height: 20px;
       }
+      
+      /**
+       * Effects list
+       */
+      .menu-effect-list {
+        $item-spacing: 10px;
+        display: flex;
+        padding: 0;
+        margin-top: -$item-spacing / 2;
+        margin-left: -$item-spacing / 2;
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        list-style-type: none;
+        & > * {
+          @include vCenterText;
+          flex: 1;
+          background-color: rgba(0, 0, 0, 0.3);
+          text-align: center;
+          width: 8em;
+          height: 4em;
+          white-space: nowrap;
+          margin-top: $item-spacing;
+          margin-left: $item-spacing;
+        }
+      }
+      
       /**
        * Load/Store/Reset Buttons
        */

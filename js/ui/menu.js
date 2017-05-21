@@ -230,7 +230,7 @@ export default class MainMenu {
     this.menu = document.getElementById('menu-container');
     this.timeline = new Timeline(this);
     this.menuContent = this.menu.querySelector('.menu-content');
-    this.effectList = this.menu.querySelector('#menu-effect-list');
+    this.effectList = this.menu.querySelector('.menu-effect-list');
     this.toggle = document.getElementById('toggle-menu-visible');
     this.applyBtn = document.getElementById('menu-btn-apply');
     this.controls = [];
@@ -264,8 +264,11 @@ export default class MainMenu {
     const effectListElms = document.createDocumentFragment();
     for (let i = 0; i < effects.length; i++) {
       const elm = parseHtml(`
-        <li draggable="true">${effects[i].getId()}</li>
+        <li draggable="true">${effects[i].getDisplayName()}</li>
       `);
+      elm.addEventListener('dragstart', (evt) => {
+        evt.dataTransfer.setData('text/plain', effects[i].getId());
+      });
       effectListElms.appendChild(elm);
     }
     this.effectList.appendChild(effectListElms);

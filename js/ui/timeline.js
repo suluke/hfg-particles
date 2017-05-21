@@ -11,13 +11,14 @@ class TimelineEntry {
     this.timeline = timeline;
 
     this.element = parseHtml(`
-      <button type="button">${this.effect.getId()}</button>
+      <button type="button">${this.effect.getDisplayName()}</button>
     `);
     this.element.addEventListener('click', () => {
       this.timeline.effectConfigDialog.promptUser(this)
       .then(
         (newState) => {
           this.loadState(newState);
+          this.timeline.renderStyles();
           this.timeline.notifyChange();
         },
         (deleted) => {
@@ -49,8 +50,9 @@ class TimelineEntry {
 }
 
 class TimelineTrack {
-  constructor(trackNumber) {
+  constructor(trackNumber, timeline) {
     this.elements = [];
+    this.timeline = timeline;
     this.elements.push(parseHtml(`
       <td>
         <h3>Track ${trackNumber}</h3>
@@ -64,6 +66,26 @@ class TimelineTrack {
     `));
     this.entryListElm = this.elements[1].querySelector('ol');
     this.entryList = [];
+    this.entryListElm.addEventListener('drop', (evt) => {
+      [].map.call(evt.dataTransfer.items, (item) => {
+        if (item.kind === 'string' && item.type === 'text/plain') {
+          item.getAsString((str) => {
+            if (effectsById[str] !== undefined) {
+              const entry = new TimelineEntry(effectsById[str], this.timeline);
+              entry.loadState({
+                timeBegin: 0, // TODO magic numbers, retrieve from drop position instead
+                timeEnd:   1000, // or the place where css will put the box
+                config:    effectsById[str].getDefaultConfig()
+              });
+              this.addEntry(entry);
+              this.renderHtml();
+              this.renderStyles(this.pxPerSecond);
+              this.timeline.notifyChange();
+            }
+          });
+        }
+      });
+    });
   }
 
   addEntry(entry) {
@@ -87,6 +109,7 @@ class TimelineTrack {
     this.entryListElm.appendChild(lis);
   }
   renderStyles(pxPerSecond) {
+    this.pxPerSecond = pxPerSecond;
     for (let i = 0; i < this.entryList.length; i++) {
       const entry = this.entryList[i];
       const li = entry.getElement().parentNode;
@@ -108,7 +131,7 @@ export default class Timeline {
   loadTimeline(trackList) {
     this.trackList = [];
     for (let i = 0; i < trackList.length; i++) {
-      const track = new TimelineTrack(i + 1);
+      const track = new TimelineTrack(i + 1, this);
       this.trackList.push(track);
       for (let j = 0; j < trackList[i].length; j++) {
         const entryDesc = trackList[i][j];
@@ -161,7 +184,27 @@ export default class Timeline {
 
     return configs;
   }
+  assertEmptyLastTrack() {
+    let changed = false;
+    const tracks = this.trackList;
+    while (tracks[tracks.length - 1].entryList.length === 0 &&
+           tracks[tracks.length - 2].entryList.length === 0) {
+      tracks.splice(tracks.length - 1, 1);
+      changed = true;
+    }
+    if (tracks[tracks.length - 1].entryList.length !== 0) {
+      const track = new TimelineTrack(tracks.length + 1, this);
+      tracks.push(track);
+      changed = true;
+    }
+    if (changed) {
+      // TODO probably inefficient
+      this.renderHtml();
+      this.renderStyles();
+    }
+  }
   notifyChange() {
+    this.assertEmptyLastTrack();
     this.menu.notifyChange();
   }
   deleteEntry(remove) {
