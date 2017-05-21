@@ -9,6 +9,7 @@ export default class ImgDimWarn {
     const scaledLoadYInputClass = 'img-dim-y';
 
     // Object properties
+    this.parentNode = document.getElementById('modal-container');
     this.resolve = null;
     this.reject = null;
     this.dialogElm = parseHtml(`
@@ -71,7 +72,7 @@ export default class ImgDimWarn {
         this.xParticlesInput.value = `${img.naturalWidth}`;
         this.yParticlesInput.value = `${img.naturalHeight}`;
         
-        document.body.appendChild(this.dialogElm);
+        this.parentNode.appendChild(this.dialogElm);
       } else {
         res({
           xParticlesCount: img.naturalWidth,
@@ -81,6 +82,6 @@ export default class ImgDimWarn {
     });
   }
   hide() {
-    document.body.removeChild(this.dialogElm);
+    this.parentNode.removeChild(this.dialogElm);
   }
 }

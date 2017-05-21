@@ -3,21 +3,31 @@ import { parseHtml, clearChildNodes } from './util';
 import { effectList, effectsById } from '../effects/index';
 
 class TimelineEntry {
-  constructor(effectClass, timeline) {
+  constructor(effect, timeline) {
     // Times are in milliseconds
     this.timeBegin = 0;
     this.timeEnd = 0;
-    this.effectClass = effectClass;
+    this.effect = effect;
     this.timeline = timeline;
 
     this.element = parseHtml(`
-      <button type="button">${this.effectClass.getId()}</button>
+      <button type="button">${this.effect.getId()}</button>
     `);
     this.element.addEventListener('click', () => {
       this.timeline.effectConfigDialog.promptUser(this)
       .then(
-        (newState) => { console.log(newState); },
-        (deleted) => { console.log(deleted); }
+        (newState) => {
+          this.loadState(newState);
+          this.timeline.notifyChange();
+        },
+        (deleted) => {
+          if (deleted) {
+            this.timeline.deleteEntry(this);
+            this.timeline.notifyChange();
+            this.timeline.renderHtml();
+            this.timeline.renderStyles();
+          }
+        }
       );
     });
   }
@@ -28,6 +38,13 @@ class TimelineEntry {
   }
   getElement() {
     return this.element;
+  }
+  getConfiguration() {
+    return [this.effect.getId(), {
+      timeBegin: this.timeBegin,
+      timeEnd: this.timeEnd,
+      config: this.config
+    }];
   }
 }
 
@@ -80,7 +97,8 @@ class TimelineTrack {
 }
 
 export default class Timeline {
-  constructor() {
+  constructor(menu) {
+    this.menu = menu;
     this.element = document.querySelector('.menu-timeline-container');
     this.trackList = [];
     this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
@@ -88,6 +106,7 @@ export default class Timeline {
     this.effectConfigDialog = new EffectConfigDialog();
   }
   loadTimeline(trackList) {
+    this.trackList = [];
     for (let i = 0; i < trackList.length; i++) {
       const track = new TimelineTrack(i + 1);
       this.trackList.push(track);
@@ -122,5 +141,33 @@ export default class Timeline {
       const track = this.trackList[i];
       track.renderStyles(this.pxPerSecond);
     }
+  }
+  forEachEntry(callback) {
+    for (let i = 0; i < this.trackList.length; i++) {
+      for (let j = 0; j < this.trackList[i].entryList.length; j++) {
+        callback(this.trackList[i].entryList[j], this.trackList[i], j);
+      }
+    }
+  }
+  getEffects() {
+    const configs = [];
+    for (let i = 0; i < this.trackList.length; i++) {
+      const track = [];
+      configs.push(track);
+      for (let j = 0; j < this.trackList[i].entryList.length; j++) {
+        track.push(this.trackList[i].entryList[j].getConfiguration());
+      }
+    }
+    return configs;
+  }
+  notifyChange() {
+    this.menu.notifyStateChange();
+  }
+  deleteEntry(remove) {
+    this.forEachEntry((entry, track, trackIndex) => {
+      if (entry === remove) {
+        track.entryList.splice(trackIndex, 1);
+      }
+    });
   }
 }

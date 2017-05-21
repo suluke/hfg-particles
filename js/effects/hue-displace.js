@@ -1,8 +1,88 @@
-import Effect, {fract} from './effect';
+import Effect, {ConfigUI, fract} from './effect';
+import { parseHtml } from '../ui/util';
+
+class HueDisplaceConfigUI extends ConfigUI {
+  constructor() {
+    this.element = parseHtml(`
+      <fieldset>
+        <legend>Displace by hue</legend>
+        <label>
+          Distance:
+          <input type="number" class="effect-hue-displace-distance" value="10" />
+        </label><br/>
+        <label>
+          Period:
+          <input type="number" class="effect-hue-displace-period" value="3000" />ms
+        </label><br/>
+        <label>
+          Scale by brightness:
+          <input type="number" class="effect-hue-displace-scale-by-value" value="0" />%
+        </label><br/>
+        <label>
+          Random direction offset:
+          <input type="checkbox" class="effect-hue-displace-random-direction-offset"/>
+        </label><br/>
+        <label>
+          Rotate:
+          <input type="number" class="effect-hue-displace-rotate" value="0" />%
+        </label>
+      </fieldset>
+    `);
+    const ui = this.element;
+    this.distanceInput = ui.querySelector('input.effect-hue-displace-distance');
+    this.periodInput = ui.querySelector('input.effect-hue-displace-period');
+    this.scaleByValInput = ui.querySelector('input.effect-hue-displace-scale-by-value');
+    this.randomOffsetInput = ui.querySelector('input.effect-hue-displace-random-direction-offset');
+    this.rotateInput = ui.querySelector('input.effect-hue-displace-rotate');
+
+    this.distanceInput.addEventListener('change', () => {
+      this.notifyStateChange();
+    });
+    this.periodInput.addEventListener('change', () => {
+      this.notifyStateChange();
+    });
+    this.scaleByValInput.addEventListener('change', () => {
+      this.notifyStateChange();
+    });
+    this.randomOffsetInput.addEventListener('change', () => {
+      this.notifyStateChange();
+    });
+    this.rotateInput.addEventListener('change', () => {
+      this.notifyStateChange();
+    });
+  }
+
+  getElement() {
+    return this.element;
+  }
+
+  getConfig() {
+    const state = {};
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceDistance = parseInt(this.distanceInput.value, 10) / 100;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplacePeriod = parseInt(this.periodInput.value, 10) / 1000;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceScaleByValue = parseInt(this.scaleByValInput.value, 10) / 100;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceRandomDirectionOffset = this.randomOffsetInput.checked;
+     // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceRotate = parseInt(this.rotateInput.value, 10) / 100;
+    return state;
+  }
+
+  applyConfig(config) {
+    this.distanceInput.value = config.hueDisplaceDistance * 100;
+    this.periodInput.value = config.hueDisplacePeriod * 1000;
+    this.scaleByValInput.value = config.hueDisplaceScaleByValue * 100;
+    this.randomOffsetInput.checked = state.hueDisplaceRandomDirectionOffset;
+    this.rotateInput.value = state.hueDisplaceRotate * 100;
+  }
+}
 
 export default class HueDisplaceEffect extends Effect {
-  insertIntoVertexShader(vertexShader, state) {
-    if (state.hueDisplaceDistance !== 0) {
+  static insertIntoVertexShader(vertexShader, instance) {
+    if (instance.config.hueDisplaceDistance !== 0) {
       vertexShader.uniforms += `
         uniform float hueDisplaceDistance;
         uniform float hueDisplaceTime;
@@ -19,30 +99,47 @@ export default class HueDisplaceEffect extends Effect {
     }
   }
 
-  insertUniforms(uniforms) {
-    uniforms.hueDisplaceDistance = (ctx, props) => {
-      return props.state.hueDisplaceDistance;
+  static insertUniforms(uniforms, instance) {
+    uniforms.hueDisplaceDistance = () => {
+      return instance.config.hueDisplaceDistance;
     };
-    uniforms.hueDisplaceTime = (ctx, props) => {
-      return fract(ctx.time / props.state.hueDisplacePeriod) * 2 * Math.PI;
+    uniforms.hueDisplaceTime = (ctx) => {
+      return fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
     };
     uniforms.hueDisplaceDirectionOffset = (ctx, props) => {
-      let result = props.state.hueDisplaceRotate * fract(ctx.time / props.state.hueDisplacePeriod) * 2 * Math.PI;
-      if (props.state.hueDisplaceRandomDirectionOffset) {
+      let result = instance.config.hueDisplaceRotate * fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
+      if (instance.config.hueDisplaceRandomDirectionOffset) {
         // TODO It's really ugly that this effect writes into the global state
-        if (props.state.hueDisplaceRandomDirectionOffsetValue === undefined
-          || Math.floor(props.oldTime / props.state.hueDisplacePeriod)
-          !== Math.floor(props.currentTime / props.state.hueDisplacePeriod)
+        if (instance.config.hueDisplaceRandomDirectionOffsetValue === undefined
+          || Math.floor(props.oldTime / instance.config.hueDisplacePeriod)
+          !== Math.floor(props.currentTime / instance.config.hueDisplacePeriod)
         ) {
-          props.state.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
+          instance.config.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
         }
-        result += props.state.hueDisplaceRandomDirectionOffsetValue;
+        result += instance.config.hueDisplaceRandomDirectionOffsetValue;
       }
 
       return result;
     };
-    uniforms.hueDisplaceScaleByValue = (ctx, props) => {
-      return props.state.hueDisplaceScaleByValue;
+    uniforms.hueDisplaceScaleByValue = () => {
+      return instance.config.hueDisplaceScaleByValue;
+    };
+  }
+
+  static getConfigUI() {
+    if (!this._configUI) {
+      this._configUI = new HueDisplaceConfigUI();
+    }
+    return this._configUI;
+  }
+
+  static getDefaultConfig() {
+    return {
+      hueDisplaceDistance: 0.1,
+      hueDisplacePeriod: 3,
+      hueDisplaceScaleByValue: 0,
+      hueDisplaceRandomDirectionOffset: false,
+      hueDisplaceRotate: 0
     };
   }
 }

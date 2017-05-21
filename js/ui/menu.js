@@ -128,191 +128,6 @@ class ParticleOverlapControl extends Control {
   }
 }
 
-class HueDisplaceDistanceControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-hue-displace-distance');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceDistance = parseInt(this.input.value, 10) / 100;
-  }
-
-  applyState(state) {
-    this.input.value = state.hueDisplaceDistance * 100;
-  }
-}
-
-class HueDisplacePeriodControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-hue-displace-period');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplacePeriod = parseInt(this.input.value, 10) / 1000;
-  }
-
-  applyState(state) {
-    this.input.value = state.hueDisplacePeriod * 1000;
-  }
-}
-
-class HueDisplaceScaleByValueControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-hue-displace-scale-by-value');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceScaleByValue = parseInt(this.input.value, 10) / 100;
-  }
-
-  applyState(state) {
-    this.input.value = state.hueDisplaceScaleByValue * 100;
-  }
-}
-
-class HueDisplaceRandomDirectionOffsetControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-hue-displace-random-direction-offset');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceRandomDirectionOffset = this.input.checked;
-  }
-
-  applyState(state) {
-    this.input.checked = state.hueDisplaceRandomDirectionOffset;
-  }
-}
-
-class HueDisplaceRotateControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-hue-displace-rotate');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceRotate = parseInt(this.input.value, 10) / 100;
-  }
-
-  applyState(state) {
-    this.input.value = state.hueDisplaceRotate * 100;
-  }
-}
-
-class ConvergeEnableControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-converge-enable');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    state.convergeEnable = this.input.checked;
-  }
-
-  applyState(state) {
-    this.input.checked = state.convergeEnable;
-  }
-}
-
-class ConvergeSpeedControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-converge-speed');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    state.convergeSpeed = parseInt(this.input.value, 10) / 1000;
-  }
-
-  applyState(state) {
-    this.input.checked = state.convergeSpeed * 1000;
-  }
-}
-
-class ConvergeRotationSpeedControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-converge-rotation-speed');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    state.convergeRotationSpeed = parseInt(this.input.value, 10) / 100;
-  }
-
-  applyState(state) {
-    this.input.checked = state.convergeRotationSpeed * 100;
-  }
-}
-
-class ConvergeTargetControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-converge-target');
-    this.select = this.elm.querySelector('select');
-
-    this.select.addEventListener('change', () => {
-      this.menu.notifyStateChange();
-    });
-  }
-
-  updateState(state) {
-    state.convergeTarget = this.select.value;
-  }
-
-  applyState(state) {
-    this.select.value = state.convergeTarget;
-  }
-}
-
 /**
  *
  */
@@ -407,15 +222,13 @@ class ResetAppstateButton extends Control {
 
 const ControlsList = [
   BgColorPicker, ParticleCountControl, ParticleScalingControl, ParticleOverlapControl,
-  HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl, HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
-  ConvergeEnableControl, ConvergeSpeedControl, ConvergeRotationSpeedControl, ConvergeTargetControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
 export default class MainMenu {
   constructor() {
     this.menu = document.getElementById('menu-container');
-    this.timeline = new Timeline();
+    this.timeline = new Timeline(this);
     this.menuContent = this.menu.querySelector('.menu-content');
     this.effectList = this.menu.querySelector('#menu-effect-list');
     this.toggle = document.getElementById('toggle-menu-visible');
@@ -430,7 +243,9 @@ export default class MainMenu {
 
     // Close menu if clicked outside
     document.addEventListener('click', (evt) => {
-      if (!menu.contains(evt.target)) {
+      if (!menu.contains(evt.target) &&
+          !document.getElementById('modal-container').contains(evt.target)
+      ) {
         toggle.checked = false;
       }
     });
@@ -455,29 +270,31 @@ export default class MainMenu {
     }
     this.effectList.appendChild(effectListElms);
 
-    this.defaultState = this.readState();
-    this.submittedState = this.defaultState;
-
     this.timeline.loadTimeline([
-      [[effects[0].getId(), { timeBegin: 0, timeEnd: 10000, config: {} }]],
-      [[effects[1].getId(), { timeBegin: 0, timeEnd: 10000, config: {} }]],
+      [[effects[0].getId(), { timeBegin: 0, timeEnd: 10000, config: effects[0].getDefaultConfig() }]],
+      [[effects[1].getId(), { timeBegin: 0, timeEnd: 10000, config: effects[1].getDefaultConfig() }]],
       []
     ]);
+
+    this.defaultState = this.readState();
+    this.submittedState = this.defaultState;
   }
 
   applyState(state) {
     for (let i = 0; i < this.controls.length; i++) {
       this.controls[i].applyState(state);
     }
+    this.timeline.loadTimeline(state.effects);
   }
 
   readState() {
-    const state = {};
+    const config = {};
     for (let i = 0; i < this.controls.length; i++) {
-      this.controls[i].updateState(state);
+      this.controls[i].updateState(config);
     }
+    config.effects = this.timeline.getEffects();
 
-    return state;
+    return config;
   }
 
   submit() {

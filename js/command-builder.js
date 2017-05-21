@@ -1,5 +1,6 @@
 import HueDisplace from './effects/hue-displace';
 import Converge from './effects/converge';
+import { effectsById } from './effects/index';
 
 class Shader {
   constructor() {
@@ -38,9 +39,6 @@ class Shader {
 }
 
 export default class CommandBuilder {
-  constructor() {
-    this.effects = [new HueDisplace(), new Converge()];
-  }
   rebuildCommand(particleData, state) {
     this.state = state;
     this.particleData = particleData;
@@ -77,8 +75,14 @@ export default class CommandBuilder {
       
       vec3 position = initialPosition;
     `;
-    for (let i = 0; i < this.effects.length; i++) {
-      this.effects[i].insertIntoVertexShader(vertexShader, this.state);
+    for (let i = 0; i < this.state.effects.length; i++) {
+      const track = this.state.effects[i];
+      for (let j = 0; j < track.length; j++) {
+        const effectId = track[j][0];
+        const effectConfig = track[j][1];
+        const effectClass = effectsById[effectId];
+        effectClass.insertIntoVertexShader(vertexShader, effectConfig);
+      }
     }
 
     vertexShader.mainBody += `
@@ -176,8 +180,14 @@ export default class CommandBuilder {
       },
     };
 
-    for (let i = 0; i < this.effects.length; i++) {
-      this.effects[i].insertUniforms(result.uniforms, this);
+    for (let i = 0; i < this.state.effects.length; i++) {
+      const track = this.state.effects[i];
+      for (let j = 0; j < track.length; j++) {
+        const effectId = track[j][0];
+        const effectConfig = track[j][1];
+        const effectClass = effectsById[effectId];
+        effectClass.insertUniforms(result.uniforms, effectConfig);
+      }
     }
 
     return result;
