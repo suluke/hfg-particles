@@ -15,11 +15,11 @@ class Control {
     this.menu = menu;
   }
   // eslint-disable-next-line class-methods-use-this
-  updateState(/* state */) {
+  updateConfig(/* config */) {
     throw new Error('Method not implemented');
   }
   // eslint-disable-next-line class-methods-use-this
-  applyState(/* state */) {
+  applyConfig(/* config */) {
     throw new Error('Method not implemented');
   }
 }
@@ -34,18 +34,18 @@ class BgColorPicker extends Control {
     this.input = this.elm.querySelector('input[type="color"]');
 
     this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
+      this.menu.notifyChange();
     });
   }
 
-  updateState(state) {
+  updateConfig(config) {
     // eslint-disable-next-line no-param-reassign
-    state.backgroundColor = parseColor(this.input.value)
+    config.backgroundColor = parseColor(this.input.value)
       .rgba.map((val, i) => (i === 3 ? val : val / 256));
   }
 
-  applyState(state) {
-    const [r, g, b, a] = state.backgroundColor.map((val, i) => (i === 3 ? val : val * 256));
+  applyConfig(config) {
+    const [r, g, b, a] = config.backgroundColor.map((val, i) => (i === 3 ? val : val * 256));
     this.input.value = parseColor(`rgba(${r}, ${g}, ${b}, ${a})`).hex;
   }
 }
@@ -60,23 +60,23 @@ class ParticleCountControl extends Control {
     this.yInput = document.getElementById('menu-particles-y');
 
     this.xInput.addEventListener('change', () => {
-      this.menu.notifyStateChange();
+      this.menu.notifyChange();
     });
     this.yInput.addEventListener('change', () => {
-      this.menu.notifyStateChange();
+      this.menu.notifyChange();
     });
   }
 
-  updateState(state) {
+  updateConfig(config) {
     // eslint-disable-next-line no-param-reassign
-    state.xParticlesCount = parseInt(this.xInput.value, 10);
+    config.xParticlesCount = parseInt(this.xInput.value, 10);
     // eslint-disable-next-line no-param-reassign
-    state.yParticlesCount = parseInt(this.yInput.value, 10);
+    config.yParticlesCount = parseInt(this.yInput.value, 10);
   }
 
-  applyState(state) {
-    this.xInput.value = state.xParticlesCount;
-    this.yInput.value = state.yParticlesCount;
+  applyConfig(config) {
+    this.xInput.value = config.xParticlesCount;
+    this.yInput.value = config.yParticlesCount;
   }
 }
 
@@ -90,17 +90,17 @@ class ParticleScalingControl extends Control {
     this.input = this.elm.querySelector('input[type="number"]');
 
     this.input.addEventListener('change', () => {
-      this.menu.notifyStateChange();
+      this.menu.notifyChange();
     });
   }
 
-  updateState(state) {
+  updateConfig(config) {
     // eslint-disable-next-line no-param-reassign
-    state.particleScaling = parseInt(this.input.value, 10) / 100;
+    config.particleScaling = parseInt(this.input.value, 10) / 100;
   }
 
-  applyState(state) {
-    this.input.value = state.particleScaling * 100;
+  applyConfig(config) {
+    this.input.value = config.particleScaling * 100;
   }
 }
 
@@ -114,17 +114,17 @@ class ParticleOverlapControl extends Control {
     this.select = this.elm.querySelector('select');
 
     this.select.addEventListener('change', () => {
-      this.menu.notifyStateChange();
+      this.menu.notifyChange();
     });
   }
 
-  updateState(state) {
+  updateConfig(config) {
     // eslint-disable-next-line no-param-reassign
-    state.particleOverlap = this.select.value;
+    config.particleOverlap = this.select.value;
   }
 
-  applyState(state) {
-    this.select.value = state.particleOverlap;
+  applyConfig(config) {
+    this.select.value = config.particleOverlap;
   }
 }
 
@@ -138,7 +138,7 @@ class ExportAppstateButton extends Control {
     this.elm.addEventListener('click', () => {
       const toExport = Object.assign({
         schemaVersion: config.export_schema_version
-      }, this.menu.submittedState);
+      }, this.menu.submittedConfig);
       ExportAppstateButton.saveJson('particles.json', JSON.stringify(toExport, null, 2));
     });
   }
@@ -156,9 +156,9 @@ class ExportAppstateButton extends Control {
     }
   }
   // eslint-disable-next-line class-methods-use-this
-  updateState(/* state */) {}
+  updateConfig(/* config */) {}
   // eslint-disable-next-line class-methods-use-this
-  applyState(/* state */) {}
+  applyConfig(/* config */) {}
 }
 
 /**
@@ -189,7 +189,7 @@ class ImportAppstateButton extends Control {
 
           return;
         }
-        this.menu.applyState(json);
+        this.menu.applyConfig(json);
         this.menu.submit();
         this.input.value = null;
       };
@@ -197,9 +197,9 @@ class ImportAppstateButton extends Control {
     });
   }
   // eslint-disable-next-line class-methods-use-this
-  updateState(/* state */) {}
+  updateConfig(/* config */) {}
   // eslint-disable-next-line class-methods-use-this
-  applyState(/* state */) {}
+  applyConfig(/* config */) {}
 }
 
 /**
@@ -210,14 +210,14 @@ class ResetAppstateButton extends Control {
     super(menu);
     this.elm = document.getElementById('menu-btn-resetstate');
     this.elm.addEventListener('click', () => {
-      this.menu.applyState(this.menu.defaultState);
+      this.menu.applyConfig(this.menu.defaultConfig);
       this.menu.submit();
     });
   }
   // eslint-disable-next-line class-methods-use-this
-  updateState(/* state */) {}
+  updateConfig(/* config */) {}
   // eslint-disable-next-line class-methods-use-this
-  applyState(/* state */) {}
+  applyConfig(/* config */) {}
 }
 
 const ControlsList = [
@@ -235,7 +235,7 @@ export default class MainMenu {
     this.applyBtn = document.getElementById('menu-btn-apply');
     this.controls = [];
     this.changeListeners = [];
-    this.submittedState = null; // defaults will be read later
+    this.submittedConfig = null; // defaults will be read later
 
     const menu = this.menu;
     const toggle = this.toggle;
@@ -276,21 +276,21 @@ export default class MainMenu {
       []
     ]);
 
-    this.defaultState = this.readState();
-    this.submittedState = this.defaultState;
+    this.defaultConfig = this.readConfig();
+    this.submittedConfig = this.defaultConfig;
   }
 
-  applyState(state) {
+  applyConfig(config) {
     for (let i = 0; i < this.controls.length; i++) {
-      this.controls[i].applyState(state);
+      this.controls[i].applyConfig(config);
     }
-    this.timeline.loadTimeline(state.effects);
+    this.timeline.loadTimeline(config.effects);
   }
 
-  readState() {
+  readConfig() {
     const config = {};
     for (let i = 0; i < this.controls.length; i++) {
-      this.controls[i].updateState(config);
+      this.controls[i].updateConfig(config);
     }
     config.effects = this.timeline.getEffects();
 
@@ -299,11 +299,11 @@ export default class MainMenu {
 
   submit() {
     this.applyBtn.disabled = true;
-    const state = this.readState();
+    const config = this.readConfig();
     for (let i = 0; i < this.changeListeners.length; i++) {
-      this.changeListeners[i](state);
+      this.changeListeners[i](config);
     }
-    this.submittedState = state;
+    this.submittedConfig = config;
   }
 
   addControl(CtrlClass) {
@@ -322,7 +322,7 @@ export default class MainMenu {
     return parseInt(menuWidth, 10) === window.innerWidth;
   }
 
-  notifyStateChange() {
+  notifyChange() {
     this.applyBtn.disabled = false;
   }
 }

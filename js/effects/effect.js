@@ -5,7 +5,7 @@ export default class Effect {
   static insertUniforms(/* uniforms */) {
     throw new Error('Method not implemented');
   }
-  static insertIntoVertexShader(/* vertexShader, state */) {
+  static insertIntoVertexShader(/* vertexShader, instance */) {
     throw new Error('Method not implemented');
   }
   static getId() {
@@ -36,7 +36,7 @@ export class ConfigUI {
     throw new Error('Method not implemented');
   }
 
-  notifyStateChange() {
+  notifyChange() {
     // TODO
   }
 }

@@ -36,8 +36,8 @@ srcImage.onload = () => {
   imgDimWarn.verify(srcImage)
   .then(({xParticlesCount, yParticlesCount}) => {
     renderer.loadImageData(srcImage);
-    const state = Object.assign({}, menu.submittedState, {xParticlesCount, yParticlesCount});
-    menu.applyState(state);
+    const config = Object.assign({}, menu.submittedConfig, {xParticlesCount, yParticlesCount});
+    menu.applyConfig(config);
     menu.submit();
   }, () => {
     /* User canceled loading image */
@@ -61,6 +61,6 @@ imgSelect.addChangeListener((url) => {
   }
 });
 
-menu.addChangeListener((state) => {
-  renderer.setState(state);
+menu.addChangeListener((config) => {
+  renderer.setConfig(config);
 });

@@ -36,16 +36,16 @@ class ConvergeConfigUI extends ConfigUI {
     this.enableInput = ui.querySelector('input.effect-converge-enable');
 
     this.enableInput.addEventListener('change', () => {
-      this.notifyStateChange();
+      this.notifyChange();
     });
     this.speedInput.addEventListener('change', () => {
-      this.notifyStateChange();
+      this.notifyChange();
     });
     this.rotationSpeedInput.addEventListener('change', () => {
-      this.notifyStateChange();
+      this.notifyChange();
     });
     this.targetSelect.addEventListener('change', () => {
-      this.notifyStateChange();
+      this.notifyChange();
     });
   }
 
@@ -54,12 +54,12 @@ class ConvergeConfigUI extends ConfigUI {
   }
 
   getConfig() {
-    const state = {};
-    state.convergeTarget = this.targetSelect.value;
-    state.convergeRotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
-    state.convergeSpeed = parseInt(this.speedInput.value, 10) / 1000;
-    state.convergeEnable = this.enableInput.checked;
-    return state;
+    const config = {};
+    config.convergeTarget = this.targetSelect.value;
+    config.convergeRotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
+    config.convergeSpeed = parseInt(this.speedInput.value, 10) / 1000;
+    config.convergeEnable = this.enableInput.checked;
+    return config;
   }
 
   applyConfig(config) {

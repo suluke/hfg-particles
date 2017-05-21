@@ -36,19 +36,19 @@ class HueDisplaceConfigUI extends ConfigUI {
     this.rotateInput = ui.querySelector('input.effect-hue-displace-rotate');
 
     this.distanceInput.addEventListener('change', () => {
-      this.notifyStateChange();
+      this.notifyChange();
     });
     this.periodInput.addEventListener('change', () => {
-      this.notifyStateChange();
+      this.notifyChange();
     });
     this.scaleByValInput.addEventListener('change', () => {
-      this.notifyStateChange();
+      this.notifyChange();
     });
     this.randomOffsetInput.addEventListener('change', () => {
-      this.notifyStateChange();
+      this.notifyChange();
     });
     this.rotateInput.addEventListener('change', () => {
-      this.notifyStateChange();
+      this.notifyChange();
     });
   }
 
@@ -57,26 +57,26 @@ class HueDisplaceConfigUI extends ConfigUI {
   }
 
   getConfig() {
-    const state = {};
+    const config = {};
     // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceDistance = parseInt(this.distanceInput.value, 10) / 100;
+    config.hueDisplaceDistance = parseInt(this.distanceInput.value, 10) / 100;
     // eslint-disable-next-line no-param-reassign
-    state.hueDisplacePeriod = parseInt(this.periodInput.value, 10) / 1000;
+    config.hueDisplacePeriod = parseInt(this.periodInput.value, 10) / 1000;
     // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceScaleByValue = parseInt(this.scaleByValInput.value, 10) / 100;
+    config.hueDisplaceScaleByValue = parseInt(this.scaleByValInput.value, 10) / 100;
     // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceRandomDirectionOffset = this.randomOffsetInput.checked;
+    config.hueDisplaceRandomDirectionOffset = this.randomOffsetInput.checked;
      // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceRotate = parseInt(this.rotateInput.value, 10) / 100;
-    return state;
+    config.hueDisplaceRotate = parseInt(this.rotateInput.value, 10) / 100;
+    return config;
   }
 
   applyConfig(config) {
     this.distanceInput.value = config.hueDisplaceDistance * 100;
     this.periodInput.value = config.hueDisplacePeriod * 1000;
     this.scaleByValInput.value = config.hueDisplaceScaleByValue * 100;
-    this.randomOffsetInput.checked = state.hueDisplaceRandomDirectionOffset;
-    this.rotateInput.value = state.hueDisplaceRotate * 100;
+    this.randomOffsetInput.checked = config.hueDisplaceRandomDirectionOffset;
+    this.rotateInput.value = config.hueDisplaceRotate * 100;
   }
 }
 
@@ -109,7 +109,6 @@ export default class HueDisplaceEffect extends Effect {
     uniforms.hueDisplaceDirectionOffset = (ctx, props) => {
       let result = instance.config.hueDisplaceRotate * fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
       if (instance.config.hueDisplaceRandomDirectionOffset) {
-        // TODO It's really ugly that this effect writes into the global state
         if (instance.config.hueDisplaceRandomDirectionOffsetValue === undefined
           || Math.floor(props.oldTime / instance.config.hueDisplacePeriod)
           !== Math.floor(props.currentTime / instance.config.hueDisplacePeriod)

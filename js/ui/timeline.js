@@ -161,7 +161,7 @@ export default class Timeline {
     return configs;
   }
   notifyChange() {
-    this.menu.notifyStateChange();
+    this.menu.notifyChange();
   }
   deleteEntry(remove) {
     this.forEachEntry((entry, track, trackIndex) => {

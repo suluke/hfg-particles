@@ -39,8 +39,8 @@ class Shader {
 }
 
 export default class CommandBuilder {
-  rebuildCommand(particleData, state) {
-    this.state = state;
+  rebuildCommand(particleData, config) {
+    this.config = config;
     this.particleData = particleData;
     return this.assembleCommand();
   }
@@ -75,8 +75,8 @@ export default class CommandBuilder {
       
       vec3 position = initialPosition;
     `;
-    for (let i = 0; i < this.state.effects.length; i++) {
-      const track = this.state.effects[i];
+    for (let i = 0; i < this.config.effects.length; i++) {
+      const track = this.config.effects[i];
       for (let j = 0; j < track.length; j++) {
         const effectId = track[j][0];
         const effectConfig = track[j][1];
@@ -103,9 +103,9 @@ export default class CommandBuilder {
     const colorAssign = {
       'add':         'gl_FragColor = vec4(color * v, 1);\n',
       'alpha blend': 'gl_FragColor = vec4(color, v);\n'
-    }[this.state.particleOverlap];
+    }[this.config.particleOverlap];
     if (!colorAssign) {
-        throw new Error(`Unknown particle overlap mode: ${this.state.particleOverlap}`);
+        throw new Error(`Unknown particle overlap mode: ${this.config.particleOverlap}`);
     }
     fragmentShader.mainBody += colorAssign;
 
@@ -129,7 +129,7 @@ export default class CommandBuilder {
       depth: { enable: false }
     };
 
-    switch (this.state.particleOverlap) {
+    switch (this.config.particleOverlap) {
       case 'add':
         result.blend = {
           enable: true,
@@ -143,7 +143,7 @@ export default class CommandBuilder {
         };
         break;
       default:
-        throw new Error(`Unknown particle overlap mode: ${this.state.particleOverlap}`);
+        throw new Error(`Unknown particle overlap mode: ${this.config.particleOverlap}`);
     }
 
     result.uniforms = {
@@ -176,12 +176,12 @@ export default class CommandBuilder {
         ];
       },
       particleSize(ctx) {
-        return (ctx.viewportWidth / this.particleData.width) * 2 * this.state.particleScaling;
+        return (ctx.viewportWidth / this.particleData.width) * 2 * this.config.particleScaling;
       },
     };
 
-    for (let i = 0; i < this.state.effects.length; i++) {
-      const track = this.state.effects[i];
+    for (let i = 0; i < this.config.effects.length; i++) {
+      const track = this.config.effects[i];
       for (let j = 0; j < track.length; j++) {
         const effectId = track[j][0];
         const effectConfig = track[j][1];

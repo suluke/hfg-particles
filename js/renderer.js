@@ -9,7 +9,7 @@ export default class Renderer {
     console.log(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
     console.log(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
     this.particleData = null;
-    this.state = null;
+    this.config = null;
     this.command = null;
     this.commandBuilder = new CommandBuilder();
     this.oldTime = this.regl.now();
@@ -20,9 +20,9 @@ export default class Renderer {
       if (this.command === null) {
         return;
       }
-      this.regl.clear({ color: this.state.backgroundColor });
+      this.regl.clear({ color: this.config.backgroundColor });
       this.command({
-        state: this.state,
+        config: this.config,
         particleData: this.particleData,
         oldTime: this.oldTime,
         currentTime: this.currentTime,
@@ -48,8 +48,8 @@ export default class Renderer {
     const imgData = this.imgData;
     const scalingCanvas = document.createElement('canvas');
     const scalingContext = scalingCanvas.getContext('2d');
-    scalingCanvas.width = this.state.xParticlesCount || imgData.width;
-    scalingCanvas.height = this.state.yParticlesCount || imgData.height;
+    scalingCanvas.width = this.config.xParticlesCount || imgData.width;
+    scalingCanvas.height = this.config.yParticlesCount || imgData.height;
     scalingContext.drawImage(imgData, 0, 0, scalingCanvas.width, scalingCanvas.height);
     const scaledData = scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
 
@@ -115,7 +115,7 @@ export default class Renderer {
   }
 
   rebuildCommand() {
-    const cmd = this.commandBuilder.rebuildCommand(this.particleData, this.state);
+    const cmd = this.commandBuilder.rebuildCommand(this.particleData, this.config);
     this.command = this.regl(cmd);
   }
 
@@ -125,9 +125,9 @@ export default class Renderer {
     this.rebuildCommand();
   }
 
-  setState(state) {
-    const oldState = this.state;
-    this.state = state;
+  setConfig(config) {
+    const oldConfig = this.config;
+    this.config = config;
     // TODO: rebuild command only when necessary
     this.createParticleData();
     this.rebuildCommand();
