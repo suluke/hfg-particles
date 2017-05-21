@@ -2340,7 +2340,8 @@
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
   background-color: #eee;
-  padding: 20px; }
+  padding: 20px;
+  z-index: 5; }
   .file-drag-indicator:before {
     content: "";
     display: inline-block;
@@ -2367,7 +2368,8 @@
   height: 100%;
   left: 0;
   top: 0;
-  background-color: rgba(0, 0, 0, 0.7); }
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 4; }
   .img-dim-warn-backdrop .img-dim-warn-popup {
     position: absolute;
     width: 50%;
@@ -2379,7 +2381,8 @@
     -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
     background-color: #eee;
-    padding: 20px; }
+    padding: 20px;
+    z-index: 5; }
   .img-dim-warn-backdrop .toggle-advanced-load-options {
     position: absolute;
     top: 0;
@@ -2416,7 +2419,10 @@
     opacity: 0;
     z-index: -1;
     overflow: hidden;
-    clip: rect(1px, 1px, 1px, 1px); }
+    clip: rect(1px, 1px, 1px, 1px);
+    /**
+     * Menu hide/show toggle implementation
+     */ }
     .menu-container input[type=checkbox].toggle-menu-visible + label {
       /* the default mixins set font-size, which interferes when changing icons depenging on state */
       /* @include fa-icon; // in _mixins.scss */
@@ -2441,70 +2447,78 @@
       font-family: FontAwesome; }
       .menu-container input[type=checkbox].toggle-menu-visible:checked + label:before {
         content: ""; }
-    .menu-container input[type=checkbox].toggle-menu-visible + label + .menu-content {
+    .menu-container input[type=checkbox].toggle-menu-visible ~ .menu-content,
+    .menu-container input[type=checkbox].toggle-menu-visible ~ .menu-timeline-container {
       display: none;
       z-index: 1; }
-    .menu-container input[type=checkbox].toggle-menu-visible:checked ~ .menu-content {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      background-color: rgba(255, 255, 255, 0.9); }
-  .menu-container .menu-content-inner {
-    overflow-y: scroll;
-    height: 100%;
-    /* This asserts that menu items won't be
-     * hidden by apply button if a scroll bar
-     * becomes visible */ }
-    .menu-container .menu-content-inner:after {
-      content: "";
-      display: block;
-      height: 10%;
-      min-height: 20px; }
-  .menu-container .menu-btn-importstate {
-    background-color: #eee;
-    border-color: #555;
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 5px;
-    padding: 5px;
-    font-size: 1em;
-    margin: 5px; }
-    .menu-container .menu-btn-importstate:focus, .menu-container .menu-btn-importstate:hover {
-      background-color: #fff; }
-    .menu-container .menu-btn-importstate > input[type="file"] {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 0.1px;
-      height: 0.1px;
-      opacity: 0;
-      z-index: -1;
-      overflow: hidden;
-      clip: rect(1px, 1px, 1px, 1px); }
-  .menu-container .menu-btn-exportstate {
-    background-color: #eee;
-    border-color: #555;
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 5px;
-    padding: 5px;
-    font-size: 1em;
-    margin: 5px; }
-    .menu-container .menu-btn-exportstate:focus, .menu-container .menu-btn-exportstate:hover {
-      background-color: #fff; }
-  .menu-container .menu-btn-resetstate {
-    background-color: #eee;
-    border-color: #555;
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 5px;
-    padding: 5px;
-    font-size: 1em;
-    margin: 5px; }
-    .menu-container .menu-btn-resetstate:focus, .menu-container .menu-btn-resetstate:hover {
-      background-color: #fff; }
+    .menu-container input[type=checkbox].toggle-menu-visible:checked ~ .menu-content,
+    .menu-container input[type=checkbox].toggle-menu-visible:checked ~ .menu-timeline-container {
+      display: block; }
+  .menu-container .menu-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%; }
+    .menu-container .menu-content .menu-content-inner {
+      background-color: rgba(255, 255, 255, 0.9);
+      overflow-y: scroll;
+      /* This asserts that menu items won't be
+       * hidden by apply button if a scroll bar
+       * becomes visible */
+      /**
+       * Load/Store/Reset Buttons
+       */ }
+      .menu-container .menu-content .menu-content-inner:after {
+        content: "";
+        display: block;
+        height: 10%;
+        min-height: 20px; }
+      .menu-container .menu-content .menu-content-inner .menu-btn-importstate {
+        background-color: #eee;
+        border-color: #555;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        padding: 5px;
+        font-size: 1em;
+        margin: 5px; }
+        .menu-container .menu-content .menu-content-inner .menu-btn-importstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-importstate:hover {
+          background-color: #fff; }
+        .menu-container .menu-content .menu-content-inner .menu-btn-importstate > input[type="file"] {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 0.1px;
+          height: 0.1px;
+          opacity: 0;
+          z-index: -1;
+          overflow: hidden;
+          clip: rect(1px, 1px, 1px, 1px); }
+      .menu-container .menu-content .menu-content-inner .menu-btn-exportstate {
+        background-color: #eee;
+        border-color: #555;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        padding: 5px;
+        font-size: 1em;
+        margin: 5px; }
+        .menu-container .menu-content .menu-content-inner .menu-btn-exportstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-exportstate:hover {
+          background-color: #fff; }
+      .menu-container .menu-content .menu-content-inner .menu-btn-resetstate {
+        background-color: #eee;
+        border-color: #555;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        padding: 5px;
+        font-size: 1em;
+        margin: 5px; }
+        .menu-container .menu-content .menu-content-inner .menu-btn-resetstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-resetstate:hover {
+          background-color: #fff; }
+  .menu-container .menu-timeline-container {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.9); }
   .menu-container .menu-btn-apply {
     display: block;
     position: absolute;
@@ -2523,6 +2537,82 @@
       background-color: #449D44; }
     .menu-container .menu-btn-apply[disabled]:hover, .menu-container .menu-btn-apply[disabled]:focus {
       background-color: #5CB85C; }
+
+.menu-timeline-container {
+  overflow-y: scroll; }
+  .menu-timeline-container .menu-timeline-content {
+    min-width: 100%;
+    text-align: left;
+    overflow: scroll; }
+    .menu-timeline-container .menu-timeline-content .menu-timeline-header .menu-timeline-timetick {
+      transform: translateX(-50%); }
+    .menu-timeline-container .menu-timeline-content .menu-timeline-tracks {
+      /* Timeline tracks */ }
+      .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr {
+        height: 4em; }
+        .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td {
+          height: inherit;
+          border: solid 1px #000;
+          margin: 0;
+          padding: 0;
+          border-spacing: 0; }
+          .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > h3 {
+            text-align: center; }
+            .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > h3:after {
+              content: ":"; }
+          .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            /* Timeline Entries */ }
+            .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li {
+              height: 100%;
+              display: inline-block;
+              border: solid 1px #000;
+              box-sizing: border-box; }
+              .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li:before {
+                content: "";
+                display: inline-block;
+                height: 100%;
+                vertical-align: middle; }
+              .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li > button {
+                width: 100%;
+                height: 100%;
+                background: #eee;
+                border: none;
+                text-align: left; }
+  .menu-timeline-container .menu-timeline-position-indicator {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: -2px;
+    /* Make this less visible on page load */
+    width: 2px;
+    height: 100%;
+    background-color: #f00; }
+
+.effect-config-dialog-backdrop {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 4; }
+  .effect-config-dialog-backdrop .effect-config-dialog {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    text-align: center;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    background-color: #eee;
+    padding: 20px;
+    z-index: 5; }
 
 html,
 body {
@@ -2624,8 +2714,6 @@ body {
  * =================================================================== */
 @media (min-width: 320px) {
   /* smartphones, iPhone, portrait 480x320 phones */
-  .menu-container .menu-content {
-    width: 100%; }
   .menu-container input[type=checkbox].toggle-menu-visible + label {
     font-size: 1.5cm;
     top: 20px;
@@ -2634,20 +2722,29 @@ body {
     left: 100%;
     transform: translateX(-100%);
     margin-left: -20px; }
-  .menu-container .menu-content-inner {
-    /* Vertical padding is not allowed
-       * because we only have the space
-       * between top and apply button */
-    padding: 0 20px;
-    /* but we can fake with :before and :after */ }
-    .menu-container .menu-content-inner:before {
-      content: "";
-      display: block;
-      margin-bottom: 20px; }
-    .menu-container .menu-content-inner:after {
-      content: "";
-      display: block;
-      margin-top: 20px; }
+  .menu-container .menu-content {
+    width: 100%; }
+    .menu-container .menu-content .menu-content-inner {
+      height: 50%;
+      /* Vertical padding is not allowed
+         * because we only have the space
+         * between top and apply button */
+      padding: 0 20px;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 20px; }
+      .menu-container .menu-content .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 20px; }
+  .menu-container .menu-timeline-container {
+    left: 0;
+    width: 100%;
+    height: 40%;
+    bottom: 10%;
+    border-top: solid 1px #333; }
   .btn-fullscreen {
     font-size: 1.5cm;
     top: 20px;
@@ -2662,8 +2759,6 @@ body {
 
 @media (min-width: 481px) {
   /* portrait e-readers (Nook/Kindle), smaller tablets @ 600 or @ 640 wide. */
-  .menu-container .menu-content {
-    width: 100%; }
   .menu-container input[type=checkbox].toggle-menu-visible + label {
     font-size: 1.5cm;
     top: 20px;
@@ -2672,20 +2767,29 @@ body {
     left: 100%;
     transform: translateX(-100%);
     margin-left: -20px; }
-  .menu-container .menu-content-inner {
-    /* Vertical padding is not allowed
-       * because we only have the space
-       * between top and apply button */
-    padding: 0 20px;
-    /* but we can fake with :before and :after */ }
-    .menu-container .menu-content-inner:before {
-      content: "";
-      display: block;
-      margin-bottom: 20px; }
-    .menu-container .menu-content-inner:after {
-      content: "";
-      display: block;
-      margin-top: 20px; }
+  .menu-container .menu-content {
+    width: 100%; }
+    .menu-container .menu-content .menu-content-inner {
+      height: 50%;
+      /* Vertical padding is not allowed
+         * because we only have the space
+         * between top and apply button */
+      padding: 0 20px;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 20px; }
+      .menu-container .menu-content .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 20px; }
+  .menu-container .menu-timeline-container {
+    left: 0;
+    width: 100%;
+    height: 40%;
+    bottom: 10%;
+    border-top: solid 1px #333; }
   .btn-fullscreen {
     font-size: 1.5cm;
     top: 20px;
@@ -2700,8 +2804,6 @@ body {
 
 @media (min-width: 641px) {
   /* portrait tablets, portrait iPad, landscape e-readers, landscape 800x480 or 854x480 phones */
-  .menu-container .menu-content {
-    width: 100%; }
   .menu-container input[type=checkbox].toggle-menu-visible + label {
     font-size: 1.5cm;
     top: 1.5cm;
@@ -2710,20 +2812,29 @@ body {
     left: 100%;
     transform: translateX(-100%);
     margin-left: -1.5cm; }
-  .menu-container .menu-content-inner {
-    /* Vertical padding is not allowed
-       * because we only have the space
-       * between top and apply button */
-    padding: 0 1.5cm;
-    /* but we can fake with :before and :after */ }
-    .menu-container .menu-content-inner:before {
-      content: "";
-      display: block;
-      margin-bottom: 1.5cm; }
-    .menu-container .menu-content-inner:after {
-      content: "";
-      display: block;
-      margin-top: 1.5cm; }
+  .menu-container .menu-content {
+    width: 100%; }
+    .menu-container .menu-content .menu-content-inner {
+      height: 50%;
+      /* Vertical padding is not allowed
+         * because we only have the space
+         * between top and apply button */
+      padding: 0 1.5cm;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 1.5cm; }
+      .menu-container .menu-content .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 1.5cm; }
+  .menu-container .menu-timeline-container {
+    left: 0;
+    width: 100%;
+    height: 40%;
+    bottom: 10%;
+    border-top: solid 1px #333; }
   .btn-fullscreen {
     font-size: 1.5cm;
     top: 1.5cm;
@@ -2738,8 +2849,6 @@ body {
 
 @media (min-width: 961px) {
   /* tablet, landscape iPad, lo-res laptops ands desktops */
-  .menu-container .menu-content {
-    width: 50%; }
   .menu-container input[type=checkbox].toggle-menu-visible + label {
     font-size: 1.5cm;
     top: 1.5cm;
@@ -2748,20 +2857,29 @@ body {
     left: 50%;
     transform: translateX(-100%);
     margin-left: -1.5cm; }
-  .menu-container .menu-content-inner {
-    /* Vertical padding is not allowed
-       * because we only have the space
-       * between top and apply button */
-    padding: 0 1.5cm;
-    /* but we can fake with :before and :after */ }
-    .menu-container .menu-content-inner:before {
-      content: "";
-      display: block;
-      margin-bottom: 1.5cm; }
-    .menu-container .menu-content-inner:after {
-      content: "";
-      display: block;
-      margin-top: 1.5cm; }
+  .menu-container .menu-content {
+    width: 50%; }
+    .menu-container .menu-content .menu-content-inner {
+      height: 100%;
+      /* Vertical padding is not allowed
+         * because we only have the space
+         * between top and apply button */
+      padding: 0 1.5cm;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 1.5cm; }
+      .menu-container .menu-content .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 1.5cm; }
+  .menu-container .menu-timeline-container {
+    left: 50%;
+    width: 50%;
+    height: 30%;
+    bottom: 0;
+    border-top: none; }
   .btn-fullscreen {
     font-size: 1.5cm;
     top: 1.5cm;
@@ -2776,8 +2894,6 @@ body {
 
 @media (min-width: 1025px) {
   /* big landscape tablets, laptops, and desktops */
-  .menu-container .menu-content {
-    width: 40%; }
   .menu-container input[type=checkbox].toggle-menu-visible + label {
     font-size: 1.5cm;
     top: 1cm;
@@ -2786,20 +2902,29 @@ body {
     left: 40%;
     transform: translateX(-100%);
     margin-left: -1cm; }
-  .menu-container .menu-content-inner {
-    /* Vertical padding is not allowed
-       * because we only have the space
-       * between top and apply button */
-    padding: 0 1cm;
-    /* but we can fake with :before and :after */ }
-    .menu-container .menu-content-inner:before {
-      content: "";
-      display: block;
-      margin-bottom: 1cm; }
-    .menu-container .menu-content-inner:after {
-      content: "";
-      display: block;
-      margin-top: 1cm; }
+  .menu-container .menu-content {
+    width: 40%; }
+    .menu-container .menu-content .menu-content-inner {
+      height: 100%;
+      /* Vertical padding is not allowed
+         * because we only have the space
+         * between top and apply button */
+      padding: 0 1cm;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 1cm; }
+      .menu-container .menu-content .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 1cm; }
+  .menu-container .menu-timeline-container {
+    left: 40%;
+    width: 60%;
+    height: 30%;
+    bottom: 0;
+    border-top: none; }
   .btn-fullscreen {
     font-size: 1.5cm;
     top: 1cm;
@@ -2814,8 +2939,6 @@ body {
 
 @media (min-width: 1281px) {
   /* hi-res laptops and desktops */
-  .menu-container .menu-content {
-    width: 30%; }
   .menu-container input[type=checkbox].toggle-menu-visible + label {
     font-size: 1cm;
     top: 1cm;
@@ -2824,20 +2947,29 @@ body {
     left: 30%;
     transform: translateX(-100%);
     margin-left: -1cm; }
-  .menu-container .menu-content-inner {
-    /* Vertical padding is not allowed
-       * because we only have the space
-       * between top and apply button */
-    padding: 0 1cm;
-    /* but we can fake with :before and :after */ }
-    .menu-container .menu-content-inner:before {
-      content: "";
-      display: block;
-      margin-bottom: 1cm; }
-    .menu-container .menu-content-inner:after {
-      content: "";
-      display: block;
-      margin-top: 1cm; }
+  .menu-container .menu-content {
+    width: 30%; }
+    .menu-container .menu-content .menu-content-inner {
+      height: 100%;
+      /* Vertical padding is not allowed
+         * because we only have the space
+         * between top and apply button */
+      padding: 0 1cm;
+      /* but we can fake with :before and :after */ }
+      .menu-container .menu-content .menu-content-inner:before {
+        content: "";
+        display: block;
+        margin-bottom: 1cm; }
+      .menu-container .menu-content .menu-content-inner:after {
+        content: "";
+        display: block;
+        margin-top: 1cm; }
+  .menu-container .menu-timeline-container {
+    left: 30%;
+    width: 70%;
+    height: 30%;
+    bottom: 0;
+    border-top: none; }
   .btn-fullscreen {
     font-size: 1cm;
     top: 1cm;

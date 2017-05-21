@@ -256,6 +256,52 @@ var InactivityMonitor = function InactivityMonitor() {
   document.addEventListener('keypress', onActivity);
 };
 
+function parseHtml(html) {
+  html = html.trim();
+  /* code taken from jQuery */
+  var wrapMap = {
+    option: [ 1, "<select multiple='multiple'>", "</select>" ],
+    legend: [ 1, "<fieldset>", "</fieldset>" ],
+    area: [ 1, "<map>", "</map>" ],
+    param: [ 1, "<object>", "</object>" ],
+    thead: [ 1, "<table>", "</table>" ],
+    tr: [ 2, "<table><tbody>", "</tbody></table>" ],
+    col: [ 2, "<table><tbody></tbody><colgroup>", "</colgroup></table>" ],
+    td: [ 3, "<table><tbody><tr>", "</tr></tbody></table>" ],
+
+    // IE6-8 can't serialize link, script, style, or any html5 (NoScope) tags,
+    // unless wrapped in a div with non-breaking characters in front of it.
+    _default: [ 1, "<div>", "</div>"  ]
+  };
+  wrapMap.optgroup = wrapMap.option;
+  wrapMap.tbody = wrapMap.tfoot = wrapMap.colgroup = wrapMap.caption = wrapMap.thead;
+  wrapMap.th = wrapMap.td;
+  var element = document.createElement('div');
+  var match = /<\s*\w.*?>/g.exec(html);
+  if (match != null) {
+    var tag = match[0].replace(/</g, '').replace(/>/g, '');
+    var map = wrapMap[tag] || wrapMap._default, element;
+    html = map[1] + html + map[2];
+    element.innerHTML = html;
+    // Descend through wrappers to the right content
+    var j = map[0]+1;
+    while(j--) {
+      element = element.lastChild;
+    }
+  } else {
+    // if only text is passed
+    element.innerHTML = html;
+    element = element.lastChild;
+  }
+  return element;
+}
+
+function clearChildNodes(node) {
+  while (node.firstChild) {
+    node.removeChild(node.firstChild);
+  }
+}
+
 var ImgDimWarn = function ImgDimWarn() {
   var this$1 = this;
 
@@ -265,15 +311,12 @@ var ImgDimWarn = function ImgDimWarn() {
   var scaledLoadXInputClass = 'img-dim-x';
   var scaledLoadYInputClass = 'img-dim-y';
 
-  var parser = document.createElement('body');
   // Object properties
+  this.parentNode = document.getElementById('modal-container');
   this.resolve = null;
   this.reject = null;
-  parser.innerHTML = "\n      <div class=\"img-dim-warn-backdrop\">\n        <div class=\"img-dim-warn-popup\">\n          The image you selected is very large. Loading it may cause the\n          site to become very slow/unresponsive. <br/>\n          Do you still want to proceed?<br/>\n          <button type=\"button\" class=\"" + ignoreWarnBtnClass + "\">Yes, load big image</button>\n          <button type=\"button\" class=\"" + cancelLoadBtnClass + "\">Cancel</button>\n          <input type=\"checkbox\"\n            name=\"toggle-advanced-load-options\"\n            id=\"toggle-advanced-load-options\"\n            class=\"toggle-advanced-load-options\"/>\n          <label for=\"toggle-advanced-load-options\"\n            class=\"btn-toggle-advanced-load-options\"\n            title=\"Toggle advanced options\"\n          ></label>\n          <div>\n            Scale image to size before loading: <br/>\n            width: <input type=\"number\" class=\"" + scaledLoadXInputClass + "\"/><br/>\n            height: <input type=\"number\" class=\"" + scaledLoadYInputClass + "\"/><br/>\n            <button type=\"button\" class=\"" + scaledLoadBtnClass + "\">Load scaled image</button>\n          </div>\n        </div>\n      </div>\n    ";
-  // Whitespace in template causes 'text' nodes to be in parser, so index
-  // becomes 1
-  this.dialogElm = parser.childNodes[1];
-
+  this.dialogElm = parseHtml(("\n      <div class=\"img-dim-warn-backdrop\">\n        <div class=\"img-dim-warn-popup\">\n          The image you selected is very large. Loading it may cause the\n          site to become very slow/unresponsive. <br/>\n          Do you still want to proceed?<br/>\n          <button type=\"button\" class=\"" + ignoreWarnBtnClass + "\">Yes, load big image</button>\n          <button type=\"button\" class=\"" + cancelLoadBtnClass + "\">Cancel</button>\n          <input type=\"checkbox\"\n            name=\"toggle-advanced-load-options\"\n            id=\"toggle-advanced-load-options\"\n            class=\"toggle-advanced-load-options\"/>\n          <label for=\"toggle-advanced-load-options\"\n            class=\"btn-toggle-advanced-load-options\"\n            title=\"Toggle advanced options\"\n          ></label>\n          <div>\n            Scale image to size before loading: <br/>\n            width: <input type=\"number\" class=\"" + scaledLoadXInputClass + "\"/><br/>\n            height: <input type=\"number\" class=\"" + scaledLoadYInputClass + "\"/><br/>\n            <button type=\"button\" class=\"" + scaledLoadBtnClass + "\">Load scaled image</button>\n          </div>\n        </div>\n      </div>\n    "));
+    
   var loadBtn = this.dialogElm.querySelector(("." + ignoreWarnBtnClass));
   loadBtn.addEventListener('click', function () {
     this$1.hide();
@@ -310,7 +353,7 @@ ImgDimWarn.prototype.verify = function verify (img) {
       this$1.xParticlesInput.value = "" + (img.naturalWidth);
       this$1.yParticlesInput.value = "" + (img.naturalHeight);
         
-      document.body.appendChild(this$1.dialogElm);
+      this$1.parentNode.appendChild(this$1.dialogElm);
     } else {
       res({
         xParticlesCount: img.naturalWidth,
@@ -320,7 +363,7 @@ ImgDimWarn.prototype.verify = function verify (img) {
   });
 };
 ImgDimWarn.prototype.hide = function hide () {
-  document.body.removeChild(this.dialogElm);
+  this.parentNode.removeChild(this.dialogElm);
 };
 
 /* MIT license */
@@ -1196,9 +1239,529 @@ var index = function (cstr) {
 };
 
 var config = {
-  timestamp: '2017-05-19T08:51:59.462Z',
-  git_rev: 'b24d320',
+  timestamp: '2017-05-21T16:43:47.851Z',
+  git_rev: '5801552',
   export_schema_version: 0
+};
+
+var EffectConfigDialog = function EffectConfigDialog() {
+  var this$1 = this;
+
+  var parser = document.createElement('body');
+  var okBtnClass = 'effect-config-dialog-ok';
+  var cancelBtnClass = 'effect-config-dialog-cancel';
+  var deleteBtnClass = 'effect-config-dialog-delete';
+  var startTimeInputClass = 'effect-config-dialog-starttime';
+  var endTimeInputClass = 'effect-config-dialog-endtime';
+  this.parentNode = document.getElementById('modal-container');
+  this.element = parseHtml(("\n      <div class=\"effect-config-dialog-backdrop\">\n        <div class=\"effect-config-dialog\">\n          Begin: <input type=\"number\" class=\"" + startTimeInputClass + "\"/><br/>\n          End: <input type=\"number\" class=\"" + endTimeInputClass + "\"/><br/>\n          <button type=\"button\" class=\"" + okBtnClass + "\">Ok</button>\n          <button type=\"button\" class=\"" + cancelBtnClass + "\">Cancel</button>\n          <button type=\"button\" class=\"" + deleteBtnClass + "\">Delete effect</button>\n        </div>\n      </div>\n    "));
+  this.okBtn = this.element.querySelector(("." + okBtnClass));
+  this.cancelBtn = this.element.querySelector(("." + cancelBtnClass));
+  this.deleteBtn = this.element.querySelector(("." + deleteBtnClass));
+  this.dialog = this.element.querySelector('.effect-config-dialog');
+
+  this.startTimeInput = this.element.querySelector(("." + startTimeInputClass));
+  this.endTimeInput = this.element.querySelector(("." + endTimeInputClass));
+
+  this.okBtn.addEventListener('click', function (evt) {
+    evt.stopPropagation();
+    this$1.hide();
+    this$1.resolve({
+      config: this$1.ui.getConfig(),
+      timeBegin: parseInt(this$1.startTimeInput.value, 10),
+      timeEnd: parseInt(this$1.endTimeInput.value, 10),
+    });
+  });
+  this.cancelBtn.addEventListener('click', function (evt) {
+    evt.stopPropagation();
+    this$1.hide();
+    this$1.reject(false);
+  });
+  this.deleteBtn.addEventListener('click', function (evt) {
+    evt.stopPropagation();
+    this$1.hide();
+    this$1.reject(true);
+  });
+};
+
+EffectConfigDialog.prototype.show = function show () {
+  this.parentNode.appendChild(this.element);
+};
+EffectConfigDialog.prototype.hide = function hide () {
+  this.dialog.removeChild(this.ui.getElement());
+  this.parentNode.removeChild(this.element);
+};
+EffectConfigDialog.prototype.promptUser = function promptUser (entry) {
+    var this$1 = this;
+
+  return new Promise(function (res, rej) {
+    this$1.resolve = res;
+    this$1.reject = rej;
+    var ui = entry.effect.getConfigUI();
+    this$1.startTimeInput.value = entry.timeBegin;
+    this$1.endTimeInput.value = entry.timeEnd;
+    this$1.ui = ui;
+    this$1.dialog.prepend(ui.getElement());
+    this$1.show();
+  });
+};
+
+/**
+ * Interface for effects
+ */
+var Effect = function Effect () {};
+
+Effect.insertUniforms = function insertUniforms (/* uniforms */) {
+  throw new Error('Method not implemented');
+};
+Effect.insertIntoVertexShader = function insertIntoVertexShader (/* vertexShader, state */) {
+  throw new Error('Method not implemented');
+};
+Effect.getId = function getId () {
+  // Static + this = JS <3
+  return this.name;
+};
+
+Effect.getConfigUI = function getConfigUI () {
+  throw new Error('Method not implemented');
+};
+
+Effect.getDefaultConfig = function getDefaultConfig () {
+  throw new Error('Method not implemented');
+};
+
+/**
+ * Interface for config UIs
+ */
+var ConfigUI = function ConfigUI () {};
+
+ConfigUI.prototype.getElement = function getElement () {
+  throw new Error('Method not implemented');
+};
+ConfigUI.prototype.getConfig = function getConfig () {
+  throw new Error('Method not implemented');
+};
+ConfigUI.prototype.applyConfig = function applyConfig (/* config */) {
+  throw new Error('Method not implemented');
+};
+
+ConfigUI.prototype.notifyStateChange = function notifyStateChange () {
+  // TODO
+};
+
+function fract(x) {
+  return x - Math.floor(x);
+}
+
+var HueDisplaceConfigUI = (function (ConfigUI$$1) {
+  function HueDisplaceConfigUI() {
+    var this$1 = this;
+
+    this.element = parseHtml("\n      <fieldset>\n        <legend>Displace by hue</legend>\n        <label>\n          Distance:\n          <input type=\"number\" class=\"effect-hue-displace-distance\" value=\"10\" />\n        </label><br/>\n        <label>\n          Period:\n          <input type=\"number\" class=\"effect-hue-displace-period\" value=\"3000\" />ms\n        </label><br/>\n        <label>\n          Scale by brightness:\n          <input type=\"number\" class=\"effect-hue-displace-scale-by-value\" value=\"0\" />%\n        </label><br/>\n        <label>\n          Random direction offset:\n          <input type=\"checkbox\" class=\"effect-hue-displace-random-direction-offset\"/>\n        </label><br/>\n        <label>\n          Rotate:\n          <input type=\"number\" class=\"effect-hue-displace-rotate\" value=\"0\" />%\n        </label>\n      </fieldset>\n    ");
+    var ui = this.element;
+    this.distanceInput = ui.querySelector('input.effect-hue-displace-distance');
+    this.periodInput = ui.querySelector('input.effect-hue-displace-period');
+    this.scaleByValInput = ui.querySelector('input.effect-hue-displace-scale-by-value');
+    this.randomOffsetInput = ui.querySelector('input.effect-hue-displace-random-direction-offset');
+    this.rotateInput = ui.querySelector('input.effect-hue-displace-rotate');
+
+    this.distanceInput.addEventListener('change', function () {
+      this$1.notifyStateChange();
+    });
+    this.periodInput.addEventListener('change', function () {
+      this$1.notifyStateChange();
+    });
+    this.scaleByValInput.addEventListener('change', function () {
+      this$1.notifyStateChange();
+    });
+    this.randomOffsetInput.addEventListener('change', function () {
+      this$1.notifyStateChange();
+    });
+    this.rotateInput.addEventListener('change', function () {
+      this$1.notifyStateChange();
+    });
+  }
+
+  if ( ConfigUI$$1 ) HueDisplaceConfigUI.__proto__ = ConfigUI$$1;
+  HueDisplaceConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  HueDisplaceConfigUI.prototype.constructor = HueDisplaceConfigUI;
+
+  HueDisplaceConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  HueDisplaceConfigUI.prototype.getConfig = function getConfig () {
+    var state = {};
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceDistance = parseInt(this.distanceInput.value, 10) / 100;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplacePeriod = parseInt(this.periodInput.value, 10) / 1000;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceScaleByValue = parseInt(this.scaleByValInput.value, 10) / 100;
+    // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceRandomDirectionOffset = this.randomOffsetInput.checked;
+     // eslint-disable-next-line no-param-reassign
+    state.hueDisplaceRotate = parseInt(this.rotateInput.value, 10) / 100;
+    return state;
+  };
+
+  HueDisplaceConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.distanceInput.value = config.hueDisplaceDistance * 100;
+    this.periodInput.value = config.hueDisplacePeriod * 1000;
+    this.scaleByValInput.value = config.hueDisplaceScaleByValue * 100;
+    this.randomOffsetInput.checked = state.hueDisplaceRandomDirectionOffset;
+    this.rotateInput.value = state.hueDisplaceRotate * 100;
+  };
+
+  return HueDisplaceConfigUI;
+}(ConfigUI));
+
+var HueDisplaceEffect = (function (Effect$$1) {
+  function HueDisplaceEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) HueDisplaceEffect.__proto__ = Effect$$1;
+  HueDisplaceEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  HueDisplaceEffect.prototype.constructor = HueDisplaceEffect;
+
+  HueDisplaceEffect.insertIntoVertexShader = function insertIntoVertexShader (vertexShader, instance) {
+    if (instance.config.hueDisplaceDistance !== 0) {
+      vertexShader.uniforms += "\n        uniform float hueDisplaceDistance;\n        uniform float hueDisplaceTime;\n        uniform float hueDisplaceDirectionOffset;\n        uniform float hueDisplaceScaleByValue;\n      ";
+      vertexShader.mainBody += "\n        {\n          float angle = hsv[0] + hueDisplaceDirectionOffset;\n          float offset = (-cos(hueDisplaceTime) + 1.) / 2.;\n          position.xy += offset * getDirectionVector(angle) * hueDisplaceDistance * (1. - hueDisplaceScaleByValue * (1. - hsv[2]));\n        }\n      ";
+    }
+  };
+
+  HueDisplaceEffect.insertUniforms = function insertUniforms (uniforms, instance) {
+    uniforms.hueDisplaceDistance = function () {
+      return instance.config.hueDisplaceDistance;
+    };
+    uniforms.hueDisplaceTime = function (ctx) {
+      return fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
+    };
+    uniforms.hueDisplaceDirectionOffset = function (ctx, props) {
+      var result = instance.config.hueDisplaceRotate * fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
+      if (instance.config.hueDisplaceRandomDirectionOffset) {
+        // TODO It's really ugly that this effect writes into the global state
+        if (instance.config.hueDisplaceRandomDirectionOffsetValue === undefined
+          || Math.floor(props.oldTime / instance.config.hueDisplacePeriod)
+          !== Math.floor(props.currentTime / instance.config.hueDisplacePeriod)
+        ) {
+          instance.config.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
+        }
+        result += instance.config.hueDisplaceRandomDirectionOffsetValue;
+      }
+
+      return result;
+    };
+    uniforms.hueDisplaceScaleByValue = function () {
+      return instance.config.hueDisplaceScaleByValue;
+    };
+  };
+
+  HueDisplaceEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new HueDisplaceConfigUI();
+    }
+    return this._configUI;
+  };
+
+  HueDisplaceEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+      hueDisplaceDistance: 0.1,
+      hueDisplacePeriod: 3,
+      hueDisplaceScaleByValue: 0,
+      hueDisplaceRandomDirectionOffset: false,
+      hueDisplaceRotate: 0
+    };
+  };
+
+  return HueDisplaceEffect;
+}(Effect));
+
+var ConvergeConfigUI = (function (ConfigUI$$1) {
+  function ConvergeConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge</legend>\n        <label>\n          Enable:\n          <input type=\"checkbox\" class=\"effect-converge-enable\"/>\n        </label><br/>\n        <label>\n          Speed:\n          <input type=\"number\" class=\"effect-converge-speed\" value=\"100\" />\n        </label><br/>\n        <label>\n          Rotation speed:\n          <input type=\"number\" class=\"effect-converge-rotation-speed\" value=\"100\" />\n        </label><br/>\n        <label>\n          Attractor:\n          <select class=\"effect-converge-target\">\n            <option value=\"center\" selected>center</option>\n            <option value=\"color wheel\">wheel</option>\n          </select>\n        </label>\n      </fieldset>\n    ");
+    var ui = this.element;
+    
+    this.targetSelect = ui.querySelector('select.effect-converge-target');
+    this.rotationSpeedInput = ui.querySelector('input.effect-converge-rotation-speed');
+    this.speedInput = ui.querySelector('input.effect-converge-speed');
+    this.enableInput = ui.querySelector('input.effect-converge-enable');
+
+    this.enableInput.addEventListener('change', function () {
+      this$1.notifyStateChange();
+    });
+    this.speedInput.addEventListener('change', function () {
+      this$1.notifyStateChange();
+    });
+    this.rotationSpeedInput.addEventListener('change', function () {
+      this$1.notifyStateChange();
+    });
+    this.targetSelect.addEventListener('change', function () {
+      this$1.notifyStateChange();
+    });
+  }
+
+  if ( ConfigUI$$1 ) ConvergeConfigUI.__proto__ = ConfigUI$$1;
+  ConvergeConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  ConvergeConfigUI.prototype.constructor = ConvergeConfigUI;
+
+  ConvergeConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  ConvergeConfigUI.prototype.getConfig = function getConfig () {
+    var state = {};
+    state.convergeTarget = this.targetSelect.value;
+    state.convergeRotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
+    state.convergeSpeed = parseInt(this.speedInput.value, 10) / 1000;
+    state.convergeEnable = this.enableInput.checked;
+    return state;
+  };
+
+  ConvergeConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.targetSelect.value = config.convergeTarget;
+    this.rotationSpeedInput.checked = config.convergeRotationSpeed * 100;
+    this.speedInput.checked = config.convergeSpeed * 1000;
+    this.enableInput.checked = config.convergeEnable;
+  };
+
+  return ConvergeConfigUI;
+}(ConfigUI));
+
+var ConvergeEffect = (function (Effect$$1) {
+  function ConvergeEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) ConvergeEffect.__proto__ = Effect$$1;
+  ConvergeEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ConvergeEffect.prototype.constructor = ConvergeEffect;
+
+  ConvergeEffect.insertIntoVertexShader = function insertIntoVertexShader (vertexShader, instance) {
+    if (instance.config.convergeEnable) {
+      vertexShader.uniforms += "\n        uniform float convergeTime;\n        uniform float convergeSpeed;\n        uniform float convergeRotationSpeed;\n        uniform float convergeMaxTravelTime;\n      ";
+      vertexShader.mainBody += "\n        {\n          vec2 screenTarget = " + { "center": "vec2(0., 0.)", "color wheel": "getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)" }[instance.config.convergeTarget] + ";\n          vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n          vec2 d = target - initialPosition.xy;\n          float d_len = length(d);\n          \n          float stop_t = sqrt(2. * d_len / convergeSpeed);\n\n          if(convergeTime < stop_t) {\n            float t = min(convergeTime, stop_t);\n            position.xy += .5 * d / d_len * convergeSpeed * t * t;\n          } else if(convergeTime < convergeMaxTravelTime) {\n            position.xy += d;\n          } else {\n            float t = convergeTime - convergeMaxTravelTime;\n            //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n            //position.xy += mix(d, vec2(0.), t * t);\n            position.xy += mix(d, vec2(0.), -cos(t / convergeMaxTravelTime * PI) * .5 + .5);\n          }\n        }\n      ";
+    }
+  };
+
+  ConvergeEffect.insertUniforms = function insertUniforms (uniforms, instance) {
+    uniforms.convergeTime = function (ctx) {
+      var period = 2 * Math.sqrt(2 / instance.config.convergeSpeed);
+      return fract(ctx.time / period) * period;
+    };
+    uniforms.convergeSpeed = function () {
+      return instance.config.convergeSpeed;
+    };
+    uniforms.convergeRotationSpeed = function () {
+      return instance.config.convergeRotationSpeed;
+    };
+    uniforms.convergeMaxTravelTime = function () {
+      return Math.sqrt(2 / instance.config.convergeSpeed);
+    };
+  };
+
+  ConvergeEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new ConvergeConfigUI();
+    }
+    return this._configUI;
+  };
+
+  ConvergeEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+      convergeTarget: 'center',
+      convergeRotationSpeed: 0,
+      convergeSpeed: 0.1,
+      convergeEnable: false
+    };
+  };
+
+  return ConvergeEffect;
+}(Effect));
+
+var effectList = [
+  HueDisplaceEffect,
+  ConvergeEffect
+];
+var byId = {};
+for (var i = 0; i < effectList.length; i++) {
+  byId[effectList[i].getId()] = effectList[i];
+}
+
+var TimelineEntry = function TimelineEntry(effect, timeline) {
+  var this$1 = this;
+
+  // Times are in milliseconds
+  this.timeBegin = 0;
+  this.timeEnd = 0;
+  this.effect = effect;
+  this.timeline = timeline;
+
+  this.element = parseHtml(("\n      <button type=\"button\">" + (this.effect.getId()) + "</button>\n    "));
+  this.element.addEventListener('click', function () {
+    this$1.timeline.effectConfigDialog.promptUser(this$1)
+    .then(
+      function (newState) {
+        this$1.loadState(newState);
+        this$1.timeline.notifyChange();
+      },
+      function (deleted) {
+        if (deleted) {
+          this$1.timeline.deleteEntry(this$1);
+          this$1.timeline.notifyChange();
+          this$1.timeline.renderHtml();
+          this$1.timeline.renderStyles();
+        }
+      }
+    );
+  });
+};
+TimelineEntry.prototype.loadState = function loadState (state) {
+  this.timeBegin = state.timeBegin;
+  this.timeEnd = state.timeEnd;
+  this.config = state.config;
+};
+TimelineEntry.prototype.getElement = function getElement () {
+  return this.element;
+};
+TimelineEntry.prototype.getConfiguration = function getConfiguration () {
+  return [this.effect.getId(), {
+    timeBegin: this.timeBegin,
+    timeEnd: this.timeEnd,
+    config: this.config
+  }];
+};
+
+var TimelineTrack = function TimelineTrack(trackNumber) {
+  this.elements = [];
+  this.elements.push(parseHtml(("\n      <td>\n        <h3>Track " + trackNumber + "</h3>\n      </td>\n    ")));
+  this.elements.push(parseHtml("\n      <td>\n        <ol>\n        </ol>\n      </td>\n    "));
+  this.entryListElm = this.elements[1].querySelector('ol');
+  this.entryList = [];
+};
+
+TimelineTrack.prototype.addEntry = function addEntry (entry) {
+  this.entryList.push(entry);
+};
+
+TimelineTrack.prototype.getElements = function getElements () {
+  return this.elements;
+};
+
+TimelineTrack.prototype.renderHtml = function renderHtml () {
+    var this$1 = this;
+
+  var lis = document.createDocumentFragment();
+  for (var i = 0; i < this.entryList.length; i++) {
+    var entry = this$1.entryList[i];
+    var li = document.createElement('li');
+    li.draggable = 'true';
+    li.appendChild(entry.getElement());
+    lis.appendChild(li);
+  }
+  clearChildNodes(this.entryListElm);
+  this.entryListElm.appendChild(lis);
+};
+TimelineTrack.prototype.renderStyles = function renderStyles (pxPerSecond) {
+    var this$1 = this;
+
+  for (var i = 0; i < this.entryList.length; i++) {
+    var entry = this$1.entryList[i];
+    var li = entry.getElement().parentNode;
+    li.style.left = (entry.timeBegin / 1000 * pxPerSecond) + "px";
+    li.style.width = ((entry.timeEnd - entry.timeBegin) / 1000 * pxPerSecond) + "px";
+  }
+};
+
+var Timeline = function Timeline(menu) {
+  this.menu = menu;
+  this.element = document.querySelector('.menu-timeline-container');
+  this.trackList = [];
+  this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
+  this.pxPerSecond = 100;
+  this.effectConfigDialog = new EffectConfigDialog();
+};
+Timeline.prototype.loadTimeline = function loadTimeline (trackList) {
+    var this$1 = this;
+
+  this.trackList = [];
+  for (var i = 0; i < trackList.length; i++) {
+    var track = new TimelineTrack(i + 1);
+    this$1.trackList.push(track);
+    for (var j = 0; j < trackList[i].length; j++) {
+      var entryDesc = trackList[i][j];
+      var effectId = entryDesc[0];
+      var entryState = entryDesc[1];
+      var entry = new TimelineEntry(byId[effectId], this$1);
+      entry.loadState(entryState);
+      track.addEntry(entry);
+    }
+  }
+  this.renderHtml();
+  this.renderStyles();
+};
+
+Timeline.prototype.renderHtml = function renderHtml () {
+    var this$1 = this;
+
+  var rows = document.createDocumentFragment();
+  var loop = function ( i ) {
+    var track = this$1.trackList[i];
+    track.renderHtml();
+    var row = document.createElement('tr');
+    var trackElms = track.getElements();
+    trackElms.forEach(function (elm) { return row.appendChild(elm); });
+    rows.appendChild(row);
+  };
+
+    for (var i = 0; i < this.trackList.length; i++) loop( i );
+  clearChildNodes(this.trackListElm);
+  this.trackListElm.appendChild(rows);
+};
+Timeline.prototype.renderStyles = function renderStyles () {
+    var this$1 = this;
+
+  for (var i = 0; i < this.trackList.length; i++) {
+    var track = this$1.trackList[i];
+    track.renderStyles(this$1.pxPerSecond);
+  }
+};
+Timeline.prototype.forEachEntry = function forEachEntry (callback) {
+    var this$1 = this;
+
+  for (var i = 0; i < this.trackList.length; i++) {
+    for (var j = 0; j < this.trackList[i].entryList.length; j++) {
+      callback(this$1.trackList[i].entryList[j], this$1.trackList[i], j);
+    }
+  }
+};
+Timeline.prototype.getEffects = function getEffects () {
+    var this$1 = this;
+
+  var configs = [];
+  for (var i = 0; i < this.trackList.length; i++) {
+    var track = [];
+    configs.push(track);
+    for (var j = 0; j < this.trackList[i].entryList.length; j++) {
+      track.push(this$1.trackList[i].entryList[j].getConfiguration());
+    }
+  }
+  return configs;
+};
+Timeline.prototype.notifyChange = function notifyChange () {
+  this.menu.notifyStateChange();
+};
+Timeline.prototype.deleteEntry = function deleteEntry (remove) {
+  this.forEachEntry(function (entry, track, trackIndex) {
+    if (entry === remove) {
+      track.entryList.splice(trackIndex, 1);
+    }
+  });
 };
 
 /**
@@ -1358,263 +1921,6 @@ var ParticleOverlapControl = (function (Control) {
   return ParticleOverlapControl;
 }(Control));
 
-var HueDisplaceDistanceControl = (function (Control) {
-  function HueDisplaceDistanceControl(menu) {
-    var this$1 = this;
-
-    Control.call(this, menu);
-    this.elm = document.getElementById('menu-hue-displace-distance');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
-    });
-  }
-
-  if ( Control ) HueDisplaceDistanceControl.__proto__ = Control;
-  HueDisplaceDistanceControl.prototype = Object.create( Control && Control.prototype );
-  HueDisplaceDistanceControl.prototype.constructor = HueDisplaceDistanceControl;
-
-  HueDisplaceDistanceControl.prototype.updateState = function updateState (state) {
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceDistance = parseInt(this.input.value, 10) / 100;
-  };
-
-  HueDisplaceDistanceControl.prototype.applyState = function applyState (state) {
-    this.input.value = state.hueDisplaceDistance * 100;
-  };
-
-  return HueDisplaceDistanceControl;
-}(Control));
-
-var HueDisplacePeriodControl = (function (Control) {
-  function HueDisplacePeriodControl(menu) {
-    var this$1 = this;
-
-    Control.call(this, menu);
-    this.elm = document.getElementById('menu-hue-displace-period');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
-    });
-  }
-
-  if ( Control ) HueDisplacePeriodControl.__proto__ = Control;
-  HueDisplacePeriodControl.prototype = Object.create( Control && Control.prototype );
-  HueDisplacePeriodControl.prototype.constructor = HueDisplacePeriodControl;
-
-  HueDisplacePeriodControl.prototype.updateState = function updateState (state) {
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplacePeriod = parseInt(this.input.value, 10) / 1000;
-  };
-
-  HueDisplacePeriodControl.prototype.applyState = function applyState (state) {
-    this.input.value = state.hueDisplacePeriod * 1000;
-  };
-
-  return HueDisplacePeriodControl;
-}(Control));
-
-var HueDisplaceScaleByValueControl = (function (Control) {
-  function HueDisplaceScaleByValueControl(menu) {
-    var this$1 = this;
-
-    Control.call(this, menu);
-    this.elm = document.getElementById('menu-hue-displace-scale-by-value');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
-    });
-  }
-
-  if ( Control ) HueDisplaceScaleByValueControl.__proto__ = Control;
-  HueDisplaceScaleByValueControl.prototype = Object.create( Control && Control.prototype );
-  HueDisplaceScaleByValueControl.prototype.constructor = HueDisplaceScaleByValueControl;
-
-  HueDisplaceScaleByValueControl.prototype.updateState = function updateState (state) {
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceScaleByValue = parseInt(this.input.value, 10) / 100;
-  };
-
-  HueDisplaceScaleByValueControl.prototype.applyState = function applyState (state) {
-    this.input.value = state.hueDisplaceScaleByValue * 100;
-  };
-
-  return HueDisplaceScaleByValueControl;
-}(Control));
-
-var HueDisplaceRandomDirectionOffsetControl = (function (Control) {
-  function HueDisplaceRandomDirectionOffsetControl(menu) {
-    var this$1 = this;
-
-    Control.call(this, menu);
-    this.elm = document.getElementById('menu-hue-displace-random-direction-offset');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
-    });
-  }
-
-  if ( Control ) HueDisplaceRandomDirectionOffsetControl.__proto__ = Control;
-  HueDisplaceRandomDirectionOffsetControl.prototype = Object.create( Control && Control.prototype );
-  HueDisplaceRandomDirectionOffsetControl.prototype.constructor = HueDisplaceRandomDirectionOffsetControl;
-
-  HueDisplaceRandomDirectionOffsetControl.prototype.updateState = function updateState (state) {
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceRandomDirectionOffset = this.input.checked;
-  };
-
-  HueDisplaceRandomDirectionOffsetControl.prototype.applyState = function applyState (state) {
-    this.input.checked = state.hueDisplaceRandomDirectionOffset;
-  };
-
-  return HueDisplaceRandomDirectionOffsetControl;
-}(Control));
-
-var HueDisplaceRotateControl = (function (Control) {
-  function HueDisplaceRotateControl(menu) {
-    var this$1 = this;
-
-    Control.call(this, menu);
-    this.elm = document.getElementById('menu-hue-displace-rotate');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
-    });
-  }
-
-  if ( Control ) HueDisplaceRotateControl.__proto__ = Control;
-  HueDisplaceRotateControl.prototype = Object.create( Control && Control.prototype );
-  HueDisplaceRotateControl.prototype.constructor = HueDisplaceRotateControl;
-
-  HueDisplaceRotateControl.prototype.updateState = function updateState (state) {
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceRotate = parseInt(this.input.value, 10) / 100;
-  };
-
-  HueDisplaceRotateControl.prototype.applyState = function applyState (state) {
-    this.input.value = state.hueDisplaceRotate * 100;
-  };
-
-  return HueDisplaceRotateControl;
-}(Control));
-
-var ConvergeEnableControl = (function (Control) {
-  function ConvergeEnableControl(menu) {
-    var this$1 = this;
-
-    Control.call(this, menu);
-    this.elm = document.getElementById('menu-converge-enable');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
-    });
-  }
-
-  if ( Control ) ConvergeEnableControl.__proto__ = Control;
-  ConvergeEnableControl.prototype = Object.create( Control && Control.prototype );
-  ConvergeEnableControl.prototype.constructor = ConvergeEnableControl;
-
-  ConvergeEnableControl.prototype.updateState = function updateState (state) {
-    state.convergeEnable = this.input.checked;
-  };
-
-  ConvergeEnableControl.prototype.applyState = function applyState (state) {
-    this.input.checked = state.convergeEnable;
-  };
-
-  return ConvergeEnableControl;
-}(Control));
-
-var ConvergeSpeedControl = (function (Control) {
-  function ConvergeSpeedControl(menu) {
-    var this$1 = this;
-
-    Control.call(this, menu);
-    this.elm = document.getElementById('menu-converge-speed');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
-    });
-  }
-
-  if ( Control ) ConvergeSpeedControl.__proto__ = Control;
-  ConvergeSpeedControl.prototype = Object.create( Control && Control.prototype );
-  ConvergeSpeedControl.prototype.constructor = ConvergeSpeedControl;
-
-  ConvergeSpeedControl.prototype.updateState = function updateState (state) {
-    state.convergeSpeed = parseInt(this.input.value, 10) / 1000;
-  };
-
-  ConvergeSpeedControl.prototype.applyState = function applyState (state) {
-    this.input.checked = state.convergeSpeed * 1000;
-  };
-
-  return ConvergeSpeedControl;
-}(Control));
-
-var ConvergeRotationSpeedControl = (function (Control) {
-  function ConvergeRotationSpeedControl(menu) {
-    var this$1 = this;
-
-    Control.call(this, menu);
-    this.elm = document.getElementById('menu-converge-rotation-speed');
-    this.input = this.elm.querySelector('input');
-
-    this.input.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
-    });
-  }
-
-  if ( Control ) ConvergeRotationSpeedControl.__proto__ = Control;
-  ConvergeRotationSpeedControl.prototype = Object.create( Control && Control.prototype );
-  ConvergeRotationSpeedControl.prototype.constructor = ConvergeRotationSpeedControl;
-
-  ConvergeRotationSpeedControl.prototype.updateState = function updateState (state) {
-    state.convergeRotationSpeed = parseInt(this.input.value, 10) / 100;
-  };
-
-  ConvergeRotationSpeedControl.prototype.applyState = function applyState (state) {
-    this.input.checked = state.convergeRotationSpeed * 100;
-  };
-
-  return ConvergeRotationSpeedControl;
-}(Control));
-
-var ConvergeTargetControl = (function (Control) {
-  function ConvergeTargetControl(menu) {
-    var this$1 = this;
-
-    Control.call(this, menu);
-    this.elm = document.getElementById('menu-converge-target');
-    this.select = this.elm.querySelector('select');
-
-    this.select.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
-    });
-  }
-
-  if ( Control ) ConvergeTargetControl.__proto__ = Control;
-  ConvergeTargetControl.prototype = Object.create( Control && Control.prototype );
-  ConvergeTargetControl.prototype.constructor = ConvergeTargetControl;
-
-  ConvergeTargetControl.prototype.updateState = function updateState (state) {
-    state.convergeTarget = this.select.value;
-  };
-
-  ConvergeTargetControl.prototype.applyState = function applyState (state) {
-    this.select.value = state.convergeTarget;
-  };
-
-  return ConvergeTargetControl;
-}(Control));
-
 /**
  *
  */
@@ -1733,8 +2039,6 @@ var ResetAppstateButton = (function (Control) {
 
 var ControlsList = [
   BgColorPicker, ParticleCountControl, ParticleScalingControl, ParticleOverlapControl,
-  HueDisplaceDistanceControl, HueDisplacePeriodControl, HueDisplaceScaleByValueControl, HueDisplaceRandomDirectionOffsetControl, HueDisplaceRotateControl,
-  ConvergeEnableControl, ConvergeSpeedControl, ConvergeRotationSpeedControl, ConvergeTargetControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
@@ -1742,7 +2046,9 @@ var MainMenu = function MainMenu() {
   var this$1 = this;
 
   this.menu = document.getElementById('menu-container');
+  this.timeline = new Timeline(this);
   this.menuContent = this.menu.querySelector('.menu-content');
+  this.effectList = this.menu.querySelector('#menu-effect-list');
   this.toggle = document.getElementById('toggle-menu-visible');
   this.applyBtn = document.getElementById('menu-btn-apply');
   this.controls = [];
@@ -1755,7 +2061,9 @@ var MainMenu = function MainMenu() {
 
   // Close menu if clicked outside
   document.addEventListener('click', function (evt) {
-    if (!menu.contains(evt.target)) {
+    if (!menu.contains(evt.target) &&
+        !document.getElementById('modal-container').contains(evt.target)
+    ) {
       toggle.checked = false;
     }
   });
@@ -1771,6 +2079,19 @@ var MainMenu = function MainMenu() {
     this$1.addControl(ControlsList[i]);
   }
 
+  var effectListElms = document.createDocumentFragment();
+  for (var effect in effectList) {
+    var elm = parseHtml(("\n        <li draggable=\"true\">" + (effectList[effect].getId()) + "</li>\n      "));
+    effectListElms.appendChild(elm);
+  }
+  this.effectList.appendChild(effectListElms);
+
+  this.timeline.loadTimeline([
+    [[effectList[0].getId(), { timeBegin: 0, timeEnd: 10000, config: effectList[0].getDefaultConfig() }]],
+    [[effectList[1].getId(), { timeBegin: 0, timeEnd: 10000, config: effectList[1].getDefaultConfig() }]],
+    []
+  ]);
+
   this.defaultState = this.readState();
   this.submittedState = this.defaultState;
 };
@@ -1781,17 +2102,19 @@ MainMenu.prototype.applyState = function applyState (state) {
   for (var i = 0; i < this.controls.length; i++) {
     this$1.controls[i].applyState(state);
   }
+  this.timeline.loadTimeline(state.effects);
 };
 
 MainMenu.prototype.readState = function readState () {
     var this$1 = this;
 
-  var state = {};
+  var config$$1 = {};
   for (var i = 0; i < this.controls.length; i++) {
-    this$1.controls[i].updateState(state);
+    this$1.controls[i].updateState(config$$1);
   }
+  config$$1.effects = this.timeline.getEffects();
 
-  return state;
+  return config$$1;
 };
 
 MainMenu.prototype.submit = function submit () {
@@ -11349,107 +11672,6 @@ return wrapREGL;
 
 });
 
-/**
- * Interface for effects
- */
-var Effect = function Effect () {};
-
-Effect.prototype.insertUniforms = function insertUniforms (/* uniforms */) {
-  throw new Error('Method not implemented');
-};
-Effect.prototype.insertIntoVertexShader = function insertIntoVertexShader (/* vertexShader, state */) {
-  throw new Error('Method not implemented');
-};
-Effect.getId = function getId () {
-  // Static + this = JS <3
-  return this.name;
-};
-
-function fract(x) {
-  return x - Math.floor(x);
-}
-
-var HueDisplaceEffect = (function (Effect$$1) {
-  function HueDisplaceEffect () {
-    Effect$$1.apply(this, arguments);
-  }
-
-  if ( Effect$$1 ) HueDisplaceEffect.__proto__ = Effect$$1;
-  HueDisplaceEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
-  HueDisplaceEffect.prototype.constructor = HueDisplaceEffect;
-
-  HueDisplaceEffect.prototype.insertIntoVertexShader = function insertIntoVertexShader (vertexShader, state) {
-    if (state.hueDisplaceDistance !== 0) {
-      vertexShader.uniforms += "\n        uniform float hueDisplaceDistance;\n        uniform float hueDisplaceTime;\n        uniform float hueDisplaceDirectionOffset;\n        uniform float hueDisplaceScaleByValue;\n      ";
-      vertexShader.mainBody += "\n        {\n          float angle = hsv[0] + hueDisplaceDirectionOffset;\n          float offset = (-cos(hueDisplaceTime) + 1.) / 2.;\n          position.xy += offset * getDirectionVector(angle) * hueDisplaceDistance * (1. - hueDisplaceScaleByValue * (1. - hsv[2]));\n        }\n      ";
-    }
-  };
-
-  HueDisplaceEffect.prototype.insertUniforms = function insertUniforms (uniforms) {
-    uniforms.hueDisplaceDistance = function (ctx, props) {
-      return props.state.hueDisplaceDistance;
-    };
-    uniforms.hueDisplaceTime = function (ctx, props) {
-      return fract(ctx.time / props.state.hueDisplacePeriod) * 2 * Math.PI;
-    };
-    uniforms.hueDisplaceDirectionOffset = function (ctx, props) {
-      var result = props.state.hueDisplaceRotate * fract(ctx.time / props.state.hueDisplacePeriod) * 2 * Math.PI;
-      if (props.state.hueDisplaceRandomDirectionOffset) {
-        // TODO It's really ugly that this effect writes into the global state
-        if (props.state.hueDisplaceRandomDirectionOffsetValue === undefined
-          || Math.floor(props.oldTime / props.state.hueDisplacePeriod)
-          !== Math.floor(props.currentTime / props.state.hueDisplacePeriod)
-        ) {
-          props.state.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
-        }
-        result += props.state.hueDisplaceRandomDirectionOffsetValue;
-      }
-
-      return result;
-    };
-    uniforms.hueDisplaceScaleByValue = function (ctx, props) {
-      return props.state.hueDisplaceScaleByValue;
-    };
-  };
-
-  return HueDisplaceEffect;
-}(Effect));
-
-var ConvergeEffect = (function (Effect$$1) {
-  function ConvergeEffect () {
-    Effect$$1.apply(this, arguments);
-  }
-
-  if ( Effect$$1 ) ConvergeEffect.__proto__ = Effect$$1;
-  ConvergeEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
-  ConvergeEffect.prototype.constructor = ConvergeEffect;
-
-  ConvergeEffect.prototype.insertIntoVertexShader = function insertIntoVertexShader (vertexShader, state) {
-    if (state.convergeEnable) {
-      vertexShader.uniforms += "\n        uniform float convergeTime;\n        uniform float convergeSpeed;\n        uniform float convergeRotationSpeed;\n        uniform float convergeMaxTravelTime;\n      ";
-      vertexShader.mainBody += "\n        {\n          vec2 screenTarget = " + { "center": "vec2(0., 0.)", "color wheel": "getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)" }[state.convergeTarget] + ";\n          vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n          vec2 d = target - initialPosition.xy;\n          float d_len = length(d);\n          \n          float stop_t = sqrt(2. * d_len / convergeSpeed);\n\n          if(convergeTime < stop_t) {\n            float t = min(convergeTime, stop_t);\n            position.xy += .5 * d / d_len * convergeSpeed * t * t;\n          } else if(convergeTime < convergeMaxTravelTime) {\n            position.xy += d;\n          } else {\n            float t = convergeTime - convergeMaxTravelTime;\n            //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n            //position.xy += mix(d, vec2(0.), t * t);\n            position.xy += mix(d, vec2(0.), -cos(t / convergeMaxTravelTime * PI) * .5 + .5);\n          }\n        }\n      ";
-    }
-  };
-
-  ConvergeEffect.prototype.insertUniforms = function insertUniforms (uniforms) {
-    uniforms.convergeTime = function (ctx, props) {
-      var period = 2 * Math.sqrt(2 / props.state.convergeSpeed);
-      return fract(ctx.time / period) * period;
-    };
-    uniforms.convergeSpeed = function (ctx, props) {
-      return props.state.convergeSpeed;
-    };
-    uniforms.convergeRotationSpeed = function (ctx, props) {
-      return props.state.convergeRotationSpeed;
-    };
-    uniforms.convergeMaxTravelTime = function (ctx, props) {
-      return Math.sqrt(2 / props.state.convergeSpeed);
-    };
-  };
-
-  return ConvergeEffect;
-}(Effect));
-
 var Shader = function Shader() {
   this.attributes = '';
   this.uniforms = '';
@@ -11463,9 +11685,8 @@ Shader.prototype.compile = function compile () {
   return ("\n      precision highp float;\n    \n      // Attributes\n      " + (this.attributes) + "\n\n      // Uniforms\n      " + (this.uniforms) + "\n\n      // Varyings\n      " + (this.varyings) + "\n\n      // Globals\n      " + (this.globals) + "\n\n      // Functions\n      " + (this.functions) + "\n\n      void main() {\n        " + (this.mainBody) + "\n      }\n    ");
 };
 
-var CommandBuilder = function CommandBuilder() {
-  this.effects = [new HueDisplaceEffect(), new ConvergeEffect()];
-};
+var CommandBuilder = function CommandBuilder () {};
+
 CommandBuilder.prototype.rebuildCommand = function rebuildCommand (particleData, state) {
   this.state = state;
   this.particleData = particleData;
@@ -11484,8 +11705,14 @@ CommandBuilder.prototype.assembleVertexShader = function assembleVertexShader ()
   // demand without defining them more than once
   vertexShader.functions += "\n      vec2 getDirectionVector(float angle) {\n        return vec2(cos(angle), sin(angle));\n      }\n    ";
   vertexShader.mainBody += "\n      vec3 initialPosition = vec3(texcoord, 0);\n      initialPosition.y *= invImageAspectRatio;\n      \n      vec3 position = initialPosition;\n    ";
-  for (var i = 0; i < this.effects.length; i++) {
-    this$1.effects[i].insertIntoVertexShader(vertexShader, this$1.state);
+  for (var i = 0; i < this.state.effects.length; i++) {
+    var track = this$1.state.effects[i];
+    for (var j = 0; j < track.length; j++) {
+      var effectId = track[j][0];
+      var effectConfig = track[j][1];
+      var effectClass = byId[effectId];
+      effectClass.insertIntoVertexShader(vertexShader, effectConfig);
+    }
   }
 
   vertexShader.mainBody += "\n      color = rgb;\n      gl_PointSize = max(particleSize, 0.);\n      gl_Position = viewProjectionMatrix * vec4(position, 1.);\n    ";
@@ -11579,8 +11806,14 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
     },
   };
 
-  for (var i = 0; i < this.effects.length; i++) {
-    this$1.effects[i].insertUniforms(result.uniforms, this$1);
+  for (var i = 0; i < this.state.effects.length; i++) {
+    var track = this$1.state.effects[i];
+    for (var j = 0; j < track.length; j++) {
+      var effectId = track[j][0];
+      var effectConfig = track[j][1];
+      var effectClass = byId[effectId];
+      effectClass.insertUniforms(result.uniforms, effectConfig);
+    }
   }
 
   return result;
@@ -11719,22 +11952,11 @@ Renderer.prototype.setState = function setState (state) {
   this.rebuildCommand();
 };
 
-
-
-var effects = Object.freeze({
-	HueDisplaceEffect: HueDisplaceEffect,
-	ConvergeEffect: ConvergeEffect
-});
-
 console.log(config);
 
 // some constants
 var imageLoadingClass = 'loading-image';
 var canvas = document.getElementById('main-canvas');
-
-for (var effect in effects) {
-  console.log(("Registered effect: " + (effects[effect].getId())));
-}
 
 // set up ui components
 var menu = new MainMenu();
