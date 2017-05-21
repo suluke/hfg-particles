@@ -1,7 +1,9 @@
 import parseColor from 'parse-color'; // used by BgColorPicker
 import config from '../config';
+import Timeline from './timeline';
+import { parseHtml } from './util';
 
-import * as effects from '../effects/index';
+import { effectList as effects } from '../effects/index';
 
 /**
  * Base class of all controls participating in the main menu
@@ -413,6 +415,7 @@ const ControlsList = [
 export default class MainMenu {
   constructor() {
     this.menu = document.getElementById('menu-container');
+    this.timeline = new Timeline();
     this.menuContent = this.menu.querySelector('.menu-content');
     this.effectList = this.menu.querySelector('#menu-effect-list');
     this.toggle = document.getElementById('toggle-menu-visible');
@@ -444,18 +447,22 @@ export default class MainMenu {
     }
 
     const effectListElms = document.createDocumentFragment();
-    const parser = document.createElement('body');
     for (let effect in effects) {
-      parser.innerHTML = `
+      const elm = parseHtml(`
         <li draggable="true">${effects[effect].getId()}</li>
-      `;
-      const elm = parser.childNodes[1];
+      `);
       effectListElms.appendChild(elm);
     }
     this.effectList.appendChild(effectListElms);
 
     this.defaultState = this.readState();
     this.submittedState = this.defaultState;
+
+    this.timeline.loadTimeline([
+      [[effects[0].getId(), { timeBegin: 0, timeEnd: 10000, config: {} }]],
+      [[effects[1].getId(), { timeBegin: 0, timeEnd: 10000, config: {} }]],
+      []
+    ]);
   }
 
   applyState(state) {

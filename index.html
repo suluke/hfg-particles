@@ -108,40 +108,21 @@
         >Apply</button>
       </div>
       <div class="menu-timeline-container">
-        <span class="menu-timeline-current-time">00:00</span>
-        <button class="menu-timeline-zoom-in" type="button" title="zoom in">+</button>
-        <button class="menu-timeline-zoom-out" type="button" title="zoom out">-</button>
-        <div class="menu-timeline-tracks-container">
-          <div class="menu-timeline-timeticks">
-            <span class="menu-timeline-timetick">00:00</span>
-          </div>
-          <div class="menu-timeline-position-indicator"></div>
-          <ul class="menu-timeline-tracks">
-            <li>
-              <section>
-                <h3>Track 1</h3>
-                <ol>
-                  <li draggable="true" style="width: 100px;">Hue Displace</li>
-                </ol>
-              </section>
-            </li>
-            <li>
-              <section>
-                <h3>Track 2</h3>
-                <ol>
-                  <li draggable="true" style="width: 100px;">Converge</li>
-                </ol>
-              </section>
-            </li>
-            <li>
-              <section>
-                <h3>Track 3</h3>
-                <ol>
-                </ol>
-              </section>
-            </li>
-          </ul>
-        </div>
+        <table class="menu-timeline-content">
+          <thead class="menu-timeline-header">
+            <th class="menu-timeline-topleft-cell">
+              <span class="menu-timeline-current-time">00:00</span>
+              <button class="menu-timeline-zoom-in" type="button" title="zoom in">+</button>
+              <button class="menu-timeline-zoom-out" type="button" title="zoom out">-</button>
+            </th>
+            <th class="menu-timeline-timeticks">
+              <span class="menu-timeline-timetick">00:00</span>
+            </th>
+          </thead>
+          <tbody class="menu-timeline-tracks">
+          </tbody>
+        </table>
+        <div class="menu-timeline-position-indicator"></div>
       </div>
     </div>
     

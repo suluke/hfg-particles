@@ -4,20 +4,15 @@ import ImgSelect from './ui/image-select';
 import InactivityMonitor from './ui/inactivity-monitor';
 import ImgDimWarn from './ui/img-dimension-warning';
 import MainMenu from './ui/menu';
+import Timeline from './ui/timeline';
 import Renderer from './renderer';
 import config from './config';
-
-import * as effects from './effects/index';
 
 console.log(config);
 
 // some constants
 const imageLoadingClass = 'loading-image';
 const canvas = document.getElementById('main-canvas');
-
-for (var effect in effects) {
-  console.log(`Registered effect: ${effects[effect].getId()}`);
-}
 
 // set up ui components
 const menu = new MainMenu();

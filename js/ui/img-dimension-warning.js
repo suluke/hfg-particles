@@ -1,3 +1,5 @@
+import { parseHtml } from './util';
+
 export default class ImgDimWarn {
   constructor() {
     const ignoreWarnBtnClass = 'btn-img-dim-warn-ignore';
@@ -6,11 +8,10 @@ export default class ImgDimWarn {
     const scaledLoadXInputClass = 'img-dim-x';
     const scaledLoadYInputClass = 'img-dim-y';
 
-    const parser = document.createElement('body');
     // Object properties
     this.resolve = null;
     this.reject = null;
-    parser.innerHTML = `
+    this.dialogElm = parseHtml(`
       <div class="img-dim-warn-backdrop">
         <div class="img-dim-warn-popup">
           The image you selected is very large. Loading it may cause the
@@ -34,11 +35,8 @@ export default class ImgDimWarn {
           </div>
         </div>
       </div>
-    `;
-    // Whitespace in template causes 'text' nodes to be in parser, so index
-    // becomes 1
-    this.dialogElm = parser.childNodes[1];
-
+    `);
+    
     const loadBtn = this.dialogElm.querySelector(`.${ignoreWarnBtnClass}`);
     loadBtn.addEventListener('click', () => {
       this.hide();
