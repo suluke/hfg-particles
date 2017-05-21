@@ -23,9 +23,9 @@ export function parseHtml(html) {
   wrapMap.caption = wrapMap.thead;
   wrapMap.th = wrapMap.td;
   let element = document.createElement('div');
-  const match = /<\s*\w.*?>/g.exec(html);
+  const match = /<\s*(\w+).*?>/g.exec(html);
   if (match != null) {
-    const tag = match[0].replace(/</g, '').replace(/>/g, '');
+    const tag = match[1];
     const map = wrapMap[tag] || wrapMap._default;
     // eslint-disable-next-line no-param-reassign
     html = `${map[1]}${html}${map[2]}`;

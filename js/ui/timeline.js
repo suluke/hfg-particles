@@ -59,7 +59,7 @@ class TimelineTrack {
       </td>
     `));
     this.elements.push(parseHtml(`
-      <td>
+      <td width="99%">
         <ol>
         </ol>
       </td>
