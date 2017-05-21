@@ -1,7 +1,7 @@
 import parseColor from 'parse-color'; // used by BgColorPicker
-import config from './config';
+import config from '../config';
 
-import * as effects from './effects/index';
+import * as effects from '../effects/index';
 
 /**
  * Base class of all controls participating in the main menu
@@ -447,7 +447,7 @@ export default class MainMenu {
     const parser = document.createElement('body');
     for (let effect in effects) {
       parser.innerHTML = `
-        <li>${effects[effect].getId()}</li>
+        <li draggable="true">${effects[effect].getId()}</li>
       `;
       const elm = parser.childNodes[1];
       effectListElms.appendChild(elm);

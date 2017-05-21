@@ -1,9 +1,9 @@
 import './polyfills/classlist';
-import FullscreenButton from './btn-fullscreen';
-import ImgSelect from './image-select';
-import InactivityMonitor from './inactivity-monitor';
-import ImgDimWarn from './img-dimension-warning';
-import MainMenu from './menu';
+import FullscreenButton from './ui/btn-fullscreen';
+import ImgSelect from './ui/image-select';
+import InactivityMonitor from './ui/inactivity-monitor';
+import ImgDimWarn from './ui/img-dimension-warning';
+import MainMenu from './ui/menu';
 import Renderer from './renderer';
 import config from './config';
 
