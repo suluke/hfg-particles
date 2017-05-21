@@ -1,0 +1,9 @@
+@import 'mixins/modal';
+
+.effect-config-dialog-backdrop {
+  @include backdrop;
+
+  .effect-config-dialog {
+    @include modal;
+  }
+}

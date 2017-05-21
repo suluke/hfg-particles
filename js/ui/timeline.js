@@ -1,16 +1,25 @@
+import EffectConfigDialog from './effect-config-dialog';
 import { parseHtml, clearChildNodes } from './util';
 import { effectList, effectsById } from '../effects/index';
 
 class TimelineEntry {
-  constructor(effectClass) {
+  constructor(effectClass, timeline) {
     // Times are in milliseconds
     this.timeBegin = 0;
     this.timeEnd = 0;
     this.effectClass = effectClass;
+    this.timeline = timeline;
 
     this.element = parseHtml(`
       <button type="button">${this.effectClass.getId()}</button>
     `);
+    this.element.addEventListener('click', () => {
+      this.timeline.effectConfigDialog.promptUser(this)
+      .then(
+        (newState) => { console.log(newState); },
+        (deleted) => { console.log(deleted); }
+      );
+    });
   }
   loadState(state) {
     this.timeBegin = state.timeBegin;
@@ -76,6 +85,7 @@ export default class Timeline {
     this.trackList = [];
     this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
     this.pxPerSecond = 100;
+    this.effectConfigDialog = new EffectConfigDialog();
   }
   loadTimeline(trackList) {
     for (let i = 0; i < trackList.length; i++) {
@@ -85,7 +95,7 @@ export default class Timeline {
         const entryDesc = trackList[i][j];
         const effectId = entryDesc[0];
         const entryState = entryDesc[1];
-        const entry = new TimelineEntry(effectsById[effectId]);
+        const entry = new TimelineEntry(effectsById[effectId], this);
         entry.loadState(entryState);
         track.addEntry(entry);
       }

@@ -1,3 +1,13 @@
+@mixin backdrop() {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 4;
+}
+
 @mixin modal() {
   position: absolute;
   width: 50%;
