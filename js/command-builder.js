@@ -1,5 +1,3 @@
-import HueDisplace from './effects/hue-displace';
-import Converge from './effects/converge';
 import { effectsById } from './effects/index';
 
 class Shader {
@@ -42,6 +40,7 @@ export default class CommandBuilder {
   rebuildCommand(particleData, config) {
     this.config = config;
     this.particleData = particleData;
+
     return this.assembleCommand();
   }
   assembleVertexShader() {
@@ -101,11 +100,11 @@ export default class CommandBuilder {
       float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);
     `;
     const colorAssign = {
-      'add':         'gl_FragColor = vec4(color * v, 1);\n',
+      add:           'gl_FragColor = vec4(color * v, 1);\n',
       'alpha blend': 'gl_FragColor = vec4(color, v);\n'
     }[this.config.particleOverlap];
     if (!colorAssign) {
-        throw new Error(`Unknown particle overlap mode: ${this.config.particleOverlap}`);
+      throw new Error(`Unknown particle overlap mode: ${this.config.particleOverlap}`);
     }
     fragmentShader.mainBody += colorAssign;
 
@@ -117,12 +116,12 @@ export default class CommandBuilder {
     const frag = this.assembleFragmentShader();
 
     const result = {
-      primitive: 'points',
-      count: this.particleData.width * this.particleData.height,
+      primitive:  'points',
+      count:      this.particleData.width * this.particleData.height,
       attributes: {
         texcoord: this.particleData.texcoordsBuffer,
-        rgb: this.particleData.rgbBuffer,
-        hsv: this.particleData.hsvBuffer
+        rgb:      this.particleData.rgbBuffer,
+        hsv:      this.particleData.hsvBuffer
       },
       vert,
       frag,
@@ -133,13 +132,13 @@ export default class CommandBuilder {
       case 'add':
         result.blend = {
           enable: true,
-          func: { src: 'one', dst: 'one' }
+          func:   { src: 'one', dst: 'one' }
         };
         break;
       case 'alpha blend':
         result.blend = {
           enable: true,
-          func: { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
+          func:   { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
         };
         break;
       default:
@@ -153,26 +152,26 @@ export default class CommandBuilder {
       },
       viewProjectionMatrix(ctx) {
         const aspect = ctx.viewportWidth / ctx.viewportHeight;
-        const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                              (this.particleData.aspectRatio);
+        const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
+                              (this.particleData.aspectRatio));
 
         return [
           2, 0, 0, 0,
           0, 2 * aspect, 0, 0,
           0, 0, 1, 0,
-          -1, underscan * 2 - 1, 0, 1
+          -1, (underscan * 2) - 1, 0, 1
         ];
       },
       invViewProjectionMatrix(ctx) {
         const aspect = ctx.viewportWidth / ctx.viewportHeight;
-        const underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                              (this.particleData.aspectRatio);
+        const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
+                              (this.particleData.aspectRatio));
 
         return [
-          .5, 0, 0, 0,
-          0, .5 / aspect, 0, 0,
+          0.5, 0, 0, 0,
+          0, 0.5 / aspect, 0, 0,
           0, 0, 1, 0,
-          .5, -.5 * (underscan * 2 - 1) / aspect, 0, 1
+          0.5, (-0.5 * ((underscan * 2) - 1)) / aspect, 0, 1
         ];
       },
       particleSize(ctx) {

@@ -37,7 +37,7 @@ export default class ImgDimWarn {
         </div>
       </div>
     `);
-    
+
     const loadBtn = this.dialogElm.querySelector(`.${ignoreWarnBtnClass}`);
     loadBtn.addEventListener('click', () => {
       this.hide();
@@ -59,8 +59,8 @@ export default class ImgDimWarn {
         yParticlesCount: parseInt(this.yParticlesInput.value, 10)
       });
     });
-    this.xParticlesInput = this.dialogElm.querySelector(`.${scaledLoadXInputClass}`)
-    this.yParticlesInput = this.dialogElm.querySelector(`.${scaledLoadYInputClass}`)
+    this.xParticlesInput = this.dialogElm.querySelector(`.${scaledLoadXInputClass}`);
+    this.yParticlesInput = this.dialogElm.querySelector(`.${scaledLoadYInputClass}`);
   }
   verify(img) {
     const tooManyPixels = 1024 * 768; // TODO Magic number
@@ -71,7 +71,7 @@ export default class ImgDimWarn {
         this.reject = rej;
         this.xParticlesInput.value = `${img.naturalWidth}`;
         this.yParticlesInput.value = `${img.naturalHeight}`;
-        
+
         this.parentNode.appendChild(this.dialogElm);
       } else {
         res({

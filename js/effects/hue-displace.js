@@ -1,8 +1,9 @@
-import Effect, {ConfigUI, fract} from './effect';
+import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 class HueDisplaceConfigUI extends ConfigUI {
   constructor() {
+    super();
     this.element = parseHtml(`
       <fieldset>
         <legend>Displace by hue</legend>
@@ -58,16 +59,12 @@ class HueDisplaceConfigUI extends ConfigUI {
 
   getConfig() {
     const config = {};
-    // eslint-disable-next-line no-param-reassign
     config.hueDisplaceDistance = parseInt(this.distanceInput.value, 10) / 100;
-    // eslint-disable-next-line no-param-reassign
     config.hueDisplacePeriod = parseInt(this.periodInput.value, 10) / 1000;
-    // eslint-disable-next-line no-param-reassign
     config.hueDisplaceScaleByValue = parseInt(this.scaleByValInput.value, 10) / 100;
-    // eslint-disable-next-line no-param-reassign
     config.hueDisplaceRandomDirectionOffset = this.randomOffsetInput.checked;
-     // eslint-disable-next-line no-param-reassign
     config.hueDisplaceRotate = parseInt(this.rotateInput.value, 10) / 100;
+
     return config;
   }
 
@@ -83,12 +80,14 @@ class HueDisplaceConfigUI extends ConfigUI {
 export default class HueDisplaceEffect extends Effect {
   static insertIntoVertexShader(vertexShader, instance) {
     if (instance.config.hueDisplaceDistance !== 0) {
+      // eslint-disable-next-line no-param-reassign
       vertexShader.uniforms += `
         uniform float hueDisplaceDistance;
         uniform float hueDisplaceTime;
         uniform float hueDisplaceDirectionOffset;
         uniform float hueDisplaceScaleByValue;
       `;
+      // eslint-disable-next-line no-param-reassign
       vertexShader.mainBody += `
         {
           float angle = hsv[0] + hueDisplaceDirectionOffset;
@@ -100,19 +99,21 @@ export default class HueDisplaceEffect extends Effect {
   }
 
   static insertUniforms(uniforms, instance) {
-    uniforms.hueDisplaceDistance = () => {
-      return instance.config.hueDisplaceDistance;
-    };
-    uniforms.hueDisplaceTime = (ctx) => {
-      return fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
-    };
+    // eslint-disable-next-line no-param-reassign
+    uniforms.hueDisplaceDistance = () => instance.config.hueDisplaceDistance;
+    // eslint-disable-next-line no-param-reassign
+    uniforms.hueDisplaceTime = (ctx) =>
+      fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
+    // eslint-disable-next-line no-param-reassign
     uniforms.hueDisplaceDirectionOffset = (ctx, props) => {
-      let result = instance.config.hueDisplaceRotate * fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
+      let result = instance.config.hueDisplaceRotate *
+        fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
       if (instance.config.hueDisplaceRandomDirectionOffset) {
         if (instance.config.hueDisplaceRandomDirectionOffsetValue === undefined
           || Math.floor(props.oldTime / instance.config.hueDisplacePeriod)
           !== Math.floor(props.currentTime / instance.config.hueDisplacePeriod)
         ) {
+          // eslint-disable-next-line no-param-reassign
           instance.config.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
         }
         result += instance.config.hueDisplaceRandomDirectionOffsetValue;
@@ -120,25 +121,25 @@ export default class HueDisplaceEffect extends Effect {
 
       return result;
     };
-    uniforms.hueDisplaceScaleByValue = () => {
-      return instance.config.hueDisplaceScaleByValue;
-    };
+    // eslint-disable-next-line no-param-reassign
+    uniforms.hueDisplaceScaleByValue = () => instance.config.hueDisplaceScaleByValue;
   }
 
   static getConfigUI() {
     if (!this._configUI) {
       this._configUI = new HueDisplaceConfigUI();
     }
+
     return this._configUI;
   }
 
   static getDefaultConfig() {
     return {
-      hueDisplaceDistance: 0.1,
-      hueDisplacePeriod: 3,
-      hueDisplaceScaleByValue: 0,
+      hueDisplaceDistance:              0.1,
+      hueDisplacePeriod:                3,
+      hueDisplaceScaleByValue:          0,
       hueDisplaceRandomDirectionOffset: false,
-      hueDisplaceRotate: 0
+      hueDisplaceRotate:                0
     };
   }
 }

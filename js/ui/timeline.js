@@ -1,6 +1,6 @@
 import EffectConfigDialog from './effect-config-dialog';
 import { parseHtml, clearChildNodes } from './util';
-import { effectList, effectsById } from '../effects/index';
+import { effectsById } from '../effects/index';
 
 class TimelineEntry {
   constructor(effect, timeline) {
@@ -42,8 +42,8 @@ class TimelineEntry {
   getConfiguration() {
     return [this.effect.getId(), {
       timeBegin: this.timeBegin,
-      timeEnd: this.timeEnd,
-      config: this.config
+      timeEnd:   this.timeEnd,
+      config:    this.config
     }];
   }
 }
@@ -90,8 +90,8 @@ class TimelineTrack {
     for (let i = 0; i < this.entryList.length; i++) {
       const entry = this.entryList[i];
       const li = entry.getElement().parentNode;
-      li.style.left = `${entry.timeBegin / 1000 * pxPerSecond}px`;
-      li.style.width = `${(entry.timeEnd - entry.timeBegin) / 1000 * pxPerSecond}px`;
+      li.style.left = `${(entry.timeBegin / 1000) * pxPerSecond}px`;
+      li.style.width = `${((entry.timeEnd - entry.timeBegin) / 1000) * pxPerSecond}px`;
     }
   }
 }
@@ -158,6 +158,7 @@ export default class Timeline {
         track.push(this.trackList[i].entryList[j].getConfiguration());
       }
     }
+
     return configs;
   }
   notifyChange() {

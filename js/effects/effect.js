@@ -26,16 +26,20 @@ export default class Effect {
  * Interface for config UIs
  */
 export class ConfigUI {
+  // eslint-disable-next-line class-methods-use-this
   getElement() {
     throw new Error('Method not implemented');
   }
+  // eslint-disable-next-line class-methods-use-this
   getConfig() {
     throw new Error('Method not implemented');
   }
+  // eslint-disable-next-line class-methods-use-this
   applyConfig(/* config */) {
     throw new Error('Method not implemented');
   }
 
+  // eslint-disable-next-line class-methods-use-this
   notifyChange() {
     // TODO
   }

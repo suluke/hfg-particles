@@ -22,10 +22,10 @@ export default class Renderer {
       }
       this.regl.clear({ color: this.config.backgroundColor });
       this.command({
-        config: this.config,
+        config:       this.config,
         particleData: this.particleData,
-        oldTime: this.oldTime,
-        currentTime: this.currentTime,
+        oldTime:      this.oldTime,
+        currentTime:  this.currentTime,
       });
     });
   }
@@ -44,7 +44,7 @@ export default class Renderer {
 
   createParticleData() {
     this.destroyParticleData();
-    
+
     const imgData = this.imgData;
     const scalingCanvas = document.createElement('canvas');
     const scalingContext = scalingCanvas.getContext('2d');
@@ -95,12 +95,12 @@ export default class Renderer {
     });
 
     this.particleData = {
-      width: w,
-      height: h,
-      aspectRatio: imgData.width / imgData.height,
+      width:           w,
+      height:          h,
+      aspectRatio:     imgData.width / imgData.height,
       texcoordsBuffer: this.regl.buffer(texcoords),
-      rgbBuffer: this.regl.buffer(rgb),
-      hsvBuffer: this.regl.buffer(hsv)
+      rgbBuffer:       this.regl.buffer(rgb),
+      hsvBuffer:       this.regl.buffer(hsv)
     };
   }
 
@@ -126,7 +126,6 @@ export default class Renderer {
   }
 
   setConfig(config) {
-    const oldConfig = this.config;
     this.config = config;
     // TODO: rebuild command only when necessary
     this.createParticleData();

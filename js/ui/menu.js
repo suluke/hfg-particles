@@ -1,5 +1,5 @@
 import parseColor from 'parse-color'; // used by BgColorPicker
-import config from '../config';
+import Config from '../config';
 import Timeline from './timeline';
 import { parseHtml } from './util';
 
@@ -137,7 +137,7 @@ class ExportAppstateButton extends Control {
     this.elm = document.getElementById('menu-btn-exportstate');
     this.elm.addEventListener('click', () => {
       const toExport = Object.assign({
-        schemaVersion: config.export_schema_version
+        schemaVersion: Config.export_schema_version
       }, this.menu.submittedConfig);
       ExportAppstateButton.saveJson('particles.json', JSON.stringify(toExport, null, 2));
     });
@@ -262,17 +262,25 @@ export default class MainMenu {
     }
 
     const effectListElms = document.createDocumentFragment();
-    for (let effect in effects) {
+    for (let i = 0; i < effects.length; i++) {
       const elm = parseHtml(`
-        <li draggable="true">${effects[effect].getId()}</li>
+        <li draggable="true">${effects[i].getId()}</li>
       `);
       effectListElms.appendChild(elm);
     }
     this.effectList.appendChild(effectListElms);
 
     this.timeline.loadTimeline([
-      [[effects[0].getId(), { timeBegin: 0, timeEnd: 10000, config: effects[0].getDefaultConfig() }]],
-      [[effects[1].getId(), { timeBegin: 0, timeEnd: 10000, config: effects[1].getDefaultConfig() }]],
+      [[effects[0].getId(), {
+        timeBegin: 0,
+        timeEnd:   10000,
+        config:    effects[0].getDefaultConfig()
+      }]],
+      [[effects[1].getId(), {
+        timeBegin: 0,
+        timeEnd:   10000,
+        config:    effects[1].getDefaultConfig()
+      }]],
       []
     ]);
 

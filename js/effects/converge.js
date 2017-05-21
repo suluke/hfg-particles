@@ -1,4 +1,4 @@
-import Effect, {ConfigUI, fract} from './effect';
+import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 class ConvergeConfigUI extends ConfigUI {
@@ -29,7 +29,7 @@ class ConvergeConfigUI extends ConfigUI {
       </fieldset>
     `);
     const ui = this.element;
-    
+
     this.targetSelect = ui.querySelector('select.effect-converge-target');
     this.rotationSpeedInput = ui.querySelector('input.effect-converge-rotation-speed');
     this.speedInput = ui.querySelector('input.effect-converge-speed');
@@ -59,6 +59,7 @@ class ConvergeConfigUI extends ConfigUI {
     config.convergeRotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
     config.convergeSpeed = parseInt(this.speedInput.value, 10) / 1000;
     config.convergeEnable = this.enableInput.checked;
+
     return config;
   }
 
@@ -73,15 +74,20 @@ class ConvergeConfigUI extends ConfigUI {
 export default class ConvergeEffect extends Effect {
   static insertIntoVertexShader(vertexShader, instance) {
     if (instance.config.convergeEnable) {
+      // eslint-disable-next-line no-param-reassign, prefer-template
       vertexShader.uniforms += `
         uniform float convergeTime;
         uniform float convergeSpeed;
         uniform float convergeRotationSpeed;
         uniform float convergeMaxTravelTime;
       `;
+      // eslint-disable-next-line no-param-reassign, prefer-template
       vertexShader.mainBody += `
         {
-          vec2 screenTarget = ` + { "center": "vec2(0., 0.)", "color wheel": "getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)" }[instance.config.convergeTarget] + `;
+          vec2 screenTarget = ` + {
+            center:        'vec2(0., 0.)',
+            'color wheel': 'getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)'
+          }[instance.config.convergeTarget] + `;
           vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;
 
           vec2 d = target - initialPosition.xy;
@@ -106,34 +112,34 @@ export default class ConvergeEffect extends Effect {
   }
 
   static insertUniforms(uniforms, instance) {
+    // eslint-disable-next-line no-param-reassign
     uniforms.convergeTime = (ctx) => {
       const period = 2 * Math.sqrt(2 / instance.config.convergeSpeed);
+
       return fract(ctx.time / period) * period;
     };
-    uniforms.convergeSpeed = () => {
-      return instance.config.convergeSpeed;
-    };
-    uniforms.convergeRotationSpeed = () => {
-      return instance.config.convergeRotationSpeed;
-    };
-    uniforms.convergeMaxTravelTime = () => {
-      return Math.sqrt(2 / instance.config.convergeSpeed);
-    };
+    // eslint-disable-next-line no-param-reassign
+    uniforms.convergeSpeed = () => instance.config.convergeSpeed;
+    // eslint-disable-next-line no-param-reassign
+    uniforms.convergeRotationSpeed = () => instance.config.convergeRotationSpeed;
+    // eslint-disable-next-line no-param-reassign
+    uniforms.convergeMaxTravelTime = () => Math.sqrt(2 / instance.config.convergeSpeed);
   }
 
   static getConfigUI() {
     if (!this._configUI) {
       this._configUI = new ConvergeConfigUI();
     }
+
     return this._configUI;
   }
 
   static getDefaultConfig() {
     return {
-      convergeTarget: 'center',
+      convergeTarget:        'center',
       convergeRotationSpeed: 0,
-      convergeSpeed: 0.1,
-      convergeEnable: false
+      convergeSpeed:         0.1,
+      convergeEnable:        false
     };
   }
 }

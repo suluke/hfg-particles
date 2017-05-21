@@ -2,7 +2,6 @@ import { parseHtml } from './util';
 
 export default class EffectConfigDialog {
   constructor() {
-    const parser = document.createElement('body');
     const okBtnClass = 'effect-config-dialog-ok';
     const cancelBtnClass = 'effect-config-dialog-cancel';
     const deleteBtnClass = 'effect-config-dialog-delete';
@@ -32,9 +31,9 @@ export default class EffectConfigDialog {
       evt.stopPropagation();
       this.hide();
       this.resolve({
-        config: this.ui.getConfig(),
+        config:    this.ui.getConfig(),
         timeBegin: parseInt(this.startTimeInput.value, 10),
-        timeEnd: parseInt(this.endTimeInput.value, 10),
+        timeEnd:   parseInt(this.endTimeInput.value, 10),
       });
     });
     this.cancelBtn.addEventListener('click', (evt) => {

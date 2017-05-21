@@ -4,11 +4,10 @@ import ImgSelect from './ui/image-select';
 import InactivityMonitor from './ui/inactivity-monitor';
 import ImgDimWarn from './ui/img-dimension-warning';
 import MainMenu from './ui/menu';
-import Timeline from './ui/timeline';
 import Renderer from './renderer';
-import config from './config';
+import Config from './config';
 
-console.log(config);
+console.log(Config);
 
 // some constants
 const imageLoadingClass = 'loading-image';
@@ -34,9 +33,9 @@ srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/14685
 srcImage.src = 'tron.jpg';
 srcImage.onload = () => {
   imgDimWarn.verify(srcImage)
-  .then(({xParticlesCount, yParticlesCount}) => {
+  .then(({ xParticlesCount, yParticlesCount }) => {
     renderer.loadImageData(srcImage);
-    const config = Object.assign({}, menu.submittedConfig, {xParticlesCount, yParticlesCount});
+    const config = Object.assign({}, menu.submittedConfig, { xParticlesCount, yParticlesCount });
     menu.applyConfig(config);
     menu.submit();
   }, () => {
