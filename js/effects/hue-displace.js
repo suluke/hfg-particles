@@ -59,27 +59,27 @@ class HueDisplaceConfigUI extends ConfigUI {
 
   getConfig() {
     const config = {};
-    config.hueDisplaceDistance = parseInt(this.distanceInput.value, 10) / 100;
-    config.hueDisplacePeriod = parseInt(this.periodInput.value, 10) / 1000;
-    config.hueDisplaceScaleByValue = parseInt(this.scaleByValInput.value, 10) / 100;
-    config.hueDisplaceRandomDirectionOffset = this.randomOffsetInput.checked;
-    config.hueDisplaceRotate = parseInt(this.rotateInput.value, 10) / 100;
+    config.distance = parseInt(this.distanceInput.value, 10) / 100;
+    config.period = parseInt(this.periodInput.value, 10) / 1000;
+    config.scaleByValue = parseInt(this.scaleByValInput.value, 10) / 100;
+    config.randomDirectionOffset = this.randomOffsetInput.checked;
+    config.rotate = parseInt(this.rotateInput.value, 10) / 100;
 
     return config;
   }
 
   applyConfig(config) {
-    this.distanceInput.value = config.hueDisplaceDistance * 100;
-    this.periodInput.value = config.hueDisplacePeriod * 1000;
-    this.scaleByValInput.value = config.hueDisplaceScaleByValue * 100;
-    this.randomOffsetInput.checked = config.hueDisplaceRandomDirectionOffset;
-    this.rotateInput.value = config.hueDisplaceRotate * 100;
+    this.distanceInput.value = config.distance * 100;
+    this.periodInput.value = config.period * 1000;
+    this.scaleByValInput.value = config.scaleByValue * 100;
+    this.randomOffsetInput.checked = config.randomDirectionOffset;
+    this.rotateInput.value = config.rotate * 100;
   }
 }
 
 export default class HueDisplaceEffect extends Effect {
   static insertIntoVertexShader(vertexShader, instance) {
-    if (instance.config.hueDisplaceDistance !== 0) {
+    if (instance.config.distance !== 0) {
       // eslint-disable-next-line no-param-reassign
       vertexShader.uniforms += `
         uniform float hueDisplaceDistance;
@@ -100,29 +100,29 @@ export default class HueDisplaceEffect extends Effect {
 
   static insertUniforms(uniforms, instance) {
     // eslint-disable-next-line no-param-reassign
-    uniforms.hueDisplaceDistance = () => instance.config.hueDisplaceDistance;
+    uniforms.hueDisplaceDistance = () => instance.config.distance;
     // eslint-disable-next-line no-param-reassign
     uniforms.hueDisplaceTime = (ctx) =>
-      fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
+      fract(ctx.time / instance.config.period) * 2 * Math.PI;
     // eslint-disable-next-line no-param-reassign
     uniforms.hueDisplaceDirectionOffset = (ctx, props) => {
-      let result = instance.config.hueDisplaceRotate *
-        fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
-      if (instance.config.hueDisplaceRandomDirectionOffset) {
-        if (instance.config.hueDisplaceRandomDirectionOffsetValue === undefined
-          || Math.floor(props.oldTime / instance.config.hueDisplacePeriod)
-          !== Math.floor(props.currentTime / instance.config.hueDisplacePeriod)
+      let result = instance.config.rotate *
+        fract(ctx.time / instance.config.period) * 2 * Math.PI;
+      if (instance.config.randomDirectionOffset) {
+        if (instance.config.randomDirectionOffsetValue === undefined
+          || Math.floor(props.oldTime / instance.config.period)
+          !== Math.floor(props.currentTime / instance.config.period)
         ) {
           // eslint-disable-next-line no-param-reassign
-          instance.config.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
+          instance.config.randomDirectionOffsetValue = Math.random() * 2 * Math.PI;
         }
-        result += instance.config.hueDisplaceRandomDirectionOffsetValue;
+        result += instance.config.randomDirectionOffsetValue;
       }
 
       return result;
     };
     // eslint-disable-next-line no-param-reassign
-    uniforms.hueDisplaceScaleByValue = () => instance.config.hueDisplaceScaleByValue;
+    uniforms.hueDisplaceScaleByValue = () => instance.config.scaleByValue;
   }
 
   static getConfigUI() {
@@ -135,11 +135,11 @@ export default class HueDisplaceEffect extends Effect {
 
   static getDefaultConfig() {
     return {
-      hueDisplaceDistance:              0.1,
-      hueDisplacePeriod:                3,
-      hueDisplaceScaleByValue:          0,
-      hueDisplaceRandomDirectionOffset: false,
-      hueDisplaceRotate:                0
+      distance:              0.1,
+      period:                3,
+      scaleByValue:          0,
+      randomDirectionOffset: false,
+      rotate:                0
     };
   }
 }

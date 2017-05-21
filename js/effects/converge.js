@@ -8,10 +8,6 @@ class ConvergeConfigUI extends ConfigUI {
       <fieldset>
         <legend>Converge</legend>
         <label>
-          Enable:
-          <input type="checkbox" class="effect-converge-enable"/>
-        </label><br/>
-        <label>
           Speed:
           <input type="number" class="effect-converge-speed" value="100" />
         </label><br/>
@@ -33,11 +29,6 @@ class ConvergeConfigUI extends ConfigUI {
     this.targetSelect = ui.querySelector('select.effect-converge-target');
     this.rotationSpeedInput = ui.querySelector('input.effect-converge-rotation-speed');
     this.speedInput = ui.querySelector('input.effect-converge-speed');
-    this.enableInput = ui.querySelector('input.effect-converge-enable');
-
-    this.enableInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
     this.speedInput.addEventListener('change', () => {
       this.notifyChange();
     });
@@ -55,75 +46,71 @@ class ConvergeConfigUI extends ConfigUI {
 
   getConfig() {
     const config = {};
-    config.convergeTarget = this.targetSelect.value;
-    config.convergeRotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
-    config.convergeSpeed = parseInt(this.speedInput.value, 10) / 1000;
-    config.convergeEnable = this.enableInput.checked;
+    config.target = this.targetSelect.value;
+    config.rotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
+    config.speed = parseInt(this.speedInput.value, 10) / 1000;
 
     return config;
   }
 
   applyConfig(config) {
-    this.targetSelect.value = config.convergeTarget;
-    this.rotationSpeedInput.checked = config.convergeRotationSpeed * 100;
-    this.speedInput.checked = config.convergeSpeed * 1000;
-    this.enableInput.checked = config.convergeEnable;
+    this.targetSelect.value = config.target;
+    this.rotationSpeedInput.checked = config.rotationSpeed * 100;
+    this.speedInput.checked = config.speed * 1000;
   }
 }
 
 export default class ConvergeEffect extends Effect {
   static insertIntoVertexShader(vertexShader, instance) {
-    if (instance.config.convergeEnable) {
-      // eslint-disable-next-line no-param-reassign, prefer-template
-      vertexShader.uniforms += `
-        uniform float convergeTime;
-        uniform float convergeSpeed;
-        uniform float convergeRotationSpeed;
-        uniform float convergeMaxTravelTime;
-      `;
-      // eslint-disable-next-line no-param-reassign, prefer-template
-      vertexShader.mainBody += `
-        {
-          vec2 screenTarget = ` + {
-            center:        'vec2(0., 0.)',
-            'color wheel': 'getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)'
-          }[instance.config.convergeTarget] + `;
-          vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;
+    // eslint-disable-next-line no-param-reassign, prefer-template
+    vertexShader.uniforms += `
+      uniform float convergeTime;
+      uniform float convergeSpeed;
+      uniform float convergeRotationSpeed;
+      uniform float convergeMaxTravelTime;
+    `;
+    // eslint-disable-next-line no-param-reassign, prefer-template
+    vertexShader.mainBody += `
+      {
+        vec2 screenTarget = ` + {
+          center:        'vec2(0., 0.)',
+          'color wheel': 'getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)'
+        }[instance.config.target] + `;
+        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;
 
-          vec2 d = target - initialPosition.xy;
-          float d_len = length(d);
-          
-          float stop_t = sqrt(2. * d_len / convergeSpeed);
+        vec2 d = target - initialPosition.xy;
+        float d_len = length(d);
+        
+        float stop_t = sqrt(2. * d_len / convergeSpeed);
 
-          if(convergeTime < stop_t) {
-            float t = min(convergeTime, stop_t);
-            position.xy += .5 * d / d_len * convergeSpeed * t * t;
-          } else if(convergeTime < convergeMaxTravelTime) {
-            position.xy += d;
-          } else {
-            float t = convergeTime - convergeMaxTravelTime;
-            //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));
-            //position.xy += mix(d, vec2(0.), t * t);
-            position.xy += mix(d, vec2(0.), -cos(t / convergeMaxTravelTime * PI) * .5 + .5);
-          }
+        if(convergeTime < stop_t) {
+          float t = min(convergeTime, stop_t);
+          position.xy += .5 * d / d_len * convergeSpeed * t * t;
+        } else if(convergeTime < convergeMaxTravelTime) {
+          position.xy += d;
+        } else {
+          float t = convergeTime - convergeMaxTravelTime;
+          //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));
+          //position.xy += mix(d, vec2(0.), t * t);
+          position.xy += mix(d, vec2(0.), -cos(t / convergeMaxTravelTime * PI) * .5 + .5);
         }
-      `;
-    }
+      }
+    `;
   }
 
   static insertUniforms(uniforms, instance) {
     // eslint-disable-next-line no-param-reassign
     uniforms.convergeTime = (ctx) => {
-      const period = 2 * Math.sqrt(2 / instance.config.convergeSpeed);
+      const period = 2 * Math.sqrt(2 / instance.config.speed);
 
       return fract(ctx.time / period) * period;
     };
     // eslint-disable-next-line no-param-reassign
-    uniforms.convergeSpeed = () => instance.config.convergeSpeed;
+    uniforms.convergeSpeed = () => instance.config.speed;
     // eslint-disable-next-line no-param-reassign
-    uniforms.convergeRotationSpeed = () => instance.config.convergeRotationSpeed;
+    uniforms.convergeRotationSpeed = () => instance.config.rotationSpeed;
     // eslint-disable-next-line no-param-reassign
-    uniforms.convergeMaxTravelTime = () => Math.sqrt(2 / instance.config.convergeSpeed);
+    uniforms.convergeMaxTravelTime = () => Math.sqrt(2 / instance.config.speed);
   }
 
   static getConfigUI() {
@@ -136,10 +123,9 @@ export default class ConvergeEffect extends Effect {
 
   static getDefaultConfig() {
     return {
-      convergeTarget:        'center',
-      convergeRotationSpeed: 0,
-      convergeSpeed:         0.1,
-      convergeEnable:        false
+      target:        'center',
+      rotationSpeed: 0,
+      speed:         0.1,
     };
   }
 }
