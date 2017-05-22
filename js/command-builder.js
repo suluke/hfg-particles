@@ -44,6 +44,10 @@ export default class CommandBuilder {
     return this.assembleCommand();
   }
 
+  getInstanceUniformName(name, instanceId) {
+    return name + '_' + instanceId;
+  }
+
   assembleVertexShader() {
     const vertexShader = new Shader();
 
@@ -75,13 +79,49 @@ export default class CommandBuilder {
       
       vec3 position = initialPosition;
     `;
+
+    let instanceId = 0;
     for (let i = 0; i < this.config.effects.length; i++) {
       const track = this.config.effects[i];
       for (let j = 0; j < track.length; j++) {
         const effectId = track[j][0];
         const effectConfig = track[j][1];
         const effectClass = effectsById[effectId];
-        effectClass.insertIntoVertexShader(vertexShader, effectConfig);
+        const uniforms = effectClass.getUniforms();
+        const code = effectClass.getCode();
+
+        for(let uniformIndex = 0; uniformIndex < uniforms.length; uniformIndex++) {
+          const uniform = uniforms[uniformIndex];
+          vertexShader.uniforms += 'uniform ' + uniform.type + ' ' + this.getInstanceUniformName(uniform.name, instanceId) + ';\n';
+        }
+
+        for(let elementIndex = 0; elementIndex < code.length; elementIndex++) {
+          const handleElement = (e) => {
+            switch(typeof e) {
+              case 'string':
+              vertexShader.mainBody += e;
+              break;
+
+              case 'function':
+              handleElement(e(effectConfig));
+              break;
+
+              case 'object':
+              if (e instanceof Array) {
+                for(let i=0; i<e.length; i++) handleElement(e[i]);
+              } else if (e.what === 'uniform') {
+                vertexShader.mainBody += this.getInstanceUniformName(e.name, instanceId);
+              } else {
+                throw new Error('Invaid object in effect code');
+              }
+              break;
+            }
+          }
+
+          handleElement(code[elementIndex]);
+        }
+
+        instanceId++;
       }
     }
 
@@ -180,13 +220,21 @@ export default class CommandBuilder {
       },
     };
 
+    let instanceId = 0;
     for (let i = 0; i < this.config.effects.length; i++) {
       const track = this.config.effects[i];
       for (let j = 0; j < track.length; j++) {
         const effectId = track[j][0];
         const effectConfig = track[j][1];
         const effectClass = effectsById[effectId];
-        effectClass.insertUniforms(result.uniforms, effectConfig);
+        const uniforms = effectClass.getUniforms();
+
+        for(let uniformIndex = 0; uniformIndex < uniforms.length; uniformIndex++) {
+          const uniform = uniforms[uniformIndex];
+          result.uniforms[this.getInstanceUniformName(uniform.name, instanceId)] = uniform.getValue(effectConfig);
+        }
+
+        instanceId++;
       }
     }
 

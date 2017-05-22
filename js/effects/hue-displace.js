@@ -78,51 +78,53 @@ class HueDisplaceConfigUI extends ConfigUI {
 }
 
 export default class HueDisplaceEffect extends Effect {
-  static insertIntoVertexShader(vertexShader, instance) {
-    if (instance.config.distance !== 0) {
-      // eslint-disable-next-line no-param-reassign
-      vertexShader.uniforms += `
-        uniform float hueDisplaceDistance;
-        uniform float hueDisplaceTime;
-        uniform float hueDisplaceDirectionOffset;
-        uniform float hueDisplaceScaleByValue;
-      `;
-      // eslint-disable-next-line no-param-reassign
-      vertexShader.mainBody += `
-        {
-          float angle = hsv[0] + hueDisplaceDirectionOffset;
-          float offset = (-cos(hueDisplaceTime) + 1.) / 2.;
-          position.xy += offset * getDirectionVector(angle) * hueDisplaceDistance * (1. - hueDisplaceScaleByValue * (1. - hsv[2]));
+  static getUniforms() {
+    return [{
+        name: 'hueDisplaceDistance',
+        type: 'float',
+        getValue: (instance) => instance.config.distance
+      }, {
+        name: 'hueDisplaceTime',
+        type: 'float',
+        getValue: (instance) => function(ctx) {
+          return fract(ctx.time / instance.config.period) * 2 * Math.PI;
         }
-      `;
-    }
+      }, {
+        name: 'hueDisplaceDirectionOffset',
+        type: 'float',
+        getValue: (instance) => function(ctx, props) {
+          let result = instance.config.rotate *
+            fract(ctx.time / instance.config.period) * 2 * Math.PI;
+          if (instance.config.randomDirectionOffset) {
+            if (instance.config.randomDirectionOffsetValue === undefined
+              || Math.floor(props.oldTime / instance.config.period)
+              !== Math.floor(props.currentTime / instance.config.period)
+            ) {
+              // eslint-disable-next-line no-param-reassign
+              instance.config.randomDirectionOffsetValue = Math.random() * 2 * Math.PI;
+            }
+            result += instance.config.randomDirectionOffsetValue;
+          }
+
+          return result;
+        }
+      }, {
+        name: 'hueDisplaceScaleByValue',
+        type: 'float',
+        getValue: (instance) => instance.config.scaleByValue
+      }
+    ];
   }
 
-  static insertUniforms(uniforms, instance) {
-    // eslint-disable-next-line no-param-reassign
-    uniforms.hueDisplaceDistance = () => instance.config.distance;
-    // eslint-disable-next-line no-param-reassign
-    uniforms.hueDisplaceTime = (ctx) =>
-      fract(ctx.time / instance.config.period) * 2 * Math.PI;
-    // eslint-disable-next-line no-param-reassign
-    uniforms.hueDisplaceDirectionOffset = (ctx, props) => {
-      let result = instance.config.rotate *
-        fract(ctx.time / instance.config.period) * 2 * Math.PI;
-      if (instance.config.randomDirectionOffset) {
-        if (instance.config.randomDirectionOffsetValue === undefined
-          || Math.floor(props.oldTime / instance.config.period)
-          !== Math.floor(props.currentTime / instance.config.period)
-        ) {
-          // eslint-disable-next-line no-param-reassign
-          instance.config.randomDirectionOffsetValue = Math.random() * 2 * Math.PI;
-        }
-        result += instance.config.randomDirectionOffsetValue;
-      }
+  static getCode() {
+    const u = Effect.createUniformToken;
 
-      return result;
-    };
-    // eslint-disable-next-line no-param-reassign
-    uniforms.hueDisplaceScaleByValue = () => instance.config.scaleByValue;
+    return [`{
+        float angle = hsv[0] + `, u('hueDisplaceDirectionOffset'), `;
+        float offset = (-cos(`, u('hueDisplaceTime'), `) + 1.) / 2.;
+        position.xy += offset * getDirectionVector(angle) * `, u('hueDisplaceDistance'), ` * (1. - `, u('hueDisplaceScaleByValue'), ` * (1. - hsv[2]));
+      }`
+    ];
   }
 
   static getDisplayName() {

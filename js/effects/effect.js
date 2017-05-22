@@ -2,10 +2,26 @@
  * Interface for effects
  */
 export default class Effect {
-  static insertUniforms(/* uniforms */) {
+  static getUniforms() {
     throw new Error('Method not implemented');
   }
-  static insertIntoVertexShader(/* vertexShader, instance */) {
+
+  // for code generation
+  static createUniformToken(name) {
+    /* TODO: use this
+    class Uniform {
+      constructor(name) {
+        this.name = name;
+      }
+    }
+
+    return new Uniform(name);
+    */
+
+    return { what: 'uniform', name };
+  }
+
+  static getCode() {
     throw new Error('Method not implemented');
   }
 
