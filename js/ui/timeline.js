@@ -69,6 +69,7 @@ class TimelineTrack {
     this.entryListElm.addEventListener('drop', (evt) => {
       [].map.call(evt.dataTransfer.items, (item) => {
         if (item.kind === 'string' && item.type === 'text/plain') {
+          evt.preventDefault(); // TODO re-trigger evt if we don't accept it below
           item.getAsString((str) => {
             if (effectsById[str] !== undefined) {
               const entry = new TimelineEntry(effectsById[str], this.timeline);
