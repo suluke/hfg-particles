@@ -115,7 +115,7 @@ export default class Renderer {
   }
 
   rebuildCommand() {
-    const cmd = this.commandBuilder.rebuildCommand(this.particleData, this.config);
+    const cmd = this.commandBuilder.buildCommand(this.particleData, this.config);
     this.command = this.regl(cmd);
   }
 

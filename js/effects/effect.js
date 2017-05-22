@@ -8,6 +8,7 @@ export default class Effect {
   static insertIntoVertexShader(/* vertexShader, instance */) {
     throw new Error('Method not implemented');
   }
+
   static getId() {
     // Static + this = JS <3
     return this.name;

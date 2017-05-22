@@ -37,12 +37,13 @@ class Shader {
 }
 
 export default class CommandBuilder {
-  rebuildCommand(particleData, config) {
+  buildCommand(particleData, config) {
     this.config = config;
     this.particleData = particleData;
 
     return this.assembleCommand();
   }
+
   assembleVertexShader() {
     const vertexShader = new Shader();
 
