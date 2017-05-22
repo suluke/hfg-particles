@@ -187,8 +187,10 @@ export default class Timeline {
   assertEmptyLastTrack() {
     let changed = false;
     const tracks = this.trackList;
-    while (tracks[tracks.length - 1].entryList.length === 0 &&
-           tracks[tracks.length - 2].entryList.length === 0) {
+    while (tracks.length > 1 &&
+           tracks[tracks.length - 1].entryList.length === 0 &&
+           tracks[tracks.length - 2].entryList.length === 0
+    ) {
       tracks.splice(tracks.length - 1, 1);
       changed = true;
     }
