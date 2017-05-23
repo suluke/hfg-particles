@@ -189,6 +189,13 @@ var ImgSelect = function ImgSelect() {
       }
       e.preventDefault();
     });
+    // Touch devices might fire up a virtual keyboard, which is confusing
+    // so in this case, we need to completely disable this feature :(
+    if ('ontouchstart' in document.documentElement) {
+      box.addEventListener('click', function (e) {
+        e.preventDefault();
+      });
+    }
   });
 
   // catch the change event
@@ -1777,6 +1784,11 @@ Timeline.prototype.getEffects = function getEffects () {
   }
 
   return configs;
+};
+Timeline.prototype.getTotalDuration = function getTotalDuration () {
+  var maxEnd = 0;
+  this.forEachEntry(function (entry) { return maxEnd = Math.max(maxEnd, entry.timeEnd); });
+  return maxEnd;
 };
 Timeline.prototype.assertEmptyLastTrack = function assertEmptyLastTrack () {
   var changed = false;

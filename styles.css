@@ -2554,8 +2554,12 @@
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: space-between;
-        list-style-type: none; }
+        list-style-type: none;
+        /* Effect boxes */ }
         .menu-container .menu-content .menu-content-inner .menu-effect-list > * {
+          cursor: -moz-grab;
+          cursor: -webkit-grab;
+          cursor: grab;
           flex: 1;
           background-color: rgba(0, 0, 0, 0.3);
           text-align: center;
@@ -2682,6 +2686,9 @@
                 vertical-align: middle;
                 width: 0; }
               .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li > button {
+                cursor: -moz-grab;
+                cursor: -webkit-grab;
+                cursor: grab;
                 width: 100%;
                 height: 100%;
                 color: #000;
