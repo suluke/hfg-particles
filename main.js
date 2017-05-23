@@ -195,6 +195,9 @@ var ImgSelect = function ImgSelect() {
       box.addEventListener('click', function (e) {
         e.preventDefault();
       });
+      box.addEventListener('touchend', function (e) {
+        e.preventDefault();
+      });
     }
   });
 
