@@ -77,6 +77,13 @@ export default class ImgSelect {
         }
         e.preventDefault();
       });
+      // Touch devices might fire up a virtual keyboard, which is confusing
+      // so in this case, we need to completely disable this feature :(
+      if ('ontouchstart' in document.documentElement) {
+        box.addEventListener('click', (e) => {
+          e.preventDefault();
+        });
+      }
     });
 
     // catch the change event
