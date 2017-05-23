@@ -194,9 +194,11 @@ var ImgSelect = function ImgSelect() {
     if ('ontouchstart' in document.documentElement) {
       box.addEventListener('click', function (e) {
         e.preventDefault();
+        box.blur();
       });
       box.addEventListener('touchend', function (e) {
         e.preventDefault();
+        box.blur();
       });
     }
   });
