@@ -2395,7 +2395,9 @@
   height: 100%;
   cursor: default;
   border: none;
-  outline: none; }
+  outline: none;
+  opacity: 0;
+  background-color: transparent; }
 
 .img-dim-warn-backdrop {
   position: absolute;

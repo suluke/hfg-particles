@@ -191,16 +191,16 @@ var ImgSelect = function ImgSelect() {
     });
     // Touch devices might fire up a virtual keyboard, which is confusing
     // so in this case, we need to completely disable this feature :(
-    if ('ontouchstart' in document.documentElement) {
-      box.addEventListener('click', function (e) {
-        e.preventDefault();
-        box.blur();
-      });
-      box.addEventListener('touchend', function (e) {
-        e.preventDefault();
-        box.blur();
-      });
-    }
+    box.addEventListener('touchend', function (e) {
+      box.readonly = true; // Force keyboard to hide on input field.
+      box.disabled = true; // Force keyboard to hide on textarea field.
+      setTimeout(function () {
+        box.blur();//actually close the keyboard
+        // Remove readonly attribute after keyboard is hidden.
+        box.readonly = false;
+        box.disabled = false;
+      }, 100);
+    });
   });
 
   // catch the change event
