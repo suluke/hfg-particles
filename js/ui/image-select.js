@@ -83,6 +83,9 @@ export default class ImgSelect {
         box.addEventListener('click', (e) => {
           e.preventDefault();
         });
+        box.addEventListener('touchend', (e) => {
+          e.preventDefault();
+        });
       }
     });
 
