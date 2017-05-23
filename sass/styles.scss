@@ -3,6 +3,7 @@ $fa-font-path: "./fonts";
 
 @import 'mixins/hide';
 @import 'mixins/icons';
+@import 'mixins/responsive';
 @import 'drag-and-drop';
 @import 'img-dimension-warning';
 @import 'menu';
@@ -117,7 +118,7 @@ body {
   }
 }
 
-@media (min-width:320px)  {
+@include screensize(1) {
   /* smartphones, iPhone, portrait 480x320 phones */
   $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 20px;
@@ -132,7 +133,7 @@ body {
     $timeline-height
   );
 }
-@media (min-width:481px)  {
+@include screensize(2) {
   /* portrait e-readers (Nook/Kindle), smaller tablets @ 600 or @ 640 wide. */
   $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 20px;
@@ -147,7 +148,7 @@ body {
     $timeline-height
   );
 }
-@media (min-width:641px)  {
+@include screensize(3) {
   /* portrait tablets, portrait iPad, landscape e-readers, landscape 800x480 or 854x480 phones */
   $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 1.5cm;
@@ -162,7 +163,7 @@ body {
     $timeline-height
   );
 }
-@media (min-width:961px)  {
+@include screensize(4) {
   /* tablet, landscape iPad, lo-res laptops ands desktops */
   $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 1.5cm;
@@ -177,7 +178,7 @@ body {
     $timeline-height
   );
 }
-@media (min-width:1025px) {
+@include screensize(5) {
   /* big landscape tablets, laptops, and desktops */
   $icon-btn-font-size: 1.5cm;
   $button-edge-dist: 1cm;
@@ -192,7 +193,7 @@ body {
     $timeline-height
   );
 }
-@media (min-width:1281px) {
+@include screensize(6) {
   /* hi-res laptops and desktops */
   $icon-btn-font-size: 1cm;
   $button-edge-dist: 1cm;

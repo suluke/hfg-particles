@@ -1,3 +1,6 @@
+@import "responsive";
+@import "centering";
+
 @mixin backdrop() {
   position: absolute;
   width: 100%;
@@ -5,20 +8,32 @@
   left: 0;
   top: 0;
   background-color: rgba(0, 0, 0, 0.7);
-  z-index: 4;
+  z-index: 40;
 }
 
 @mixin modal() {
-  position: absolute;
-  width: 50%;
-  height: 50%;
   text-align: center;
-  top: 50%;
-  left: 50%;
-  -webkit-transform: translate(-50%, -50%);
-  -ms-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
-  background-color: #eee;
-  padding: 20px;
-  z-index: 5;
+  overflow: scroll;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 50;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 20px 0;
+
+  @include screensize(4) {
+    @include center-box;
+    padding: 20px;
+  }
+  @include screensize(5) {
+    @include center-box;
+    padding: 20px;
+  }
+  @include screensize(6) {
+    @include center-box;
+    padding: 20px;
+  }
 }
