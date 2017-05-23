@@ -36,6 +36,33 @@ class Shader {
   }
 }
 
+class Uniforms {
+  constructor(id) {
+    this.uniforms = [];
+    this.id = id;
+  }
+  addUniform(name, type, value) {
+    const uniform = { name, type, value };
+    this.uniforms.push(uniform);
+
+    return this.getNameFor(uniform);
+  }
+  getNameFor(uniform) {
+    return `${uniform.name}_${this.id}`;
+  }
+  compile(shader, uniforms) {
+    const shaderStr = [];
+    for (let i = 0; i < this.uniforms.length; i++) {
+      const uniform = this.uniforms[i];
+      shaderStr.push(`uniform ${uniform.type} ${this.getNameFor(uniform)};`);
+      // eslint-disable-next-line no-param-reassign
+      uniforms[this.getNameFor(uniform)] = uniform.value;
+    }
+    // eslint-disable-next-line no-param-reassign
+    shader.uniforms += shaderStr.join('\n');
+  }
+}
+
 export default class CommandBuilder {
   buildCommand(particleData, config) {
     this.config = config;
@@ -44,7 +71,7 @@ export default class CommandBuilder {
     return this.assembleCommand();
   }
 
-  assembleVertexShader() {
+  static prepareVertexShader() {
     const vertexShader = new Shader();
 
     vertexShader.attributes += `
@@ -69,29 +96,8 @@ export default class CommandBuilder {
         return vec2(cos(angle), sin(angle));
       }
     `;
-    vertexShader.mainBody += `
-      vec3 initialPosition = vec3(texcoord, 0);
-      initialPosition.y *= invImageAspectRatio;
-      
-      vec3 position = initialPosition;
-    `;
-    for (let i = 0; i < this.config.effects.length; i++) {
-      const track = this.config.effects[i];
-      for (let j = 0; j < track.length; j++) {
-        const effectId = track[j][0];
-        const effectConfig = track[j][1];
-        const effectClass = effectsById[effectId];
-        effectClass.insertIntoVertexShader(vertexShader, effectConfig);
-      }
-    }
 
-    vertexShader.mainBody += `
-      color = rgb;
-      gl_PointSize = max(particleSize, 0.);
-      gl_Position = viewProjectionMatrix * vec4(position, 1.);
-    `;
-
-    return vertexShader.compile();
+    return vertexShader;
   }
 
   assembleFragmentShader() {
@@ -113,7 +119,7 @@ export default class CommandBuilder {
   }
 
   assembleCommand() {
-    const vert = this.assembleVertexShader();
+    const vert = CommandBuilder.prepareVertexShader();
     const frag = this.assembleFragmentShader();
 
     const result = {
@@ -124,7 +130,6 @@ export default class CommandBuilder {
         rgb:      this.particleData.rgbBuffer,
         hsv:      this.particleData.hsvBuffer
       },
-      vert,
       frag,
       depth: { enable: false }
     };
@@ -180,15 +185,33 @@ export default class CommandBuilder {
       },
     };
 
+    vert.mainBody += `
+      vec3 initialPosition = vec3(texcoord, 0);
+      initialPosition.y *= invImageAspectRatio;
+      
+      vec3 position = initialPosition;
+    `;
+    let globalId = 0;
     for (let i = 0; i < this.config.effects.length; i++) {
       const track = this.config.effects[i];
       for (let j = 0; j < track.length; j++) {
+        const uniforms = new Uniforms(globalId);
         const effectId = track[j][0];
         const effectConfig = track[j][1];
         const effectClass = effectsById[effectId];
-        effectClass.insertUniforms(result.uniforms, effectConfig);
+        effectClass.register(effectConfig, uniforms, vert);
+        uniforms.compile(vert, result.uniforms);
+        globalId += 1;
       }
     }
+
+    vert.mainBody += `
+      color = rgb;
+      gl_PointSize = max(particleSize, 0.);
+      gl_Position = viewProjectionMatrix * vec4(position, 1.);
+    `;
+
+    result.vert = vert.compile();
 
     return result;
   }

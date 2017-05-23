@@ -2,10 +2,7 @@
  * Interface for effects
  */
 export default class Effect {
-  static insertUniforms(/* uniforms */) {
-    throw new Error('Method not implemented');
-  }
-  static insertIntoVertexShader(/* vertexShader, instance */) {
+  static register(/* instance, uniforms, vertexShader */) {
     throw new Error('Method not implemented');
   }
 

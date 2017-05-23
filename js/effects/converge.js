@@ -61,56 +61,45 @@ class ConvergeConfigUI extends ConfigUI {
 }
 
 export default class ConvergeEffect extends Effect {
-  static insertIntoVertexShader(vertexShader, instance) {
-    // eslint-disable-next-line no-param-reassign, prefer-template
-    vertexShader.uniforms += `
-      uniform float convergeTime;
-      uniform float convergeSpeed;
-      uniform float convergeRotationSpeed;
-      uniform float convergeMaxTravelTime;
-    `;
-    // eslint-disable-next-line no-param-reassign, prefer-template
+  static register(instance, uniforms, vertexShader) {
+    const time = uniforms.addUniform('convergeTime', 'float', (ctx) => {
+      const period = 2 * Math.sqrt(2 / instance.config.speed);
+
+      return fract(ctx.time / period) * period;
+    });
+    const speed = uniforms.addUniform('convergeSpeed', 'float', () => instance.config.speed);
+    const rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', () => instance.config.rotationSpeed);
+    const maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', () => Math.sqrt(2 / instance.config.speed));
+
+    const targets = {
+      center:        'vec2(0., 0.)',
+      'color wheel': `getDirectionVector(hsv[0] + ${time} * ${rotationSpeed}) * vec2(.8) * vec2(invScreenAspectRatio, 1.)`
+    };
+
+    // eslint-disable-next-line no-param-reassign
     vertexShader.mainBody += `
       {
-        vec2 screenTarget = ` + {
-          center:        'vec2(0., 0.)',
-          'color wheel': 'getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)'
-        }[instance.config.target] + `;
+        vec2 screenTarget = ${targets[instance.config.target]};
         vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;
 
         vec2 d = target - initialPosition.xy;
         float d_len = length(d);
         
-        float stop_t = sqrt(2. * d_len / convergeSpeed);
+        float stop_t = sqrt(2. * d_len / ${speed});
 
-        if(convergeTime < stop_t) {
-          float t = min(convergeTime, stop_t);
-          position.xy += .5 * d / d_len * convergeSpeed * t * t;
-        } else if(convergeTime < convergeMaxTravelTime) {
+        if(${time} < stop_t) {
+          float t = min(${time}, stop_t);
+          position.xy += .5 * d / d_len * ${speed} * t * t;
+        } else if(${time} < ${maxTravelTime}) {
           position.xy += d;
         } else {
-          float t = convergeTime - convergeMaxTravelTime;
+          float t = ${time} - ${maxTravelTime};
           //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));
           //position.xy += mix(d, vec2(0.), t * t);
-          position.xy += mix(d, vec2(0.), -cos(t / convergeMaxTravelTime * PI) * .5 + .5);
+          position.xy += mix(d, vec2(0.), -cos(t / ${maxTravelTime} * PI) * .5 + .5);
         }
       }
     `;
-  }
-
-  static insertUniforms(uniforms, instance) {
-    // eslint-disable-next-line no-param-reassign
-    uniforms.convergeTime = (ctx) => {
-      const period = 2 * Math.sqrt(2 / instance.config.speed);
-
-      return fract(ctx.time / period) * period;
-    };
-    // eslint-disable-next-line no-param-reassign
-    uniforms.convergeSpeed = () => instance.config.speed;
-    // eslint-disable-next-line no-param-reassign
-    uniforms.convergeRotationSpeed = () => instance.config.rotationSpeed;
-    // eslint-disable-next-line no-param-reassign
-    uniforms.convergeMaxTravelTime = () => Math.sqrt(2 / instance.config.speed);
   }
 
   static getDisplayName() {
