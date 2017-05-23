@@ -82,9 +82,11 @@ export default class ImgSelect {
       if ('ontouchstart' in document.documentElement) {
         box.addEventListener('click', (e) => {
           e.preventDefault();
+          box.blur();
         });
         box.addEventListener('touchend', (e) => {
           e.preventDefault();
+          box.blur();
         });
       }
     });
