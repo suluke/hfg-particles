@@ -257,35 +257,40 @@ var InactivityMonitor = function InactivityMonitor() {
 };
 
 function parseHtml(html) {
+  // eslint-disable-next-line no-param-reassign
   html = html.trim();
   /* code taken from jQuery */
   var wrapMap = {
-    option: [ 1, "<select multiple='multiple'>", "</select>" ],
-    legend: [ 1, "<fieldset>", "</fieldset>" ],
-    area: [ 1, "<map>", "</map>" ],
-    param: [ 1, "<object>", "</object>" ],
-    thead: [ 1, "<table>", "</table>" ],
-    tr: [ 2, "<table><tbody>", "</tbody></table>" ],
-    col: [ 2, "<table><tbody></tbody><colgroup>", "</colgroup></table>" ],
-    td: [ 3, "<table><tbody><tr>", "</tr></tbody></table>" ],
+    option: [1, "<select multiple='multiple'>", '</select>'],
+    legend: [1, '<fieldset>', '</fieldset>'],
+    area:   [1, '<map>', '</map>'],
+    param:  [1, '<object>', '</object>'],
+    thead:  [1, '<table>', '</table>'],
+    tr:     [2, '<table><tbody>', '</tbody></table>'],
+    col:    [2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'],
+    td:     [3, '<table><tbody><tr>', '</tr></tbody></table>'],
 
     // IE6-8 can't serialize link, script, style, or any html5 (NoScope) tags,
     // unless wrapped in a div with non-breaking characters in front of it.
-    _default: [ 1, "<div>", "</div>"  ]
+    _default: [1, '<div>', '</div>']
   };
   wrapMap.optgroup = wrapMap.option;
-  wrapMap.tbody = wrapMap.tfoot = wrapMap.colgroup = wrapMap.caption = wrapMap.thead;
+  wrapMap.tbody = wrapMap.thead;
+  wrapMap.tfoot = wrapMap.thead;
+  wrapMap.colgroup = wrapMap.thead;
+  wrapMap.caption = wrapMap.thead;
   wrapMap.th = wrapMap.td;
   var element = document.createElement('div');
-  var match = /<\s*\w.*?>/g.exec(html);
+  var match = /<\s*(\w+).*?>/g.exec(html);
   if (match != null) {
-    var tag = match[0].replace(/</g, '').replace(/>/g, '');
-    var map = wrapMap[tag] || wrapMap._default, element;
-    html = map[1] + html + map[2];
+    var tag = match[1];
+    var map = wrapMap[tag] || wrapMap._default;
+    // eslint-disable-next-line no-param-reassign
+    html = "" + (map[1]) + html + (map[2]);
     element.innerHTML = html;
     // Descend through wrappers to the right content
-    var j = map[0]+1;
-    while(j--) {
+    var depth = map[0] + 1;
+    for (var d = 0; d < depth; d++) {
       element = element.lastChild;
     }
   } else {
@@ -293,6 +298,7 @@ function parseHtml(html) {
     element.innerHTML = html;
     element = element.lastChild;
   }
+
   return element;
 }
 
@@ -316,7 +322,7 @@ var ImgDimWarn = function ImgDimWarn() {
   this.resolve = null;
   this.reject = null;
   this.dialogElm = parseHtml(("\n      <div class=\"img-dim-warn-backdrop\">\n        <div class=\"img-dim-warn-popup\">\n          The image you selected is very large. Loading it may cause the\n          site to become very slow/unresponsive. <br/>\n          Do you still want to proceed?<br/>\n          <button type=\"button\" class=\"" + ignoreWarnBtnClass + "\">Yes, load big image</button>\n          <button type=\"button\" class=\"" + cancelLoadBtnClass + "\">Cancel</button>\n          <input type=\"checkbox\"\n            name=\"toggle-advanced-load-options\"\n            id=\"toggle-advanced-load-options\"\n            class=\"toggle-advanced-load-options\"/>\n          <label for=\"toggle-advanced-load-options\"\n            class=\"btn-toggle-advanced-load-options\"\n            title=\"Toggle advanced options\"\n          ></label>\n          <div>\n            Scale image to size before loading: <br/>\n            width: <input type=\"number\" class=\"" + scaledLoadXInputClass + "\"/><br/>\n            height: <input type=\"number\" class=\"" + scaledLoadYInputClass + "\"/><br/>\n            <button type=\"button\" class=\"" + scaledLoadBtnClass + "\">Load scaled image</button>\n          </div>\n        </div>\n      </div>\n    "));
-    
+
   var loadBtn = this.dialogElm.querySelector(("." + ignoreWarnBtnClass));
   loadBtn.addEventListener('click', function () {
     this$1.hide();
@@ -352,7 +358,7 @@ ImgDimWarn.prototype.verify = function verify (img) {
       this$1.reject = rej;
       this$1.xParticlesInput.value = "" + (img.naturalWidth);
       this$1.yParticlesInput.value = "" + (img.naturalHeight);
-        
+
       this$1.parentNode.appendChild(this$1.dialogElm);
     } else {
       res({
@@ -1238,16 +1244,15 @@ var index = function (cstr) {
     return res;
 };
 
-var config = {
-  timestamp: '2017-05-21T16:43:47.851Z',
-  git_rev: '5801552',
+var Config = {
+  timestamp:             '2017-05-23T17:55:39.925Z',
+  git_rev:               '6efef31',
   export_schema_version: 0
 };
 
 var EffectConfigDialog = function EffectConfigDialog() {
   var this$1 = this;
 
-  var parser = document.createElement('body');
   var okBtnClass = 'effect-config-dialog-ok';
   var cancelBtnClass = 'effect-config-dialog-cancel';
   var deleteBtnClass = 'effect-config-dialog-delete';
@@ -1267,7 +1272,7 @@ var EffectConfigDialog = function EffectConfigDialog() {
     evt.stopPropagation();
     this$1.hide();
     this$1.resolve({
-      config: this$1.ui.getConfig(),
+      config:  this$1.ui.getConfig(),
       timeBegin: parseInt(this$1.startTimeInput.value, 10),
       timeEnd: parseInt(this$1.endTimeInput.value, 10),
     });
@@ -1311,15 +1316,17 @@ EffectConfigDialog.prototype.promptUser = function promptUser (entry) {
  */
 var Effect = function Effect () {};
 
-Effect.insertUniforms = function insertUniforms (/* uniforms */) {
+Effect.register = function register (/* instance, uniforms, vertexShader */) {
   throw new Error('Method not implemented');
 };
-Effect.insertIntoVertexShader = function insertIntoVertexShader (/* vertexShader, state */) {
-  throw new Error('Method not implemented');
-};
+
 Effect.getId = function getId () {
   // Static + this = JS <3
   return this.name;
+};
+
+Effect.getDisplayName = function getDisplayName () {
+  throw new Error('Method not implemented');
 };
 
 Effect.getConfigUI = function getConfigUI () {
@@ -1338,14 +1345,17 @@ var ConfigUI = function ConfigUI () {};
 ConfigUI.prototype.getElement = function getElement () {
   throw new Error('Method not implemented');
 };
+// eslint-disable-next-line class-methods-use-this
 ConfigUI.prototype.getConfig = function getConfig () {
   throw new Error('Method not implemented');
 };
+// eslint-disable-next-line class-methods-use-this
 ConfigUI.prototype.applyConfig = function applyConfig (/* config */) {
   throw new Error('Method not implemented');
 };
 
-ConfigUI.prototype.notifyStateChange = function notifyStateChange () {
+// eslint-disable-next-line class-methods-use-this
+ConfigUI.prototype.notifyChange = function notifyChange () {
   // TODO
 };
 
@@ -1357,6 +1367,7 @@ var HueDisplaceConfigUI = (function (ConfigUI$$1) {
   function HueDisplaceConfigUI() {
     var this$1 = this;
 
+    ConfigUI$$1.call(this);
     this.element = parseHtml("\n      <fieldset>\n        <legend>Displace by hue</legend>\n        <label>\n          Distance:\n          <input type=\"number\" class=\"effect-hue-displace-distance\" value=\"10\" />\n        </label><br/>\n        <label>\n          Period:\n          <input type=\"number\" class=\"effect-hue-displace-period\" value=\"3000\" />ms\n        </label><br/>\n        <label>\n          Scale by brightness:\n          <input type=\"number\" class=\"effect-hue-displace-scale-by-value\" value=\"0\" />%\n        </label><br/>\n        <label>\n          Random direction offset:\n          <input type=\"checkbox\" class=\"effect-hue-displace-random-direction-offset\"/>\n        </label><br/>\n        <label>\n          Rotate:\n          <input type=\"number\" class=\"effect-hue-displace-rotate\" value=\"0\" />%\n        </label>\n      </fieldset>\n    ");
     var ui = this.element;
     this.distanceInput = ui.querySelector('input.effect-hue-displace-distance');
@@ -1366,19 +1377,19 @@ var HueDisplaceConfigUI = (function (ConfigUI$$1) {
     this.rotateInput = ui.querySelector('input.effect-hue-displace-rotate');
 
     this.distanceInput.addEventListener('change', function () {
-      this$1.notifyStateChange();
+      this$1.notifyChange();
     });
     this.periodInput.addEventListener('change', function () {
-      this$1.notifyStateChange();
+      this$1.notifyChange();
     });
     this.scaleByValInput.addEventListener('change', function () {
-      this$1.notifyStateChange();
+      this$1.notifyChange();
     });
     this.randomOffsetInput.addEventListener('change', function () {
-      this$1.notifyStateChange();
+      this$1.notifyChange();
     });
     this.rotateInput.addEventListener('change', function () {
-      this$1.notifyStateChange();
+      this$1.notifyChange();
     });
   }
 
@@ -1391,26 +1402,22 @@ var HueDisplaceConfigUI = (function (ConfigUI$$1) {
   };
 
   HueDisplaceConfigUI.prototype.getConfig = function getConfig () {
-    var state = {};
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceDistance = parseInt(this.distanceInput.value, 10) / 100;
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplacePeriod = parseInt(this.periodInput.value, 10) / 1000;
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceScaleByValue = parseInt(this.scaleByValInput.value, 10) / 100;
-    // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceRandomDirectionOffset = this.randomOffsetInput.checked;
-     // eslint-disable-next-line no-param-reassign
-    state.hueDisplaceRotate = parseInt(this.rotateInput.value, 10) / 100;
-    return state;
+    var config = {};
+    config.distance = parseInt(this.distanceInput.value, 10) / 100;
+    config.period = parseInt(this.periodInput.value, 10) / 1000;
+    config.scaleByValue = parseInt(this.scaleByValInput.value, 10) / 100;
+    config.randomDirectionOffset = this.randomOffsetInput.checked;
+    config.rotate = parseInt(this.rotateInput.value, 10) / 100;
+
+    return config;
   };
 
   HueDisplaceConfigUI.prototype.applyConfig = function applyConfig (config) {
-    this.distanceInput.value = config.hueDisplaceDistance * 100;
-    this.periodInput.value = config.hueDisplacePeriod * 1000;
-    this.scaleByValInput.value = config.hueDisplaceScaleByValue * 100;
-    this.randomOffsetInput.checked = state.hueDisplaceRandomDirectionOffset;
-    this.rotateInput.value = state.hueDisplaceRotate * 100;
+    this.distanceInput.value = config.distance * 100;
+    this.periodInput.value = config.period * 1000;
+    this.scaleByValInput.value = config.scaleByValue * 100;
+    this.randomOffsetInput.checked = config.randomDirectionOffset;
+    this.rotateInput.value = config.rotate * 100;
   };
 
   return HueDisplaceConfigUI;
@@ -1425,54 +1432,51 @@ var HueDisplaceEffect = (function (Effect$$1) {
   HueDisplaceEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
   HueDisplaceEffect.prototype.constructor = HueDisplaceEffect;
 
-  HueDisplaceEffect.insertIntoVertexShader = function insertIntoVertexShader (vertexShader, instance) {
-    if (instance.config.hueDisplaceDistance !== 0) {
-      vertexShader.uniforms += "\n        uniform float hueDisplaceDistance;\n        uniform float hueDisplaceTime;\n        uniform float hueDisplaceDirectionOffset;\n        uniform float hueDisplaceScaleByValue;\n      ";
-      vertexShader.mainBody += "\n        {\n          float angle = hsv[0] + hueDisplaceDirectionOffset;\n          float offset = (-cos(hueDisplaceTime) + 1.) / 2.;\n          position.xy += offset * getDirectionVector(angle) * hueDisplaceDistance * (1. - hueDisplaceScaleByValue * (1. - hsv[2]));\n        }\n      ";
+  HueDisplaceEffect.register = function register (instance, uniforms, vertexShader) {
+    if (instance.config.distance !== 0) {
+      var distance = uniforms.addUniform('hueDisplaceDistance', 'float', function () { return instance.config.distance; });
+      var time = uniforms.addUniform('hueDisplaceTime', 'float', function (ctx) { return fract(ctx.time / instance.config.period) * 2 * Math.PI; });
+      var directionOffset = uniforms.addUniform('hueDisplaceDirectionOffset', 'float', function (ctx, props) {
+        var result = instance.config.rotate *
+          fract(ctx.time / instance.config.period) * 2 * Math.PI;
+        if (instance.config.randomDirectionOffset) {
+          if (instance.config.randomDirectionOffsetValue === undefined
+            || Math.floor(props.oldTime / instance.config.period)
+            !== Math.floor(props.currentTime / instance.config.period)
+          ) {
+            // eslint-disable-next-line no-param-reassign
+            instance.config.randomDirectionOffsetValue = Math.random() * 2 * Math.PI;
+          }
+          result += instance.config.randomDirectionOffsetValue;
+        }
+
+        return result;
+      });
+      var scaleByVal = uniforms.addUniform('hueDisplaceScaleByValue', 'float', function () { return instance.config.scaleByValue; });
+      // eslint-disable-next-line no-param-reassign
+      vertexShader.mainBody += "\n        {\n          float angle = hsv[0] + " + directionOffset + ";\n          float offset = (-cos(" + time + ") + 1.) / 2.;\n          position.xy += offset * getDirectionVector(angle) * " + distance + " * (1. - " + scaleByVal + " * (1. - hsv[2]));\n        }\n      ";
     }
   };
 
-  HueDisplaceEffect.insertUniforms = function insertUniforms (uniforms, instance) {
-    uniforms.hueDisplaceDistance = function () {
-      return instance.config.hueDisplaceDistance;
-    };
-    uniforms.hueDisplaceTime = function (ctx) {
-      return fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
-    };
-    uniforms.hueDisplaceDirectionOffset = function (ctx, props) {
-      var result = instance.config.hueDisplaceRotate * fract(ctx.time / instance.config.hueDisplacePeriod) * 2 * Math.PI;
-      if (instance.config.hueDisplaceRandomDirectionOffset) {
-        // TODO It's really ugly that this effect writes into the global state
-        if (instance.config.hueDisplaceRandomDirectionOffsetValue === undefined
-          || Math.floor(props.oldTime / instance.config.hueDisplacePeriod)
-          !== Math.floor(props.currentTime / instance.config.hueDisplacePeriod)
-        ) {
-          instance.config.hueDisplaceRandomDirectionOffsetValue = Math.random() * 2 * Math.PI;
-        }
-        result += instance.config.hueDisplaceRandomDirectionOffsetValue;
-      }
-
-      return result;
-    };
-    uniforms.hueDisplaceScaleByValue = function () {
-      return instance.config.hueDisplaceScaleByValue;
-    };
+  HueDisplaceEffect.getDisplayName = function getDisplayName () {
+    return 'Hue Displace';
   };
 
   HueDisplaceEffect.getConfigUI = function getConfigUI () {
     if (!this._configUI) {
       this._configUI = new HueDisplaceConfigUI();
     }
+
     return this._configUI;
   };
 
   HueDisplaceEffect.getDefaultConfig = function getDefaultConfig () {
     return {
-      hueDisplaceDistance: 0.1,
-      hueDisplacePeriod: 3,
-      hueDisplaceScaleByValue: 0,
-      hueDisplaceRandomDirectionOffset: false,
-      hueDisplaceRotate: 0
+      distance:              0.1,
+      period:                3,
+      scaleByValue:          0,
+      randomDirectionOffset: false,
+      rotate:                0
     };
   };
 
@@ -1484,25 +1488,20 @@ var ConvergeConfigUI = (function (ConfigUI$$1) {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
-    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge</legend>\n        <label>\n          Enable:\n          <input type=\"checkbox\" class=\"effect-converge-enable\"/>\n        </label><br/>\n        <label>\n          Speed:\n          <input type=\"number\" class=\"effect-converge-speed\" value=\"100\" />\n        </label><br/>\n        <label>\n          Rotation speed:\n          <input type=\"number\" class=\"effect-converge-rotation-speed\" value=\"100\" />\n        </label><br/>\n        <label>\n          Attractor:\n          <select class=\"effect-converge-target\">\n            <option value=\"center\" selected>center</option>\n            <option value=\"color wheel\">wheel</option>\n          </select>\n        </label>\n      </fieldset>\n    ");
+    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge</legend>\n        <label>\n          Speed:\n          <input type=\"number\" class=\"effect-converge-speed\" value=\"100\" />\n        </label><br/>\n        <label>\n          Rotation speed:\n          <input type=\"number\" class=\"effect-converge-rotation-speed\" value=\"100\" />\n        </label><br/>\n        <label>\n          Attractor:\n          <select class=\"effect-converge-target\">\n            <option value=\"center\" selected>center</option>\n            <option value=\"color wheel\">wheel</option>\n          </select>\n        </label>\n      </fieldset>\n    ");
     var ui = this.element;
-    
+
     this.targetSelect = ui.querySelector('select.effect-converge-target');
     this.rotationSpeedInput = ui.querySelector('input.effect-converge-rotation-speed');
     this.speedInput = ui.querySelector('input.effect-converge-speed');
-    this.enableInput = ui.querySelector('input.effect-converge-enable');
-
-    this.enableInput.addEventListener('change', function () {
-      this$1.notifyStateChange();
-    });
     this.speedInput.addEventListener('change', function () {
-      this$1.notifyStateChange();
+      this$1.notifyChange();
     });
     this.rotationSpeedInput.addEventListener('change', function () {
-      this$1.notifyStateChange();
+      this$1.notifyChange();
     });
     this.targetSelect.addEventListener('change', function () {
-      this$1.notifyStateChange();
+      this$1.notifyChange();
     });
   }
 
@@ -1515,19 +1514,18 @@ var ConvergeConfigUI = (function (ConfigUI$$1) {
   };
 
   ConvergeConfigUI.prototype.getConfig = function getConfig () {
-    var state = {};
-    state.convergeTarget = this.targetSelect.value;
-    state.convergeRotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
-    state.convergeSpeed = parseInt(this.speedInput.value, 10) / 1000;
-    state.convergeEnable = this.enableInput.checked;
-    return state;
+    var config = {};
+    config.target = this.targetSelect.value;
+    config.rotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
+    config.speed = parseInt(this.speedInput.value, 10) / 1000;
+
+    return config;
   };
 
   ConvergeConfigUI.prototype.applyConfig = function applyConfig (config) {
-    this.targetSelect.value = config.convergeTarget;
-    this.rotationSpeedInput.checked = config.convergeRotationSpeed * 100;
-    this.speedInput.checked = config.convergeSpeed * 1000;
-    this.enableInput.checked = config.convergeEnable;
+    this.targetSelect.value = config.target;
+    this.rotationSpeedInput.checked = config.rotationSpeed * 100;
+    this.speedInput.checked = config.speed * 1000;
   };
 
   return ConvergeConfigUI;
@@ -1542,42 +1540,42 @@ var ConvergeEffect = (function (Effect$$1) {
   ConvergeEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
   ConvergeEffect.prototype.constructor = ConvergeEffect;
 
-  ConvergeEffect.insertIntoVertexShader = function insertIntoVertexShader (vertexShader, instance) {
-    if (instance.config.convergeEnable) {
-      vertexShader.uniforms += "\n        uniform float convergeTime;\n        uniform float convergeSpeed;\n        uniform float convergeRotationSpeed;\n        uniform float convergeMaxTravelTime;\n      ";
-      vertexShader.mainBody += "\n        {\n          vec2 screenTarget = " + { "center": "vec2(0., 0.)", "color wheel": "getDirectionVector(hsv[0] + convergeTime * convergeRotationSpeed) * vec2(.8) * vec2(invScreenAspectRatio, 1.)" }[instance.config.convergeTarget] + ";\n          vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n          vec2 d = target - initialPosition.xy;\n          float d_len = length(d);\n          \n          float stop_t = sqrt(2. * d_len / convergeSpeed);\n\n          if(convergeTime < stop_t) {\n            float t = min(convergeTime, stop_t);\n            position.xy += .5 * d / d_len * convergeSpeed * t * t;\n          } else if(convergeTime < convergeMaxTravelTime) {\n            position.xy += d;\n          } else {\n            float t = convergeTime - convergeMaxTravelTime;\n            //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n            //position.xy += mix(d, vec2(0.), t * t);\n            position.xy += mix(d, vec2(0.), -cos(t / convergeMaxTravelTime * PI) * .5 + .5);\n          }\n        }\n      ";
-    }
+  ConvergeEffect.register = function register (instance, uniforms, vertexShader) {
+    var time = uniforms.addUniform('convergeTime', 'float', function (ctx) {
+      var period = 2 * Math.sqrt(2 / instance.config.speed);
+
+      return fract(ctx.time / period) * period;
+    });
+    var speed = uniforms.addUniform('convergeSpeed', 'float', function () { return instance.config.speed; });
+    var rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', function () { return instance.config.rotationSpeed; });
+    var maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', function () { return Math.sqrt(2 / instance.config.speed); });
+
+    var targets = {
+      center:        'vec2(0., 0.)',
+      'color wheel': ("getDirectionVector(hsv[0] + " + time + " * " + rotationSpeed + ") * vec2(.8) * vec2(invScreenAspectRatio, 1.)")
+    };
+
+    // eslint-disable-next-line no-param-reassign
+    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = " + (targets[instance.config.target]) + ";\n        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n        \n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          position.xy += .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          position.xy += d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n          //position.xy += mix(d, vec2(0.), t * t);\n          position.xy += mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n      }\n    ";
   };
 
-  ConvergeEffect.insertUniforms = function insertUniforms (uniforms, instance) {
-    uniforms.convergeTime = function (ctx) {
-      var period = 2 * Math.sqrt(2 / instance.config.convergeSpeed);
-      return fract(ctx.time / period) * period;
-    };
-    uniforms.convergeSpeed = function () {
-      return instance.config.convergeSpeed;
-    };
-    uniforms.convergeRotationSpeed = function () {
-      return instance.config.convergeRotationSpeed;
-    };
-    uniforms.convergeMaxTravelTime = function () {
-      return Math.sqrt(2 / instance.config.convergeSpeed);
-    };
+  ConvergeEffect.getDisplayName = function getDisplayName () {
+    return 'Converge';
   };
 
   ConvergeEffect.getConfigUI = function getConfigUI () {
     if (!this._configUI) {
       this._configUI = new ConvergeConfigUI();
     }
+
     return this._configUI;
   };
 
   ConvergeEffect.getDefaultConfig = function getDefaultConfig () {
     return {
-      convergeTarget: 'center',
-      convergeRotationSpeed: 0,
-      convergeSpeed: 0.1,
-      convergeEnable: false
+      target:        'center',
+      rotationSpeed: 0,
+      speed:         0.1,
     };
   };
 
@@ -1602,12 +1600,13 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
   this.effect = effect;
   this.timeline = timeline;
 
-  this.element = parseHtml(("\n      <button type=\"button\">" + (this.effect.getId()) + "</button>\n    "));
+  this.element = parseHtml(("\n      <button type=\"button\">" + (this.effect.getDisplayName()) + "</button>\n    "));
   this.element.addEventListener('click', function () {
     this$1.timeline.effectConfigDialog.promptUser(this$1)
     .then(
       function (newState) {
         this$1.loadState(newState);
+        this$1.timeline.renderStyles();
         this$1.timeline.notifyChange();
       },
       function (deleted) {
@@ -1633,16 +1632,40 @@ TimelineEntry.prototype.getConfiguration = function getConfiguration () {
   return [this.effect.getId(), {
     timeBegin: this.timeBegin,
     timeEnd: this.timeEnd,
-    config: this.config
+    config:  this.config
   }];
 };
 
-var TimelineTrack = function TimelineTrack(trackNumber) {
+var TimelineTrack = function TimelineTrack(trackNumber, timeline) {
+  var this$1 = this;
+
   this.elements = [];
+  this.timeline = timeline;
   this.elements.push(parseHtml(("\n      <td>\n        <h3>Track " + trackNumber + "</h3>\n      </td>\n    ")));
-  this.elements.push(parseHtml("\n      <td>\n        <ol>\n        </ol>\n      </td>\n    "));
+  this.elements.push(parseHtml("\n      <td width=\"99%\">\n        <ol>\n        </ol>\n      </td>\n    "));
   this.entryListElm = this.elements[1].querySelector('ol');
   this.entryList = [];
+  this.entryListElm.addEventListener('drop', function (evt) {
+    [].map.call(evt.dataTransfer.items, function (item) {
+      if (item.kind === 'string' && item.type === 'text/plain') {
+        evt.preventDefault(); // TODO re-trigger evt if we don't accept it below
+        item.getAsString(function (str) {
+          if (byId[str] !== undefined) {
+            var entry = new TimelineEntry(byId[str], this$1.timeline);
+            entry.loadState({
+              timeBegin: 0, // TODO magic numbers, retrieve from drop position instead
+              timeEnd: 1000, // or the place where css will put the box
+              config:  byId[str].getDefaultConfig()
+            });
+            this$1.addEntry(entry);
+            this$1.renderHtml();
+            this$1.renderStyles(this$1.pxPerSecond);
+            this$1.timeline.notifyChange();
+          }
+        });
+      }
+    });
+  });
 };
 
 TimelineTrack.prototype.addEntry = function addEntry (entry) {
@@ -1670,11 +1693,12 @@ TimelineTrack.prototype.renderHtml = function renderHtml () {
 TimelineTrack.prototype.renderStyles = function renderStyles (pxPerSecond) {
     var this$1 = this;
 
+  this.pxPerSecond = pxPerSecond;
   for (var i = 0; i < this.entryList.length; i++) {
     var entry = this$1.entryList[i];
     var li = entry.getElement().parentNode;
-    li.style.left = (entry.timeBegin / 1000 * pxPerSecond) + "px";
-    li.style.width = ((entry.timeEnd - entry.timeBegin) / 1000 * pxPerSecond) + "px";
+    li.style.left = ((entry.timeBegin / 1000) * pxPerSecond) + "px";
+    li.style.width = (((entry.timeEnd - entry.timeBegin) / 1000) * pxPerSecond) + "px";
   }
 };
 
@@ -1691,7 +1715,7 @@ Timeline.prototype.loadTimeline = function loadTimeline (trackList) {
 
   this.trackList = [];
   for (var i = 0; i < trackList.length; i++) {
-    var track = new TimelineTrack(i + 1);
+    var track = new TimelineTrack(i + 1, this$1);
     this$1.trackList.push(track);
     for (var j = 0; j < trackList[i].length; j++) {
       var entryDesc = trackList[i][j];
@@ -1751,10 +1775,33 @@ Timeline.prototype.getEffects = function getEffects () {
       track.push(this$1.trackList[i].entryList[j].getConfiguration());
     }
   }
+
   return configs;
 };
+Timeline.prototype.assertEmptyLastTrack = function assertEmptyLastTrack () {
+  var changed = false;
+  var tracks = this.trackList;
+  while (tracks.length > 1 &&
+         tracks[tracks.length - 1].entryList.length === 0 &&
+         tracks[tracks.length - 2].entryList.length === 0
+  ) {
+    tracks.splice(tracks.length - 1, 1);
+    changed = true;
+  }
+  if (tracks[tracks.length - 1].entryList.length !== 0) {
+    var track = new TimelineTrack(tracks.length + 1, this);
+    tracks.push(track);
+    changed = true;
+  }
+  if (changed) {
+    // TODO probably inefficient
+    this.renderHtml();
+    this.renderStyles();
+  }
+};
 Timeline.prototype.notifyChange = function notifyChange () {
-  this.menu.notifyStateChange();
+  this.assertEmptyLastTrack();
+  this.menu.notifyChange();
 };
 Timeline.prototype.deleteEntry = function deleteEntry (remove) {
   this.forEachEntry(function (entry, track, trackIndex) {
@@ -1773,11 +1820,11 @@ var Control = function Control(menu) {
   this.menu = menu;
 };
 // eslint-disable-next-line class-methods-use-this
-Control.prototype.updateState = function updateState (/* state */) {
+Control.prototype.updateConfig = function updateConfig (/* config */) {
   throw new Error('Method not implemented');
 };
 // eslint-disable-next-line class-methods-use-this
-Control.prototype.applyState = function applyState (/* state */) {
+Control.prototype.applyConfig = function applyConfig (/* config */) {
   throw new Error('Method not implemented');
 };
 
@@ -1793,7 +1840,7 @@ var BgColorPicker = (function (Control) {
     this.input = this.elm.querySelector('input[type="color"]');
 
     this.input.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
+      this$1.menu.notifyChange();
     });
   }
 
@@ -1801,14 +1848,14 @@ var BgColorPicker = (function (Control) {
   BgColorPicker.prototype = Object.create( Control && Control.prototype );
   BgColorPicker.prototype.constructor = BgColorPicker;
 
-  BgColorPicker.prototype.updateState = function updateState (state) {
+  BgColorPicker.prototype.updateConfig = function updateConfig (config) {
     // eslint-disable-next-line no-param-reassign
-    state.backgroundColor = index(this.input.value)
+    config.backgroundColor = index(this.input.value)
       .rgba.map(function (val, i) { return (i === 3 ? val : val / 256); });
   };
 
-  BgColorPicker.prototype.applyState = function applyState (state) {
-    var ref = state.backgroundColor.map(function (val, i) { return (i === 3 ? val : val * 256); });
+  BgColorPicker.prototype.applyConfig = function applyConfig (config) {
+    var ref = config.backgroundColor.map(function (val, i) { return (i === 3 ? val : val * 256); });
     var r = ref[0];
     var g = ref[1];
     var b = ref[2];
@@ -1831,10 +1878,10 @@ var ParticleCountControl = (function (Control) {
     this.yInput = document.getElementById('menu-particles-y');
 
     this.xInput.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
+      this$1.menu.notifyChange();
     });
     this.yInput.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
+      this$1.menu.notifyChange();
     });
   }
 
@@ -1842,16 +1889,16 @@ var ParticleCountControl = (function (Control) {
   ParticleCountControl.prototype = Object.create( Control && Control.prototype );
   ParticleCountControl.prototype.constructor = ParticleCountControl;
 
-  ParticleCountControl.prototype.updateState = function updateState (state) {
+  ParticleCountControl.prototype.updateConfig = function updateConfig (config) {
     // eslint-disable-next-line no-param-reassign
-    state.xParticlesCount = parseInt(this.xInput.value, 10);
+    config.xParticlesCount = parseInt(this.xInput.value, 10);
     // eslint-disable-next-line no-param-reassign
-    state.yParticlesCount = parseInt(this.yInput.value, 10);
+    config.yParticlesCount = parseInt(this.yInput.value, 10);
   };
 
-  ParticleCountControl.prototype.applyState = function applyState (state) {
-    this.xInput.value = state.xParticlesCount;
-    this.yInput.value = state.yParticlesCount;
+  ParticleCountControl.prototype.applyConfig = function applyConfig (config) {
+    this.xInput.value = config.xParticlesCount;
+    this.yInput.value = config.yParticlesCount;
   };
 
   return ParticleCountControl;
@@ -1869,7 +1916,7 @@ var ParticleScalingControl = (function (Control) {
     this.input = this.elm.querySelector('input[type="number"]');
 
     this.input.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
+      this$1.menu.notifyChange();
     });
   }
 
@@ -1877,13 +1924,13 @@ var ParticleScalingControl = (function (Control) {
   ParticleScalingControl.prototype = Object.create( Control && Control.prototype );
   ParticleScalingControl.prototype.constructor = ParticleScalingControl;
 
-  ParticleScalingControl.prototype.updateState = function updateState (state) {
+  ParticleScalingControl.prototype.updateConfig = function updateConfig (config) {
     // eslint-disable-next-line no-param-reassign
-    state.particleScaling = parseInt(this.input.value, 10) / 100;
+    config.particleScaling = parseInt(this.input.value, 10) / 100;
   };
 
-  ParticleScalingControl.prototype.applyState = function applyState (state) {
-    this.input.value = state.particleScaling * 100;
+  ParticleScalingControl.prototype.applyConfig = function applyConfig (config) {
+    this.input.value = config.particleScaling * 100;
   };
 
   return ParticleScalingControl;
@@ -1901,7 +1948,7 @@ var ParticleOverlapControl = (function (Control) {
     this.select = this.elm.querySelector('select');
 
     this.select.addEventListener('change', function () {
-      this$1.menu.notifyStateChange();
+      this$1.menu.notifyChange();
     });
   }
 
@@ -1909,13 +1956,13 @@ var ParticleOverlapControl = (function (Control) {
   ParticleOverlapControl.prototype = Object.create( Control && Control.prototype );
   ParticleOverlapControl.prototype.constructor = ParticleOverlapControl;
 
-  ParticleOverlapControl.prototype.updateState = function updateState (state) {
+  ParticleOverlapControl.prototype.updateConfig = function updateConfig (config) {
     // eslint-disable-next-line no-param-reassign
-    state.particleOverlap = this.select.value;
+    config.particleOverlap = this.select.value;
   };
 
-  ParticleOverlapControl.prototype.applyState = function applyState (state) {
-    this.select.value = state.particleOverlap;
+  ParticleOverlapControl.prototype.applyConfig = function applyConfig (config) {
+    this.select.value = config.particleOverlap;
   };
 
   return ParticleOverlapControl;
@@ -1932,8 +1979,8 @@ var ExportAppstateButton = (function (Control) {
     this.elm = document.getElementById('menu-btn-exportstate');
     this.elm.addEventListener('click', function () {
       var toExport = Object.assign({
-        schemaVersion: config.export_schema_version
-      }, this$1.menu.submittedState);
+        schemaVersion: Config.export_schema_version
+      }, this$1.menu.submittedConfig);
       ExportAppstateButton.saveJson('particles.json', JSON.stringify(toExport, null, 2));
     });
   }
@@ -1955,9 +2002,9 @@ var ExportAppstateButton = (function (Control) {
     }
   };
   // eslint-disable-next-line class-methods-use-this
-  ExportAppstateButton.prototype.updateState = function updateState (/* state */) {};
+  ExportAppstateButton.prototype.updateConfig = function updateConfig (/* config */) {};
   // eslint-disable-next-line class-methods-use-this
-  ExportAppstateButton.prototype.applyState = function applyState (/* state */) {};
+  ExportAppstateButton.prototype.applyConfig = function applyConfig (/* config */) {};
 
   return ExportAppstateButton;
 }(Control));
@@ -1992,7 +2039,7 @@ var ImportAppstateButton = (function (Control) {
 
           return;
         }
-        this$1.menu.applyState(json);
+        this$1.menu.applyConfig(json);
         this$1.menu.submit();
         this$1.input.value = null;
       };
@@ -2004,9 +2051,9 @@ var ImportAppstateButton = (function (Control) {
   ImportAppstateButton.prototype = Object.create( Control && Control.prototype );
   ImportAppstateButton.prototype.constructor = ImportAppstateButton;
   // eslint-disable-next-line class-methods-use-this
-  ImportAppstateButton.prototype.updateState = function updateState (/* state */) {};
+  ImportAppstateButton.prototype.updateConfig = function updateConfig (/* config */) {};
   // eslint-disable-next-line class-methods-use-this
-  ImportAppstateButton.prototype.applyState = function applyState (/* state */) {};
+  ImportAppstateButton.prototype.applyConfig = function applyConfig (/* config */) {};
 
   return ImportAppstateButton;
 }(Control));
@@ -2021,7 +2068,7 @@ var ResetAppstateButton = (function (Control) {
     Control.call(this, menu);
     this.elm = document.getElementById('menu-btn-resetstate');
     this.elm.addEventListener('click', function () {
-      this$1.menu.applyState(this$1.menu.defaultState);
+      this$1.menu.applyConfig(this$1.menu.defaultConfig);
       this$1.menu.submit();
     });
   }
@@ -2030,9 +2077,9 @@ var ResetAppstateButton = (function (Control) {
   ResetAppstateButton.prototype = Object.create( Control && Control.prototype );
   ResetAppstateButton.prototype.constructor = ResetAppstateButton;
   // eslint-disable-next-line class-methods-use-this
-  ResetAppstateButton.prototype.updateState = function updateState (/* state */) {};
+  ResetAppstateButton.prototype.updateConfig = function updateConfig (/* config */) {};
   // eslint-disable-next-line class-methods-use-this
-  ResetAppstateButton.prototype.applyState = function applyState (/* state */) {};
+  ResetAppstateButton.prototype.applyConfig = function applyConfig (/* config */) {};
 
   return ResetAppstateButton;
 }(Control));
@@ -2048,12 +2095,12 @@ var MainMenu = function MainMenu() {
   this.menu = document.getElementById('menu-container');
   this.timeline = new Timeline(this);
   this.menuContent = this.menu.querySelector('.menu-content');
-  this.effectList = this.menu.querySelector('#menu-effect-list');
+  this.effectList = this.menu.querySelector('.menu-effect-list');
   this.toggle = document.getElementById('toggle-menu-visible');
   this.applyBtn = document.getElementById('menu-btn-apply');
   this.controls = [];
   this.changeListeners = [];
-  this.submittedState = null; // defaults will be read later
+  this.submittedConfig = null; // defaults will be read later
 
   var menu = this.menu;
   var toggle = this.toggle;
@@ -2080,52 +2127,65 @@ var MainMenu = function MainMenu() {
   }
 
   var effectListElms = document.createDocumentFragment();
-  for (var effect in effectList) {
-    var elm = parseHtml(("\n        <li draggable=\"true\">" + (effectList[effect].getId()) + "</li>\n      "));
+  var loop = function ( i ) {
+    var elm = parseHtml(("\n        <li draggable=\"true\">" + (effectList[i].getDisplayName()) + "</li>\n      "));
+    elm.addEventListener('dragstart', function (evt) {
+      evt.dataTransfer.setData('text/plain', effectList[i].getId());
+    });
     effectListElms.appendChild(elm);
-  }
+  };
+
+  for (var i$1 = 0; i$1 < effectList.length; i$1++) loop( i$1 );
   this.effectList.appendChild(effectListElms);
 
   this.timeline.loadTimeline([
-    [[effectList[0].getId(), { timeBegin: 0, timeEnd: 10000, config: effectList[0].getDefaultConfig() }]],
-    [[effectList[1].getId(), { timeBegin: 0, timeEnd: 10000, config: effectList[1].getDefaultConfig() }]],
+    [[effectList[0].getId(), {
+      timeBegin: 0,
+      timeEnd: 10000,
+      config:  effectList[0].getDefaultConfig()
+    }]],
+    [[effectList[1].getId(), {
+      timeBegin: 0,
+      timeEnd: 10000,
+      config:  effectList[1].getDefaultConfig()
+    }]],
     []
   ]);
 
-  this.defaultState = this.readState();
-  this.submittedState = this.defaultState;
+  this.defaultConfig = this.readConfig();
+  this.submittedConfig = this.defaultConfig;
 };
 
-MainMenu.prototype.applyState = function applyState (state) {
+MainMenu.prototype.applyConfig = function applyConfig (config) {
     var this$1 = this;
 
   for (var i = 0; i < this.controls.length; i++) {
-    this$1.controls[i].applyState(state);
+    this$1.controls[i].applyConfig(config);
   }
-  this.timeline.loadTimeline(state.effects);
+  this.timeline.loadTimeline(config.effects);
 };
 
-MainMenu.prototype.readState = function readState () {
+MainMenu.prototype.readConfig = function readConfig () {
     var this$1 = this;
 
-  var config$$1 = {};
+  var config = {};
   for (var i = 0; i < this.controls.length; i++) {
-    this$1.controls[i].updateState(config$$1);
+    this$1.controls[i].updateConfig(config);
   }
-  config$$1.effects = this.timeline.getEffects();
+  config.effects = this.timeline.getEffects();
 
-  return config$$1;
+  return config;
 };
 
 MainMenu.prototype.submit = function submit () {
     var this$1 = this;
 
   this.applyBtn.disabled = true;
-  var state = this.readState();
+  var config = this.readConfig();
   for (var i = 0; i < this.changeListeners.length; i++) {
-    this$1.changeListeners[i](state);
+    this$1.changeListeners[i](config);
   }
-  this.submittedState = state;
+  this.submittedConfig = config;
 };
 
 MainMenu.prototype.addControl = function addControl (CtrlClass) {
@@ -2144,7 +2204,7 @@ MainMenu.prototype.isCoverFullWidth = function isCoverFullWidth () {
   return parseInt(menuWidth, 10) === window.innerWidth;
 };
 
-MainMenu.prototype.notifyStateChange = function notifyStateChange () {
+MainMenu.prototype.notifyChange = function notifyChange () {
   this.applyBtn.disabled = false;
 };
 
@@ -11685,16 +11745,43 @@ Shader.prototype.compile = function compile () {
   return ("\n      precision highp float;\n    \n      // Attributes\n      " + (this.attributes) + "\n\n      // Uniforms\n      " + (this.uniforms) + "\n\n      // Varyings\n      " + (this.varyings) + "\n\n      // Globals\n      " + (this.globals) + "\n\n      // Functions\n      " + (this.functions) + "\n\n      void main() {\n        " + (this.mainBody) + "\n      }\n    ");
 };
 
-var CommandBuilder = function CommandBuilder () {};
-
-CommandBuilder.prototype.rebuildCommand = function rebuildCommand (particleData, state) {
-  this.state = state;
-  this.particleData = particleData;
-  return this.assembleCommand();
+var Uniforms = function Uniforms(id) {
+  this.uniforms = [];
+  this.id = id;
 };
-CommandBuilder.prototype.assembleVertexShader = function assembleVertexShader () {
+Uniforms.prototype.addUniform = function addUniform (name, type, value) {
+  var uniform = { name: name, type: type, value: value };
+  this.uniforms.push(uniform);
+
+  return this.getNameFor(uniform);
+};
+Uniforms.prototype.getNameFor = function getNameFor (uniform) {
+  return ((uniform.name) + "_" + (this.id));
+};
+Uniforms.prototype.compile = function compile (shader, uniforms) {
     var this$1 = this;
 
+  var shaderStr = [];
+  for (var i = 0; i < this.uniforms.length; i++) {
+    var uniform = this$1.uniforms[i];
+    shaderStr.push(("uniform " + (uniform.type) + " " + (this$1.getNameFor(uniform)) + ";"));
+    // eslint-disable-next-line no-param-reassign
+    uniforms[this$1.getNameFor(uniform)] = uniform.value;
+  }
+  // eslint-disable-next-line no-param-reassign
+  shader.uniforms += shaderStr.join('\n');
+};
+
+var CommandBuilder = function CommandBuilder () {};
+
+CommandBuilder.prototype.buildCommand = function buildCommand (particleData, config) {
+  this.config = config;
+  this.particleData = particleData;
+
+  return this.assembleCommand();
+};
+
+CommandBuilder.prepareVertexShader = function prepareVertexShader () {
   var vertexShader = new Shader();
 
   vertexShader.attributes += "\n      attribute vec2 texcoord;\n      attribute vec3 rgb;\n      attribute vec3 hsv;\n    ";
@@ -11704,20 +11791,8 @@ CommandBuilder.prototype.assembleVertexShader = function assembleVertexShader ()
   // TODO make functions a dict (= set) so that users can add them on
   // demand without defining them more than once
   vertexShader.functions += "\n      vec2 getDirectionVector(float angle) {\n        return vec2(cos(angle), sin(angle));\n      }\n    ";
-  vertexShader.mainBody += "\n      vec3 initialPosition = vec3(texcoord, 0);\n      initialPosition.y *= invImageAspectRatio;\n      \n      vec3 position = initialPosition;\n    ";
-  for (var i = 0; i < this.state.effects.length; i++) {
-    var track = this$1.state.effects[i];
-    for (var j = 0; j < track.length; j++) {
-      var effectId = track[j][0];
-      var effectConfig = track[j][1];
-      var effectClass = byId[effectId];
-      effectClass.insertIntoVertexShader(vertexShader, effectConfig);
-    }
-  }
 
-  vertexShader.mainBody += "\n      color = rgb;\n      gl_PointSize = max(particleSize, 0.);\n      gl_Position = viewProjectionMatrix * vec4(position, 1.);\n    ";
-
-  return vertexShader.compile();
+  return vertexShader;
 };
 
 CommandBuilder.prototype.assembleFragmentShader = function assembleFragmentShader () {
@@ -11725,11 +11800,11 @@ CommandBuilder.prototype.assembleFragmentShader = function assembleFragmentShade
   fragmentShader.varyings += 'varying vec3 color;\n';
   fragmentShader.mainBody += "\n      float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    ";
   var colorAssign = {
-    'add':       'gl_FragColor = vec4(color * v, 1);\n',
+    add:         'gl_FragColor = vec4(color * v, 1);\n',
     'alpha blend': 'gl_FragColor = vec4(color, v);\n'
-  }[this.state.particleOverlap];
+  }[this.config.particleOverlap];
   if (!colorAssign) {
-      throw new Error(("Unknown particle overlap mode: " + (this.state.particleOverlap)));
+    throw new Error(("Unknown particle overlap mode: " + (this.config.particleOverlap)));
   }
   fragmentShader.mainBody += colorAssign;
 
@@ -11739,23 +11814,22 @@ CommandBuilder.prototype.assembleFragmentShader = function assembleFragmentShade
 CommandBuilder.prototype.assembleCommand = function assembleCommand () {
     var this$1 = this;
 
-  var vert = this.assembleVertexShader();
+  var vert = CommandBuilder.prepareVertexShader();
   var frag = this.assembleFragmentShader();
 
   var result = {
-    primitive: 'points',
-    count: this.particleData.width * this.particleData.height,
+    primitive:'points',
+    count:    this.particleData.width * this.particleData.height,
     attributes: {
       texcoord: this.particleData.texcoordsBuffer,
-      rgb: this.particleData.rgbBuffer,
-      hsv: this.particleData.hsvBuffer
+      rgb:    this.particleData.rgbBuffer,
+      hsv:    this.particleData.hsvBuffer
     },
-    vert: vert,
     frag: frag,
     depth: { enable: false }
   };
 
-  switch (this.state.particleOverlap) {
+  switch (this.config.particleOverlap) {
     case 'add':
       result.blend = {
         enable: true,
@@ -11769,7 +11843,7 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
       };
       break;
     default:
-      throw new Error(("Unknown particle overlap mode: " + (this.state.particleOverlap)));
+      throw new Error(("Unknown particle overlap mode: " + (this.config.particleOverlap)));
   }
 
   result.uniforms = {
@@ -11779,42 +11853,51 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
     },
     viewProjectionMatrix: function viewProjectionMatrix(ctx) {
       var aspect = ctx.viewportWidth / ctx.viewportHeight;
-      var underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.particleData.aspectRatio);
+      var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
+                            (this.particleData.aspectRatio));
 
       return [
         2, 0, 0, 0,
         0, 2 * aspect, 0, 0,
         0, 0, 1, 0,
-        -1, underscan * 2 - 1, 0, 1
+        -1, (underscan * 2) - 1, 0, 1
       ];
     },
     invViewProjectionMatrix: function invViewProjectionMatrix(ctx) {
       var aspect = ctx.viewportWidth / ctx.viewportHeight;
-      var underscan = 1 - (ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.particleData.aspectRatio);
+      var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
+                            (this.particleData.aspectRatio));
 
       return [
-        .5, 0, 0, 0,
-        0, .5 / aspect, 0, 0,
+        0.5, 0, 0, 0,
+        0, 0.5 / aspect, 0, 0,
         0, 0, 1, 0,
-        .5, -.5 * (underscan * 2 - 1) / aspect, 0, 1
+        0.5, (-0.5 * ((underscan * 2) - 1)) / aspect, 0, 1
       ];
     },
     particleSize: function particleSize(ctx) {
-      return (ctx.viewportWidth / this.particleData.width) * 2 * this.state.particleScaling;
+      return (ctx.viewportWidth / this.particleData.width) * 2 * this.config.particleScaling;
     },
   };
 
-  for (var i = 0; i < this.state.effects.length; i++) {
-    var track = this$1.state.effects[i];
+  vert.mainBody += "\n      vec3 initialPosition = vec3(texcoord, 0);\n      initialPosition.y *= invImageAspectRatio;\n      \n      vec3 position = initialPosition;\n    ";
+  var globalId = 0;
+  for (var i = 0; i < this.config.effects.length; i++) {
+    var track = this$1.config.effects[i];
     for (var j = 0; j < track.length; j++) {
+      var uniforms = new Uniforms(globalId);
       var effectId = track[j][0];
       var effectConfig = track[j][1];
       var effectClass = byId[effectId];
-      effectClass.insertUniforms(result.uniforms, effectConfig);
+      effectClass.register(effectConfig, uniforms, vert);
+      uniforms.compile(vert, result.uniforms);
+      globalId += 1;
     }
   }
+
+  vert.mainBody += "\n      color = rgb;\n      gl_PointSize = max(particleSize, 0.);\n      gl_Position = viewProjectionMatrix * vec4(position, 1.);\n    ";
+
+  result.vert = vert.compile();
 
   return result;
 };
@@ -11828,7 +11911,7 @@ var Renderer = function Renderer(canvas) {
   console.log(("point size dims: " + (this.regl.limits.pointSizeDims[0]) + " " + (this.regl.limits.pointSizeDims[1])));
   console.log(("max uniforms: " + (this.regl.limits.maxVertexUniforms) + " " + (this.regl.limits.maxFragmentUniforms)));
   this.particleData = null;
-  this.state = null;
+  this.config = null;
   this.command = null;
   this.commandBuilder = new CommandBuilder();
   this.oldTime = this.regl.now();
@@ -11839,12 +11922,12 @@ var Renderer = function Renderer(canvas) {
     if (this$1.command === null) {
       return;
     }
-    this$1.regl.clear({ color: this$1.state.backgroundColor });
+    this$1.regl.clear({ color: this$1.config.backgroundColor });
     this$1.command({
-      state: this$1.state,
+      config:     this$1.config,
       particleData: this$1.particleData,
-      oldTime: this$1.oldTime,
-      currentTime: this$1.currentTime,
+      oldTime:    this$1.oldTime,
+      currentTime:this$1.currentTime,
     });
   });
 };
@@ -11863,12 +11946,12 @@ Renderer.prototype.loadImageData = function loadImageData (img) {
 
 Renderer.prototype.createParticleData = function createParticleData () {
   this.destroyParticleData();
-    
+
   var imgData = this.imgData;
   var scalingCanvas = document.createElement('canvas');
   var scalingContext = scalingCanvas.getContext('2d');
-  scalingCanvas.width = this.state.xParticlesCount || imgData.width;
-  scalingCanvas.height = this.state.yParticlesCount || imgData.height;
+  scalingCanvas.width = this.config.xParticlesCount || imgData.width;
+  scalingCanvas.height = this.config.yParticlesCount || imgData.height;
   scalingContext.drawImage(imgData, 0, 0, scalingCanvas.width, scalingCanvas.height);
   var scaledData = scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
 
@@ -11914,12 +11997,12 @@ Renderer.prototype.createParticleData = function createParticleData () {
   });
 
   this.particleData = {
-    width: w,
-    height: h,
-    aspectRatio: imgData.width / imgData.height,
+    width:         w,
+    height:        h,
+    aspectRatio:   imgData.width / imgData.height,
     texcoordsBuffer: this.regl.buffer(texcoords),
-    rgbBuffer: this.regl.buffer(rgb),
-    hsvBuffer: this.regl.buffer(hsv)
+    rgbBuffer:     this.regl.buffer(rgb),
+    hsvBuffer:     this.regl.buffer(hsv)
   };
 };
 
@@ -11934,7 +12017,7 @@ Renderer.prototype.destroyParticleData = function destroyParticleData () {
 };
 
 Renderer.prototype.rebuildCommand = function rebuildCommand () {
-  var cmd = this.commandBuilder.rebuildCommand(this.particleData, this.state);
+  var cmd = this.commandBuilder.buildCommand(this.particleData, this.config);
   this.command = this.regl(cmd);
 };
 
@@ -11944,15 +12027,14 @@ Renderer.prototype.loadImage = function loadImage (img) {
   this.rebuildCommand();
 };
 
-Renderer.prototype.setState = function setState (state) {
-  var oldState = this.state;
-  this.state = state;
+Renderer.prototype.setConfig = function setConfig (config) {
+  this.config = config;
   // TODO: rebuild command only when necessary
   this.createParticleData();
   this.rebuildCommand();
 };
 
-console.log(config);
+console.log(Config);
 
 // some constants
 var imageLoadingClass = 'loading-image';
@@ -11983,8 +12065,8 @@ srcImage.onload = function () {
     var yParticlesCount = ref.yParticlesCount;
 
     renderer.loadImageData(srcImage);
-    var state = Object.assign({}, menu.submittedState, {xParticlesCount: xParticlesCount, yParticlesCount: yParticlesCount});
-    menu.applyState(state);
+    var config = Object.assign({}, menu.submittedConfig, { xParticlesCount: xParticlesCount, yParticlesCount: yParticlesCount });
+    menu.applyConfig(config);
     menu.submit();
   }, function () {
     /* User canceled loading image */
@@ -12008,8 +12090,8 @@ imgSelect.addChangeListener(function (url) {
   }
 });
 
-menu.addChangeListener(function (state) {
-  renderer.setState(state);
+menu.addChangeListener(function (config) {
+  renderer.setConfig(config);
 });
 
 }());
