@@ -13,7 +13,7 @@ class ConvergeCircleConfigUI extends ConfigUI {
         </label><br/>
         <label>
           Rotation speed:
-          <input type="number" class="effect-converge-rotation-speed" value="100" />
+          <input type="number" class="effect-converge-rotation-speed" value="0" />
         </label>
       </fieldset>
     `);
