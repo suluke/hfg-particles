@@ -304,6 +304,7 @@ export default class MainMenu {
       this.controls[i].updateConfig(config);
     }
     config.effects = this.timeline.getEffects();
+    config.duration = this.timeline.getTotalDuration();
 
     return config;
   }

@@ -25,13 +25,13 @@ $menu-apply-btn-height: 10%;
      */
     & ~ .menu-content,
     & ~ .menu-timeline-container {
-      display: none;
+      visibility: hidden;
       z-index: 1;
     }
     &:checked {
       & ~ .menu-content,
       & ~ .menu-timeline-container {
-        display: block;
+        visibility: visible;
       }
     }
   }

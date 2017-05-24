@@ -120,14 +120,143 @@ class TimelineTrack {
   }
 }
 
+class Timeticks {
+  constructor() {
+    this.element = document.querySelector('.menu-timeline-timeticks');
+    this.styleElm = document.createElement('style');
+    document.body.appendChild(this.styleElm);
+    this.stylesheet = this.styleElm.sheet;
+    this.firstTick = this.element.querySelector('.menu-timeline-timetick');
+    this.adjustPosition();
+    this.zoomLevel = 1;
+    this.zoomInBtn = document.querySelector('.menu-timeline-zoom-in');
+    this.zoomOutBtn = document.querySelector('.menu-timeline-zoom-out');
+    this.scaleChangeListeners = [];
+
+    const onZoomlevelChange = () => {
+      this.render();
+      for (let i = 0; i < this.scaleChangeListeners.length; i++) {
+        this.scaleChangeListeners[i](this.getPxPerSecond());
+      }
+    }
+    this.zoomInBtn.addEventListener('click', () => {
+      this.zoomLevel *= 1.5;
+      onZoomlevelChange();
+    });
+    this.zoomOutBtn.addEventListener('click', () => {
+      this.zoomLevel /= 1.5;
+      onZoomlevelChange();
+    });
+  }
+  adjustPosition() {
+    const firstTick = this.firstTick;
+    const tickWidth = firstTick.offsetWidth;
+    const cssRules = this.stylesheet.cssRules;
+    this.stylesheet.insertRule(`
+      .menu-timeline-container .menu-timeline-content tr > th:first-child + th {
+        border-left-width: ${(tickWidth / 2) + 5}px;
+      }`, cssRules.length
+    );
+    this.stylesheet.insertRule(`
+      .menu-timeline-container .menu-timeline-content tr > td:first-child + td {
+        border-left-width: ${(tickWidth / 2) + 5}px;
+      }`, cssRules.length
+    );
+    this.stylesheet.insertRule(`
+      .menu-timeline-timetick {
+        transform: translateX(-50%);
+      }
+    `, cssRules.length);
+  }
+  /**
+   * @return px
+   */
+  getOptimalTimetickSpace() {
+    return 2 * this.firstTick.offsetWidth;
+  }
+  getPxPerSecond() {
+    return this.getOptimalTimetickSpace() * this.zoomLevel;
+  }
+  /**
+   * @return ms
+   */
+  getOptimalTimeBetweenTicks() {
+    const tickSpace = this.getOptimalTimetickSpace();
+    const pxPerMillis = (tickSpace * this.zoomLevel) / 1000;
+    let time = 1000; // ms
+    let multiplyNext = 5;
+    while (time * pxPerMillis < tickSpace) {
+      time *= multiplyNext;
+      // alternate between 5 and 10
+      multiplyNext = multiplyNext === 2 ? 5 : 2;
+    }
+    multiplyNext = 0.5;
+    while (true) {
+      if (time * multiplyNext * pxPerMillis <= tickSpace) {
+        break;
+      } else {
+        time = time * multiplyNext;
+        // alternate between 0.5 and 0.1
+        multiplyNext = multiplyNext === 0.5 ? 0.2 : 0.5;
+      }
+    }
+    return time;
+  }
+  addScaleChangeListener(listener) {
+    this.scaleChangeListeners.push(listener);
+  }
+  setDuration(duration) {
+    this.duration = duration;
+    this.render();
+  }
+  msToStr(ms) {
+    let zeroPad = function(num, places) {
+      const zero = places - num.toString().length + 1;
+      return Array(+(zero > 0 && zero)).join('0') + num;
+    };
+    let rem = ms;
+    const m = Math.floor(rem / 1000 / 60);
+    rem -= m * 1000 * 60;
+    const s = Math.floor(rem / 1000);
+    rem -= s * 1000;
+    const cs = Math.floor(rem / 10);
+
+    return `${zeroPad(m, 2)}:${zeroPad(s, 2)}:${zeroPad(cs, 2)}`;
+  }
+  render() {
+    if (this.duration !== this.renderedDuration ||
+        this.zoomLevel !== this.renderedZoomLevel) {
+      this.renderedDuration = this.duration;
+      this.renderedZoomLevel = this.zoomLevel;
+      const container = this.firstTick.parentNode;
+      clearChildNodes(container);
+      container.appendChild(this.firstTick);
+      const pxPerMillis = this.getPxPerSecond() / 1000;
+      const timeBetweenTicks = this.getOptimalTimeBetweenTicks();
+      let time = timeBetweenTicks;
+      do {
+        const tick = parseHtml(`<span class="menu-timeline-timetick">${this.msToStr(time)}</span>`);
+        tick.style.left = `${pxPerMillis * time}px`;
+        container.appendChild(tick);
+        time += timeBetweenTicks;
+      } while (time <= this.duration);
+    }
+  }
+}
+
 export default class Timeline {
   constructor(menu) {
     this.menu = menu;
     this.element = document.querySelector('.menu-timeline-container');
     this.trackList = [];
     this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
-    this.pxPerSecond = 100;
     this.effectConfigDialog = new EffectConfigDialog();
+    this.timeticks = new Timeticks();
+    this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
+    this.timeticks.addScaleChangeListener(() => {
+      this.pxPerSecond = this.timeticks.getPxPerSecond();
+      this.renderStyles();
+    });
   }
   loadTimeline(trackList) {
     this.trackList = [];
@@ -145,6 +274,7 @@ export default class Timeline {
     }
     this.renderHtml();
     this.renderStyles();
+    this.timeticks.setDuration(this.getTotalDuration());
   }
 
   renderHtml() {
@@ -185,6 +315,11 @@ export default class Timeline {
 
     return configs;
   }
+  getTotalDuration() {
+    let maxEnd = 0;
+    this.forEachEntry((entry) => maxEnd = Math.max(maxEnd, entry.timeEnd));
+    return maxEnd;
+  }
   assertEmptyLastTrack() {
     let changed = false;
     const tracks = this.trackList;
@@ -207,6 +342,7 @@ export default class Timeline {
     }
   }
   notifyChange() {
+    this.timeticks.setDuration(this.getTotalDuration());
     this.assertEmptyLastTrack();
     this.menu.notifyChange();
   }

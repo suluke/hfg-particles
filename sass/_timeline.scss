@@ -6,9 +6,22 @@
     min-width: 100%;
     text-align: left;
     overflow: scroll;
-    .menu-timeline-header {
+
+    tr {
+      & > th:first-child,
+      & > td:first-child {
+        white-space: nowrap;
+      }
+      & > th:first-child + th,
+      & > td:first-child + td {
+        border-left: 10px solid transparent;
+      }
+      th {
+        position: relative;
+      }
       .menu-timeline-timetick {
-        transform: translateX(-50%);
+        position: absolute;
+        bottom: 0;
       }
     }
 
@@ -18,14 +31,11 @@
         height: 4em;
         & > td {
           height: inherit;
-          border: solid 1px #000;
-          margin: 0;
           padding: 0;
-          border-spacing: 0;
         
           & > h3 {
             text-align: center;
-            white-space: nowrap; /* TODO this should change on mobile */
+            margin: 0;
             &:after {
               content: ":";
             }
@@ -36,6 +46,7 @@
             margin: 0;
             height: 100%;
             position: relative;
+            border: solid 1px #000;
             
             /* Timeline Entries */
             & > li {
