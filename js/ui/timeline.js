@@ -2,6 +2,9 @@ import EffectConfigDialog from './effect-config-dialog';
 import { parseHtml, clearChildNodes } from './util';
 import { effectsById } from '../effects/index';
 
+/**
+ *
+ */
 class TimelineEntry {
   constructor(effect, timeline) {
     // Times are in milliseconds
@@ -49,6 +52,9 @@ class TimelineEntry {
   }
 }
 
+/**
+ *
+ */
 class TimelineTrack {
   constructor(trackNumber, timeline) {
     this.elements = [];
@@ -67,23 +73,22 @@ class TimelineTrack {
     this.entryListElm = this.elements[1].querySelector('ol');
     this.entryList = [];
     this.entryListElm.addEventListener('drop', (evt) => {
-      [].map.call(evt.dataTransfer.items, (item) => {
-        if (item.kind === 'string' && item.type === 'text/plain') {
+      [].map.call(evt.dataTransfer.types, (type) => {
+        if (type === 'text/plain') {
           evt.preventDefault(); // TODO re-trigger evt if we don't accept it below
-          item.getAsString((str) => {
-            if (effectsById[str] !== undefined) {
-              const entry = new TimelineEntry(effectsById[str], this.timeline);
-              entry.loadState({
-                timeBegin: 0, // TODO magic numbers, retrieve from drop position instead
-                timeEnd:   1000, // or the place where css will put the box
-                config:    effectsById[str].getDefaultConfig()
-              });
-              this.addEntry(entry);
-              this.renderHtml();
-              this.renderStyles(this.pxPerSecond);
-              this.timeline.notifyChange();
-            }
-          });
+          const str = evt.dataTransfer.getData(type);
+          if (effectsById[str] !== undefined) {
+            const entry = new TimelineEntry(effectsById[str], this.timeline);
+            entry.loadState({
+              timeBegin: 0, // TODO magic numbers, retrieve from drop position instead
+              timeEnd:   1000, // or the place where css will put the box
+              config:    effectsById[str].getDefaultConfig()
+            });
+            this.addEntry(entry);
+            this.renderHtml();
+            this.renderStyles();
+            this.timeline.notifyChange();
+          }
         }
       });
     });
@@ -119,10 +124,10 @@ class TimelineTrack {
   createBeginTimeAdjustHandle(entry) {
     const elm = parseHtml('<div class="timeline-entry-begin-time-adjust"></div>');
     TimelineTrack.setupAdjustHandle(elm, (delta) => {
-      let newBegin = Math.max(0, entry.timeBegin + ((delta / this.pxPerSecond) * 1000));
+      let newBegin = Math.max(0, entry.timeBegin + ((delta / this.timeline.pxPerSecond) * 1000));
       if (newBegin < entry.timeEnd) {
         entry.timeBegin = newBegin;
-        this.renderStyles(this.pxPerSecond);
+        this.renderStyles();
       }
     });
     return elm;
@@ -131,10 +136,10 @@ class TimelineTrack {
   createEndTimeAdjustHandle(entry) {
     const elm = parseHtml('<div class="timeline-entry-end-time-adjust"></div>');
     TimelineTrack.setupAdjustHandle(elm, (delta) => {
-      const newEnd = entry.timeEnd + ((delta / this.pxPerSecond) * 1000);
+      const newEnd = entry.timeEnd + ((delta / this.timeline.pxPerSecond) * 1000);
       if (newEnd > entry.timeBegin) {
         entry.timeEnd = newEnd;
-        this.renderStyles(this.pxPerSecond);
+        this.renderStyles();
       }
     });
     return elm;
@@ -150,24 +155,29 @@ class TimelineTrack {
       li.appendChild(this.createBeginTimeAdjustHandle(entry));
       li.appendChild(entry.getElement());
       li.appendChild(this.createEndTimeAdjustHandle(entry));
-      
+
+      li.addEventListener('dragstart', (evt) => {
+        evt.dataTransfer.effectAllowed = "move";
+      });
       
       lis.appendChild(li);
     }
     clearChildNodes(this.entryListElm);
     this.entryListElm.appendChild(lis);
   }
-  renderStyles(pxPerSecond) {
-    this.pxPerSecond = pxPerSecond;
+  renderStyles() {
     for (let i = 0; i < this.entryList.length; i++) {
       const entry = this.entryList[i];
       const li = entry.getElement().parentNode;
-      li.style.left = `${(entry.timeBegin / 1000) * pxPerSecond}px`;
-      li.style.width = `${((entry.timeEnd - entry.timeBegin) / 1000) * pxPerSecond}px`;
+      li.style.left = `${(entry.timeBegin / 1000) * this.timeline.pxPerSecond}px`;
+      li.style.width = `${((entry.timeEnd - entry.timeBegin) / 1000) * this.timeline.pxPerSecond}px`;
     }
   }
 }
 
+/**
+ *
+ */
 class Timeticks {
   constructor() {
     this.element = document.querySelector('.menu-timeline-timeticks');
@@ -292,6 +302,9 @@ class Timeticks {
   }
 }
 
+/**
+ *
+ */
 export default class Timeline {
   constructor(menu) {
     this.menu = menu;
@@ -341,7 +354,7 @@ export default class Timeline {
   renderStyles() {
     for (let i = 0; i < this.trackList.length; i++) {
       const track = this.trackList[i];
-      track.renderStyles(this.pxPerSecond);
+      track.renderStyles();
     }
   }
   forEachEntry(callback) {
