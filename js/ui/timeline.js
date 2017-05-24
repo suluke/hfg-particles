@@ -157,7 +157,11 @@ class TimelineTrack {
       li.appendChild(this.createEndTimeAdjustHandle(entry));
 
       li.addEventListener('dragstart', (evt) => {
+        window.requestAnimationFrame(() => li.style.display = 'none');
         evt.dataTransfer.effectAllowed = "move";
+      });
+      li.addEventListener('dragend', (evt) => {
+        li.style.display = '';
       });
       
       lis.appendChild(li);
