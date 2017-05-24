@@ -1257,8 +1257,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-05-23T17:55:39.925Z',
-  git_rev:               '6efef31',
+  timestamp:             '2017-05-24T12:25:42.300Z',
+  git_rev:               'fc969d9',
   export_schema_version: 0
 };
 
@@ -1495,64 +1495,52 @@ var HueDisplaceEffect = (function (Effect$$1) {
   return HueDisplaceEffect;
 }(Effect));
 
-var ConvergeConfigUI = (function (ConfigUI$$1) {
-  function ConvergeConfigUI() {
+var ConvergePointConfigUI = (function (ConfigUI$$1) {
+  function ConvergePointConfigUI() {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
-    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge</legend>\n        <label>\n          Speed:\n          <input type=\"number\" class=\"effect-converge-speed\" value=\"100\" />\n        </label><br/>\n        <label>\n          Rotation speed:\n          <input type=\"number\" class=\"effect-converge-rotation-speed\" value=\"100\" />\n        </label><br/>\n        <label>\n          Attractor:\n          <select class=\"effect-converge-target\">\n            <option value=\"center\" selected>center</option>\n            <option value=\"color wheel\">wheel</option>\n          </select>\n        </label>\n      </fieldset>\n    ");
+    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge to point</legend>\n        <label>\n          Speed:\n          <input type=\"number\" class=\"effect-converge-speed\" value=\"100\" />\n        </label>\n      </fieldset>\n    ");
     var ui = this.element;
 
-    this.targetSelect = ui.querySelector('select.effect-converge-target');
-    this.rotationSpeedInput = ui.querySelector('input.effect-converge-rotation-speed');
     this.speedInput = ui.querySelector('input.effect-converge-speed');
     this.speedInput.addEventListener('change', function () {
       this$1.notifyChange();
     });
-    this.rotationSpeedInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
-    this.targetSelect.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
   }
 
-  if ( ConfigUI$$1 ) ConvergeConfigUI.__proto__ = ConfigUI$$1;
-  ConvergeConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
-  ConvergeConfigUI.prototype.constructor = ConvergeConfigUI;
+  if ( ConfigUI$$1 ) ConvergePointConfigUI.__proto__ = ConfigUI$$1;
+  ConvergePointConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  ConvergePointConfigUI.prototype.constructor = ConvergePointConfigUI;
 
-  ConvergeConfigUI.prototype.getElement = function getElement () {
+  ConvergePointConfigUI.prototype.getElement = function getElement () {
     return this.element;
   };
 
-  ConvergeConfigUI.prototype.getConfig = function getConfig () {
+  ConvergePointConfigUI.prototype.getConfig = function getConfig () {
     var config = {};
-    config.target = this.targetSelect.value;
-    config.rotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
     config.speed = parseInt(this.speedInput.value, 10) / 1000;
 
     return config;
   };
 
-  ConvergeConfigUI.prototype.applyConfig = function applyConfig (config) {
-    this.targetSelect.value = config.target;
-    this.rotationSpeedInput.checked = config.rotationSpeed * 100;
+  ConvergePointConfigUI.prototype.applyConfig = function applyConfig (config) {
     this.speedInput.checked = config.speed * 1000;
   };
 
-  return ConvergeConfigUI;
+  return ConvergePointConfigUI;
 }(ConfigUI));
 
-var ConvergeEffect = (function (Effect$$1) {
-  function ConvergeEffect () {
+var ConvergePointEffect = (function (Effect$$1) {
+  function ConvergePointEffect () {
     Effect$$1.apply(this, arguments);
   }
 
-  if ( Effect$$1 ) ConvergeEffect.__proto__ = Effect$$1;
-  ConvergeEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
-  ConvergeEffect.prototype.constructor = ConvergeEffect;
+  if ( Effect$$1 ) ConvergePointEffect.__proto__ = Effect$$1;
+  ConvergePointEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ConvergePointEffect.prototype.constructor = ConvergePointEffect;
 
-  ConvergeEffect.register = function register (instance, uniforms, vertexShader) {
+  ConvergePointEffect.register = function register (instance, uniforms, vertexShader) {
     var time = uniforms.addUniform('convergeTime', 'float', function (ctx) {
       var period = 2 * Math.sqrt(2 / instance.config.speed);
 
@@ -1562,41 +1550,122 @@ var ConvergeEffect = (function (Effect$$1) {
     var rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', function () { return instance.config.rotationSpeed; });
     var maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', function () { return Math.sqrt(2 / instance.config.speed); });
 
-    var targets = {
-      center:        'vec2(0., 0.)',
-      'color wheel': ("getDirectionVector(hsv[0] + " + time + " * " + rotationSpeed + ") * vec2(.8) * vec2(invScreenAspectRatio, 1.)")
-    };
-
     // eslint-disable-next-line no-param-reassign
-    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = " + (targets[instance.config.target]) + ";\n        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n        \n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          position.xy += .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          position.xy += d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n          //position.xy += mix(d, vec2(0.), t * t);\n          position.xy += mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n      }\n    ";
+    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = vec2(0., 0.);\n        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n\n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          position.xy += .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          position.xy += d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n          //position.xy += mix(d, vec2(0.), t * t);\n          position.xy += mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n      }\n    ";
   };
 
-  ConvergeEffect.getDisplayName = function getDisplayName () {
-    return 'Converge';
+  ConvergePointEffect.getDisplayName = function getDisplayName () {
+    return 'Converge to point';
   };
 
-  ConvergeEffect.getConfigUI = function getConfigUI () {
+  ConvergePointEffect.getConfigUI = function getConfigUI () {
     if (!this._configUI) {
-      this._configUI = new ConvergeConfigUI();
+      this._configUI = new ConvergePointConfigUI();
     }
 
     return this._configUI;
   };
 
-  ConvergeEffect.getDefaultConfig = function getDefaultConfig () {
+  ConvergePointEffect.getDefaultConfig = function getDefaultConfig () {
     return {
-      target:        'center',
+      speed: 0.1
+    };
+  };
+
+  return ConvergePointEffect;
+}(Effect));
+
+var ConvergeCircleConfigUI = (function (ConfigUI$$1) {
+  function ConvergeCircleConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge</legend>\n        <label>\n          Speed:\n          <input type=\"number\" class=\"effect-converge-speed\" value=\"100\" />\n        </label><br/>\n        <label>\n          Rotation speed:\n          <input type=\"number\" class=\"effect-converge-rotation-speed\" value=\"0\" />\n        </label>\n      </fieldset>\n    ");
+    var ui = this.element;
+
+    this.rotationSpeedInput = ui.querySelector('input.effect-converge-rotation-speed');
+    this.speedInput = ui.querySelector('input.effect-converge-speed');
+    this.speedInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.rotationSpeedInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+  }
+
+  if ( ConfigUI$$1 ) ConvergeCircleConfigUI.__proto__ = ConfigUI$$1;
+  ConvergeCircleConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  ConvergeCircleConfigUI.prototype.constructor = ConvergeCircleConfigUI;
+
+  ConvergeCircleConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  ConvergeCircleConfigUI.prototype.getConfig = function getConfig () {
+    var config = {};
+    config.rotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
+    config.speed = parseInt(this.speedInput.value, 10) / 1000;
+
+    return config;
+  };
+
+  ConvergeCircleConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.rotationSpeedInput.checked = config.rotationSpeed * 100;
+    this.speedInput.checked = config.speed * 1000;
+  };
+
+  return ConvergeCircleConfigUI;
+}(ConfigUI));
+
+var ConvergeCircleEffect = (function (Effect$$1) {
+  function ConvergeCircleEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) ConvergeCircleEffect.__proto__ = Effect$$1;
+  ConvergeCircleEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ConvergeCircleEffect.prototype.constructor = ConvergeCircleEffect;
+
+  ConvergeCircleEffect.register = function register (instance, uniforms, vertexShader) {
+    var time = uniforms.addUniform('convergeTime', 'float', function (ctx) {
+      var period = 2 * Math.sqrt(2 / instance.config.speed);
+
+      return fract(ctx.time / period) * period;
+    });
+    var speed = uniforms.addUniform('convergeSpeed', 'float', function () { return instance.config.speed; });
+    var rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', function () { return instance.config.rotationSpeed; });
+    var maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', function () { return Math.sqrt(2 / instance.config.speed); });
+
+    // eslint-disable-next-line no-param-reassign
+    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = getDirectionVector(hsv[0] + " + time + " * " + rotationSpeed + ") * vec2(.8) * vec2(invScreenAspectRatio, 1.);\n        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n        \n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          position.xy += .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          position.xy += d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n          //position.xy += mix(d, vec2(0.), t * t);\n          position.xy += mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n      }\n    ";
+  };
+
+  ConvergeCircleEffect.getDisplayName = function getDisplayName () {
+    return 'Converge to circle';
+  };
+
+  ConvergeCircleEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new ConvergeCircleConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  ConvergeCircleEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
       rotationSpeed: 0,
       speed:         0.1,
     };
   };
 
-  return ConvergeEffect;
+  return ConvergeCircleEffect;
 }(Effect));
 
 var effectList = [
   HueDisplaceEffect,
-  ConvergeEffect
+  ConvergePointEffect,
+  ConvergeCircleEffect
 ];
 var byId = {};
 for (var i = 0; i < effectList.length; i++) {
@@ -1714,13 +1783,136 @@ TimelineTrack.prototype.renderStyles = function renderStyles (pxPerSecond) {
   }
 };
 
+var Timeticks = function Timeticks() {
+  var this$1 = this;
+
+  this.element = document.querySelector('.menu-timeline-timeticks');
+  this.styleElm = document.createElement('style');
+  document.body.appendChild(this.styleElm);
+  this.stylesheet = this.styleElm.sheet;
+  this.firstTick = this.element.querySelector('.menu-timeline-timetick');
+  this.adjustPosition();
+  this.zoomLevel = 1;
+  this.zoomInBtn = document.querySelector('.menu-timeline-zoom-in');
+  this.zoomOutBtn = document.querySelector('.menu-timeline-zoom-out');
+  this.scaleChangeListeners = [];
+
+  var onZoomlevelChange = function () {
+    this$1.render();
+    for (var i = 0; i < this$1.scaleChangeListeners.length; i++) {
+      this$1.scaleChangeListeners[i](this$1.getPxPerSecond());
+    }
+  };
+  this.zoomInBtn.addEventListener('click', function () {
+    this$1.zoomLevel *= 1.5;
+    onZoomlevelChange();
+  });
+  this.zoomOutBtn.addEventListener('click', function () {
+    this$1.zoomLevel /= 1.5;
+    onZoomlevelChange();
+  });
+};
+Timeticks.prototype.adjustPosition = function adjustPosition () {
+  var firstTick = this.firstTick;
+  var tickWidth = firstTick.offsetWidth;
+  var cssRules = this.stylesheet.cssRules;
+  this.stylesheet.insertRule(("\n      .menu-timeline-container .menu-timeline-content tr > th:first-child + th {\n        border-left-width: " + ((tickWidth / 2) + 5) + "px;\n      }"), cssRules.length
+  );
+  this.stylesheet.insertRule(("\n      .menu-timeline-container .menu-timeline-content tr > td:first-child + td {\n        border-left-width: " + ((tickWidth / 2) + 5) + "px;\n      }"), cssRules.length
+  );
+  this.stylesheet.insertRule("\n      .menu-timeline-timetick {\n        transform: translateX(-50%);\n      }\n    ", cssRules.length);
+};
+/**
+ * @return px
+ */
+Timeticks.prototype.getOptimalTimetickSpace = function getOptimalTimetickSpace () {
+  return 2 * this.firstTick.offsetWidth;
+};
+Timeticks.prototype.getPxPerSecond = function getPxPerSecond () {
+  return this.getOptimalTimetickSpace() * this.zoomLevel;
+};
+/**
+ * @return ms
+ */
+Timeticks.prototype.getOptimalTimeBetweenTicks = function getOptimalTimeBetweenTicks () {
+  var tickSpace = this.getOptimalTimetickSpace();
+  var pxPerMillis = (tickSpace * this.zoomLevel) / 1000;
+  var time = 1000; // ms
+  var multiplyNext = 5;
+  while (time * pxPerMillis < tickSpace) {
+    time *= multiplyNext;
+    // alternate between 5 and 10
+    multiplyNext = multiplyNext === 2 ? 5 : 2;
+  }
+  multiplyNext = 0.5;
+  while (true) {
+    if (time * multiplyNext * pxPerMillis <= tickSpace) {
+      break;
+    } else {
+      time = time * multiplyNext;
+      // alternate between 0.5 and 0.1
+      multiplyNext = multiplyNext === 0.5 ? 0.2 : 0.5;
+    }
+  }
+  return time;
+};
+Timeticks.prototype.addScaleChangeListener = function addScaleChangeListener (listener) {
+  this.scaleChangeListeners.push(listener);
+};
+Timeticks.prototype.setDuration = function setDuration (duration) {
+  this.duration = duration;
+  this.render();
+};
+Timeticks.prototype.msToStr = function msToStr (ms) {
+  var zeroPad = function(num, places) {
+    var zero = places - num.toString().length + 1;
+    return Array(+(zero > 0 && zero)).join('0') + num;
+  };
+  var rem = ms;
+  var m = Math.floor(rem / 1000 / 60);
+  rem -= m * 1000 * 60;
+  var s = Math.floor(rem / 1000);
+  rem -= s * 1000;
+  var cs = Math.floor(rem / 10);
+
+  return ((zeroPad(m, 2)) + ":" + (zeroPad(s, 2)) + ":" + (zeroPad(cs, 2)));
+};
+Timeticks.prototype.render = function render () {
+    var this$1 = this;
+
+  if (this.duration !== this.renderedDuration ||
+      this.zoomLevel !== this.renderedZoomLevel) {
+    this.renderedDuration = this.duration;
+    this.renderedZoomLevel = this.zoomLevel;
+    var container = this.firstTick.parentNode;
+    clearChildNodes(container);
+    container.appendChild(this.firstTick);
+    var pxPerMillis = this.getPxPerSecond() / 1000;
+    var timeBetweenTicks = this.getOptimalTimeBetweenTicks();
+    var time = timeBetweenTicks;
+    do {
+      var tick = parseHtml(("<span class=\"menu-timeline-timetick\">" + (this$1.msToStr(time)) + "</span>"));
+      tick.style.left = (pxPerMillis * time) + "px";
+      container.appendChild(tick);
+      time += timeBetweenTicks;
+    } while (time <= this.duration);
+  }
+};
+
 var Timeline = function Timeline(menu) {
+  var this$1 = this;
+
   this.menu = menu;
   this.element = document.querySelector('.menu-timeline-container');
   this.trackList = [];
   this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
-  this.pxPerSecond = 100;
   this.effectConfigDialog = new EffectConfigDialog();
+  this.timeticks = new Timeticks();
+  this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
+  this.timeticks.addScaleChangeListener(function () {
+    this$1.pxPerSecond = this$1.timeticks.getPxPerSecond();
+    this$1.renderStyles();
+  });
 };
 Timeline.prototype.loadTimeline = function loadTimeline (trackList) {
     var this$1 = this;
@@ -1740,6 +1932,7 @@ Timeline.prototype.loadTimeline = function loadTimeline (trackList) {
   }
   this.renderHtml();
   this.renderStyles();
+  this.timeticks.setDuration(this.getTotalDuration());
 };
 
 Timeline.prototype.renderHtml = function renderHtml () {
@@ -1817,6 +2010,7 @@ Timeline.prototype.assertEmptyLastTrack = function assertEmptyLastTrack () {
   }
 };
 Timeline.prototype.notifyChange = function notifyChange () {
+  this.timeticks.setDuration(this.getTotalDuration());
   this.assertEmptyLastTrack();
   this.menu.notifyChange();
 };
@@ -2190,6 +2384,7 @@ MainMenu.prototype.readConfig = function readConfig () {
     this$1.controls[i].updateConfig(config);
   }
   config.effects = this.timeline.getEffects();
+  config.duration = this.timeline.getTotalDuration();
 
   return config;
 };

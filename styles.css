@@ -2520,11 +2520,11 @@
         content: ""; }
     .menu-container input[type=checkbox].toggle-menu-visible ~ .menu-content,
     .menu-container input[type=checkbox].toggle-menu-visible ~ .menu-timeline-container {
-      display: none;
+      visibility: hidden;
       z-index: 1; }
     .menu-container input[type=checkbox].toggle-menu-visible:checked ~ .menu-content,
     .menu-container input[type=checkbox].toggle-menu-visible:checked ~ .menu-timeline-container {
-      display: block; }
+      visibility: visible; }
   .menu-container .menu-content {
     position: absolute;
     top: 0;
@@ -2650,22 +2650,27 @@
     min-width: 100%;
     text-align: left;
     overflow: scroll; }
-    .menu-timeline-container .menu-timeline-content .menu-timeline-header .menu-timeline-timetick {
-      transform: translateX(-50%); }
+    .menu-timeline-container .menu-timeline-content tr > th:first-child,
+    .menu-timeline-container .menu-timeline-content tr > td:first-child {
+      white-space: nowrap; }
+    .menu-timeline-container .menu-timeline-content tr > th:first-child + th,
+    .menu-timeline-container .menu-timeline-content tr > td:first-child + td {
+      border-left: 10px solid transparent; }
+    .menu-timeline-container .menu-timeline-content tr th {
+      position: relative; }
+    .menu-timeline-container .menu-timeline-content tr .menu-timeline-timetick {
+      position: absolute;
+      bottom: 0; }
     .menu-timeline-container .menu-timeline-content .menu-timeline-tracks {
       /* Timeline tracks */ }
       .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr {
         height: 4em; }
         .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td {
           height: inherit;
-          border: solid 1px #000;
-          margin: 0;
-          padding: 0;
-          border-spacing: 0; }
+          padding: 0; }
           .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > h3 {
             text-align: center;
-            white-space: nowrap;
-            /* TODO this should change on mobile */ }
+            margin: 0; }
             .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > h3:after {
               content: ":"; }
           .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol {
@@ -2674,6 +2679,7 @@
             margin: 0;
             height: 100%;
             position: relative;
+            border: solid 1px #000;
             /* Timeline Entries */ }
             .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li {
               position: absolute;
@@ -2681,12 +2687,6 @@
               display: inline-block;
               border: solid 1px #000;
               box-sizing: border-box; }
-              .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li:before {
-                content: "";
-                display: inline-block;
-                height: 100%;
-                vertical-align: middle;
-                width: 0; }
               .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li > button {
                 cursor: -moz-grab;
                 cursor: -webkit-grab;
