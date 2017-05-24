@@ -2687,7 +2687,29 @@
               display: inline-block;
               border: solid 1px #000;
               box-sizing: border-box; }
+              .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li .timeline-entry-begin-time-adjust,
+              .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li .timeline-entry-end-time-adjust {
+                position: absolute;
+                display: inline-block;
+                height: 100%;
+                width: 5px;
+                cursor: ew-resize;
+                background: #333;
+                visibility: hidden;
+                padding: 1px 0;
+                /* compensate missing border */
+                top: -1px;
+                /* also for missing border */ }
+              .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li .timeline-entry-begin-time-adjust {
+                left: -5px; }
+              .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li .timeline-entry-end-time-adjust {
+                right: -5px; }
+              .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li:hover .timeline-entry-begin-time-adjust,
+              .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li:hover .timeline-entry-end-time-adjust {
+                visibility: visible; }
               .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li > button {
+                display: inline-block;
+                padding: 0;
                 cursor: -moz-grab;
                 cursor: -webkit-grab;
                 cursor: grab;

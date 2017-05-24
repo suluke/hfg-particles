@@ -1257,8 +1257,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-05-24T12:25:42.300Z',
-  git_rev:               'fc969d9',
+  timestamp:             '2017-05-24T17:11:57.668Z',
+  git_rev:               '818caad',
   export_schema_version: 0
 };
 
@@ -1672,6 +1672,9 @@ for (var i = 0; i < effectList.length; i++) {
   byId[effectList[i].getId()] = effectList[i];
 }
 
+/**
+ *
+ */
 var TimelineEntry = function TimelineEntry(effect, timeline) {
   var this$1 = this;
 
@@ -1681,8 +1684,21 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
   this.effect = effect;
   this.timeline = timeline;
 
-  this.element = parseHtml(("\n      <button type=\"button\">" + (this.effect.getDisplayName()) + "</button>\n    "));
-  this.element.addEventListener('click', function () {
+  var beginHandleClass = 'timeline-entry-begin-time-adjust';
+  var endHandleClass = 'timeline-entry-end-time-adjust';
+  this.element = parseHtml(("\n      <li draggable=\"true\">\n        <div class=\"" + beginHandleClass + "\"></div>\n        <button type=\"button\">" + (this.effect.getDisplayName()) + "</button>\n        <div class=\"" + endHandleClass + "\"></div>\n      </li>\n    "));
+  this.setupTimeAdjustHandles();
+  var li = this.element;
+  li.addEventListener('dragstart', function (evt) {
+    window.requestAnimationFrame(function () { return li.style.display = 'none'; });
+    evt.dataTransfer.effectAllowed = "move";
+  });
+  li.addEventListener('dragend', function (evt) {
+    li.style.display = '';
+  });
+    
+  this.openConfigBtn = this.element.querySelector('button');
+  this.openConfigBtn.addEventListener('click', function () {
     this$1.timeline.effectConfigDialog.promptUser(this$1)
     .then(
       function (newState) {
@@ -1701,6 +1717,47 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
     );
   });
 };
+
+TimelineEntry.setupAdjustHandle = function setupAdjustHandle (elm, onAdjustCallback) {
+  elm.addEventListener('mousedown', function (evt) {
+    evt.preventDefault(); // prevent dragging parent
+
+    var prevX = evt.clientX;
+    var onAdjust = function (evt) {
+      onAdjustCallback(evt.clientX - prevX);
+      prevX = evt.clientX;
+    };
+    var onStopAdjust = function () {
+      document.documentElement.removeEventListener('mousemove', onAdjust);
+      document.documentElement.removeEventListener('mouseup', onStopAdjust);
+    };
+      
+    document.documentElement.addEventListener('mousemove', onAdjust);
+    document.documentElement.addEventListener('mouseup', onStopAdjust);
+  });
+};
+
+TimelineEntry.prototype.setupTimeAdjustHandles = function setupTimeAdjustHandles () {
+    var this$1 = this;
+
+  var beginHandle = this.element.querySelector('.timeline-entry-begin-time-adjust');
+  TimelineEntry.setupAdjustHandle(beginHandle, function (delta) {
+    var newBegin = Math.max(0, this$1.timeBegin + ((delta / this$1.timeline.pxPerSecond) * 1000));
+    if (newBegin < this$1.timeEnd) {
+      this$1.timeBegin = newBegin;
+      this$1.renderStyles();
+    }
+  });
+  var endHandle = this.element.querySelector('.timeline-entry-end-time-adjust');
+  TimelineEntry.setupAdjustHandle(endHandle, function (delta) {
+    var newEnd = this$1.timeEnd + ((delta / this$1.timeline.pxPerSecond) * 1000);
+    if (newEnd > this$1.timeBegin) {
+      this$1.timeEnd = newEnd;
+      this$1.renderStyles();
+    }
+  });
+};
+  
 TimelineEntry.prototype.loadState = function loadState (state) {
   this.timeBegin = state.timeBegin;
   this.timeEnd = state.timeEnd;
@@ -1716,7 +1773,15 @@ TimelineEntry.prototype.getConfiguration = function getConfiguration () {
     config:  this.config
   }];
 };
+TimelineEntry.prototype.renderStyles = function renderStyles () {
+  var li = this.getElement();
+  li.style.left = ((this.timeBegin / 1000) * this.timeline.pxPerSecond) + "px";
+  li.style.width = (((this.timeEnd - this.timeBegin) / 1000) * this.timeline.pxPerSecond) + "px";
+};
 
+/**
+ *
+ */
 var TimelineTrack = function TimelineTrack(trackNumber, timeline) {
   var this$1 = this;
 
@@ -1727,23 +1792,25 @@ var TimelineTrack = function TimelineTrack(trackNumber, timeline) {
   this.entryListElm = this.elements[1].querySelector('ol');
   this.entryList = [];
   this.entryListElm.addEventListener('drop', function (evt) {
-    [].map.call(evt.dataTransfer.items, function (item) {
-      if (item.kind === 'string' && item.type === 'text/plain') {
-        evt.preventDefault(); // TODO re-trigger evt if we don't accept it below
-        item.getAsString(function (str) {
-          if (byId[str] !== undefined) {
-            var entry = new TimelineEntry(byId[str], this$1.timeline);
-            entry.loadState({
-              timeBegin: 0, // TODO magic numbers, retrieve from drop position instead
-              timeEnd: 1000, // or the place where css will put the box
-              config:  byId[str].getDefaultConfig()
-            });
-            this$1.addEntry(entry);
-            this$1.renderHtml();
-            this$1.renderStyles(this$1.pxPerSecond);
-            this$1.timeline.notifyChange();
-          }
-        });
+    [].map.call(evt.dataTransfer.types, function (type) {
+      if (type === 'particles/effect-id') {
+        var str = evt.dataTransfer.getData(type);
+        if (byId[str] !== undefined) {
+          evt.preventDefault();
+          var entry = new TimelineEntry(byId[str], this$1.timeline);
+          entry.loadState({
+            timeBegin: 0, // TODO magic numbers, retrieve from drop position instead
+            timeEnd: 1000, // or the place where css will put the box
+            config:  byId[str].getDefaultConfig()
+          });
+          this$1.addEntry(entry);
+          this$1.renderHtml();
+          this$1.renderStyles();
+          this$1.timeline.notifyChange();
+        }
+      } else if (type === 'particles/timeline-entry') {
+        evt.preventDefault();
+        // TODO
       }
     });
   });
@@ -1756,33 +1823,30 @@ TimelineTrack.prototype.addEntry = function addEntry (entry) {
 TimelineTrack.prototype.getElements = function getElements () {
   return this.elements;
 };
-
 TimelineTrack.prototype.renderHtml = function renderHtml () {
     var this$1 = this;
 
   var lis = document.createDocumentFragment();
   for (var i = 0; i < this.entryList.length; i++) {
     var entry = this$1.entryList[i];
-    var li = document.createElement('li');
-    li.draggable = 'true';
-    li.appendChild(entry.getElement());
+    var li = entry.getElement();
     lis.appendChild(li);
   }
   clearChildNodes(this.entryListElm);
   this.entryListElm.appendChild(lis);
 };
-TimelineTrack.prototype.renderStyles = function renderStyles (pxPerSecond) {
+TimelineTrack.prototype.renderStyles = function renderStyles () {
     var this$1 = this;
 
-  this.pxPerSecond = pxPerSecond;
   for (var i = 0; i < this.entryList.length; i++) {
     var entry = this$1.entryList[i];
-    var li = entry.getElement().parentNode;
-    li.style.left = ((entry.timeBegin / 1000) * pxPerSecond) + "px";
-    li.style.width = (((entry.timeEnd - entry.timeBegin) / 1000) * pxPerSecond) + "px";
+    entry.renderStyles();
   }
 };
 
+/**
+ *
+ */
 var Timeticks = function Timeticks() {
   var this$1 = this;
 
@@ -1899,6 +1963,9 @@ Timeticks.prototype.render = function render () {
   }
 };
 
+/**
+ *
+ */
 var Timeline = function Timeline(menu) {
   var this$1 = this;
 
@@ -1957,7 +2024,7 @@ Timeline.prototype.renderStyles = function renderStyles () {
 
   for (var i = 0; i < this.trackList.length; i++) {
     var track = this$1.trackList[i];
-    track.renderStyles(this$1.pxPerSecond);
+    track.renderStyles();
   }
 };
 Timeline.prototype.forEachEntry = function forEachEntry (callback) {
@@ -2341,7 +2408,7 @@ var MainMenu = function MainMenu() {
   var loop = function ( i ) {
     var elm = parseHtml(("\n        <li draggable=\"true\">" + (effectList[i].getDisplayName()) + "</li>\n      "));
     elm.addEventListener('dragstart', function (evt) {
-      evt.dataTransfer.setData('text/plain', effectList[i].getId());
+      evt.dataTransfer.setData('particles/effect-id', effectList[i].getId());
     });
     effectListElms.appendChild(elm);
   };
