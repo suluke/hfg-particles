@@ -1,41 +1,22 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
-class ConvergeConfigUI extends ConfigUI {
+class ConvergePointConfigUI extends ConfigUI {
   constructor() {
     super();
     this.element = parseHtml(`
       <fieldset>
-        <legend>Converge</legend>
+        <legend>Converge to point</legend>
         <label>
           Speed:
           <input type="number" class="effect-converge-speed" value="100" />
-        </label><br/>
-        <label>
-          Rotation speed:
-          <input type="number" class="effect-converge-rotation-speed" value="100" />
-        </label><br/>
-        <label>
-          Attractor:
-          <select class="effect-converge-target">
-            <option value="center" selected>center</option>
-            <option value="color wheel">wheel</option>
-          </select>
         </label>
       </fieldset>
     `);
     const ui = this.element;
 
-    this.targetSelect = ui.querySelector('select.effect-converge-target');
-    this.rotationSpeedInput = ui.querySelector('input.effect-converge-rotation-speed');
     this.speedInput = ui.querySelector('input.effect-converge-speed');
     this.speedInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
-    this.rotationSpeedInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
-    this.targetSelect.addEventListener('change', () => {
       this.notifyChange();
     });
   }
@@ -46,21 +27,17 @@ class ConvergeConfigUI extends ConfigUI {
 
   getConfig() {
     const config = {};
-    config.target = this.targetSelect.value;
-    config.rotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
     config.speed = parseInt(this.speedInput.value, 10) / 1000;
 
     return config;
   }
 
   applyConfig(config) {
-    this.targetSelect.value = config.target;
-    this.rotationSpeedInput.checked = config.rotationSpeed * 100;
     this.speedInput.checked = config.speed * 1000;
   }
 }
 
-export default class ConvergeEffect extends Effect {
+export default class ConvergePointEffect extends Effect {
   static register(instance, uniforms, vertexShader) {
     const time = uniforms.addUniform('convergeTime', 'float', (ctx) => {
       const period = 2 * Math.sqrt(2 / instance.config.speed);
@@ -71,20 +48,15 @@ export default class ConvergeEffect extends Effect {
     const rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', () => instance.config.rotationSpeed);
     const maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', () => Math.sqrt(2 / instance.config.speed));
 
-    const targets = {
-      center:        'vec2(0., 0.)',
-      'color wheel': `getDirectionVector(hsv[0] + ${time} * ${rotationSpeed}) * vec2(.8) * vec2(invScreenAspectRatio, 1.)`
-    };
-
     // eslint-disable-next-line no-param-reassign
     vertexShader.mainBody += `
       {
-        vec2 screenTarget = ${targets[instance.config.target]};
+        vec2 screenTarget = vec2(0., 0.);
         vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;
 
         vec2 d = target - initialPosition.xy;
         float d_len = length(d);
-        
+
         float stop_t = sqrt(2. * d_len / ${speed});
 
         if(${time} < stop_t) {
@@ -103,12 +75,12 @@ export default class ConvergeEffect extends Effect {
   }
 
   static getDisplayName() {
-    return 'Converge';
+    return 'Converge to point';
   }
 
   static getConfigUI() {
     if (!this._configUI) {
-      this._configUI = new ConvergeConfigUI();
+      this._configUI = new ConvergePointConfigUI();
     }
 
     return this._configUI;
@@ -116,9 +88,7 @@ export default class ConvergeEffect extends Effect {
 
   static getDefaultConfig() {
     return {
-      target:        'center',
-      rotationSpeed: 0,
-      speed:         0.1,
+      speed: 0.1
     };
   }
 }

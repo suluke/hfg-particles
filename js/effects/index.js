@@ -1,9 +1,11 @@
 import HueDisplaceEffect from './hue-displace';
-import ConvergeEffect from './converge';
+import ConvergePointEffect from './converge-point';
+import ConvergeCircleEffect from './converge-circle';
 
 const effectList = [
   HueDisplaceEffect,
-  ConvergeEffect
+  ConvergePointEffect,
+  ConvergeCircleEffect
 ];
 const byId = {};
 for (let i = 0; i < effectList.length; i++) {

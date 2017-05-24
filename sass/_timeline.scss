@@ -44,7 +44,6 @@
               display: inline-block;
               border: solid 1px #000;
               box-sizing: border-box;
-              @include vCenterText;
               & > button {
                 cursor: -moz-grab;
                 cursor: -webkit-grab;
