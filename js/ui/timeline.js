@@ -97,13 +97,61 @@ class TimelineTrack {
     return this.elements;
   }
 
+  static setupAdjustHandle(elm, onAdjustCallback) {
+    elm.addEventListener('mousedown', (evt) => {
+      evt.preventDefault(); // prevent dragging parent
+
+      let prevX = evt.clientX;
+      const onAdjust = (evt) => {
+        onAdjustCallback(evt.clientX - prevX);
+        prevX = evt.clientX;
+      };
+      const onStopAdjust = () => {
+        document.documentElement.removeEventListener('mousemove', onAdjust);
+        document.documentElement.removeEventListener('mouseup', onStopAdjust);
+      };
+      
+      document.documentElement.addEventListener('mousemove', onAdjust);
+      document.documentElement.addEventListener('mouseup', onStopAdjust);
+    });
+  }
+
+  createBeginTimeAdjustHandle(entry) {
+    const elm = parseHtml('<div class="timeline-entry-begin-time-adjust"></div>');
+    TimelineTrack.setupAdjustHandle(elm, (delta) => {
+      let newBegin = Math.max(0, entry.timeBegin + ((delta / this.pxPerSecond) * 1000));
+      if (newBegin < entry.timeEnd) {
+        entry.timeBegin = newBegin;
+        this.renderStyles(this.pxPerSecond);
+      }
+    });
+    return elm;
+  }
+
+  createEndTimeAdjustHandle(entry) {
+    const elm = parseHtml('<div class="timeline-entry-end-time-adjust"></div>');
+    TimelineTrack.setupAdjustHandle(elm, (delta) => {
+      const newEnd = entry.timeEnd + ((delta / this.pxPerSecond) * 1000);
+      if (newEnd > entry.timeBegin) {
+        entry.timeEnd = newEnd;
+        this.renderStyles(this.pxPerSecond);
+      }
+    });
+    return elm;
+  }
+
   renderHtml() {
     const lis = document.createDocumentFragment();
     for (let i = 0; i < this.entryList.length; i++) {
       const entry = this.entryList[i];
       const li = document.createElement('li');
       li.draggable = 'true';
+
+      li.appendChild(this.createBeginTimeAdjustHandle(entry));
       li.appendChild(entry.getElement());
+      li.appendChild(this.createEndTimeAdjustHandle(entry));
+      
+      
       lis.appendChild(li);
     }
     clearChildNodes(this.entryListElm);

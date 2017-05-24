@@ -55,7 +55,35 @@
               display: inline-block;
               border: solid 1px #000;
               box-sizing: border-box;
+
+              .timeline-entry-begin-time-adjust,
+              .timeline-entry-end-time-adjust {
+                position: absolute;
+                display: inline-block;
+                height: 100%;
+                width: 5px;
+                cursor: ew-resize;
+                background: #333;
+                visibility: hidden;
+                padding: 1px 0; /* compensate missing border */
+                top: -1px; /* also for missing border */
+              }
+              .timeline-entry-begin-time-adjust {
+                left: -5px;
+              }
+              .timeline-entry-begin-time-adjust {
+                right: -5px;
+              }
+              &:hover {
+                .timeline-entry-begin-time-adjust,
+                .timeline-entry-end-time-adjust {
+                  visibility: visible;
+                }
+              }
+              
               & > button {
+                display: inline-block;
+                padding: 0;
                 cursor: -moz-grab;
                 cursor: -webkit-grab;
                 cursor: grab;
