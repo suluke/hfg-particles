@@ -13,10 +13,27 @@ class TimelineEntry {
     this.effect = effect;
     this.timeline = timeline;
 
+    const beginHandleClass = 'timeline-entry-begin-time-adjust';
+    const endHandleClass = 'timeline-entry-end-time-adjust';
     this.element = parseHtml(`
-      <button type="button">${this.effect.getDisplayName()}</button>
+      <li draggable="true">
+        <div class="${beginHandleClass}"></div>
+        <button type="button">${this.effect.getDisplayName()}</button>
+        <div class="${endHandleClass}"></div>
+      </li>
     `);
-    this.element.addEventListener('click', () => {
+    this.setupTimeAdjustHandles();
+    const li = this.element;
+    li.addEventListener('dragstart', (evt) => {
+      window.requestAnimationFrame(() => li.style.display = 'none');
+      evt.dataTransfer.effectAllowed = "move";
+    });
+    li.addEventListener('dragend', (evt) => {
+      li.style.display = '';
+    });
+
+    this.openConfigBtn = this.element.querySelector('button');
+    this.openConfigBtn.addEventListener('click', () => {
       this.timeline.effectConfigDialog.promptUser(this)
       .then(
         (newState) => {
@@ -35,6 +52,45 @@ class TimelineEntry {
       );
     });
   }
+
+  static setupAdjustHandle(elm, onAdjustCallback) {
+    elm.addEventListener('mousedown', (evt) => {
+      evt.preventDefault(); // prevent dragging parent
+
+      let prevX = evt.clientX;
+      const onAdjust = (evt) => {
+        onAdjustCallback(evt.clientX - prevX);
+        prevX = evt.clientX;
+      };
+      const onStopAdjust = () => {
+        document.documentElement.removeEventListener('mousemove', onAdjust);
+        document.documentElement.removeEventListener('mouseup', onStopAdjust);
+      };
+
+      document.documentElement.addEventListener('mousemove', onAdjust);
+      document.documentElement.addEventListener('mouseup', onStopAdjust);
+    });
+  }
+
+  setupTimeAdjustHandles() {
+    const beginHandle = this.element.querySelector('.timeline-entry-begin-time-adjust');
+    TimelineEntry.setupAdjustHandle(beginHandle, (delta) => {
+      let newBegin = Math.max(0, this.timeBegin + ((delta / this.timeline.pxPerSecond) * 1000));
+      if (newBegin < this.timeEnd) {
+        this.timeBegin = newBegin;
+        this.renderStyles();
+      }
+    });
+    const endHandle = this.element.querySelector('.timeline-entry-end-time-adjust');
+    TimelineEntry.setupAdjustHandle(endHandle, (delta) => {
+      const newEnd = this.timeEnd + ((delta / this.timeline.pxPerSecond) * 1000);
+      if (newEnd > this.timeBegin) {
+        this.timeEnd = newEnd;
+        this.renderStyles();
+      }
+    });
+  }
+
   loadState(state) {
     this.timeBegin = state.timeBegin;
     this.timeEnd = state.timeEnd;
@@ -49,6 +105,11 @@ class TimelineEntry {
       timeEnd:   this.timeEnd,
       config:    this.config
     }];
+  }
+  renderStyles() {
+    const li = this.getElement();
+    li.style.left = `${(this.timeBegin / 1000) * this.timeline.pxPerSecond}px`;
+    li.style.width = `${((this.timeEnd - this.timeBegin) / 1000) * this.timeline.pxPerSecond}px`;
   }
 }
 
@@ -74,10 +135,10 @@ class TimelineTrack {
     this.entryList = [];
     this.entryListElm.addEventListener('drop', (evt) => {
       [].map.call(evt.dataTransfer.types, (type) => {
-        if (type === 'text/plain') {
-          evt.preventDefault(); // TODO re-trigger evt if we don't accept it below
+        if (type === 'particles/effect-id') {
           const str = evt.dataTransfer.getData(type);
           if (effectsById[str] !== undefined) {
+            evt.preventDefault();
             const entry = new TimelineEntry(effectsById[str], this.timeline);
             entry.loadState({
               timeBegin: 0, // TODO magic numbers, retrieve from drop position instead
@@ -89,6 +150,9 @@ class TimelineTrack {
             this.renderStyles();
             this.timeline.notifyChange();
           }
+        } else if (type === 'particles/timeline-entry') {
+          evt.preventDefault();
+          // TODO
         }
       });
     });
@@ -101,69 +165,11 @@ class TimelineTrack {
   getElements() {
     return this.elements;
   }
-
-  static setupAdjustHandle(elm, onAdjustCallback) {
-    elm.addEventListener('mousedown', (evt) => {
-      evt.preventDefault(); // prevent dragging parent
-
-      let prevX = evt.clientX;
-      const onAdjust = (evt) => {
-        onAdjustCallback(evt.clientX - prevX);
-        prevX = evt.clientX;
-      };
-      const onStopAdjust = () => {
-        document.documentElement.removeEventListener('mousemove', onAdjust);
-        document.documentElement.removeEventListener('mouseup', onStopAdjust);
-      };
-      
-      document.documentElement.addEventListener('mousemove', onAdjust);
-      document.documentElement.addEventListener('mouseup', onStopAdjust);
-    });
-  }
-
-  createBeginTimeAdjustHandle(entry) {
-    const elm = parseHtml('<div class="timeline-entry-begin-time-adjust"></div>');
-    TimelineTrack.setupAdjustHandle(elm, (delta) => {
-      let newBegin = Math.max(0, entry.timeBegin + ((delta / this.timeline.pxPerSecond) * 1000));
-      if (newBegin < entry.timeEnd) {
-        entry.timeBegin = newBegin;
-        this.renderStyles();
-      }
-    });
-    return elm;
-  }
-
-  createEndTimeAdjustHandle(entry) {
-    const elm = parseHtml('<div class="timeline-entry-end-time-adjust"></div>');
-    TimelineTrack.setupAdjustHandle(elm, (delta) => {
-      const newEnd = entry.timeEnd + ((delta / this.timeline.pxPerSecond) * 1000);
-      if (newEnd > entry.timeBegin) {
-        entry.timeEnd = newEnd;
-        this.renderStyles();
-      }
-    });
-    return elm;
-  }
-
   renderHtml() {
     const lis = document.createDocumentFragment();
     for (let i = 0; i < this.entryList.length; i++) {
       const entry = this.entryList[i];
-      const li = document.createElement('li');
-      li.draggable = 'true';
-
-      li.appendChild(this.createBeginTimeAdjustHandle(entry));
-      li.appendChild(entry.getElement());
-      li.appendChild(this.createEndTimeAdjustHandle(entry));
-
-      li.addEventListener('dragstart', (evt) => {
-        window.requestAnimationFrame(() => li.style.display = 'none');
-        evt.dataTransfer.effectAllowed = "move";
-      });
-      li.addEventListener('dragend', (evt) => {
-        li.style.display = '';
-      });
-      
+      const li = entry.getElement();
       lis.appendChild(li);
     }
     clearChildNodes(this.entryListElm);
@@ -172,9 +178,7 @@ class TimelineTrack {
   renderStyles() {
     for (let i = 0; i < this.entryList.length; i++) {
       const entry = this.entryList[i];
-      const li = entry.getElement().parentNode;
-      li.style.left = `${(entry.timeBegin / 1000) * this.timeline.pxPerSecond}px`;
-      li.style.width = `${((entry.timeEnd - entry.timeBegin) / 1000) * this.timeline.pxPerSecond}px`;
+      entry.renderStyles();
     }
   }
 }

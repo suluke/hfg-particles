@@ -267,7 +267,7 @@ export default class MainMenu {
         <li draggable="true">${effects[i].getDisplayName()}</li>
       `);
       elm.addEventListener('dragstart', (evt) => {
-        evt.dataTransfer.setData('text/plain', effects[i].getId());
+        evt.dataTransfer.setData('particles/effect-id', effects[i].getId());
       });
       effectListElms.appendChild(elm);
     }
