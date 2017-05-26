@@ -83,6 +83,13 @@ $menu-apply-btn-height: 10%;
           margin-top: $item-spacing;
           margin-left: $item-spacing;
         }
+        @at-root #modal-container {
+          .effect-list-item.drag-drop-copy {
+            @include vCenterText;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.3);
+          }
+        }
       }
       
       /**

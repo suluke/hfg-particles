@@ -133,29 +133,26 @@ class TimelineTrack {
     `));
     this.entryListElm = this.elements[1].querySelector('ol');
     this.entryList = [];
-    this.entryListElm.addEventListener('drop', (evt) => {
-      [].map.call(evt.dataTransfer.types, (type) => {
-        if (type === 'particles/effect-id') {
-          const str = evt.dataTransfer.getData(type);
-          if (effectsById[str] !== undefined) {
-            evt.preventDefault();
-            const entry = new TimelineEntry(effectsById[str], this.timeline);
-            entry.loadState({
-              timeBegin: 0, // TODO magic numbers, retrieve from drop position instead
-              timeEnd:   1000, // or the place where css will put the box
-              config:    effectsById[str].getDefaultConfig()
-            });
-            this.addEntry(entry);
-            this.renderHtml();
-            this.renderStyles();
-            this.timeline.notifyChange();
-          }
-        } else if (type === 'particles/timeline-entry') {
-          evt.preventDefault();
-          // TODO
-        }
+  }
+
+  dropNewEffect(effect, clientX, clientY) {
+    const elm = this.getTrackElement();
+    const rect = elm.getBoundingClientRect();
+    if (clientX >= rect.left && clientX <= rect.right &&
+        clientY >= rect.top && clientY <= rect.bottom) {
+      const entry = new TimelineEntry(effect, this.timeline);
+      entry.loadState({
+        timeBegin: 0, // TODO magic numbers, retrieve from drop position instead
+        timeEnd:   1000, // or the place where css will put the box
+        config:    effect.getDefaultConfig()
       });
-    });
+      this.addEntry(entry);
+      this.renderHtml();
+      this.renderStyles();
+      this.timeline.notifyChange();
+      return true;
+    }
+    return false;
   }
 
   addEntry(entry) {
@@ -164,6 +161,9 @@ class TimelineTrack {
 
   getElements() {
     return this.elements;
+  }
+  getTrackElement() {
+    return this.elements[1];
   }
   renderHtml() {
     const lis = document.createDocumentFragment();
@@ -421,5 +421,13 @@ export default class Timeline {
         track.entryList.splice(trackIndex, 1);
       }
     });
+  }
+  dropNewEffect(effect, clientX, clientY) {
+    for (let i = 0; i < this.trackList.length; i++) {
+      if (this.trackList[i].dropNewEffect(effect, clientX, clientY)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

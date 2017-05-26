@@ -24,3 +24,8 @@
   opacity: 0;
   background-color: rgba(0,0,0,0);
 }
+
+.drag-drop-copy {
+  z-index: 100;
+  position: absolute;
+}

@@ -225,6 +225,48 @@ const ControlsList = [
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
+class EffectListItem {
+  constructor(effect, timeline) {
+    this.effect = effect;
+    this.timeline = timeline;
+    this.element = parseHtml(`
+      <li>${effect.getDisplayName()}</li>
+    `);
+    this.dragCopy = parseHtml(`
+      <div class="effect-list-item drag-drop-copy">${effect.getDisplayName()}</div>
+    `);
+    const dragCopy = this.dragCopy;
+    this.element.addEventListener('mousedown', (evt) => {
+      evt.preventDefault();
+      let copyVisible = false;
+      dragCopy.style.width = `${this.element.offsetWidth}px`;
+      dragCopy.style.height = `${this.element.offsetHeight}px`;
+      const onDrag = (evt) => {
+        evt.preventDefault();
+        if (!copyVisible) {
+          document.getElementById('modal-container').appendChild(dragCopy);
+          copyVisible = true;
+        }
+        dragCopy.style.left = `${evt.clientX - (this.element.offsetWidth / 2)}px`;
+        dragCopy.style.top = `${evt.clientY - (this.element.offsetHeight / 2)}px`;
+      };
+      const onDragend = (evt) => {
+        document.documentElement.addEventListener('mouseup', onDragend);
+        document.documentElement.addEventListener('mousemove', onDrag);
+        if (dragCopy.parentNode) {
+          dragCopy.parentNode.removeChild(dragCopy);
+        }
+        this.timeline.dropNewEffect(this.effect, evt.clientX, evt.clientY);
+      };
+      document.documentElement.addEventListener('mouseup', onDragend);
+      document.documentElement.addEventListener('mousemove', onDrag);
+    });
+  }
+  getElement() {
+    return this.element;
+  }
+}
+
 export default class MainMenu {
   constructor() {
     this.menu = document.getElementById('menu-container');
@@ -263,12 +305,7 @@ export default class MainMenu {
 
     const effectListElms = document.createDocumentFragment();
     for (let i = 0; i < effects.length; i++) {
-      const elm = parseHtml(`
-        <li draggable="true">${effects[i].getDisplayName()}</li>
-      `);
-      elm.addEventListener('dragstart', (evt) => {
-        evt.dataTransfer.setData('particles/effect-id', effects[i].getId());
-      });
+      const elm = new EffectListItem(effects[i], this.timeline).getElement();
       effectListElms.appendChild(elm);
     }
     this.effectList.appendChild(effectListElms);
