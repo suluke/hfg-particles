@@ -2384,30 +2384,50 @@ var EffectListItem = function EffectListItem(effect, timeline) {
   this.element = parseHtml(("\n      <li>" + (effect.getDisplayName()) + "</li>\n    "));
   this.dragCopy = parseHtml(("\n      <div class=\"effect-list-item drag-drop-copy\">" + (effect.getDisplayName()) + "</div>\n    "));
   var dragCopy = this.dragCopy;
-  this.element.addEventListener('mousedown', function (evt) {
-    evt.preventDefault();
-    var copyVisible = false;
+
+  var dragDropBehavior = function (moveEvt, endEvt) { return function (evt) {
+    document.getElementById('modal-container').appendChild(dragCopy);
     dragCopy.style.width = (this$1.element.offsetWidth) + "px";
     dragCopy.style.height = (this$1.element.offsetHeight) + "px";
+    dragCopy.style.left = (evt.clientX - (this$1.element.offsetWidth / 2)) + "px";
+    dragCopy.style.top = (evt.clientY - (this$1.element.offsetHeight / 2)) + "px";
     var onDrag = function (evt) {
-      evt.preventDefault();
-      if (!copyVisible) {
-        document.getElementById('modal-container').appendChild(dragCopy);
-        copyVisible = true;
+      // TODO very hacky
+      if (moveEvt.indexOf('touch') !== -1) {
+        evt = evt.touches[0];
       }
       dragCopy.style.left = (evt.clientX - (this$1.element.offsetWidth / 2)) + "px";
       dragCopy.style.top = (evt.clientY - (this$1.element.offsetHeight / 2)) + "px";
     };
     var onDragend = function (evt) {
-      document.documentElement.removeEventListener('mouseup', onDragend);
-      document.documentElement.removeEventListener('mousemove', onDrag);
+      // TODO very hacky
+      if (endEvt.indexOf('touch') !== -1) {
+        evt = evt.changedTouches[0];
+      }
+      document.documentElement.removeEventListener(endEvt, onDragend);
+      document.documentElement.removeEventListener(moveEvt, onDrag);
       if (dragCopy.parentNode) {
         dragCopy.parentNode.removeChild(dragCopy);
       }
       this$1.timeline.dropNewEffect(this$1.effect, evt.clientX, evt.clientY, this$1.element.offsetWidth, this$1.element.offsetHeight);
     };
-    document.documentElement.addEventListener('mouseup', onDragend);
-    document.documentElement.addEventListener('mousemove', onDrag);
+    document.documentElement.addEventListener(endEvt, onDragend);
+    document.documentElement.addEventListener(moveEvt, onDrag);
+  }; };
+  this.element.addEventListener('mousedown', dragDropBehavior('mousemove', 'mouseup'));
+
+  var dragDropTimeout = null;
+  this.element.addEventListener('touchstart', function (evt) {
+    evt.preventDefault();
+    var cancelTimeout = function () {
+      if (dragDropTimeout) {
+        window.clearTimeout(dragDropTimeout);
+        dragDropTimeout = null;
+      }
+      this$1.element.removeEventListener('touchend', cancelTimeout);
+    };
+    this$1.element.addEventListener('touchend', cancelTimeout);
+    dragDropTimeout = window.setTimeout(function () { return dragDropBehavior('touchmove', 'touchend')(evt); }, 251);
   });
 };
 EffectListItem.prototype.getElement = function getElement () {
