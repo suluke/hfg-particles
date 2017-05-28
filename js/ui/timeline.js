@@ -135,15 +135,16 @@ class TimelineTrack {
     this.entryList = [];
   }
 
-  dropNewEffect(effect, clientX, clientY) {
+  dropNewEffect(effect, clientX, clientY, width, height) {
     const elm = this.getTrackElement();
     const rect = elm.getBoundingClientRect();
     if (clientX >= rect.left && clientX <= rect.right &&
         clientY >= rect.top && clientY <= rect.bottom) {
       const entry = new TimelineEntry(effect, this.timeline);
+      const timeBegin = Math.max(0, clientX - (width / 2) - rect.left) / (this.timeline.pxPerSecond / 1000);
       entry.loadState({
-        timeBegin: 0, // TODO magic numbers, retrieve from drop position instead
-        timeEnd:   1000, // or the place where css will put the box
+        timeBegin,
+        timeEnd:   timeBegin + 1000,
         config:    effect.getDefaultConfig()
       });
       this.addEntry(entry);
@@ -422,9 +423,9 @@ export default class Timeline {
       }
     });
   }
-  dropNewEffect(effect, clientX, clientY) {
+  dropNewEffect(effect, clientX, clientY, width, height) {
     for (let i = 0; i < this.trackList.length; i++) {
-      if (this.trackList[i].dropNewEffect(effect, clientX, clientY)) {
+      if (this.trackList[i].dropNewEffect(effect, clientX, clientY, width, height)) {
         return true;
       }
     }

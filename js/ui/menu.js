@@ -256,7 +256,7 @@ class EffectListItem {
         if (dragCopy.parentNode) {
           dragCopy.parentNode.removeChild(dragCopy);
         }
-        this.timeline.dropNewEffect(this.effect, evt.clientX, evt.clientY);
+        this.timeline.dropNewEffect(this.effect, evt.clientX, evt.clientY, this.element.offsetWidth, this.element.offsetHeight);
       };
       document.documentElement.addEventListener('mouseup', onDragend);
       document.documentElement.addEventListener('mousemove', onDrag);
