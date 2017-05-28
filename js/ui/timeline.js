@@ -16,7 +16,7 @@ class TimelineEntry {
     const beginHandleClass = 'timeline-entry-begin-time-adjust';
     const endHandleClass = 'timeline-entry-end-time-adjust';
     this.element = parseHtml(`
-      <li draggable="true">
+      <li>
         <div class="${beginHandleClass}"></div>
         <button type="button">${this.effect.getDisplayName()}</button>
         <div class="${endHandleClass}"></div>

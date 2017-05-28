@@ -236,30 +236,50 @@ class EffectListItem {
       <div class="effect-list-item drag-drop-copy">${effect.getDisplayName()}</div>
     `);
     const dragCopy = this.dragCopy;
-    this.element.addEventListener('mousedown', (evt) => {
-      evt.preventDefault();
-      let copyVisible = false;
+
+    const dragDropBehavior = (moveEvt, endEvt) => (evt) => {
+      document.getElementById('modal-container').appendChild(dragCopy);
       dragCopy.style.width = `${this.element.offsetWidth}px`;
       dragCopy.style.height = `${this.element.offsetHeight}px`;
+      dragCopy.style.left = `${evt.clientX - (this.element.offsetWidth / 2)}px`;
+      dragCopy.style.top = `${evt.clientY - (this.element.offsetHeight / 2)}px`;
       const onDrag = (evt) => {
-        evt.preventDefault();
-        if (!copyVisible) {
-          document.getElementById('modal-container').appendChild(dragCopy);
-          copyVisible = true;
+        // TODO very hacky
+        if (moveEvt.indexOf('touch') !== -1) {
+          evt = evt.touches[0];
         }
         dragCopy.style.left = `${evt.clientX - (this.element.offsetWidth / 2)}px`;
         dragCopy.style.top = `${evt.clientY - (this.element.offsetHeight / 2)}px`;
       };
       const onDragend = (evt) => {
-        document.documentElement.removeEventListener('mouseup', onDragend);
-        document.documentElement.removeEventListener('mousemove', onDrag);
+        // TODO very hacky
+        if (endEvt.indexOf('touch') !== -1) {
+          evt = evt.changedTouches[0];
+        }
+        document.documentElement.removeEventListener(endEvt, onDragend);
+        document.documentElement.removeEventListener(moveEvt, onDrag);
         if (dragCopy.parentNode) {
           dragCopy.parentNode.removeChild(dragCopy);
         }
         this.timeline.dropNewEffect(this.effect, evt.clientX, evt.clientY, this.element.offsetWidth, this.element.offsetHeight);
       };
-      document.documentElement.addEventListener('mouseup', onDragend);
-      document.documentElement.addEventListener('mousemove', onDrag);
+      document.documentElement.addEventListener(endEvt, onDragend);
+      document.documentElement.addEventListener(moveEvt, onDrag);
+    };
+    this.element.addEventListener('mousedown', dragDropBehavior('mousemove', 'mouseup'));
+
+    let dragDropTimeout = null;
+    this.element.addEventListener('touchstart', (evt) => {
+      evt.preventDefault();
+      const cancelTimeout = () => {
+        if (dragDropTimeout) {
+          window.clearTimeout(dragDropTimeout);
+          dragDropTimeout = null;
+        }
+        this.element.removeEventListener('touchend', cancelTimeout);
+      };
+      this.element.addEventListener('touchend', cancelTimeout);
+      dragDropTimeout = window.setTimeout(() => dragDropBehavior('touchmove', 'touchend')(evt), 251);
     });
   }
   getElement() {
