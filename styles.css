@@ -2399,6 +2399,10 @@
   opacity: 0;
   background-color: transparent; }
 
+.drag-drop-copy {
+  z-index: 100;
+  position: absolute; }
+
 .img-dim-warn-backdrop {
   position: absolute;
   width: 100%;
@@ -2571,6 +2575,15 @@
           margin-top: 10px;
           margin-left: 10px; }
           .menu-container .menu-content .menu-content-inner .menu-effect-list > *:before {
+            content: "";
+            display: inline-block;
+            height: 100%;
+            vertical-align: middle;
+            width: 0; }
+        #modal-container .effect-list-item.drag-drop-copy {
+          text-align: center;
+          background-color: rgba(0, 0, 0, 0.3); }
+          #modal-container .effect-list-item.drag-drop-copy:before {
             content: "";
             display: inline-block;
             height: 100%;

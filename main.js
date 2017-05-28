@@ -1257,8 +1257,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-05-24T17:11:57.668Z',
-  git_rev:               '818caad',
+  timestamp:             '2017-05-28T20:23:12.704Z',
+  git_rev:               '0e53ae4',
   export_schema_version: 0
 };
 
@@ -1686,7 +1686,7 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
 
   var beginHandleClass = 'timeline-entry-begin-time-adjust';
   var endHandleClass = 'timeline-entry-end-time-adjust';
-  this.element = parseHtml(("\n      <li draggable=\"true\">\n        <div class=\"" + beginHandleClass + "\"></div>\n        <button type=\"button\">" + (this.effect.getDisplayName()) + "</button>\n        <div class=\"" + endHandleClass + "\"></div>\n      </li>\n    "));
+  this.element = parseHtml(("\n      <li>\n        <div class=\"" + beginHandleClass + "\"></div>\n        <button type=\"button\">" + (this.effect.getDisplayName()) + "</button>\n        <div class=\"" + endHandleClass + "\"></div>\n      </li>\n    "));
   this.setupTimeAdjustHandles();
   var li = this.element;
   li.addEventListener('dragstart', function (evt) {
@@ -1696,7 +1696,7 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
   li.addEventListener('dragend', function (evt) {
     li.style.display = '';
   });
-    
+
   this.openConfigBtn = this.element.querySelector('button');
   this.openConfigBtn.addEventListener('click', function () {
     this$1.timeline.effectConfigDialog.promptUser(this$1)
@@ -1731,7 +1731,7 @@ TimelineEntry.setupAdjustHandle = function setupAdjustHandle (elm, onAdjustCallb
       document.documentElement.removeEventListener('mousemove', onAdjust);
       document.documentElement.removeEventListener('mouseup', onStopAdjust);
     };
-      
+
     document.documentElement.addEventListener('mousemove', onAdjust);
     document.documentElement.addEventListener('mouseup', onStopAdjust);
   });
@@ -1757,7 +1757,7 @@ TimelineEntry.prototype.setupTimeAdjustHandles = function setupTimeAdjustHandles
     }
   });
 };
-  
+
 TimelineEntry.prototype.loadState = function loadState (state) {
   this.timeBegin = state.timeBegin;
   this.timeEnd = state.timeEnd;
@@ -1783,37 +1783,33 @@ TimelineEntry.prototype.renderStyles = function renderStyles () {
  *
  */
 var TimelineTrack = function TimelineTrack(trackNumber, timeline) {
-  var this$1 = this;
-
   this.elements = [];
   this.timeline = timeline;
   this.elements.push(parseHtml(("\n      <td>\n        <h3>Track " + trackNumber + "</h3>\n      </td>\n    ")));
   this.elements.push(parseHtml("\n      <td width=\"99%\">\n        <ol>\n        </ol>\n      </td>\n    "));
   this.entryListElm = this.elements[1].querySelector('ol');
   this.entryList = [];
-  this.entryListElm.addEventListener('drop', function (evt) {
-    [].map.call(evt.dataTransfer.types, function (type) {
-      if (type === 'particles/effect-id') {
-        var str = evt.dataTransfer.getData(type);
-        if (byId[str] !== undefined) {
-          evt.preventDefault();
-          var entry = new TimelineEntry(byId[str], this$1.timeline);
-          entry.loadState({
-            timeBegin: 0, // TODO magic numbers, retrieve from drop position instead
-            timeEnd: 1000, // or the place where css will put the box
-            config:  byId[str].getDefaultConfig()
-          });
-          this$1.addEntry(entry);
-          this$1.renderHtml();
-          this$1.renderStyles();
-          this$1.timeline.notifyChange();
-        }
-      } else if (type === 'particles/timeline-entry') {
-        evt.preventDefault();
-        // TODO
-      }
+};
+
+TimelineTrack.prototype.dropNewEffect = function dropNewEffect (effect, clientX, clientY, width, height) {
+  var elm = this.getTrackElement();
+  var rect = elm.getBoundingClientRect();
+  if (clientX >= rect.left && clientX <= rect.right &&
+      clientY >= rect.top && clientY <= rect.bottom) {
+    var entry = new TimelineEntry(effect, this.timeline);
+    var timeBegin = Math.max(0, clientX - (width / 2) - rect.left) / (this.timeline.pxPerSecond / 1000);
+    entry.loadState({
+      timeBegin: timeBegin,
+      timeEnd: timeBegin + 1000,
+      config:  effect.getDefaultConfig()
     });
-  });
+    this.addEntry(entry);
+    this.renderHtml();
+    this.renderStyles();
+    this.timeline.notifyChange();
+    return true;
+  }
+  return false;
 };
 
 TimelineTrack.prototype.addEntry = function addEntry (entry) {
@@ -1822,6 +1818,9 @@ TimelineTrack.prototype.addEntry = function addEntry (entry) {
 
 TimelineTrack.prototype.getElements = function getElements () {
   return this.elements;
+};
+TimelineTrack.prototype.getTrackElement = function getTrackElement () {
+  return this.elements[1];
 };
 TimelineTrack.prototype.renderHtml = function renderHtml () {
     var this$1 = this;
@@ -2087,6 +2086,16 @@ Timeline.prototype.deleteEntry = function deleteEntry (remove) {
       track.entryList.splice(trackIndex, 1);
     }
   });
+};
+Timeline.prototype.dropNewEffect = function dropNewEffect (effect, clientX, clientY, width, height) {
+    var this$1 = this;
+
+  for (var i = 0; i < this.trackList.length; i++) {
+    if (this$1.trackList[i].dropNewEffect(effect, clientX, clientY, width, height)) {
+      return true;
+    }
+  }
+  return false;
 };
 
 /**
@@ -2367,6 +2376,44 @@ var ControlsList = [
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
+var EffectListItem = function EffectListItem(effect, timeline) {
+  var this$1 = this;
+
+  this.effect = effect;
+  this.timeline = timeline;
+  this.element = parseHtml(("\n      <li>" + (effect.getDisplayName()) + "</li>\n    "));
+  this.dragCopy = parseHtml(("\n      <div class=\"effect-list-item drag-drop-copy\">" + (effect.getDisplayName()) + "</div>\n    "));
+  var dragCopy = this.dragCopy;
+  this.element.addEventListener('mousedown', function (evt) {
+    evt.preventDefault();
+    var copyVisible = false;
+    dragCopy.style.width = (this$1.element.offsetWidth) + "px";
+    dragCopy.style.height = (this$1.element.offsetHeight) + "px";
+    var onDrag = function (evt) {
+      evt.preventDefault();
+      if (!copyVisible) {
+        document.getElementById('modal-container').appendChild(dragCopy);
+        copyVisible = true;
+      }
+      dragCopy.style.left = (evt.clientX - (this$1.element.offsetWidth / 2)) + "px";
+      dragCopy.style.top = (evt.clientY - (this$1.element.offsetHeight / 2)) + "px";
+    };
+    var onDragend = function (evt) {
+      document.documentElement.removeEventListener('mouseup', onDragend);
+      document.documentElement.removeEventListener('mousemove', onDrag);
+      if (dragCopy.parentNode) {
+        dragCopy.parentNode.removeChild(dragCopy);
+      }
+      this$1.timeline.dropNewEffect(this$1.effect, evt.clientX, evt.clientY, this$1.element.offsetWidth, this$1.element.offsetHeight);
+    };
+    document.documentElement.addEventListener('mouseup', onDragend);
+    document.documentElement.addEventListener('mousemove', onDrag);
+  });
+};
+EffectListItem.prototype.getElement = function getElement () {
+  return this.element;
+};
+
 var MainMenu = function MainMenu() {
   var this$1 = this;
 
@@ -2405,15 +2452,10 @@ var MainMenu = function MainMenu() {
   }
 
   var effectListElms = document.createDocumentFragment();
-  var loop = function ( i ) {
-    var elm = parseHtml(("\n        <li draggable=\"true\">" + (effectList[i].getDisplayName()) + "</li>\n      "));
-    elm.addEventListener('dragstart', function (evt) {
-      evt.dataTransfer.setData('particles/effect-id', effectList[i].getId());
-    });
+  for (var i$1 = 0; i$1 < effectList.length; i$1++) {
+    var elm = new EffectListItem(effectList[i$1], this$1.timeline).getElement();
     effectListElms.appendChild(elm);
-  };
-
-  for (var i$1 = 0; i$1 < effectList.length; i$1++) loop( i$1 );
+  }
   this.effectList.appendChild(effectListElms);
 
   this.timeline.loadTimeline([
