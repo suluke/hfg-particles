@@ -251,8 +251,8 @@ class EffectListItem {
         dragCopy.style.top = `${evt.clientY - (this.element.offsetHeight / 2)}px`;
       };
       const onDragend = (evt) => {
-        document.documentElement.addEventListener('mouseup', onDragend);
-        document.documentElement.addEventListener('mousemove', onDrag);
+        document.documentElement.removeEventListener('mouseup', onDragend);
+        document.documentElement.removeEventListener('mousemove', onDrag);
         if (dragCopy.parentNode) {
           dragCopy.parentNode.removeChild(dragCopy);
         }
