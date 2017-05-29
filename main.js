@@ -1257,8 +1257,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-05-28T20:23:12.704Z',
-  git_rev:               '0e53ae4',
+  timestamp:             '2017-05-29T18:16:10.841Z',
+  git_rev:               'b8e35be',
   export_schema_version: 0
 };
 
@@ -1720,6 +1720,7 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
 
 TimelineEntry.setupAdjustHandle = function setupAdjustHandle (elm, onAdjustCallback) {
   elm.addEventListener('mousedown', function (evt) {
+    console.log('mousedown');
     evt.preventDefault(); // prevent dragging parent
 
     var prevX = evt.clientX;
@@ -2383,52 +2384,81 @@ var EffectListItem = function EffectListItem(effect, timeline) {
   this.timeline = timeline;
   this.element = parseHtml(("\n      <li>" + (effect.getDisplayName()) + "</li>\n    "));
   this.dragCopy = parseHtml(("\n      <div class=\"effect-list-item drag-drop-copy\">" + (effect.getDisplayName()) + "</div>\n    "));
+    
   var dragCopy = this.dragCopy;
-
-  var dragDropBehavior = function (moveEvt, endEvt) { return function (evt) {
+  var showDragCopy = function (x, y) {
     document.getElementById('modal-container').appendChild(dragCopy);
     dragCopy.style.width = (this$1.element.offsetWidth) + "px";
     dragCopy.style.height = (this$1.element.offsetHeight) + "px";
-    dragCopy.style.left = (evt.clientX - (this$1.element.offsetWidth / 2)) + "px";
-    dragCopy.style.top = (evt.clientY - (this$1.element.offsetHeight / 2)) + "px";
+    dragCopy.style.left = (x - (this$1.element.offsetWidth / 2)) + "px";
+    dragCopy.style.top = (y - (this$1.element.offsetHeight / 2)) + "px";
+  };
+  var updateDragCopy = function (x, y) {
+    dragCopy.style.left = (x - (this$1.element.offsetWidth / 2)) + "px";
+    dragCopy.style.top = (y - (this$1.element.offsetHeight / 2)) + "px";
+  };
+  var hideDragCopy = function () {
+    if (dragCopy.parentNode) {
+      dragCopy.parentNode.removeChild(dragCopy);
+    }
+  };
+
+  this.element.addEventListener('mousedown', function (evt) {
+    console.log('mousedown');
+    showDragCopy(evt.clientX, evt.clientY);
+    var onDrag = function (evt) { return updateDragCopy(evt.clientX, evt.clientY); };
+    var onDragend = function (evt) {
+      document.documentElement.removeEventListener('mouseup', onDragend);
+      document.documentElement.removeEventListener('mousemove', onDrag);
+      hideDragCopy();
+      this$1.timeline.dropNewEffect(
+        this$1.effect, evt.clientX, evt.clientY, this$1.element.offsetWidth,
+        this$1.element.offsetHeight
+      );
+    };
+    document.documentElement.addEventListener('mouseup', onDragend);
+    document.documentElement.addEventListener('mousemove', onDrag);
+  });
+
+  /**
+   * Now for touch
+   */
+  var touchDragging = function (evt) {
+    showDragCopy(evt.touches[0].clientX, evt.touches[0].clientY);
     var onDrag = function (evt) {
-      // TODO very hacky
-      if (moveEvt.indexOf('touch') !== -1) {
-        evt = evt.touches[0];
+      if (evt.touches) {
+        updateDragCopy(evt.touches[0].clientX, evt.touches[0].clientY);
+      } else {
+        updateDragCopy(evt.clientX, evt.clientY);
       }
-      dragCopy.style.left = (evt.clientX - (this$1.element.offsetWidth / 2)) + "px";
-      dragCopy.style.top = (evt.clientY - (this$1.element.offsetHeight / 2)) + "px";
     };
     var onDragend = function (evt) {
-      // TODO very hacky
-      if (endEvt.indexOf('touch') !== -1) {
-        evt = evt.changedTouches[0];
-      }
-      document.documentElement.removeEventListener(endEvt, onDragend);
-      document.documentElement.removeEventListener(moveEvt, onDrag);
-      if (dragCopy.parentNode) {
-        dragCopy.parentNode.removeChild(dragCopy);
-      }
-      this$1.timeline.dropNewEffect(this$1.effect, evt.clientX, evt.clientY, this$1.element.offsetWidth, this$1.element.offsetHeight);
+      document.documentElement.removeEventListener('touchend', onDragend);
+      document.documentElement.removeEventListener('touchmove', onDrag);
+      hideDragCopy();
+      this$1.timeline.dropNewEffect(
+        this$1.effect, evt.changedTouches[0].clientX, evt.changedTouches[0].clientY,
+        this$1.element.offsetWidth, this$1.element.offsetHeight
+      );
     };
-    document.documentElement.addEventListener(endEvt, onDragend);
-    document.documentElement.addEventListener(moveEvt, onDrag);
-  }; };
-  this.element.addEventListener('mousedown', dragDropBehavior('mousemove', 'mouseup'));
-
-  var dragDropTimeout = null;
+    document.documentElement.addEventListener('touchend', onDragend);
+    document.documentElement.addEventListener('touchmove', onDrag);
+  };
   this.element.addEventListener('touchstart', function (evt) {
-    evt.preventDefault();
-    var cancelTimeout = function () {
-      if (dragDropTimeout) {
-        window.clearTimeout(dragDropTimeout);
-        dragDropTimeout = null;
-      }
-      this$1.element.removeEventListener('touchend', cancelTimeout);
-    };
-    this$1.element.addEventListener('touchend', cancelTimeout);
-    dragDropTimeout = window.setTimeout(function () { return dragDropBehavior('touchmove', 'touchend')(evt); }, 251);
-  });
+    touchDragging(evt);
+  }, { passive: false });
+  // Weird chrome behavior:
+  // http://wilsonpage.co.uk/touch-events-in-chrome-android/
+  // TODO this breaks scrolling - which is why I removed the timeout
+  // (long press to drag) logic
+  var preventCancel = function (evt) {
+    if (evt.path[0] === this$1.element) {
+      console.log('Cancel');
+      console.log(evt);
+      evt.preventDefault();
+    }
+  };
+  document.documentElement.addEventListener('touchmove', preventCancel, { passive: false });
 };
 EffectListItem.prototype.getElement = function getElement () {
   return this.element;
