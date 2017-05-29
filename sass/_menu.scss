@@ -1,5 +1,6 @@
 @import 'mixins/hide';
 @import 'mixins/centering';
+@import 'mixins/unselectable';
 
 $menu-background-color: rgba(255, 255, 255, 0.9);
 $menu-apply-btn-height: 10%;
@@ -69,8 +70,9 @@ $menu-apply-btn-height: 10%;
         justify-content: space-between;
         list-style-type: none;
         /* Effect boxes */
-        & > * {
+        & > li {
           @include vCenterText;
+          @include unselectable;
           cursor: -moz-grab;
           cursor: -webkit-grab;
           cursor: grab;
@@ -86,6 +88,10 @@ $menu-apply-btn-height: 10%;
         @at-root #modal-container {
           .effect-list-item.drag-drop-copy {
             @include vCenterText;
+            @include unselectable;
+            cursor: -moz-grabbing;
+            cursor: -webkit-grabbing;
+            cursor: grabbing;
             text-align: center;
             background-color: rgba(0, 0, 0, 0.3);
           }

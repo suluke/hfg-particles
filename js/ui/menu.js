@@ -235,52 +235,78 @@ class EffectListItem {
     this.dragCopy = parseHtml(`
       <div class="effect-list-item drag-drop-copy">${effect.getDisplayName()}</div>
     `);
+    
     const dragCopy = this.dragCopy;
-
-    const dragDropBehavior = (moveEvt, endEvt) => (evt) => {
+    const showDragCopy = (x, y) => {
       document.getElementById('modal-container').appendChild(dragCopy);
       dragCopy.style.width = `${this.element.offsetWidth}px`;
       dragCopy.style.height = `${this.element.offsetHeight}px`;
-      dragCopy.style.left = `${evt.clientX - (this.element.offsetWidth / 2)}px`;
-      dragCopy.style.top = `${evt.clientY - (this.element.offsetHeight / 2)}px`;
+      dragCopy.style.left = `${x - (this.element.offsetWidth / 2)}px`;
+      dragCopy.style.top = `${y - (this.element.offsetHeight / 2)}px`;
+    };
+    const updateDragCopy = (x, y) => {
+      dragCopy.style.left = `${x - (this.element.offsetWidth / 2)}px`;
+      dragCopy.style.top = `${y - (this.element.offsetHeight / 2)}px`;
+    };
+    const hideDragCopy = () => {
+      if (dragCopy.parentNode) {
+        dragCopy.parentNode.removeChild(dragCopy);
+      }
+    };
+
+    this.element.addEventListener('mousedown', (evt) => {
+      showDragCopy(evt.clientX, evt.clientY);
+      const onDrag = (evt) => updateDragCopy(evt.clientX, evt.clientY);
+      const onDragend = (evt) => {
+        document.documentElement.removeEventListener('mouseup', onDragend);
+        document.documentElement.removeEventListener('mousemove', onDrag);
+        hideDragCopy();
+        this.timeline.dropNewEffect(
+          this.effect, evt.clientX, evt.clientY, this.element.offsetWidth,
+          this.element.offsetHeight
+        );
+      };
+      document.documentElement.addEventListener('mouseup', onDragend);
+      document.documentElement.addEventListener('mousemove', onDrag);
+    });
+
+    /**
+     * Now for touch
+     */
+    const touchDragging = (evt) => {
+      showDragCopy(evt.touches[0].clientX, evt.touches[0].clientY);
       const onDrag = (evt) => {
-        // TODO very hacky
-        if (moveEvt.indexOf('touch') !== -1) {
-          evt = evt.touches[0];
+        if (evt.touches) {
+          updateDragCopy(evt.touches[0].clientX, evt.touches[0].clientY);
+        } else {
+          updateDragCopy(evt.clientX, evt.clientY);
         }
-        dragCopy.style.left = `${evt.clientX - (this.element.offsetWidth / 2)}px`;
-        dragCopy.style.top = `${evt.clientY - (this.element.offsetHeight / 2)}px`;
       };
       const onDragend = (evt) => {
-        // TODO very hacky
-        if (endEvt.indexOf('touch') !== -1) {
-          evt = evt.changedTouches[0];
-        }
-        document.documentElement.removeEventListener(endEvt, onDragend);
-        document.documentElement.removeEventListener(moveEvt, onDrag);
-        if (dragCopy.parentNode) {
-          dragCopy.parentNode.removeChild(dragCopy);
-        }
-        this.timeline.dropNewEffect(this.effect, evt.clientX, evt.clientY, this.element.offsetWidth, this.element.offsetHeight);
+        document.documentElement.removeEventListener('touchend', onDragend);
+        document.documentElement.removeEventListener('touchmove', onDrag);
+        hideDragCopy();
+        this.timeline.dropNewEffect(
+          this.effect, evt.changedTouches[0].clientX, evt.changedTouches[0].clientY,
+          this.element.offsetWidth, this.element.offsetHeight
+        );
       };
-      document.documentElement.addEventListener(endEvt, onDragend);
-      document.documentElement.addEventListener(moveEvt, onDrag);
+      document.documentElement.addEventListener('touchend', onDragend);
+      document.documentElement.addEventListener('touchmove', onDrag);
     };
-    this.element.addEventListener('mousedown', dragDropBehavior('mousemove', 'mouseup'));
-
-    let dragDropTimeout = null;
     this.element.addEventListener('touchstart', (evt) => {
-      evt.preventDefault();
-      const cancelTimeout = () => {
-        if (dragDropTimeout) {
-          window.clearTimeout(dragDropTimeout);
-          dragDropTimeout = null;
-        }
-        this.element.removeEventListener('touchend', cancelTimeout);
-      };
-      this.element.addEventListener('touchend', cancelTimeout);
-      dragDropTimeout = window.setTimeout(() => dragDropBehavior('touchmove', 'touchend')(evt), 251);
-    });
+      touchDragging(evt);
+    }, { passive: false });
+    // Weird chrome behavior:
+    // http://wilsonpage.co.uk/touch-events-in-chrome-android/
+    // TODO this breaks scrolling - which is why I removed the timeout
+    // (long press to drag) logic
+    const preventCancel = (evt) => {
+      if (evt.path[0] === this.element) {
+        evt.preventDefault();
+      }
+    };
+    document.documentElement.addEventListener('touchmove', preventCancel, { passive: false });
   }
   getElement() {
     return this.element;
