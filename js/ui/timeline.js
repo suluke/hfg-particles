@@ -79,6 +79,7 @@ class TimelineEntry {
       if (newBegin < this.timeEnd) {
         this.timeBegin = newBegin;
         this.renderStyles();
+        this.timeline.notifyChange();
       }
     });
     const endHandle = this.element.querySelector('.timeline-entry-end-time-adjust');
@@ -87,6 +88,7 @@ class TimelineEntry {
       if (newEnd > this.timeBegin) {
         this.timeEnd = newEnd;
         this.renderStyles();
+        this.timeline.notifyChange();
       }
     });
   }
