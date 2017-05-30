@@ -3,6 +3,7 @@ import Config from '../config';
 import Timeline from './timeline';
 import { parseHtml } from './util';
 
+import EffectConfig from '../effects/effect-config';
 import { effectList as effects } from '../effects/index';
 
 /**
@@ -357,17 +358,18 @@ export default class MainMenu {
     this.effectList.appendChild(effectListElms);
 
     this.timeline.loadTimeline([
-      [[effects[0].getId(), {
-        timeBegin: 0,
-        timeEnd:   10000,
-        config:    effects[0].getDefaultConfig()
-      }]],
-      [[effects[1].getId(), {
-        timeBegin: 0,
-        timeEnd:   10000,
-        config:    effects[1].getDefaultConfig()
-      }]],
-      []
+      [new EffectConfig(
+        effects[0].getId(),
+        0,
+        10000,
+        effects[0].getDefaultConfig()
+      )],
+      [new EffectConfig(
+        effects[1].getId(),
+        0,
+        10000,
+        effects[1].getDefaultConfig()
+      )]
     ]);
 
     this.defaultConfig = this.readConfig();

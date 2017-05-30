@@ -1,6 +1,40 @@
 import createRegl from 'regl';
 import CommandBuilder from './command-builder';
 
+class RendererClock {
+  constructor() {
+    this.time = -1;
+    this.delta = 0;
+    this.absTime = Date.now();
+  }
+  frame() {
+    if (this.time === -1) {
+      // it was requested that we start at zero
+      this.absTime = Date.now();
+      this.time = 0;
+    } else {
+      const oldTime = this.absTime;
+      this.absTime = Date.now();
+      this.delta = this.absTime - oldTime;
+      this.time += this.delta;
+    }
+  }
+  reset() {
+    this.time = -1;
+    this.delta = 0;
+    this.absTime = Date.now();
+  }
+  getTime() {
+    return this.time;
+  }
+  getDelta() {
+    return this.delta;
+  }
+  getAbsoluteTime() {
+    return this.absTime;
+  }
+}
+
 export default class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -12,20 +46,17 @@ export default class Renderer {
     this.config = null;
     this.command = null;
     this.commandBuilder = new CommandBuilder();
-    this.oldTime = this.regl.now();
-    this.currentTime = this.regl.now();
+    this.clock = new RendererClock();
     this.regl.frame(() => {
-      this.oldTime = this.currentTime;
-      this.currentTime = this.regl.now();
       if (this.command === null) {
         return;
       }
+      this.clock.frame();
       this.regl.clear({ color: this.config.backgroundColor });
       this.command({
         config:       this.config,
         particleData: this.particleData,
-        oldTime:      this.oldTime,
-        currentTime:  this.currentTime,
+        clock:        this.clock
       });
     });
   }
@@ -105,7 +136,7 @@ export default class Renderer {
   }
 
   destroyParticleData() {
-    this.command = null;
+    this.setCommand(null);
     if (this.particleData !== null) {
       this.particleData.texcoordsBuffer.destroy();
       this.particleData.rgbBuffer.destroy();
@@ -114,9 +145,14 @@ export default class Renderer {
     }
   }
 
+  setCommand(command) {
+    this.clock.reset();
+    this.command = command;
+  }
+
   rebuildCommand() {
     const cmd = this.commandBuilder.buildCommand(this.particleData, this.config);
-    this.command = this.regl(cmd);
+    this.setCommand(this.regl(cmd));
   }
 
   loadImage(img) {

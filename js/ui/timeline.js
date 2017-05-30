@@ -1,6 +1,6 @@
 import EffectConfigDialog from './effect-config-dialog';
 import { parseHtml, clearChildNodes } from './util';
-import { effectsById } from '../effects/index';
+import EffectConfig from '../effects/effect-config';
 
 /**
  *
@@ -100,11 +100,12 @@ class TimelineEntry {
     return this.element;
   }
   getConfiguration() {
-    return [this.effect.getId(), {
-      timeBegin: this.timeBegin,
-      timeEnd:   this.timeEnd,
-      config:    this.config
-    }];
+    return new EffectConfig(
+      this.effect.getId(),
+      this.timeBegin,
+      this.timeEnd,
+      this.config
+    );
   }
   renderStyles() {
     const li = this.getElement();
@@ -334,11 +335,9 @@ export default class Timeline {
       const track = new TimelineTrack(i + 1, this);
       this.trackList.push(track);
       for (let j = 0; j < trackList[i].length; j++) {
-        const entryDesc = trackList[i][j];
-        const effectId = entryDesc[0];
-        const entryState = entryDesc[1];
-        const entry = new TimelineEntry(effectsById[effectId], this);
-        entry.loadState(entryState);
+        const entryDesc = EffectConfig.deserialize(trackList[i][j]);
+        const entry = new TimelineEntry(entryDesc.getEffectClass(), this);
+        entry.loadState(entryDesc);
         track.addEntry(entry);
       }
     }

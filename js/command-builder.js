@@ -48,15 +48,21 @@ class Uniforms {
     return this.getNameFor(uniform);
   }
   getNameFor(uniform) {
-    return `${uniform.name}_${this.id}`;
+    if (this.id === undefined) {
+      return uniform.name;
+    } else {
+      return `${uniform.name}_${this.id}`;
+    }
   }
-  compile(shader, uniforms) {
+  compile(shader, uniforms = null) {
     const shaderStr = [];
     for (let i = 0; i < this.uniforms.length; i++) {
       const uniform = this.uniforms[i];
       shaderStr.push(`uniform ${uniform.type} ${this.getNameFor(uniform)};`);
-      // eslint-disable-next-line no-param-reassign
-      uniforms[this.getNameFor(uniform)] = uniform.value;
+      if (uniforms !== null) {
+        // eslint-disable-next-line no-param-reassign
+        uniforms[this.getNameFor(uniform)] = uniform.value;
+      }
     }
     // eslint-disable-next-line no-param-reassign
     shader.uniforms += shaderStr.join('\n');
@@ -71,21 +77,46 @@ export default class CommandBuilder {
     return this.assembleCommand();
   }
 
-  static prepareVertexShader() {
+  makeUniforms() {
+    const uniforms = new Uniforms();
+    uniforms.addUniform('invImageAspectRatio', 'float', 1 / this.particleData.aspectRatio);
+    uniforms.addUniform('invScreenAspectRatio', 'float', (ctx) => ctx.viewportHeight / ctx.viewportWidth);
+    uniforms.addUniform('viewProjectionMatrix', 'mat4', (ctx) => {
+      const aspect = ctx.viewportWidth / ctx.viewportHeight;
+      const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
+                            (this.particleData.aspectRatio));
+
+      return [
+        2, 0, 0, 0,
+        0, 2 * aspect, 0, 0,
+        0, 0, 1, 0,
+        -1, (underscan * 2) - 1, 0, 1
+      ];
+    });
+    uniforms.addUniform('invViewProjectionMatrix', 'mat4', (ctx) => {
+      const aspect = ctx.viewportWidth / ctx.viewportHeight;
+      const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
+                            (this.particleData.aspectRatio));
+
+      return [
+        0.5, 0, 0, 0,
+        0, 0.5 / aspect, 0, 0,
+        0, 0, 1, 0,
+        0.5, (-0.5 * ((underscan * 2) - 1)) / aspect, 0, 1
+      ];
+    });
+    uniforms.addUniform('particleSize', 'float', (ctx) => (ctx.viewportWidth / this.particleData.width) * 2 * this.config.particleScaling);
+    uniforms.addUniform('globalTime', 'float', () => this.clock.getTime());
+    return uniforms;
+  }
+
+  static prepareVertexShader(uniforms) {
     const vertexShader = new Shader();
 
     vertexShader.attributes += `
       attribute vec2 texcoord;
       attribute vec3 rgb;
       attribute vec3 hsv;
-    `;
-    vertexShader.uniforms += `
-      uniform float invImageAspectRatio;
-      uniform float invScreenAspectRatio;
-      uniform mat4 viewProjectionMatrix;
-      uniform mat4 invViewProjectionMatrix;
-
-      uniform float particleSize;
     `;
     vertexShader.varyings += 'varying vec3 color;\n';
     vertexShader.globals += 'const float PI = 3.14159265;\n';
@@ -119,8 +150,10 @@ export default class CommandBuilder {
   }
 
   assembleCommand() {
+    const uniforms = {};
     const vert = CommandBuilder.prepareVertexShader();
     const frag = this.assembleFragmentShader();
+    this.makeUniforms().compile(vert, uniforms);
 
     const result = {
       primitive:  'points',
@@ -130,6 +163,7 @@ export default class CommandBuilder {
         rgb:      this.particleData.rgbBuffer,
         hsv:      this.particleData.hsvBuffer
       },
+      uniforms,
       frag,
       depth: { enable: false }
     };
@@ -151,40 +185,6 @@ export default class CommandBuilder {
         throw new Error(`Unknown particle overlap mode: ${this.config.particleOverlap}`);
     }
 
-    result.uniforms = {
-      invImageAspectRatio: 1 / this.particleData.aspectRatio,
-      invScreenAspectRatio(ctx) {
-        return ctx.viewportHeight / ctx.viewportWidth;
-      },
-      viewProjectionMatrix(ctx) {
-        const aspect = ctx.viewportWidth / ctx.viewportHeight;
-        const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                              (this.particleData.aspectRatio));
-
-        return [
-          2, 0, 0, 0,
-          0, 2 * aspect, 0, 0,
-          0, 0, 1, 0,
-          -1, (underscan * 2) - 1, 0, 1
-        ];
-      },
-      invViewProjectionMatrix(ctx) {
-        const aspect = ctx.viewportWidth / ctx.viewportHeight;
-        const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                              (this.particleData.aspectRatio));
-
-        return [
-          0.5, 0, 0, 0,
-          0, 0.5 / aspect, 0, 0,
-          0, 0, 1, 0,
-          0.5, (-0.5 * ((underscan * 2) - 1)) / aspect, 0, 1
-        ];
-      },
-      particleSize(ctx) {
-        return (ctx.viewportWidth / this.particleData.width) * 2 * this.config.particleScaling;
-      },
-    };
-
     vert.mainBody += `
       vec3 initialPosition = vec3(texcoord, 0);
       initialPosition.y *= invImageAspectRatio;
@@ -195,12 +195,11 @@ export default class CommandBuilder {
     for (let i = 0; i < this.config.effects.length; i++) {
       const track = this.config.effects[i];
       for (let j = 0; j < track.length; j++) {
-        const uniforms = new Uniforms(globalId);
-        const effectId = track[j][0];
-        const effectConfig = track[j][1];
-        const effectClass = effectsById[effectId];
-        effectClass.register(effectConfig, uniforms, vert);
-        uniforms.compile(vert, result.uniforms);
+        const effectUniforms = new Uniforms(globalId);
+        const effectConfig = track[j];
+        const effectClass = track[j].getEffectClass();
+        effectClass.register(effectConfig, effectUniforms, vert);
+        effectUniforms.compile(vert, uniforms);
         globalId += 1;
       }
     }
