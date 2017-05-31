@@ -34,7 +34,7 @@
     "node-sass-middleware": "^0.11.0",
     "nodemon": "^1.11.0",
     "parse-color": "^1.0.0",
-    "regl": "luckyxxl/regl#1.3.0_fix",
+    "regl": "https://github.com/luckyxxl/regl/tarball/1.3.0_fix",
     "rollup-plugin-buble": "^0.15.0",
     "rollup-plugin-commonjs": "^8.0.2",
     "rollup-plugin-node-resolve": "^3.0.0",
