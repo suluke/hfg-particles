@@ -6,6 +6,7 @@ class RendererClock {
     this.time = -1;
     this.delta = 0;
     this.absTime = Date.now();
+    this.period = 1000;
   }
   frame() {
     if (this.time === -1) {
@@ -16,13 +17,16 @@ class RendererClock {
       const oldTime = this.absTime;
       this.absTime = Date.now();
       this.delta = this.absTime - oldTime;
-      this.time += this.delta;
+      this.time = (this.time + this.delta) % this.period;
     }
   }
   reset() {
     this.time = -1;
     this.delta = 0;
     this.absTime = Date.now();
+  }
+  setPeriod(p) {
+    this.period = p;
   }
   getTime() {
     return this.time;
@@ -147,6 +151,7 @@ export default class Renderer {
 
   setCommand(command) {
     this.clock.reset();
+    this.clock.setPeriod(this.config.duration);
     this.command = command;
   }
 

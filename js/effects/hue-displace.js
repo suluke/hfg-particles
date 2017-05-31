@@ -70,12 +70,12 @@ class HueDisplaceConfigUI extends ConfigUI {
 export default class HueDisplaceEffect extends Effect {
   static register(instance, uniforms, vertexShader) {
     if (instance.config.distance !== 0) {
-      const distance = uniforms.addUniform('hueDisplaceDistance', 'float', () => instance.config.distance);
+      const distance = uniforms.addUniform('hueDisplaceDistance', 'float', instance.config.distance);
       const time = uniforms.addUniform('hueDisplaceTime', 'float', (ctx, props) =>
-        fract(ctx.time / (instance.getPeriod() / 1000)) * 2 * Math.PI);
+        ((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()) * 2 * Math.PI);
       const directionOffset = uniforms.addUniform('hueDisplaceDirectionOffset', 'float', (ctx, props) => {
         let result = instance.config.rotate *
-          fract(ctx.time / (instance.getPeriod() / 1000)) * 2 * Math.PI;
+          ((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()) * 2 * Math.PI;
         if (instance.config.randomDirectionOffset) {
           if (instance.config.randomDirectionOffsetValue === undefined) {
             // eslint-disable-next-line no-param-reassign
@@ -86,13 +86,14 @@ export default class HueDisplaceEffect extends Effect {
 
         return result;
       });
-      const scaleByVal = uniforms.addUniform('hueDisplaceScaleByValue', 'float', () => instance.config.scaleByValue);
+      const scaleByVal = uniforms.addUniform('hueDisplaceScaleByValue', 'float', instance.config.scaleByValue);
+      const weight = uniforms.addUniform('weight', 'float', (ctx, props) => props.clock.getTime() >= instance.timeBegin && props.clock.getTime() <= instance.timeEnd ? 1 : 0);
       // eslint-disable-next-line no-param-reassign
       vertexShader.mainBody += `
         {
           float angle = hsv[0] + ${directionOffset};
           float offset = (-cos(${time}) + 1.) / 2.;
-          position.xy += offset * getDirectionVector(angle) * ${distance} * (1. - ${scaleByVal} * (1. - hsv[2]));
+          position.xy += offset * getDirectionVector(angle) * ${distance} * (1. - ${scaleByVal} * (1. - hsv[2])) * ${weight};
         }
       `;
     }

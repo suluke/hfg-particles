@@ -8,10 +8,6 @@ class ConvergeCircleConfigUI extends ConfigUI {
       <fieldset>
         <legend>Converge</legend>
         <label>
-          Speed:
-          <input type="number" class="effect-converge-speed" value="100" />
-        </label><br/>
-        <label>
           Rotation speed:
           <input type="number" class="effect-converge-rotation-speed" value="0" />
         </label>
@@ -20,10 +16,6 @@ class ConvergeCircleConfigUI extends ConfigUI {
     const ui = this.element;
 
     this.rotationSpeedInput = ui.querySelector('input.effect-converge-rotation-speed');
-    this.speedInput = ui.querySelector('input.effect-converge-speed');
-    this.speedInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
     this.rotationSpeedInput.addEventListener('change', () => {
       this.notifyChange();
     });
@@ -36,27 +28,22 @@ class ConvergeCircleConfigUI extends ConfigUI {
   getConfig() {
     const config = {};
     config.rotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
-    config.speed = parseInt(this.speedInput.value, 10) / 1000;
 
     return config;
   }
 
   applyConfig(config) {
     this.rotationSpeedInput.checked = config.rotationSpeed * 100;
-    this.speedInput.checked = config.speed * 1000;
   }
 }
 
 export default class ConvergeCircleEffect extends Effect {
   static register(instance, uniforms, vertexShader) {
-    const time = uniforms.addUniform('convergeTime', 'float', (ctx) => {
-      const period = 2 * Math.sqrt(2 / instance.config.speed);
-
-      return fract(ctx.time / period) * period;
-    });
-    const speed = uniforms.addUniform('convergeSpeed', 'float', () => instance.config.speed);
-    const rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', () => instance.config.rotationSpeed);
-    const maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', () => Math.sqrt(2 / instance.config.speed));
+    const time = uniforms.addUniform('convergeTime', 'float', (ctx, props) => (props.clock.getTime() - instance.timeBegin) % instance.getPeriod());
+    const speed = uniforms.addUniform('convergeSpeed', 'float', 2 * 2 / (instance.getPeriod() / 2 * instance.getPeriod() / 2));
+    const rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', instance.config.rotationSpeed / 1000);
+    const maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', instance.getPeriod() / 2);
+    const weight = uniforms.addUniform('weight', 'float', (ctx, props) => props.clock.getTime() >= instance.timeBegin && props.clock.getTime() <= instance.timeEnd ? 1 : 0);
 
     // eslint-disable-next-line no-param-reassign
     vertexShader.mainBody += `
@@ -69,17 +56,21 @@ export default class ConvergeCircleEffect extends Effect {
         
         float stop_t = sqrt(2. * d_len / ${speed});
 
+        vec2 result;
+
         if(${time} < stop_t) {
           float t = min(${time}, stop_t);
-          position.xy += .5 * d / d_len * ${speed} * t * t;
+          result = .5 * d / d_len * ${speed} * t * t;
         } else if(${time} < ${maxTravelTime}) {
-          position.xy += d;
+          result = d;
         } else {
           float t = ${time} - ${maxTravelTime};
-          //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));
-          //position.xy += mix(d, vec2(0.), t * t);
-          position.xy += mix(d, vec2(0.), -cos(t / ${maxTravelTime} * PI) * .5 + .5);
+          //result = mix(d, vec2(0.), 1. - (1.-t) * (1.-t));
+          //result = mix(d, vec2(0.), t * t);
+          result = mix(d, vec2(0.), -cos(t / ${maxTravelTime} * PI) * .5 + .5);
         }
+
+        position.xy += result * ${weight};
       }
     `;
   }
@@ -98,8 +89,7 @@ export default class ConvergeCircleEffect extends Effect {
 
   static getDefaultConfig() {
     return {
-      rotationSpeed: 0,
-      speed:         0.1,
+      rotationSpeed: 0
     };
   }
 }
