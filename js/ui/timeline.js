@@ -96,6 +96,7 @@ class TimelineEntry {
   loadState(state) {
     this.timeBegin = state.timeBegin;
     this.timeEnd = state.timeEnd;
+    this.repetitions = state.repetitions;
     this.config = state.config;
   }
   getElement() {
@@ -106,6 +107,7 @@ class TimelineEntry {
       this.effect.getId(),
       this.timeBegin,
       this.timeEnd,
+      this.repetitions,
       this.config
     );
   }
@@ -147,8 +149,9 @@ class TimelineTrack {
       const timeBegin = Math.max(0, clientX - (width / 2) - rect.left) / (this.timeline.pxPerSecond / 1000);
       entry.loadState({
         timeBegin,
-        timeEnd:   timeBegin + 1000,
-        config:    effect.getDefaultConfig()
+        timeEnd:     timeBegin + 1000,
+        repetitions: 1,
+        config:      effect.getDefaultConfig()
       });
       this.addEntry(entry);
       this.renderHtml();

@@ -72,10 +72,10 @@ export default class HueDisplaceEffect extends Effect {
     if (instance.config.distance !== 0) {
       const distance = uniforms.addUniform('hueDisplaceDistance', 'float', () => instance.config.distance);
       const time = uniforms.addUniform('hueDisplaceTime', 'float', (ctx, props) =>
-        fract(ctx.time / (instance.period / 1000)) * 2 * Math.PI);
+        fract(ctx.time / (instance.getPeriod() / 1000)) * 2 * Math.PI);
       const directionOffset = uniforms.addUniform('hueDisplaceDirectionOffset', 'float', (ctx, props) => {
         let result = instance.config.rotate *
-          fract(ctx.time / (instance.period / 1000)) * 2 * Math.PI;
+          fract(ctx.time / (instance.getPeriod() / 1000)) * 2 * Math.PI;
         if (instance.config.randomDirectionOffset) {
           if (instance.config.randomDirectionOffsetValue === undefined) {
             // eslint-disable-next-line no-param-reassign

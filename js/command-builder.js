@@ -65,7 +65,7 @@ class Uniforms {
       }
     }
     // eslint-disable-next-line no-param-reassign
-    shader.uniforms += shaderStr.join('\n');
+    shader.uniforms += shaderStr.join('\n') + '\n';
   }
 }
 

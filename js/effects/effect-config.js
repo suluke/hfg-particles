@@ -1,11 +1,11 @@
 import { effectsById } from '../effects/index';
 
 export default class EffectConfig {
-  constructor(id, timeBegin, timeEnd, config) {
+  constructor(id, timeBegin, timeEnd, repetitions, config) {
     this.id = id;
     this.timeBegin = timeBegin;
     this.timeEnd = timeEnd;
-    this.period = timeEnd - timeBegin;
+    this.repetitions = repetitions;
     this.config = config;
   }
   getEffectClass() {
@@ -15,11 +15,14 @@ export default class EffectConfig {
     }
     return clazz;
   }
+  getPeriod() {
+    return (this.timeEnd - this.timeBegin) / this.repetitions;
+  }
   static deserialize(obj) {
     if (obj.constructor.name === this.name) {
       return obj;
     } else {
-      return new EffectConfig(obj.id, obj.timeBegin, obj.timeEnd, obj.config);
+      return new EffectConfig(obj.id, obj.timeBegin, obj.timeEnd, obj.repetitions, obj.config);
     }
   }
 }

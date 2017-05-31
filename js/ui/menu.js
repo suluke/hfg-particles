@@ -362,12 +362,14 @@ export default class MainMenu {
         effects[0].getId(),
         0,
         10000,
+        1,
         effects[0].getDefaultConfig()
       )],
       [new EffectConfig(
         effects[1].getId(),
         0,
         10000,
+        1,
         effects[1].getDefaultConfig()
       )]
     ]);

@@ -7,12 +7,14 @@ export default class EffectConfigDialog {
     const deleteBtnClass = 'effect-config-dialog-delete';
     const startTimeInputClass = 'effect-config-dialog-starttime';
     const endTimeInputClass = 'effect-config-dialog-endtime';
+    const repetitionsInputClass = 'effect-config-dialog-repetitions';
     this.parentNode = document.getElementById('modal-container');
     this.element = parseHtml(`
       <div class="effect-config-dialog-backdrop">
         <div class="effect-config-dialog">
           Begin: <input type="number" class="${startTimeInputClass}"/><br/>
           End: <input type="number" class="${endTimeInputClass}"/><br/>
+          Repetitions: <input type="number" class="${repetitionsInputClass}"/><br/>
           <button type="button" class="${okBtnClass}">Ok</button>
           <button type="button" class="${cancelBtnClass}">Cancel</button>
           <button type="button" class="${deleteBtnClass}">Delete effect</button>
@@ -26,14 +28,16 @@ export default class EffectConfigDialog {
 
     this.startTimeInput = this.element.querySelector(`.${startTimeInputClass}`);
     this.endTimeInput = this.element.querySelector(`.${endTimeInputClass}`);
+    this.repetitionsInput = this.element.querySelector(`.${repetitionsInputClass}`);
 
     this.okBtn.addEventListener('click', (evt) => {
       evt.stopPropagation();
       this.hide();
       this.resolve({
-        config:    this.ui.getConfig(),
-        timeBegin: parseInt(this.startTimeInput.value, 10),
-        timeEnd:   parseInt(this.endTimeInput.value, 10),
+        config:      this.ui.getConfig(),
+        timeBegin:   parseInt(this.startTimeInput.value, 10),
+        timeEnd:     parseInt(this.endTimeInput.value, 10),
+        repetitions: parseInt(this.repetitionsInput.value, 10),
       });
     });
     this.cancelBtn.addEventListener('click', (evt) => {
@@ -62,6 +66,7 @@ export default class EffectConfigDialog {
       const ui = entry.effect.getConfigUI();
       this.startTimeInput.value = entry.timeBegin;
       this.endTimeInput.value = entry.timeEnd;
+      this.repetitionsInput.value = entry.repetitions;
       this.ui = ui;
       this.dialog.prepend(ui.getElement());
       this.show();
