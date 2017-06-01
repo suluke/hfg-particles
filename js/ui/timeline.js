@@ -315,6 +315,37 @@ class Timeticks {
       } while (time <= this.duration);
     }
   }
+  getElement() {
+    return this.element;
+  }
+}
+
+class TimeIndicator {
+  constructor(clock, timeticks) {
+    this.clock = clock;
+    this.timeticks = timeticks;
+    this.element = document.querySelector('.menu-timeline-container .menu-timeline-position-indicator');
+    this.element.style.right = 'initial';
+
+    if (!this.element) {
+      throw new Error('Cannot find timeline position indicator element');
+    }
+    const updateLoop = () => {
+      this.updateStyles();
+      window.requestAnimationFrame(updateLoop);
+    };
+    updateLoop();
+  }
+  updateStyles() {
+    this.element.style.left = '0px';
+    const selfRect = this.element.getBoundingClientRect();
+    const ticksElm = this.timeticks.getElement();
+    const ticksBLW = window.getComputedStyle(ticksElm).borderLeftWidth;
+    const ticksRect = ticksElm.getBoundingClientRect();
+    const ticksBorder = parseInt(ticksBLW.substring(0, ticksBLW.length - 2), 10);
+    const timePx = this.clock.getTime() * this.timeticks.getPxPerSecond() / 1000;
+    this.element.style.left = `${ticksRect.left + ticksBorder - selfRect.left + timePx}px`;
+  }
 }
 
 /**
@@ -328,6 +359,7 @@ export default class Timeline {
     this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
     this.effectConfigDialog = new EffectConfigDialog();
     this.timeticks = new Timeticks();
+    this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
     this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
     this.timeticks.addScaleChangeListener(() => {
       this.pxPerSecond = this.timeticks.getPxPerSecond();

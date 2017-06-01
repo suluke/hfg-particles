@@ -14,12 +14,12 @@ const imageLoadingClass = 'loading-image';
 const canvas = document.getElementById('main-canvas');
 
 // set up ui components
-const menu = new MainMenu();
 const fullscreen = new FullscreenButton();
 const imgSelect = new ImgSelect();
 const inactivityMonitor = new InactivityMonitor();
 const imgDimWarn = new ImgDimWarn();
 const renderer = new Renderer(canvas);
+const menu = new MainMenu(renderer.getClock());
 
 const adjustCanvasSize = () => {
   canvas.width = window.innerWidth;

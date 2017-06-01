@@ -65,6 +65,10 @@ export default class Renderer {
     });
   }
 
+  getClock() {
+    return this.clock;
+  }
+
   loadImageData(img) {
     const fullresCanvas = document.createElement('canvas');
     const fullresContext = fullresCanvas.getContext('2d');

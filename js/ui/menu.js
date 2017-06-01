@@ -315,8 +315,9 @@ class EffectListItem {
 }
 
 export default class MainMenu {
-  constructor() {
+  constructor(clock) {
     this.menu = document.getElementById('menu-container');
+    this.clock = clock;
     this.timeline = new Timeline(this);
     this.menuContent = this.menu.querySelector('.menu-content');
     this.effectList = this.menu.querySelector('.menu-effect-list');
