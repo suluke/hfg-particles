@@ -358,22 +358,20 @@ export default class MainMenu {
     }
     this.effectList.appendChild(effectListElms);
 
-    this.timeline.loadTimeline([
-      [new EffectConfig(
-        effects[0].getId(),
-        0,
-        10000,
-        1,
-        effects[0].getDefaultConfig()
-      )],
-      [new EffectConfig(
-        effects[1].getId(),
-        0,
-        10000,
-        1,
-        effects[1].getDefaultConfig()
-      )]
-    ]);
+    const effectLen = 2500;
+    const tracks = [];
+    for (let i = 0; i < effects.length; i++) {
+      tracks.push([
+        new EffectConfig(
+          effects[i].getId(),
+          i * effectLen,
+          i * effectLen + effectLen,
+          1,
+          effects[i].getDefaultConfig()
+        )
+      ]);
+    }
+    this.timeline.loadTimeline(tracks);
 
     this.defaultConfig = this.readConfig();
     this.submittedConfig = this.defaultConfig;
