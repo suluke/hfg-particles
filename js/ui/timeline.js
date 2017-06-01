@@ -378,6 +378,7 @@ export default class Timeline {
         track.addEntry(entry);
       }
     }
+    this.assertEmptyLastTrack(false)
     this.renderHtml();
     this.renderStyles();
     this.timeticks.setDuration(this.getTotalDuration());
@@ -426,7 +427,7 @@ export default class Timeline {
     this.forEachEntry((entry) => maxEnd = Math.max(maxEnd, entry.timeEnd));
     return maxEnd;
   }
-  assertEmptyLastTrack() {
+  assertEmptyLastTrack(render = true) {
     let changed = false;
     const tracks = this.trackList;
     while (tracks.length > 1 &&
@@ -441,7 +442,7 @@ export default class Timeline {
       tracks.push(track);
       changed = true;
     }
-    if (changed) {
+    if (changed && render) {
       // TODO probably inefficient
       this.renderHtml();
       this.renderStyles();
