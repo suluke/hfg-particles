@@ -77,7 +77,7 @@ class TimelineEntry {
     TimelineEntry.setupAdjustHandle(beginHandle, (delta) => {
       let newBegin = Math.max(0, this.timeBegin + ((delta / this.timeline.pxPerSecond) * 1000));
       if (newBegin < this.timeEnd) {
-        this.timeBegin = newBegin;
+        this.timeBegin = Math.round(newBegin);
         this.renderStyles();
         this.timeline.notifyChange();
       }
@@ -86,7 +86,7 @@ class TimelineEntry {
     TimelineEntry.setupAdjustHandle(endHandle, (delta) => {
       const newEnd = this.timeEnd + ((delta / this.timeline.pxPerSecond) * 1000);
       if (newEnd > this.timeBegin) {
-        this.timeEnd = newEnd;
+        this.timeEnd = Math.round(newEnd);
         this.renderStyles();
         this.timeline.notifyChange();
       }
