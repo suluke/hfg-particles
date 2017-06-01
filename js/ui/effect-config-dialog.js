@@ -12,8 +12,8 @@ export default class EffectConfigDialog {
     this.element = parseHtml(`
       <div class="effect-config-dialog-backdrop">
         <div class="effect-config-dialog">
-          Begin: <input type="number" class="${startTimeInputClass}"/><br/>
-          End: <input type="number" class="${endTimeInputClass}"/><br/>
+          Begin: <input type="number" min="0" step="1" class="${startTimeInputClass}"/>ms<br/>
+          End: <input type="number" min="0" step="1" class="${endTimeInputClass}"/>ms<br/>
           Repetitions: <input type="number" class="${repetitionsInputClass}"/><br/>
           <button type="button" class="${okBtnClass}">Ok</button>
           <button type="button" class="${cancelBtnClass}">Cancel</button>

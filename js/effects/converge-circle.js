@@ -43,7 +43,6 @@ export default class ConvergeCircleEffect extends Effect {
     const speed = uniforms.addUniform('convergeSpeed', 'float', 2 * 2 / (instance.getPeriod() / 2 * instance.getPeriod() / 2));
     const rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', instance.config.rotationSpeed / 1000);
     const maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', instance.getPeriod() / 2);
-    const weight = uniforms.addUniform('weight', 'float', (ctx, props) => props.clock.getTime() >= instance.timeBegin && props.clock.getTime() <= instance.timeEnd ? 1 : 0);
 
     // eslint-disable-next-line no-param-reassign
     vertexShader.mainBody += `
@@ -70,7 +69,7 @@ export default class ConvergeCircleEffect extends Effect {
           result = mix(d, vec2(0.), -cos(t / ${maxTravelTime} * PI) * .5 + .5);
         }
 
-        position.xy += result * ${weight};
+        position.xy += result;
       }
     `;
   }

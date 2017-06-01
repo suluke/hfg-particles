@@ -87,13 +87,12 @@ export default class HueDisplaceEffect extends Effect {
         return result;
       });
       const scaleByVal = uniforms.addUniform('hueDisplaceScaleByValue', 'float', instance.config.scaleByValue);
-      const weight = uniforms.addUniform('weight', 'float', (ctx, props) => props.clock.getTime() >= instance.timeBegin && props.clock.getTime() <= instance.timeEnd ? 1 : 0);
       // eslint-disable-next-line no-param-reassign
       vertexShader.mainBody += `
         {
           float angle = hsv[0] + ${directionOffset};
           float offset = (-cos(${time}) + 1.) / 2.;
-          position.xy += offset * getDirectionVector(angle) * ${distance} * (1. - ${scaleByVal} * (1. - hsv[2])) * ${weight};
+          position.xy += offset * getDirectionVector(angle) * ${distance} * (1. - ${scaleByVal} * (1. - hsv[2]));
         }
       `;
     }

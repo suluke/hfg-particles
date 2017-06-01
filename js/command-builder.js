@@ -106,7 +106,7 @@ export default class CommandBuilder {
       ];
     });
     uniforms.addUniform('particleSize', 'float', (ctx) => (ctx.viewportWidth / this.particleData.width) * 2 * this.config.particleScaling);
-    uniforms.addUniform('globalTime', 'float', () => this.clock.getTime());
+    uniforms.addUniform('globalTime', 'int', (ctx, props) => props.clock.getTime());
     return uniforms;
   }
 
@@ -198,7 +198,11 @@ export default class CommandBuilder {
         const effectUniforms = new Uniforms(globalId);
         const effectConfig = track[j];
         const effectClass = track[j].getEffectClass();
+
+        vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
         effectClass.register(effectConfig, effectUniforms, vert);
+        vert.mainBody += '}';
+        
         effectUniforms.compile(vert, uniforms);
         globalId += 1;
       }
