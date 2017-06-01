@@ -1257,8 +1257,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-05-29T18:16:10.841Z',
-  git_rev:               'b8e35be',
+  timestamp:             '2017-06-01T13:00:17.908Z',
+  git_rev:               '68664d4',
   export_schema_version: 0
 };
 
@@ -1270,8 +1270,9 @@ var EffectConfigDialog = function EffectConfigDialog() {
   var deleteBtnClass = 'effect-config-dialog-delete';
   var startTimeInputClass = 'effect-config-dialog-starttime';
   var endTimeInputClass = 'effect-config-dialog-endtime';
+  var repetitionsInputClass = 'effect-config-dialog-repetitions';
   this.parentNode = document.getElementById('modal-container');
-  this.element = parseHtml(("\n      <div class=\"effect-config-dialog-backdrop\">\n        <div class=\"effect-config-dialog\">\n          Begin: <input type=\"number\" class=\"" + startTimeInputClass + "\"/><br/>\n          End: <input type=\"number\" class=\"" + endTimeInputClass + "\"/><br/>\n          <button type=\"button\" class=\"" + okBtnClass + "\">Ok</button>\n          <button type=\"button\" class=\"" + cancelBtnClass + "\">Cancel</button>\n          <button type=\"button\" class=\"" + deleteBtnClass + "\">Delete effect</button>\n        </div>\n      </div>\n    "));
+  this.element = parseHtml(("\n      <div class=\"effect-config-dialog-backdrop\">\n        <div class=\"effect-config-dialog\">\n          Begin: <input type=\"number\" min=\"0\" step=\"1\" class=\"" + startTimeInputClass + "\"/>ms<br/>\n          End: <input type=\"number\" min=\"0\" step=\"1\" class=\"" + endTimeInputClass + "\"/>ms<br/>\n          Repetitions: <input type=\"number\" class=\"" + repetitionsInputClass + "\"/><br/>\n          <button type=\"button\" class=\"" + okBtnClass + "\">Ok</button>\n          <button type=\"button\" class=\"" + cancelBtnClass + "\">Cancel</button>\n          <button type=\"button\" class=\"" + deleteBtnClass + "\">Delete effect</button>\n        </div>\n      </div>\n    "));
   this.okBtn = this.element.querySelector(("." + okBtnClass));
   this.cancelBtn = this.element.querySelector(("." + cancelBtnClass));
   this.deleteBtn = this.element.querySelector(("." + deleteBtnClass));
@@ -1279,14 +1280,16 @@ var EffectConfigDialog = function EffectConfigDialog() {
 
   this.startTimeInput = this.element.querySelector(("." + startTimeInputClass));
   this.endTimeInput = this.element.querySelector(("." + endTimeInputClass));
+  this.repetitionsInput = this.element.querySelector(("." + repetitionsInputClass));
 
   this.okBtn.addEventListener('click', function (evt) {
     evt.stopPropagation();
     this$1.hide();
     this$1.resolve({
-      config:  this$1.ui.getConfig(),
+      config:    this$1.ui.getConfig(),
       timeBegin: parseInt(this$1.startTimeInput.value, 10),
-      timeEnd: parseInt(this$1.endTimeInput.value, 10),
+      timeEnd:   parseInt(this$1.endTimeInput.value, 10),
+      repetitions: parseInt(this$1.repetitionsInput.value, 10),
     });
   });
   this.cancelBtn.addEventListener('click', function (evt) {
@@ -1317,6 +1320,7 @@ EffectConfigDialog.prototype.promptUser = function promptUser (entry) {
     var ui = entry.effect.getConfigUI();
     this$1.startTimeInput.value = entry.timeBegin;
     this$1.endTimeInput.value = entry.timeEnd;
+    this$1.repetitionsInput.value = entry.repetitions;
     this$1.ui = ui;
     this$1.dialog.prepend(ui.getElement());
     this$1.show();
@@ -1371,27 +1375,19 @@ ConfigUI.prototype.notifyChange = function notifyChange () {
   // TODO
 };
 
-function fract(x) {
-  return x - Math.floor(x);
-}
-
 var HueDisplaceConfigUI = (function (ConfigUI$$1) {
   function HueDisplaceConfigUI() {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
-    this.element = parseHtml("\n      <fieldset>\n        <legend>Displace by hue</legend>\n        <label>\n          Distance:\n          <input type=\"number\" class=\"effect-hue-displace-distance\" value=\"10\" />\n        </label><br/>\n        <label>\n          Period:\n          <input type=\"number\" class=\"effect-hue-displace-period\" value=\"3000\" />ms\n        </label><br/>\n        <label>\n          Scale by brightness:\n          <input type=\"number\" class=\"effect-hue-displace-scale-by-value\" value=\"0\" />%\n        </label><br/>\n        <label>\n          Random direction offset:\n          <input type=\"checkbox\" class=\"effect-hue-displace-random-direction-offset\"/>\n        </label><br/>\n        <label>\n          Rotate:\n          <input type=\"number\" class=\"effect-hue-displace-rotate\" value=\"0\" />%\n        </label>\n      </fieldset>\n    ");
+    this.element = parseHtml("\n      <fieldset>\n        <legend>Displace by hue</legend>\n        <label>\n          Distance:\n          <input type=\"number\" class=\"effect-hue-displace-distance\" value=\"10\" />\n        </label><br/>\n        <label>\n          Scale by brightness:\n          <input type=\"number\" class=\"effect-hue-displace-scale-by-value\" value=\"0\" />%\n        </label><br/>\n        <label>\n          Random direction offset:\n          <input type=\"checkbox\" class=\"effect-hue-displace-random-direction-offset\"/>\n        </label><br/>\n        <label>\n          Rotate:\n          <input type=\"number\" class=\"effect-hue-displace-rotate\" value=\"0\" />%\n        </label>\n      </fieldset>\n    ");
     var ui = this.element;
     this.distanceInput = ui.querySelector('input.effect-hue-displace-distance');
-    this.periodInput = ui.querySelector('input.effect-hue-displace-period');
     this.scaleByValInput = ui.querySelector('input.effect-hue-displace-scale-by-value');
     this.randomOffsetInput = ui.querySelector('input.effect-hue-displace-random-direction-offset');
     this.rotateInput = ui.querySelector('input.effect-hue-displace-rotate');
 
     this.distanceInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
-    this.periodInput.addEventListener('change', function () {
       this$1.notifyChange();
     });
     this.scaleByValInput.addEventListener('change', function () {
@@ -1416,7 +1412,6 @@ var HueDisplaceConfigUI = (function (ConfigUI$$1) {
   HueDisplaceConfigUI.prototype.getConfig = function getConfig () {
     var config = {};
     config.distance = parseInt(this.distanceInput.value, 10) / 100;
-    config.period = parseInt(this.periodInput.value, 10) / 1000;
     config.scaleByValue = parseInt(this.scaleByValInput.value, 10) / 100;
     config.randomDirectionOffset = this.randomOffsetInput.checked;
     config.rotate = parseInt(this.rotateInput.value, 10) / 100;
@@ -1426,7 +1421,6 @@ var HueDisplaceConfigUI = (function (ConfigUI$$1) {
 
   HueDisplaceConfigUI.prototype.applyConfig = function applyConfig (config) {
     this.distanceInput.value = config.distance * 100;
-    this.periodInput.value = config.period * 1000;
     this.scaleByValInput.value = config.scaleByValue * 100;
     this.randomOffsetInput.checked = config.randomDirectionOffset;
     this.rotateInput.value = config.rotate * 100;
@@ -1446,16 +1440,13 @@ var HueDisplaceEffect = (function (Effect$$1) {
 
   HueDisplaceEffect.register = function register (instance, uniforms, vertexShader) {
     if (instance.config.distance !== 0) {
-      var distance = uniforms.addUniform('hueDisplaceDistance', 'float', function () { return instance.config.distance; });
-      var time = uniforms.addUniform('hueDisplaceTime', 'float', function (ctx) { return fract(ctx.time / instance.config.period) * 2 * Math.PI; });
+      var distance = uniforms.addUniform('hueDisplaceDistance', 'float', instance.config.distance);
+      var time = uniforms.addUniform('hueDisplaceTime', 'float', function (ctx, props) { return ((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()) * 2 * Math.PI; });
       var directionOffset = uniforms.addUniform('hueDisplaceDirectionOffset', 'float', function (ctx, props) {
         var result = instance.config.rotate *
-          fract(ctx.time / instance.config.period) * 2 * Math.PI;
+          ((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()) * 2 * Math.PI;
         if (instance.config.randomDirectionOffset) {
-          if (instance.config.randomDirectionOffsetValue === undefined
-            || Math.floor(props.oldTime / instance.config.period)
-            !== Math.floor(props.currentTime / instance.config.period)
-          ) {
+          if (instance.config.randomDirectionOffsetValue === undefined) {
             // eslint-disable-next-line no-param-reassign
             instance.config.randomDirectionOffsetValue = Math.random() * 2 * Math.PI;
           }
@@ -1464,7 +1455,7 @@ var HueDisplaceEffect = (function (Effect$$1) {
 
         return result;
       });
-      var scaleByVal = uniforms.addUniform('hueDisplaceScaleByValue', 'float', function () { return instance.config.scaleByValue; });
+      var scaleByVal = uniforms.addUniform('hueDisplaceScaleByValue', 'float', instance.config.scaleByValue);
       // eslint-disable-next-line no-param-reassign
       vertexShader.mainBody += "\n        {\n          float angle = hsv[0] + " + directionOffset + ";\n          float offset = (-cos(" + time + ") + 1.) / 2.;\n          position.xy += offset * getDirectionVector(angle) * " + distance + " * (1. - " + scaleByVal + " * (1. - hsv[2]));\n        }\n      ";
     }
@@ -1485,7 +1476,6 @@ var HueDisplaceEffect = (function (Effect$$1) {
   HueDisplaceEffect.getDefaultConfig = function getDefaultConfig () {
     return {
       distance:              0.1,
-      period:                3,
       scaleByValue:          0,
       randomDirectionOffset: false,
       rotate:                0
@@ -1497,16 +1487,10 @@ var HueDisplaceEffect = (function (Effect$$1) {
 
 var ConvergePointConfigUI = (function (ConfigUI$$1) {
   function ConvergePointConfigUI() {
-    var this$1 = this;
-
     ConfigUI$$1.call(this);
-    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge to point</legend>\n        <label>\n          Speed:\n          <input type=\"number\" class=\"effect-converge-speed\" value=\"100\" />\n        </label>\n      </fieldset>\n    ");
+    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge to point</legend>\n      </fieldset>\n    ");
     var ui = this.element;
 
-    this.speedInput = ui.querySelector('input.effect-converge-speed');
-    this.speedInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
   }
 
   if ( ConfigUI$$1 ) ConvergePointConfigUI.__proto__ = ConfigUI$$1;
@@ -1519,13 +1503,11 @@ var ConvergePointConfigUI = (function (ConfigUI$$1) {
 
   ConvergePointConfigUI.prototype.getConfig = function getConfig () {
     var config = {};
-    config.speed = parseInt(this.speedInput.value, 10) / 1000;
 
     return config;
   };
 
   ConvergePointConfigUI.prototype.applyConfig = function applyConfig (config) {
-    this.speedInput.checked = config.speed * 1000;
   };
 
   return ConvergePointConfigUI;
@@ -1541,17 +1523,12 @@ var ConvergePointEffect = (function (Effect$$1) {
   ConvergePointEffect.prototype.constructor = ConvergePointEffect;
 
   ConvergePointEffect.register = function register (instance, uniforms, vertexShader) {
-    var time = uniforms.addUniform('convergeTime', 'float', function (ctx) {
-      var period = 2 * Math.sqrt(2 / instance.config.speed);
-
-      return fract(ctx.time / period) * period;
-    });
-    var speed = uniforms.addUniform('convergeSpeed', 'float', function () { return instance.config.speed; });
-    var rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', function () { return instance.config.rotationSpeed; });
-    var maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', function () { return Math.sqrt(2 / instance.config.speed); });
+    var time = uniforms.addUniform('convergeTime', 'float', function (ctx, props) { return (props.clock.getTime() - instance.timeBegin) % instance.getPeriod(); });
+    var speed = uniforms.addUniform('convergeSpeed', 'float', 2 * 2 / (instance.getPeriod() / 2 * instance.getPeriod() / 2));
+    var maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', instance.getPeriod() / 2);
 
     // eslint-disable-next-line no-param-reassign
-    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = vec2(0., 0.);\n        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n\n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          position.xy += .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          position.xy += d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n          //position.xy += mix(d, vec2(0.), t * t);\n          position.xy += mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n      }\n    ";
+    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = vec2(0., 0.);\n        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n\n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        vec2 result;\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          result = .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          result = d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          //result = mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n          //result = mix(d, vec2(0.), t * t);\n          result = mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n\n        position.xy += result;\n      }\n    ";
   };
 
   ConvergePointEffect.getDisplayName = function getDisplayName () {
@@ -1568,7 +1545,6 @@ var ConvergePointEffect = (function (Effect$$1) {
 
   ConvergePointEffect.getDefaultConfig = function getDefaultConfig () {
     return {
-      speed: 0.1
     };
   };
 
@@ -1580,14 +1556,10 @@ var ConvergeCircleConfigUI = (function (ConfigUI$$1) {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
-    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge</legend>\n        <label>\n          Speed:\n          <input type=\"number\" class=\"effect-converge-speed\" value=\"100\" />\n        </label><br/>\n        <label>\n          Rotation speed:\n          <input type=\"number\" class=\"effect-converge-rotation-speed\" value=\"0\" />\n        </label>\n      </fieldset>\n    ");
+    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge</legend>\n        <label>\n          Rotation speed:\n          <input type=\"number\" class=\"effect-converge-rotation-speed\" value=\"0\" />\n        </label>\n      </fieldset>\n    ");
     var ui = this.element;
 
     this.rotationSpeedInput = ui.querySelector('input.effect-converge-rotation-speed');
-    this.speedInput = ui.querySelector('input.effect-converge-speed');
-    this.speedInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
     this.rotationSpeedInput.addEventListener('change', function () {
       this$1.notifyChange();
     });
@@ -1604,14 +1576,12 @@ var ConvergeCircleConfigUI = (function (ConfigUI$$1) {
   ConvergeCircleConfigUI.prototype.getConfig = function getConfig () {
     var config = {};
     config.rotationSpeed = parseInt(this.rotationSpeedInput.value, 10) / 100;
-    config.speed = parseInt(this.speedInput.value, 10) / 1000;
 
     return config;
   };
 
   ConvergeCircleConfigUI.prototype.applyConfig = function applyConfig (config) {
     this.rotationSpeedInput.checked = config.rotationSpeed * 100;
-    this.speedInput.checked = config.speed * 1000;
   };
 
   return ConvergeCircleConfigUI;
@@ -1627,17 +1597,13 @@ var ConvergeCircleEffect = (function (Effect$$1) {
   ConvergeCircleEffect.prototype.constructor = ConvergeCircleEffect;
 
   ConvergeCircleEffect.register = function register (instance, uniforms, vertexShader) {
-    var time = uniforms.addUniform('convergeTime', 'float', function (ctx) {
-      var period = 2 * Math.sqrt(2 / instance.config.speed);
-
-      return fract(ctx.time / period) * period;
-    });
-    var speed = uniforms.addUniform('convergeSpeed', 'float', function () { return instance.config.speed; });
-    var rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', function () { return instance.config.rotationSpeed; });
-    var maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', function () { return Math.sqrt(2 / instance.config.speed); });
+    var time = uniforms.addUniform('convergeTime', 'float', function (ctx, props) { return (props.clock.getTime() - instance.timeBegin) % instance.getPeriod(); });
+    var speed = uniforms.addUniform('convergeSpeed', 'float', 2 * 2 / (instance.getPeriod() / 2 * instance.getPeriod() / 2));
+    var rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', instance.config.rotationSpeed / 1000);
+    var maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', instance.getPeriod() / 2);
 
     // eslint-disable-next-line no-param-reassign
-    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = getDirectionVector(hsv[0] + " + time + " * " + rotationSpeed + ") * vec2(.8) * vec2(invScreenAspectRatio, 1.);\n        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n        \n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          position.xy += .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          position.xy += d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          //position.xy += mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n          //position.xy += mix(d, vec2(0.), t * t);\n          position.xy += mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n      }\n    ";
+    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = getDirectionVector(hsv[0] + " + time + " * " + rotationSpeed + ") * vec2(.8) * vec2(invScreenAspectRatio, 1.);\n        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n        \n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        vec2 result;\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          result = .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          result = d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          //result = mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n          //result = mix(d, vec2(0.), t * t);\n          result = mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n\n        position.xy += result;\n      }\n    ";
   };
 
   ConvergeCircleEffect.getDisplayName = function getDisplayName () {
@@ -1654,8 +1620,7 @@ var ConvergeCircleEffect = (function (Effect$$1) {
 
   ConvergeCircleEffect.getDefaultConfig = function getDefaultConfig () {
     return {
-      rotationSpeed: 0,
-      speed:         0.1,
+      rotationSpeed: 0
     };
   };
 
@@ -1671,6 +1636,31 @@ var byId = {};
 for (var i = 0; i < effectList.length; i++) {
   byId[effectList[i].getId()] = effectList[i];
 }
+
+var EffectConfig = function EffectConfig(id, timeBegin, timeEnd, repetitions, config) {
+  this.id = id;
+  this.timeBegin = timeBegin;
+  this.timeEnd = timeEnd;
+  this.repetitions = repetitions;
+  this.config = config;
+};
+EffectConfig.prototype.getEffectClass = function getEffectClass () {
+  var clazz = byId[this.id];
+  if (!clazz) {
+    throw new Error(("No such effect: " + (this.id)));
+  }
+  return clazz;
+};
+EffectConfig.prototype.getPeriod = function getPeriod () {
+  return (this.timeEnd - this.timeBegin) / this.repetitions;
+};
+EffectConfig.deserialize = function deserialize (obj) {
+  if (obj.constructor.name === this.name) {
+    return obj;
+  } else {
+    return new EffectConfig(obj.id, obj.timeBegin, obj.timeEnd, obj.repetitions, obj.config);
+  }
+};
 
 /**
  *
@@ -1720,7 +1710,6 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
 
 TimelineEntry.setupAdjustHandle = function setupAdjustHandle (elm, onAdjustCallback) {
   elm.addEventListener('mousedown', function (evt) {
-    console.log('mousedown');
     evt.preventDefault(); // prevent dragging parent
 
     var prevX = evt.clientX;
@@ -1747,6 +1736,7 @@ TimelineEntry.prototype.setupTimeAdjustHandles = function setupTimeAdjustHandles
     if (newBegin < this$1.timeEnd) {
       this$1.timeBegin = newBegin;
       this$1.renderStyles();
+      this$1.timeline.notifyChange();
     }
   });
   var endHandle = this.element.querySelector('.timeline-entry-end-time-adjust');
@@ -1755,6 +1745,7 @@ TimelineEntry.prototype.setupTimeAdjustHandles = function setupTimeAdjustHandles
     if (newEnd > this$1.timeBegin) {
       this$1.timeEnd = newEnd;
       this$1.renderStyles();
+      this$1.timeline.notifyChange();
     }
   });
 };
@@ -1762,17 +1753,20 @@ TimelineEntry.prototype.setupTimeAdjustHandles = function setupTimeAdjustHandles
 TimelineEntry.prototype.loadState = function loadState (state) {
   this.timeBegin = state.timeBegin;
   this.timeEnd = state.timeEnd;
+  this.repetitions = state.repetitions;
   this.config = state.config;
 };
 TimelineEntry.prototype.getElement = function getElement () {
   return this.element;
 };
 TimelineEntry.prototype.getConfiguration = function getConfiguration () {
-  return [this.effect.getId(), {
-    timeBegin: this.timeBegin,
-    timeEnd: this.timeEnd,
-    config:  this.config
-  }];
+  return new EffectConfig(
+    this.effect.getId(),
+    this.timeBegin,
+    this.timeEnd,
+    this.repetitions,
+    this.config
+  );
 };
 TimelineEntry.prototype.renderStyles = function renderStyles () {
   var li = this.getElement();
@@ -1801,8 +1795,9 @@ TimelineTrack.prototype.dropNewEffect = function dropNewEffect (effect, clientX,
     var timeBegin = Math.max(0, clientX - (width / 2) - rect.left) / (this.timeline.pxPerSecond / 1000);
     entry.loadState({
       timeBegin: timeBegin,
-      timeEnd: timeBegin + 1000,
-      config:  effect.getDefaultConfig()
+      timeEnd:   timeBegin + 1000,
+      repetitions: 1,
+      config:    effect.getDefaultConfig()
     });
     this.addEntry(entry);
     this.renderHtml();
@@ -1962,6 +1957,37 @@ Timeticks.prototype.render = function render () {
     } while (time <= this.duration);
   }
 };
+Timeticks.prototype.getElement = function getElement () {
+  return this.element;
+};
+
+var TimeIndicator = function TimeIndicator(clock, timeticks) {
+  var this$1 = this;
+
+  this.clock = clock;
+  this.timeticks = timeticks;
+  this.element = document.querySelector('.menu-timeline-container .menu-timeline-position-indicator');
+  this.element.style.right = 'initial';
+
+  if (!this.element) {
+    throw new Error('Cannot find timeline position indicator element');
+  }
+  var updateLoop = function () {
+    this$1.updateStyles();
+    window.requestAnimationFrame(updateLoop);
+  };
+  updateLoop();
+};
+TimeIndicator.prototype.updateStyles = function updateStyles () {
+  this.element.style.left = '0px';
+  var selfRect = this.element.getBoundingClientRect();
+  var ticksElm = this.timeticks.getElement();
+  var ticksBLW = window.getComputedStyle(ticksElm).borderLeftWidth;
+  var ticksRect = ticksElm.getBoundingClientRect();
+  var ticksBorder = parseInt(ticksBLW.substring(0, ticksBLW.length - 2), 10);
+  var timePx = this.clock.getTime() * this.timeticks.getPxPerSecond() / 1000;
+  this.element.style.left = (ticksRect.left + ticksBorder - selfRect.left + timePx) + "px";
+};
 
 /**
  *
@@ -1975,6 +2001,7 @@ var Timeline = function Timeline(menu) {
   this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
   this.effectConfigDialog = new EffectConfigDialog();
   this.timeticks = new Timeticks();
+  this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
   this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
   this.timeticks.addScaleChangeListener(function () {
     this$1.pxPerSecond = this$1.timeticks.getPxPerSecond();
@@ -1989,14 +2016,13 @@ Timeline.prototype.loadTimeline = function loadTimeline (trackList) {
     var track = new TimelineTrack(i + 1, this$1);
     this$1.trackList.push(track);
     for (var j = 0; j < trackList[i].length; j++) {
-      var entryDesc = trackList[i][j];
-      var effectId = entryDesc[0];
-      var entryState = entryDesc[1];
-      var entry = new TimelineEntry(byId[effectId], this$1);
-      entry.loadState(entryState);
+      var entryDesc = EffectConfig.deserialize(trackList[i][j]);
+      var entry = new TimelineEntry(entryDesc.getEffectClass(), this$1);
+      entry.loadState(entryDesc);
       track.addEntry(entry);
     }
   }
+  this.assertEmptyLastTrack(false);
   this.renderHtml();
   this.renderStyles();
   this.timeticks.setDuration(this.getTotalDuration());
@@ -2055,7 +2081,9 @@ Timeline.prototype.getTotalDuration = function getTotalDuration () {
   this.forEachEntry(function (entry) { return maxEnd = Math.max(maxEnd, entry.timeEnd); });
   return maxEnd;
 };
-Timeline.prototype.assertEmptyLastTrack = function assertEmptyLastTrack () {
+Timeline.prototype.assertEmptyLastTrack = function assertEmptyLastTrack (render) {
+    if ( render === void 0 ) render = true;
+
   var changed = false;
   var tracks = this.trackList;
   while (tracks.length > 1 &&
@@ -2070,7 +2098,7 @@ Timeline.prototype.assertEmptyLastTrack = function assertEmptyLastTrack () {
     tracks.push(track);
     changed = true;
   }
-  if (changed) {
+  if (changed && render) {
     // TODO probably inefficient
     this.renderHtml();
     this.renderStyles();
@@ -2404,7 +2432,6 @@ var EffectListItem = function EffectListItem(effect, timeline) {
   };
 
   this.element.addEventListener('mousedown', function (evt) {
-    console.log('mousedown');
     showDragCopy(evt.clientX, evt.clientY);
     var onDrag = function (evt) { return updateDragCopy(evt.clientX, evt.clientY); };
     var onDragend = function (evt) {
@@ -2453,8 +2480,6 @@ var EffectListItem = function EffectListItem(effect, timeline) {
   // (long press to drag) logic
   var preventCancel = function (evt) {
     if (evt.path[0] === this$1.element) {
-      console.log('Cancel');
-      console.log(evt);
       evt.preventDefault();
     }
   };
@@ -2464,10 +2489,11 @@ EffectListItem.prototype.getElement = function getElement () {
   return this.element;
 };
 
-var MainMenu = function MainMenu() {
+var MainMenu = function MainMenu(clock) {
   var this$1 = this;
 
   this.menu = document.getElementById('menu-container');
+  this.clock = clock;
   this.timeline = new Timeline(this);
   this.menuContent = this.menu.querySelector('.menu-content');
   this.effectList = this.menu.querySelector('.menu-effect-list');
@@ -2508,19 +2534,20 @@ var MainMenu = function MainMenu() {
   }
   this.effectList.appendChild(effectListElms);
 
-  this.timeline.loadTimeline([
-    [[effectList[0].getId(), {
-      timeBegin: 0,
-      timeEnd: 10000,
-      config:  effectList[0].getDefaultConfig()
-    }]],
-    [[effectList[1].getId(), {
-      timeBegin: 0,
-      timeEnd: 10000,
-      config:  effectList[1].getDefaultConfig()
-    }]],
-    []
-  ]);
+  var effectLen = 2500;
+  var tracks = [];
+  for (var i$2 = 0; i$2 < effectList.length; i$2++) {
+    tracks.push([
+      new EffectConfig(
+        effectList[i$2].getId(),
+        i$2 * effectLen,
+        i$2 * effectLen + effectLen,
+        1,
+        effectList[i$2].getDefaultConfig()
+      )
+    ]);
+  }
+  this.timeline.loadTimeline(tracks);
 
   this.defaultConfig = this.readConfig();
   this.submittedConfig = this.defaultConfig;
@@ -12127,20 +12154,27 @@ Uniforms.prototype.addUniform = function addUniform (name, type, value) {
   return this.getNameFor(uniform);
 };
 Uniforms.prototype.getNameFor = function getNameFor (uniform) {
-  return ((uniform.name) + "_" + (this.id));
+  if (this.id === undefined) {
+    return uniform.name;
+  } else {
+    return ((uniform.name) + "_" + (this.id));
+  }
 };
 Uniforms.prototype.compile = function compile (shader, uniforms) {
     var this$1 = this;
+    if ( uniforms === void 0 ) uniforms = null;
 
   var shaderStr = [];
   for (var i = 0; i < this.uniforms.length; i++) {
     var uniform = this$1.uniforms[i];
     shaderStr.push(("uniform " + (uniform.type) + " " + (this$1.getNameFor(uniform)) + ";"));
-    // eslint-disable-next-line no-param-reassign
-    uniforms[this$1.getNameFor(uniform)] = uniform.value;
+    if (uniforms !== null) {
+      // eslint-disable-next-line no-param-reassign
+      uniforms[this$1.getNameFor(uniform)] = uniform.value;
+    }
   }
   // eslint-disable-next-line no-param-reassign
-  shader.uniforms += shaderStr.join('\n');
+  shader.uniforms += shaderStr.join('\n') + '\n';
 };
 
 var CommandBuilder = function CommandBuilder () {};
@@ -12152,11 +12186,45 @@ CommandBuilder.prototype.buildCommand = function buildCommand (particleData, con
   return this.assembleCommand();
 };
 
-CommandBuilder.prepareVertexShader = function prepareVertexShader () {
+CommandBuilder.prototype.makeUniforms = function makeUniforms () {
+    var this$1 = this;
+
+  var uniforms = new Uniforms();
+  uniforms.addUniform('invImageAspectRatio', 'float', 1 / this.particleData.aspectRatio);
+  uniforms.addUniform('invScreenAspectRatio', 'float', function (ctx) { return ctx.viewportHeight / ctx.viewportWidth; });
+  uniforms.addUniform('viewProjectionMatrix', 'mat4', function (ctx) {
+    var aspect = ctx.viewportWidth / ctx.viewportHeight;
+    var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
+                          (this$1.particleData.aspectRatio));
+
+    return [
+      2, 0, 0, 0,
+      0, 2 * aspect, 0, 0,
+      0, 0, 1, 0,
+      -1, (underscan * 2) - 1, 0, 1
+    ];
+  });
+  uniforms.addUniform('invViewProjectionMatrix', 'mat4', function (ctx) {
+    var aspect = ctx.viewportWidth / ctx.viewportHeight;
+    var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
+                          (this$1.particleData.aspectRatio));
+
+    return [
+      0.5, 0, 0, 0,
+      0, 0.5 / aspect, 0, 0,
+      0, 0, 1, 0,
+      0.5, (-0.5 * ((underscan * 2) - 1)) / aspect, 0, 1
+    ];
+  });
+  uniforms.addUniform('particleSize', 'float', function (ctx) { return (ctx.viewportWidth / this$1.particleData.width) * 2 * this$1.config.particleScaling; });
+  uniforms.addUniform('globalTime', 'int', function (ctx, props) { return props.clock.getTime(); });
+  return uniforms;
+};
+
+CommandBuilder.prepareVertexShader = function prepareVertexShader (uniforms) {
   var vertexShader = new Shader();
 
   vertexShader.attributes += "\n      attribute vec2 texcoord;\n      attribute vec3 rgb;\n      attribute vec3 hsv;\n    ";
-  vertexShader.uniforms += "\n      uniform float invImageAspectRatio;\n      uniform float invScreenAspectRatio;\n      uniform mat4 viewProjectionMatrix;\n      uniform mat4 invViewProjectionMatrix;\n\n      uniform float particleSize;\n    ";
   vertexShader.varyings += 'varying vec3 color;\n';
   vertexShader.globals += 'const float PI = 3.14159265;\n';
   // TODO make functions a dict (= set) so that users can add them on
@@ -12185,8 +12253,10 @@ CommandBuilder.prototype.assembleFragmentShader = function assembleFragmentShade
 CommandBuilder.prototype.assembleCommand = function assembleCommand () {
     var this$1 = this;
 
+  var uniforms = {};
   var vert = CommandBuilder.prepareVertexShader();
   var frag = this.assembleFragmentShader();
+  this.makeUniforms().compile(vert, uniforms);
 
   var result = {
     primitive:'points',
@@ -12196,6 +12266,7 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
       rgb:    this.particleData.rgbBuffer,
       hsv:    this.particleData.hsvBuffer
     },
+    uniforms: uniforms,
     frag: frag,
     depth: { enable: false }
   };
@@ -12217,51 +12288,20 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
       throw new Error(("Unknown particle overlap mode: " + (this.config.particleOverlap)));
   }
 
-  result.uniforms = {
-    invImageAspectRatio: 1 / this.particleData.aspectRatio,
-    invScreenAspectRatio: function invScreenAspectRatio(ctx) {
-      return ctx.viewportHeight / ctx.viewportWidth;
-    },
-    viewProjectionMatrix: function viewProjectionMatrix(ctx) {
-      var aspect = ctx.viewportWidth / ctx.viewportHeight;
-      var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.particleData.aspectRatio));
-
-      return [
-        2, 0, 0, 0,
-        0, 2 * aspect, 0, 0,
-        0, 0, 1, 0,
-        -1, (underscan * 2) - 1, 0, 1
-      ];
-    },
-    invViewProjectionMatrix: function invViewProjectionMatrix(ctx) {
-      var aspect = ctx.viewportWidth / ctx.viewportHeight;
-      var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.particleData.aspectRatio));
-
-      return [
-        0.5, 0, 0, 0,
-        0, 0.5 / aspect, 0, 0,
-        0, 0, 1, 0,
-        0.5, (-0.5 * ((underscan * 2) - 1)) / aspect, 0, 1
-      ];
-    },
-    particleSize: function particleSize(ctx) {
-      return (ctx.viewportWidth / this.particleData.width) * 2 * this.config.particleScaling;
-    },
-  };
-
   vert.mainBody += "\n      vec3 initialPosition = vec3(texcoord, 0);\n      initialPosition.y *= invImageAspectRatio;\n      \n      vec3 position = initialPosition;\n    ";
   var globalId = 0;
   for (var i = 0; i < this.config.effects.length; i++) {
     var track = this$1.config.effects[i];
     for (var j = 0; j < track.length; j++) {
-      var uniforms = new Uniforms(globalId);
-      var effectId = track[j][0];
-      var effectConfig = track[j][1];
-      var effectClass = byId[effectId];
-      effectClass.register(effectConfig, uniforms, vert);
-      uniforms.compile(vert, result.uniforms);
+      var effectUniforms = new Uniforms(globalId);
+      var effectConfig = track[j];
+      var effectClass = track[j].getEffectClass();
+
+      vert.mainBody += "if (" + (effectConfig.timeBegin) + " <= globalTime && globalTime <= " + (effectConfig.timeEnd) + ") {";
+      effectClass.register(effectConfig, effectUniforms, vert);
+      vert.mainBody += '}';
+        
+      effectUniforms.compile(vert, uniforms);
       globalId += 1;
     }
   }
@@ -12271,6 +12311,42 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
   result.vert = vert.compile();
 
   return result;
+};
+
+var RendererClock = function RendererClock() {
+  this.time = -1;
+  this.delta = 0;
+  this.absTime = Date.now();
+  this.period = 1000;
+};
+RendererClock.prototype.frame = function frame () {
+  if (this.time === -1) {
+    // it was requested that we start at zero
+    this.absTime = Date.now();
+    this.time = 0;
+  } else {
+    var oldTime = this.absTime;
+    this.absTime = Date.now();
+    this.delta = this.absTime - oldTime;
+    this.time = (this.time + this.delta) % this.period;
+  }
+};
+RendererClock.prototype.reset = function reset () {
+  this.time = -1;
+  this.delta = 0;
+  this.absTime = Date.now();
+};
+RendererClock.prototype.setPeriod = function setPeriod (p) {
+  this.period = p;
+};
+RendererClock.prototype.getTime = function getTime () {
+  return this.time;
+};
+RendererClock.prototype.getDelta = function getDelta () {
+  return this.delta;
+};
+RendererClock.prototype.getAbsoluteTime = function getAbsoluteTime () {
+  return this.absTime;
 };
 
 var Renderer = function Renderer(canvas) {
@@ -12285,22 +12361,23 @@ var Renderer = function Renderer(canvas) {
   this.config = null;
   this.command = null;
   this.commandBuilder = new CommandBuilder();
-  this.oldTime = this.regl.now();
-  this.currentTime = this.regl.now();
+  this.clock = new RendererClock();
   this.regl.frame(function () {
-    this$1.oldTime = this$1.currentTime;
-    this$1.currentTime = this$1.regl.now();
     if (this$1.command === null) {
       return;
     }
+    this$1.clock.frame();
     this$1.regl.clear({ color: this$1.config.backgroundColor });
     this$1.command({
       config:     this$1.config,
       particleData: this$1.particleData,
-      oldTime:    this$1.oldTime,
-      currentTime:this$1.currentTime,
+      clock:      this$1.clock
     });
   });
+};
+
+Renderer.prototype.getClock = function getClock () {
+  return this.clock;
 };
 
 Renderer.prototype.loadImageData = function loadImageData (img) {
@@ -12378,7 +12455,7 @@ Renderer.prototype.createParticleData = function createParticleData () {
 };
 
 Renderer.prototype.destroyParticleData = function destroyParticleData () {
-  this.command = null;
+  this.setCommand(null);
   if (this.particleData !== null) {
     this.particleData.texcoordsBuffer.destroy();
     this.particleData.rgbBuffer.destroy();
@@ -12387,9 +12464,15 @@ Renderer.prototype.destroyParticleData = function destroyParticleData () {
   }
 };
 
+Renderer.prototype.setCommand = function setCommand (command) {
+  this.clock.reset();
+  this.clock.setPeriod(this.config.duration);
+  this.command = command;
+};
+
 Renderer.prototype.rebuildCommand = function rebuildCommand () {
   var cmd = this.commandBuilder.buildCommand(this.particleData, this.config);
-  this.command = this.regl(cmd);
+  this.setCommand(this.regl(cmd));
 };
 
 Renderer.prototype.loadImage = function loadImage (img) {
@@ -12412,12 +12495,12 @@ var imageLoadingClass = 'loading-image';
 var canvas = document.getElementById('main-canvas');
 
 // set up ui components
-var menu = new MainMenu();
 var fullscreen = new FullscreenButton();
 var imgSelect = new ImgSelect();
 var inactivityMonitor = new InactivityMonitor();
 var imgDimWarn = new ImgDimWarn();
 var renderer = new Renderer(canvas);
+var menu = new MainMenu(renderer.getClock());
 
 var adjustCanvasSize = function () {
   canvas.width = window.innerWidth;
