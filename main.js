@@ -1257,8 +1257,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-06-01T13:00:17.908Z',
-  git_rev:               '68664d4',
+  timestamp:             '2017-06-03T11:11:28.343Z',
+  git_rev:               'd957508',
   export_schema_version: 0
 };
 
@@ -1374,6 +1374,10 @@ ConfigUI.prototype.applyConfig = function applyConfig (/* config */) {
 ConfigUI.prototype.notifyChange = function notifyChange () {
   // TODO
 };
+
+function fract(x) {
+  return x - Math.floor(x);
+}
 
 var HueDisplaceConfigUI = (function (ConfigUI$$1) {
   function HueDisplaceConfigUI() {
@@ -1627,10 +1631,85 @@ var ConvergeCircleEffect = (function (Effect$$1) {
   return ConvergeCircleEffect;
 }(Effect));
 
+var EffectName = 'Wave';
+
+var WaveConfigUI = (function (ConfigUI$$1) {
+  function WaveConfigUI() {
+    ConfigUI$$1.call(this);
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName + "</legend>\n      </fieldset>\n    "));
+    var ui = this.element;
+  }
+
+  if ( ConfigUI$$1 ) WaveConfigUI.__proto__ = ConfigUI$$1;
+  WaveConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  WaveConfigUI.prototype.constructor = WaveConfigUI;
+
+  WaveConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  WaveConfigUI.prototype.getConfig = function getConfig () {
+    var config = {};
+    
+    return config;
+  };
+
+  WaveConfigUI.prototype.applyConfig = function applyConfig (config) {
+  };
+
+  return WaveConfigUI;
+}(ConfigUI));
+
+var WaveEffect = (function (Effect$$1) {
+  function WaveEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) WaveEffect.__proto__ = Effect$$1;
+  WaveEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  WaveEffect.prototype.constructor = WaveEffect;
+
+  WaveEffect.register = function register (instance, uniforms, vertexShader) {
+    var time = uniforms.addUniform('time', 'float', function (ctx, props) { return fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()); });
+    var rep = uniforms.addUniform('repetition', 'int', function (ctx, props) { return Math.floor((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()); });
+    var multiplier = 2;
+    var amplitude = 0.1;
+
+    // goes from 0 (leftmost, begin) to 2 (leftmost, end)
+    // but `reached` + `notOver` clamp it to 0 to 1
+    var x = "(2. * " + time + " - initialPosition.x)";
+    var curve = function (x) { return ("(sin(" + x + " * float(" + multiplier + ") * 3. * PI - 0.5 * PI))"); };
+    var ease = "((cos((" + x + " * 2. - 1.) * PI) + 1.) / 2.)";
+
+    // eslint-disable-next-line no-param-reassign
+    vertexShader.mainBody += "\n      {\n        float ease = 1.;\n        if (" + rep + " == 0 && " + x + " <= 0.5) {\n          ease = " + ease + ";\n        } else if (" + rep + " == " + (instance.repetitions) + " - 1 && " + x + " >= 0.5) {\n          ease = " + ease + ";\n        }\n        float curve = " + (curve(x)) + ";\n        float phase = ease * curve;\n        float reached = (" + x + " >= 0.) ? 1. : 0.;\n        if (" + rep + " != 0) {\n          reached = 1.;\n        }\n        float notOver = (" + x + " <= 1.) ? 1. : 0.;\n        if (" + rep + " != " + (instance.repetitions) + " - 1) {\n          notOver = 1.;\n        }\n\n        position.y += phase * reached * notOver * " + amplitude + ";\n      }\n    ";
+  };
+
+  WaveEffect.getDisplayName = function getDisplayName () {
+    return EffectName;
+  };
+
+  WaveEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new WaveConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  WaveEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+    };
+  };
+
+  return WaveEffect;
+}(Effect));
+
 var effectList = [
   HueDisplaceEffect,
   ConvergePointEffect,
-  ConvergeCircleEffect
+  ConvergeCircleEffect,
+  WaveEffect
 ];
 var byId = {};
 for (var i = 0; i < effectList.length; i++) {
@@ -1639,8 +1718,8 @@ for (var i = 0; i < effectList.length; i++) {
 
 var EffectConfig = function EffectConfig(id, timeBegin, timeEnd, repetitions, config) {
   this.id = id;
-  this.timeBegin = timeBegin;
-  this.timeEnd = timeEnd;
+  this.timeBegin = Math.round(timeBegin);
+  this.timeEnd = Math.round(timeEnd);
   this.repetitions = repetitions;
   this.config = config;
 };
@@ -1734,7 +1813,7 @@ TimelineEntry.prototype.setupTimeAdjustHandles = function setupTimeAdjustHandles
   TimelineEntry.setupAdjustHandle(beginHandle, function (delta) {
     var newBegin = Math.max(0, this$1.timeBegin + ((delta / this$1.timeline.pxPerSecond) * 1000));
     if (newBegin < this$1.timeEnd) {
-      this$1.timeBegin = newBegin;
+      this$1.timeBegin = Math.round(newBegin);
       this$1.renderStyles();
       this$1.timeline.notifyChange();
     }
@@ -1743,7 +1822,7 @@ TimelineEntry.prototype.setupTimeAdjustHandles = function setupTimeAdjustHandles
   TimelineEntry.setupAdjustHandle(endHandle, function (delta) {
     var newEnd = this$1.timeEnd + ((delta / this$1.timeline.pxPerSecond) * 1000);
     if (newEnd > this$1.timeBegin) {
-      this$1.timeEnd = newEnd;
+      this$1.timeEnd = Math.round(newEnd);
       this$1.renderStyles();
       this$1.timeline.notifyChange();
     }
@@ -1792,7 +1871,7 @@ TimelineTrack.prototype.dropNewEffect = function dropNewEffect (effect, clientX,
   if (clientX >= rect.left && clientX <= rect.right &&
       clientY >= rect.top && clientY <= rect.bottom) {
     var entry = new TimelineEntry(effect, this.timeline);
-    var timeBegin = Math.max(0, clientX - (width / 2) - rect.left) / (this.timeline.pxPerSecond / 1000);
+    var timeBegin = Math.round(Math.max(0, clientX - (width / 2) - rect.left) / (this.timeline.pxPerSecond / 1000));
     entry.loadState({
       timeBegin: timeBegin,
       timeEnd:   timeBegin + 1000,
