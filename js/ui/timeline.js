@@ -146,7 +146,7 @@ class TimelineTrack {
     if (clientX >= rect.left && clientX <= rect.right &&
         clientY >= rect.top && clientY <= rect.bottom) {
       const entry = new TimelineEntry(effect, this.timeline);
-      const timeBegin = Math.max(0, clientX - (width / 2) - rect.left) / (this.timeline.pxPerSecond / 1000);
+      const timeBegin = Math.round(Math.max(0, clientX - (width / 2) - rect.left) / (this.timeline.pxPerSecond / 1000));
       entry.loadState({
         timeBegin,
         timeEnd:     timeBegin + 1000,

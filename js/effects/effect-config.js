@@ -3,8 +3,8 @@ import { effectsById } from '../effects/index';
 export default class EffectConfig {
   constructor(id, timeBegin, timeEnd, repetitions, config) {
     this.id = id;
-    this.timeBegin = timeBegin;
-    this.timeEnd = timeEnd;
+    this.timeBegin = Math.round(timeBegin);
+    this.timeEnd = Math.round(timeEnd);
     this.repetitions = repetitions;
     this.config = config;
   }
