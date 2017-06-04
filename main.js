@@ -2110,7 +2110,7 @@ Timeticks.prototype.setDuration = function setDuration (duration) {
   this.duration = duration;
   this.render();
 };
-Timeticks.prototype.msToStr = function msToStr (ms) {
+Timeticks.msToStr = function msToStr (ms) {
   var zeroPad = function(num, places) {
     var zero = places - num.toString().length + 1;
     return Array(+(zero > 0 && zero)).join('0') + num;
@@ -2125,8 +2125,6 @@ Timeticks.prototype.msToStr = function msToStr (ms) {
   return ((zeroPad(m, 2)) + ":" + (zeroPad(s, 2)) + ":" + (zeroPad(cs, 2)));
 };
 Timeticks.prototype.render = function render () {
-    var this$1 = this;
-
   if (this.duration !== this.renderedDuration ||
       this.zoomLevel !== this.renderedZoomLevel) {
     this.renderedDuration = this.duration;
@@ -2138,7 +2136,7 @@ Timeticks.prototype.render = function render () {
     var timeBetweenTicks = this.getOptimalTimeBetweenTicks();
     var time = timeBetweenTicks;
     do {
-      var tick = parseHtml(("<span class=\"menu-timeline-timetick\">" + (this$1.msToStr(time)) + "</span>"));
+      var tick = parseHtml(("<span class=\"menu-timeline-timetick\">" + (Timeticks.msToStr(time)) + "</span>"));
       tick.style.left = (pxPerMillis * time) + "px";
       container.appendChild(tick);
       time += timeBetweenTicks;
@@ -2194,6 +2192,21 @@ var PauseButton = function PauseButton(clock) {
   });
 };
 
+var TimeDisplay = function TimeDisplay(clock) {
+  var this$1 = this;
+
+  this.element = document.querySelector('.menu-timeline-current-time');
+  this.clock = clock;
+  var updateLoop = function () {
+    this$1.update();
+    window.requestAnimationFrame(updateLoop);
+  };
+  updateLoop();
+};
+TimeDisplay.prototype.update = function update () {
+  this.element.innerHTML = Timeticks.msToStr(this.clock.getTime());
+};
+
 /**
  *
  */
@@ -2206,6 +2219,7 @@ var Timeline = function Timeline(menu) {
   this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
   this.effectConfigDialog = new EffectConfigDialog();
   this.timeticks = new Timeticks(menu.clock);
+  this.timeDisplay = new TimeDisplay(menu.clock);
   this.pauseButton = new PauseButton(menu.clock);
   this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
   this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
