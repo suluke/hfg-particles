@@ -47,6 +47,10 @@ class RendererClock {
     return this.absTime;
   }
   setPaused(paused = true) {
+    if (this.paused && !paused) {
+      this.delta = 0;
+      this.absTime = Date.now();
+    }
     this.paused = paused;
   }
   getPaused() {
