@@ -367,7 +367,7 @@ class Timeticks {
     this.duration = duration;
     this.render();
   }
-  msToStr(ms) {
+  static msToStr(ms) {
     let zeroPad = function(num, places) {
       const zero = places - num.toString().length + 1;
       return Array(+(zero > 0 && zero)).join('0') + num;
@@ -393,7 +393,7 @@ class Timeticks {
       const timeBetweenTicks = this.getOptimalTimeBetweenTicks();
       let time = timeBetweenTicks;
       do {
-        const tick = parseHtml(`<span class="menu-timeline-timetick">${this.msToStr(time)}</span>`);
+        const tick = parseHtml(`<span class="menu-timeline-timetick">${Timeticks.msToStr(time)}</span>`);
         tick.style.left = `${pxPerMillis * time}px`;
         container.appendChild(tick);
         time += timeBetweenTicks;
@@ -450,6 +450,21 @@ class PauseButton {
   }
 }
 
+class TimeDisplay {
+  constructor(clock) {
+    this.element = document.querySelector('.menu-timeline-current-time');
+    this.clock = clock;
+    const updateLoop = () => {
+      this.update();
+      window.requestAnimationFrame(updateLoop);
+    };
+    updateLoop();
+  }
+  update() {
+    this.element.innerHTML = Timeticks.msToStr(this.clock.getTime());
+  }
+}
+
 /**
  *
  */
@@ -461,6 +476,7 @@ export default class Timeline {
     this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
     this.effectConfigDialog = new EffectConfigDialog();
     this.timeticks = new Timeticks(menu.clock);
+    this.timeDisplay = new TimeDisplay(menu.clock);
     this.pauseButton = new PauseButton(menu.clock);
     this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
     this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
