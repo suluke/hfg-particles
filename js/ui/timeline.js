@@ -25,6 +25,15 @@ class TimelineEntry {
     `);
     this.setupTimeAdjustHandles();
     this.setupDragAndDrop();
+    // Prevent a previous text selection from interfering with our custom
+    // drag and drop
+    this.element.addEventListener('mousedown', () => {
+      if (document.selection) {
+        document.selection.empty();
+      } else if (window.getSelection) {
+        window.getSelection().removeAllRanges();
+      }
+    });
 
     this.openConfigBtn = this.element.querySelector('button');
     this.openConfigBtn.addEventListener('click', () => {
@@ -36,15 +45,13 @@ class TimelineEntry {
       .then(
         (newState) => {
           this.loadState(newState);
-          this.timeline.renderStyles();
           this.timeline.notifyChange();
         },
         (deleted) => {
           if (deleted) {
             this.timeline.deleteEntry(this);
-            this.timeline.notifyChange();
             this.timeline.renderHtml();
-            this.timeline.renderStyles();
+            this.timeline.notifyChange();
           }
         }
       );
@@ -70,9 +77,8 @@ class TimelineEntry {
           const delta = evt.clientX - prevX;
           prevX = evt.clientX;
           const duration = this.timeEnd - this.timeBegin;
-          this.timeBegin = Math.max(0, this.timeBegin + ((delta / this.timeline.pxPerSecond) * 1000));
+          this.timeBegin = Math.max(0, Math.round(this.timeBegin + ((delta / this.timeline.pxPerSecond) * 1000)));
           this.timeEnd = this.timeBegin + duration;
-          this.renderStyles();
           this.timeline.notifyChange();
         }
 
@@ -140,7 +146,6 @@ class TimelineEntry {
       let newBegin = Math.max(0, this.timeBegin + ((delta / this.timeline.pxPerSecond) * 1000));
       if (newBegin < this.timeEnd) {
         this.timeBegin = Math.round(newBegin);
-        this.renderStyles();
         this.timeline.notifyChange();
       }
     });
@@ -149,7 +154,6 @@ class TimelineEntry {
       const newEnd = this.timeEnd + ((delta / this.timeline.pxPerSecond) * 1000);
       if (newEnd > this.timeBegin) {
         this.timeEnd = Math.round(newEnd);
-        this.renderStyles();
         this.timeline.notifyChange();
       }
     });
@@ -175,8 +179,10 @@ class TimelineEntry {
   }
   renderStyles() {
     const li = this.getElement();
-    li.style.left = `${(this.timeBegin / 1000) * this.timeline.pxPerSecond}px`;
-    li.style.width = `${((this.timeEnd - this.timeBegin) / 1000) * this.timeline.pxPerSecond}px`;
+    const left = (this.timeBegin / 1000) * this.timeline.pxPerSecond;
+    const width = ((this.timeEnd - this.timeBegin) / 1000) * this.timeline.pxPerSecond;
+    li.style.left = `${left}px`;
+    li.style.width = `${width}px`;
   }
 }
 
@@ -193,13 +199,14 @@ class TimelineTrack {
       </td>
     `));
     this.elements.push(parseHtml(`
-      <td width="99%">
+      <td>
         <ol>
         </ol>
       </td>
     `));
     this.entryListElm = this.elements[1].querySelector('ol');
     this.entryList = [];
+    this.width = 0;
   }
 
   dropNewEffect(effect, clientX, clientY, width, height) {
@@ -217,7 +224,6 @@ class TimelineTrack {
       });
       this.addEntry(entry);
       this.renderHtml();
-      this.renderStyles();
       this.timeline.notifyChange();
       return true;
     }
@@ -245,9 +251,16 @@ class TimelineTrack {
     this.entryListElm.appendChild(lis);
   }
   renderStyles() {
+    let maxEnd = 0;
     for (let i = 0; i < this.entryList.length; i++) {
       const entry = this.entryList[i];
       entry.renderStyles();
+      maxEnd = Math.max(maxEnd, entry.timeEnd);
+    }
+    const width = Math.round(maxEnd / 1000 * this.timeline.pxPerSecond);
+    if (width > this.width) {
+      this.width = width;
+      this.getTrackElement().style.minWidth = `${width}px`;
     }
   }
 }
@@ -541,6 +554,7 @@ export default class Timeline {
   notifyChange() {
     this.timeticks.setDuration(this.getTotalDuration());
     this.assertEmptyLastTrack();
+    this.renderStyles();
     this.menu.notifyChange();
   }
   deleteEntry(remove) {

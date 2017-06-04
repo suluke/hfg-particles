@@ -13,6 +13,7 @@
       & > th:first-child,
       & > td:first-child {
         white-space: nowrap;
+        width: 1px;
       }
       & > th:first-child + th,
       & > td:first-child + td {
@@ -115,6 +116,7 @@
                 text-align: left;
                 text-overflow: ellipsis;
                 overflow: hidden;
+                @include unselectable;
               }
             }
           }
