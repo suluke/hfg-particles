@@ -1257,8 +1257,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-06-03T11:11:28.343Z',
-  git_rev:               'd957508',
+  timestamp:             '2017-06-04T09:56:56.030Z',
+  git_rev:               'cdefd5c',
   export_schema_version: 0
 };
 
@@ -1635,9 +1635,20 @@ var EffectName = 'Wave';
 
 var WaveConfigUI = (function (ConfigUI$$1) {
   function WaveConfigUI() {
+    var this$1 = this;
+
     ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName + "</legend>\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName + "</legend>\n        <label>\n          Number of waves:\n          <input type=\"number\" min=\"1\" step=\"1\" value=\"1\" class=\"effect-wave-count\" />\n        </label><br/>\n        <label>\n          Amplitude:\n          <input type=\"number\" value=\"0.05\" class=\"effect-wave-amplitude\" />\n        </label>\n      </fieldset>\n    "));
     var ui = this.element;
+
+    this.waveCountInput = ui.querySelector('input.effect-wave-count');
+    this.waveCountInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.amplitudeInput = ui.querySelector('input.effect-wave-amplitude');
+    this.amplitudeInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
   }
 
   if ( ConfigUI$$1 ) WaveConfigUI.__proto__ = ConfigUI$$1;
@@ -1650,11 +1661,16 @@ var WaveConfigUI = (function (ConfigUI$$1) {
 
   WaveConfigUI.prototype.getConfig = function getConfig () {
     var config = {};
+
+    config.multiplier = parseInt(this.waveCountInput.value, 10);
+    config.amplitude = parseFloat(this.amplitudeInput.value, 10);
     
     return config;
   };
 
   WaveConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.waveCountInput.value = config.multiplier;
+    this.amplitudeInput.value = config.amplitude;
   };
 
   return WaveConfigUI;
@@ -1672,17 +1688,22 @@ var WaveEffect = (function (Effect$$1) {
   WaveEffect.register = function register (instance, uniforms, vertexShader) {
     var time = uniforms.addUniform('time', 'float', function (ctx, props) { return fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()); });
     var rep = uniforms.addUniform('repetition', 'int', function (ctx, props) { return Math.floor((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()); });
-    var multiplier = 2;
-    var amplitude = 0.1;
+    var multiplier = instance.config.multiplier;
+    var amplitude = instance.config.amplitude;
 
     // goes from 0 (leftmost, begin) to 2 (leftmost, end)
     // but `reached` + `notOver` clamp it to 0 to 1
     var x = "(2. * " + time + " - initialPosition.x)";
+    // Closed formula (with ease): (cos(​(x*​2-​1)*​π)+​1)/​2 * ​sin(​x*​3*​π-​0.5*​π)/​0.8
     var curve = function (x) { return ("(sin(" + x + " * float(" + multiplier + ") * 3. * PI - 0.5 * PI))"); };
-    var ease = "((cos((" + x + " * 2. - 1.) * PI) + 1.) / 2.)";
+    // The ease function is a cos spanning two negative peaks with a positive peak
+    // in between. This is is then translated (+1, /2) to go from 0 to 1
+    // Finally, because this will lower the actual peak height of `curve`
+    // a compensation factor of 1.25 is applied
+    var ease = "((cos((" + x + " * 2. - 1.) * PI) + 1.) * 0.5 * 1.25)";
 
     // eslint-disable-next-line no-param-reassign
-    vertexShader.mainBody += "\n      {\n        float ease = 1.;\n        if (" + rep + " == 0 && " + x + " <= 0.5) {\n          ease = " + ease + ";\n        } else if (" + rep + " == " + (instance.repetitions) + " - 1 && " + x + " >= 0.5) {\n          ease = " + ease + ";\n        }\n        float curve = " + (curve(x)) + ";\n        float phase = ease * curve;\n        float reached = (" + x + " >= 0.) ? 1. : 0.;\n        if (" + rep + " != 0) {\n          reached = 1.;\n        }\n        float notOver = (" + x + " <= 1.) ? 1. : 0.;\n        if (" + rep + " != " + (instance.repetitions) + " - 1) {\n          notOver = 1.;\n        }\n\n        position.y += phase * reached * notOver * " + amplitude + ";\n      }\n    ";
+    vertexShader.mainBody += "\n      {\n        float ease = 1.;\n        if (" + rep + " == 0 && " + x + " <= 0.5) {\n          ease = " + ease + ";\n        } else if (" + rep + " == " + (instance.repetitions) + " - 1 && " + x + " >= 0.5) {\n          ease = " + ease + ";\n        }\n        float curve = " + (curve(x)) + ";\n        float phase = ease * curve;\n        float reached = (" + x + " >= 0.) ? 1. : 0.;\n        if (" + rep + " != 0) {\n          reached = 1.;\n        }\n        float notOver = (" + x + " <= 1.) ? 1. : 0.;\n        if (" + rep + " != " + (instance.repetitions) + " - 1) {\n          notOver = 1.;\n        }\n\n        position.y += phase * reached * notOver * float(" + amplitude + ");\n      }\n    ";
   };
 
   WaveEffect.getDisplayName = function getDisplayName () {
@@ -1699,17 +1720,82 @@ var WaveEffect = (function (Effect$$1) {
 
   WaveEffect.getDefaultConfig = function getDefaultConfig () {
     return {
+      multiplier: 1,
+      amplitude: 0.05
     };
   };
 
   return WaveEffect;
 }(Effect));
 
+var EffectName$1 = 'Change Image';
+
+var ChangeImageConfigUI = (function (ConfigUI$$1) {
+  function ChangeImageConfigUI() {
+    ConfigUI$$1.call(this);
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$1 + "</legend>\n      </fieldset>\n    "));
+    var ui = this.element;
+  }
+
+  if ( ConfigUI$$1 ) ChangeImageConfigUI.__proto__ = ConfigUI$$1;
+  ChangeImageConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  ChangeImageConfigUI.prototype.constructor = ChangeImageConfigUI;
+
+  ChangeImageConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  ChangeImageConfigUI.prototype.getConfig = function getConfig () {
+    var config = {};
+    
+    return config;
+  };
+
+  ChangeImageConfigUI.prototype.applyConfig = function applyConfig (config) {
+  };
+
+  return ChangeImageConfigUI;
+}(ConfigUI));
+
+var ChangeImageEffect = (function (Effect$$1) {
+  function ChangeImageEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) ChangeImageEffect.__proto__ = Effect$$1;
+  ChangeImageEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ChangeImageEffect.prototype.constructor = ChangeImageEffect;
+
+  ChangeImageEffect.register = function register (instance, uniforms, vertexShader) {
+    
+  };
+
+  ChangeImageEffect.getDisplayName = function getDisplayName () {
+    return EffectName$1;
+  };
+
+  ChangeImageEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new ChangeImageConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  ChangeImageEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+    };
+  };
+
+  return ChangeImageEffect;
+}(Effect));
+
 var effectList = [
   HueDisplaceEffect,
   ConvergePointEffect,
   ConvergeCircleEffect,
-  WaveEffect
+  WaveEffect,
+  ChangeImageEffect
 ];
 var byId = {};
 for (var i = 0; i < effectList.length; i++) {
@@ -1752,22 +1838,20 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
   this.timeEnd = 0;
   this.effect = effect;
   this.timeline = timeline;
+  this.clickPrevented = false;
 
   var beginHandleClass = 'timeline-entry-begin-time-adjust';
   var endHandleClass = 'timeline-entry-end-time-adjust';
   this.element = parseHtml(("\n      <li>\n        <div class=\"" + beginHandleClass + "\"></div>\n        <button type=\"button\">" + (this.effect.getDisplayName()) + "</button>\n        <div class=\"" + endHandleClass + "\"></div>\n      </li>\n    "));
   this.setupTimeAdjustHandles();
-  var li = this.element;
-  li.addEventListener('dragstart', function (evt) {
-    window.requestAnimationFrame(function () { return li.style.display = 'none'; });
-    evt.dataTransfer.effectAllowed = "move";
-  });
-  li.addEventListener('dragend', function (evt) {
-    li.style.display = '';
-  });
+  this.setupDragAndDrop();
 
   this.openConfigBtn = this.element.querySelector('button');
   this.openConfigBtn.addEventListener('click', function () {
+    if (this$1.clickPrevented) {
+      this$1.clickPrevented = false;
+      return;
+    }
     this$1.timeline.effectConfigDialog.promptUser(this$1)
     .then(
       function (newState) {
@@ -1785,6 +1869,51 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
       }
     );
   });
+};
+
+TimelineEntry.prototype.setupHorizontalDragging = function setupHorizontalDragging () {
+    var this$1 = this;
+
+  var li = this.element;
+  li.addEventListener('mousedown', function (evt) {
+    if (evt.target.classList.contains('timeline-entry-begin-time-adjust') ||
+        evt.target.classList.contains('timeline-entry-end-time-adjust')) {
+      return;
+    }
+    var startX = evt.clientX;
+    var prevX = startX;
+    var xThres = 5;
+    var xStarted = false;
+    var onDrag = function (evt) {
+      if (!xStarted) {
+        if (Math.abs(evt.clientX - startX) > xThres) {
+          xStarted = true;
+        }
+      } else {
+        var delta = evt.clientX - prevX;
+        prevX = evt.clientX;
+        var duration = this$1.timeEnd - this$1.timeBegin;
+        this$1.timeBegin = Math.max(0, this$1.timeBegin + ((delta / this$1.timeline.pxPerSecond) * 1000));
+        this$1.timeEnd = this$1.timeBegin + duration;
+        this$1.renderStyles();
+        this$1.timeline.notifyChange();
+      }
+
+      if (xStarted) {
+        this$1.clickPrevented = true;
+      }
+    };
+    var onDragEnd = function (evt) {
+      document.documentElement.removeEventListener('mousemove', onDrag);
+      document.documentElement.removeEventListener('mouseup', onDragEnd);
+    };
+    document.documentElement.addEventListener('mousemove', onDrag);
+    document.documentElement.addEventListener('mouseup', onDragEnd);
+  });
+};
+
+TimelineEntry.prototype.setupDragAndDrop = function setupDragAndDrop () {
+  this.setupHorizontalDragging();
 };
 
 TimelineEntry.setupAdjustHandle = function setupAdjustHandle (elm, onAdjustCallback) {
