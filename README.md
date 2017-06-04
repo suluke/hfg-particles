@@ -30,5 +30,15 @@ The contents of this directory can be served statically by any file server of yo
    We use es6 (transpiled by [bublé](https://www.npmjs.com/package/buble)), including module `import` syntax (statically bundled by [rollup](https://www.npmjs.com/package/rollup))
 1. `sass/` directory: Styles, written in SCSS language and compiled by our server using [node-sass](https://www.npmjs.com/package/node-sass)
 
+### Creating new effects
+For the creation of a new effect, the following steps are required:
+1. Create a new file where the effect will live in the future in `js/effects`, e.g. `js/effects/my-effect.js`
+1. Add your effect to the effects list, which is found in `js/effects/index.js`
+1. Write the necessary code. This usually involves the following steps:
+   1. Create a class extending `Effect` (`js/effects/effect.js`) where you override the unimplemented methods with your own
+   1. Create a class extending `ConfigUI` (also in `effect.js`) to describe the ui a user will see to change certain effect parameters
+
+See commit [cdefd5c](https://github.com/suluke/hfg-particles/commit/cdefd5c67e3a50da6588f5e34a310aa36708f390) for a fairly complete example of this.
+
 ## Legal Info
 See [LICENSE](LICENSE) file for legal information.
