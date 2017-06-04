@@ -87,7 +87,7 @@ export default class WaveEffect extends Effect {
           notOver = 1.;
         }
 
-        position.y += phase * reached * notOver * ${amplitude};
+        position.y += phase * reached * notOver * float(${amplitude});
       }
     `;
   }
