@@ -1694,7 +1694,6 @@ var WaveEffect = (function (Effect$$1) {
     // goes from 0 (leftmost, begin) to 2 (leftmost, end)
     // but `reached` + `notOver` clamp it to 0 to 1
     var x = "(2. * " + time + " - initialPosition.x)";
-    // Closed formula (with ease): (cos(​(x*​2-​1)*​π)+​1)/​2 * ​sin(​x*​3*​π-​0.5*​π)/​0.8
     var curve = function (x) { return ("(sin(" + x + " * float(" + multiplier + ") * 3. * PI - 0.5 * PI))"); };
     // The ease function is a cos spanning two negative peaks with a positive peak
     // in between. This is is then translated (+1, /2) to go from 0 to 1
@@ -1728,74 +1727,11 @@ var WaveEffect = (function (Effect$$1) {
   return WaveEffect;
 }(Effect));
 
-var EffectName$1 = 'Change Image';
-
-var ChangeImageConfigUI = (function (ConfigUI$$1) {
-  function ChangeImageConfigUI() {
-    ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$1 + "</legend>\n      </fieldset>\n    "));
-    var ui = this.element;
-  }
-
-  if ( ConfigUI$$1 ) ChangeImageConfigUI.__proto__ = ConfigUI$$1;
-  ChangeImageConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
-  ChangeImageConfigUI.prototype.constructor = ChangeImageConfigUI;
-
-  ChangeImageConfigUI.prototype.getElement = function getElement () {
-    return this.element;
-  };
-
-  ChangeImageConfigUI.prototype.getConfig = function getConfig () {
-    var config = {};
-    
-    return config;
-  };
-
-  ChangeImageConfigUI.prototype.applyConfig = function applyConfig (config) {
-  };
-
-  return ChangeImageConfigUI;
-}(ConfigUI));
-
-var ChangeImageEffect = (function (Effect$$1) {
-  function ChangeImageEffect () {
-    Effect$$1.apply(this, arguments);
-  }
-
-  if ( Effect$$1 ) ChangeImageEffect.__proto__ = Effect$$1;
-  ChangeImageEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
-  ChangeImageEffect.prototype.constructor = ChangeImageEffect;
-
-  ChangeImageEffect.register = function register (instance, uniforms, vertexShader) {
-    
-  };
-
-  ChangeImageEffect.getDisplayName = function getDisplayName () {
-    return EffectName$1;
-  };
-
-  ChangeImageEffect.getConfigUI = function getConfigUI () {
-    if (!this._configUI) {
-      this._configUI = new ChangeImageConfigUI();
-    }
-
-    return this._configUI;
-  };
-
-  ChangeImageEffect.getDefaultConfig = function getDefaultConfig () {
-    return {
-    };
-  };
-
-  return ChangeImageEffect;
-}(Effect));
-
 var effectList = [
   HueDisplaceEffect,
   ConvergePointEffect,
   ConvergeCircleEffect,
-  WaveEffect,
-  ChangeImageEffect
+  WaveEffect
 ];
 var byId = {};
 for (var i = 0; i < effectList.length; i++) {
