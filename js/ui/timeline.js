@@ -256,7 +256,8 @@ class TimelineTrack {
  *
  */
 class Timeticks {
-  constructor() {
+  constructor(clock) {
+    this.clock = clock;
     this.element = document.querySelector('.menu-timeline-timeticks');
     this.styleElm = document.createElement('style');
     document.body.appendChild(this.styleElm);
@@ -282,19 +283,28 @@ class Timeticks {
       this.zoomLevel /= 1.5;
       onZoomlevelChange();
     });
+    this.element.addEventListener('click', (evt) => {
+      const left = Math.round(this.element.getBoundingClientRect().left);
+      const x = Math.max(0, evt.clientX - left - this.getTimelineBorderWidth());
+      const t = Math.min(this.duration, x / this.getPxPerSecond() * 1000);
+      this.clock.setTime(t);
+    });
+  }
+  getTimelineBorderWidth() {
+    const tickWidth = this.firstTick.offsetWidth;
+    return Math.round((tickWidth / 2) + 5);
   }
   adjustPosition() {
-    const firstTick = this.firstTick;
-    const tickWidth = firstTick.offsetWidth;
     const cssRules = this.stylesheet.cssRules;
+    const borderWidth = this.getTimelineBorderWidth();
     this.stylesheet.insertRule(`
       .menu-timeline-container .menu-timeline-content tr > th:first-child + th {
-        border-left-width: ${(tickWidth / 2) + 5}px;
+        border-left-width: ${borderWidth}px;
       }`, cssRules.length
     );
     this.stylesheet.insertRule(`
       .menu-timeline-container .menu-timeline-content tr > td:first-child + td {
-        border-left-width: ${(tickWidth / 2) + 5}px;
+        border-left-width: ${borderWidth}px;
       }`, cssRules.length
     );
     this.stylesheet.insertRule(`
@@ -420,7 +430,7 @@ export default class Timeline {
     this.trackList = [];
     this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
     this.effectConfigDialog = new EffectConfigDialog();
-    this.timeticks = new Timeticks();
+    this.timeticks = new Timeticks(menu.clock);
     this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
     this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
     this.timeticks.addScaleChangeListener(() => {

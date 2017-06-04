@@ -7,8 +7,12 @@ class RendererClock {
     this.delta = 0;
     this.absTime = Date.now();
     this.period = 1000;
+    this.paused = false;
   }
   frame() {
+    if (this.paused) {
+      return;
+    }
     if (this.time === -1) {
       // it was requested that we start at zero
       this.absTime = Date.now();
@@ -31,11 +35,22 @@ class RendererClock {
   getTime() {
     return this.time;
   }
+  setTime(time) {
+    this.time = time;
+    this.delta = 0;
+    this.absTime = Date.now();
+  }
   getDelta() {
     return this.delta;
   }
   getAbsoluteTime() {
     return this.absTime;
+  }
+  setPaused(paused = true) {
+    this.paused = paused;
+  }
+  getPaused() {
+    return this.paused;
   }
 }
 

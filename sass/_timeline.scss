@@ -1,4 +1,5 @@
 @import 'mixins/centering';
+@import 'mixins/unselectable';
 
 .menu-timeline-container {
   overflow-y: scroll;
@@ -18,10 +19,15 @@
       }
       th {
         position: relative;
-      }
-      .menu-timeline-timetick {
-        position: absolute;
-        bottom: 0;
+
+        &.menu-timeline-timeticks {
+          cursor: pointer;
+          .menu-timeline-timetick {
+            position: absolute;
+            bottom: 0;
+            @include unselectable;
+          }
+        }
       }
     }
 
