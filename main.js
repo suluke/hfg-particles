@@ -12581,6 +12581,10 @@ RendererClock.prototype.getAbsoluteTime = function getAbsoluteTime () {
 RendererClock.prototype.setPaused = function setPaused (paused) {
     if ( paused === void 0 ) paused = true;
 
+  if (this.paused && !paused) {
+    this.delta = 0;
+    this.absTime = Date.now();
+  }
   this.paused = paused;
 };
 RendererClock.prototype.getPaused = function getPaused () {
