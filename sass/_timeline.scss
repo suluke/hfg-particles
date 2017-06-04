@@ -1,5 +1,6 @@
 @import 'mixins/centering';
 @import 'mixins/unselectable';
+@import 'mixins/icons';
 
 .menu-timeline-container {
   overflow-y: scroll;
@@ -19,6 +20,19 @@
       }
       th {
         position: relative;
+
+        .menu-timeline-zoom-in {
+          @include icon($fa-var-search-plus);
+        }
+        .menu-timeline-zoom-out {
+          @include icon($fa-var-search-minus);
+        }
+        .menu-timeline-pause {
+          @include icon($fa-var-pause);
+          &.paused {
+            @include icon($fa-var-play);
+          }
+        }
 
         &.menu-timeline-timeticks {
           cursor: pointer;
