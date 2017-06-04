@@ -12,6 +12,7 @@ class TimelineEntry {
     this.timeEnd = 0;
     this.effect = effect;
     this.timeline = timeline;
+    this.clickPrevented = false;
 
     const beginHandleClass = 'timeline-entry-begin-time-adjust';
     const endHandleClass = 'timeline-entry-end-time-adjust';
@@ -23,17 +24,14 @@ class TimelineEntry {
       </li>
     `);
     this.setupTimeAdjustHandles();
-    const li = this.element;
-    li.addEventListener('dragstart', (evt) => {
-      window.requestAnimationFrame(() => li.style.display = 'none');
-      evt.dataTransfer.effectAllowed = "move";
-    });
-    li.addEventListener('dragend', (evt) => {
-      li.style.display = '';
-    });
+    this.setupDragAndDrop();
 
     this.openConfigBtn = this.element.querySelector('button');
     this.openConfigBtn.addEventListener('click', () => {
+      if (this.clickPrevented) {
+        this.clickPrevented = false;
+        return;
+      }
       this.timeline.effectConfigDialog.promptUser(this)
       .then(
         (newState) => {
@@ -51,6 +49,70 @@ class TimelineEntry {
         }
       );
     });
+  }
+
+  setupHorizontalDragging() {
+    this.element.addEventListener('mousedown', (evt) => {
+      if (evt.target.classList.contains('timeline-entry-begin-time-adjust') ||
+          evt.target.classList.contains('timeline-entry-end-time-adjust')) {
+        return;
+      }
+      const startX = evt.clientX;
+      let prevX = startX;
+      const thres = 5;
+      let started = false;
+      const onDrag = (evt) => {
+        if (!started) {
+          if (Math.abs(evt.clientX - startX) > thres) {
+            started = true;
+          }
+        } else {
+          const delta = evt.clientX - prevX;
+          prevX = evt.clientX;
+          const duration = this.timeEnd - this.timeBegin;
+          this.timeBegin = Math.max(0, this.timeBegin + ((delta / this.timeline.pxPerSecond) * 1000));
+          this.timeEnd = this.timeBegin + duration;
+          this.renderStyles();
+          this.timeline.notifyChange();
+        }
+
+        if (started) {
+          this.clickPrevented = true;
+        }
+      };
+      const onDragEnd = (evt) => {
+        document.documentElement.removeEventListener('mousemove', onDrag);
+        document.documentElement.removeEventListener('mouseup', onDragEnd);
+      };
+      document.documentElement.addEventListener('mousemove', onDrag);
+      document.documentElement.addEventListener('mouseup', onDragEnd);
+    });
+  }
+
+  setupVericalDragging() {
+    return;
+    // Cross-timeline dragging and dropping is more complicated, so we
+    // handle it independently from horizontal dragging
+    this.element.addEventListener('mousedown', (evt) => {
+      if (evt.target.classList.contains('timeline-entry-begin-time-adjust') ||
+          evt.target.classList.contains('timeline-entry-end-time-adjust')) {
+        return;
+      }
+      const onDrag = (evt) => {
+        // TODO
+      };
+      const onDragEnd = (evt) => {
+        document.documentElement.removeEventListener('mousemove', onDrag);
+        document.documentElement.removeEventListener('mouseup', onDragEnd);
+      };
+      document.documentElement.addEventListener('mousemove', onDrag);
+      document.documentElement.addEventListener('mouseup', onDragEnd);
+    });
+  }
+
+  setupDragAndDrop() {
+    this.setupHorizontalDragging();
+    this.setupVericalDragging();
   }
 
   static setupAdjustHandle(elm, onAdjustCallback) {
