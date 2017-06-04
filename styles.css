@@ -2700,9 +2700,52 @@
       border-left: 10px solid transparent; }
     .menu-timeline-container .menu-timeline-content tr th {
       position: relative; }
-    .menu-timeline-container .menu-timeline-content tr .menu-timeline-timetick {
-      position: absolute;
-      bottom: 0; }
+      .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-in {
+        /* the default mixins set font-size, which interferes when changing icons depenging on state */
+        /* @include fa-icon; // in _mixins.scss */
+        /* @extend .fa; // in _core.scss*/
+        font-family: FontAwesome; }
+        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-in:before {
+          content: ""; }
+      .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-out {
+        /* the default mixins set font-size, which interferes when changing icons depenging on state */
+        /* @include fa-icon; // in _mixins.scss */
+        /* @extend .fa; // in _core.scss*/
+        font-family: FontAwesome; }
+        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-out:before {
+          content: ""; }
+      .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause {
+        /* the default mixins set font-size, which interferes when changing icons depenging on state */
+        /* @include fa-icon; // in _mixins.scss */
+        /* @extend .fa; // in _core.scss*/
+        font-family: FontAwesome; }
+        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause:before {
+          content: ""; }
+        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause.paused {
+          /* the default mixins set font-size, which interferes when changing icons depenging on state */
+          /* @include fa-icon; // in _mixins.scss */
+          /* @extend .fa; // in _core.scss*/
+          font-family: FontAwesome; }
+          .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause.paused:before {
+            content: ""; }
+      .menu-timeline-container .menu-timeline-content tr th.menu-timeline-timeticks {
+        cursor: pointer; }
+        .menu-timeline-container .menu-timeline-content tr th.menu-timeline-timeticks .menu-timeline-timetick {
+          position: absolute;
+          bottom: 0;
+          -webkit-touch-callout: none;
+          /* iOS Safari */
+          -webkit-user-select: none;
+          /* Safari */
+          -khtml-user-select: none;
+          /* Konqueror HTML */
+          -moz-user-select: none;
+          /* Firefox */
+          -ms-user-select: none;
+          /* Internet Explorer/Edge */
+          user-select: none;
+          /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */ }
     .menu-timeline-container .menu-timeline-content .menu-timeline-tracks {
       /* Timeline tracks */ }
       .menu-timeline-container .menu-timeline-content .menu-timeline-tracks > tr {

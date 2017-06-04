@@ -1874,20 +1874,19 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
 TimelineEntry.prototype.setupHorizontalDragging = function setupHorizontalDragging () {
     var this$1 = this;
 
-  var li = this.element;
-  li.addEventListener('mousedown', function (evt) {
+  this.element.addEventListener('mousedown', function (evt) {
     if (evt.target.classList.contains('timeline-entry-begin-time-adjust') ||
         evt.target.classList.contains('timeline-entry-end-time-adjust')) {
       return;
     }
     var startX = evt.clientX;
     var prevX = startX;
-    var xThres = 5;
-    var xStarted = false;
+    var thres = 5;
+    var started = false;
     var onDrag = function (evt) {
-      if (!xStarted) {
-        if (Math.abs(evt.clientX - startX) > xThres) {
-          xStarted = true;
+      if (!started) {
+        if (Math.abs(evt.clientX - startX) > thres) {
+          started = true;
         }
       } else {
         var delta = evt.clientX - prevX;
@@ -1899,7 +1898,7 @@ TimelineEntry.prototype.setupHorizontalDragging = function setupHorizontalDraggi
         this$1.timeline.notifyChange();
       }
 
-      if (xStarted) {
+      if (started) {
         this$1.clickPrevented = true;
       }
     };
@@ -1912,8 +1911,30 @@ TimelineEntry.prototype.setupHorizontalDragging = function setupHorizontalDraggi
   });
 };
 
+TimelineEntry.prototype.setupVericalDragging = function setupVericalDragging () {
+  return;
+  // Cross-timeline dragging and dropping is more complicated, so we
+  // handle it independently from horizontal dragging
+  this.element.addEventListener('mousedown', function (evt) {
+    if (evt.target.classList.contains('timeline-entry-begin-time-adjust') ||
+        evt.target.classList.contains('timeline-entry-end-time-adjust')) {
+      return;
+    }
+    var onDrag = function (evt) {
+      // TODO
+    };
+    var onDragEnd = function (evt) {
+      document.documentElement.removeEventListener('mousemove', onDrag);
+      document.documentElement.removeEventListener('mouseup', onDragEnd);
+    };
+    document.documentElement.addEventListener('mousemove', onDrag);
+    document.documentElement.addEventListener('mouseup', onDragEnd);
+  });
+};
+
 TimelineEntry.prototype.setupDragAndDrop = function setupDragAndDrop () {
   this.setupHorizontalDragging();
+  this.setupVericalDragging();
 };
 
 TimelineEntry.setupAdjustHandle = function setupAdjustHandle (elm, onAdjustCallback) {
@@ -2050,9 +2071,10 @@ TimelineTrack.prototype.renderStyles = function renderStyles () {
 /**
  *
  */
-var Timeticks = function Timeticks() {
+var Timeticks = function Timeticks(clock) {
   var this$1 = this;
 
+  this.clock = clock;
   this.element = document.querySelector('.menu-timeline-timeticks');
   this.styleElm = document.createElement('style');
   document.body.appendChild(this.styleElm);
@@ -2078,14 +2100,23 @@ var Timeticks = function Timeticks() {
     this$1.zoomLevel /= 1.5;
     onZoomlevelChange();
   });
+  this.element.addEventListener('click', function (evt) {
+    var left = Math.round(this$1.element.getBoundingClientRect().left);
+    var x = Math.max(0, evt.clientX - left - this$1.getTimelineBorderWidth());
+    var t = Math.min(this$1.duration, x / this$1.getPxPerSecond() * 1000);
+    this$1.clock.setTime(t);
+  });
+};
+Timeticks.prototype.getTimelineBorderWidth = function getTimelineBorderWidth () {
+  var tickWidth = this.firstTick.offsetWidth;
+  return Math.round((tickWidth / 2) + 5);
 };
 Timeticks.prototype.adjustPosition = function adjustPosition () {
-  var firstTick = this.firstTick;
-  var tickWidth = firstTick.offsetWidth;
   var cssRules = this.stylesheet.cssRules;
-  this.stylesheet.insertRule(("\n      .menu-timeline-container .menu-timeline-content tr > th:first-child + th {\n        border-left-width: " + ((tickWidth / 2) + 5) + "px;\n      }"), cssRules.length
+  var borderWidth = this.getTimelineBorderWidth();
+  this.stylesheet.insertRule(("\n      .menu-timeline-container .menu-timeline-content tr > th:first-child + th {\n        border-left-width: " + borderWidth + "px;\n      }"), cssRules.length
   );
-  this.stylesheet.insertRule(("\n      .menu-timeline-container .menu-timeline-content tr > td:first-child + td {\n        border-left-width: " + ((tickWidth / 2) + 5) + "px;\n      }"), cssRules.length
+  this.stylesheet.insertRule(("\n      .menu-timeline-container .menu-timeline-content tr > td:first-child + td {\n        border-left-width: " + borderWidth + "px;\n      }"), cssRules.length
   );
   this.stylesheet.insertRule("\n      .menu-timeline-timetick {\n        transform: translateX(-50%);\n      }\n    ", cssRules.length);
 };
@@ -2197,6 +2228,23 @@ TimeIndicator.prototype.updateStyles = function updateStyles () {
   this.element.style.left = (ticksRect.left + ticksBorder - selfRect.left + timePx) + "px";
 };
 
+var PauseButton = function PauseButton(clock) {
+  var this$1 = this;
+
+  this.clock = clock;
+  this.element = document.querySelector('.menu-timeline-pause');
+  this.element.addEventListener('click', function () {
+    var wasPaused = clock.getPaused();
+    var onPauseClass = 'paused';
+    if (wasPaused) {
+      this$1.element.classList.remove(onPauseClass);
+    } else {
+      this$1.element.classList.add(onPauseClass);
+    }
+    clock.setPaused(!wasPaused);
+  });
+};
+
 /**
  *
  */
@@ -2208,7 +2256,8 @@ var Timeline = function Timeline(menu) {
   this.trackList = [];
   this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
   this.effectConfigDialog = new EffectConfigDialog();
-  this.timeticks = new Timeticks();
+  this.timeticks = new Timeticks(menu.clock);
+  this.pauseButton = new PauseButton(menu.clock);
   this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
   this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
   this.timeticks.addScaleChangeListener(function () {
@@ -12526,8 +12575,12 @@ var RendererClock = function RendererClock() {
   this.delta = 0;
   this.absTime = Date.now();
   this.period = 1000;
+  this.paused = false;
 };
 RendererClock.prototype.frame = function frame () {
+  if (this.paused) {
+    return;
+  }
   if (this.time === -1) {
     // it was requested that we start at zero
     this.absTime = Date.now();
@@ -12550,11 +12603,24 @@ RendererClock.prototype.setPeriod = function setPeriod (p) {
 RendererClock.prototype.getTime = function getTime () {
   return this.time;
 };
+RendererClock.prototype.setTime = function setTime (time) {
+  this.time = time;
+  this.delta = 0;
+  this.absTime = Date.now();
+};
 RendererClock.prototype.getDelta = function getDelta () {
   return this.delta;
 };
 RendererClock.prototype.getAbsoluteTime = function getAbsoluteTime () {
   return this.absTime;
+};
+RendererClock.prototype.setPaused = function setPaused (paused) {
+    if ( paused === void 0 ) paused = true;
+
+  this.paused = paused;
+};
+RendererClock.prototype.getPaused = function getPaused () {
+  return this.paused;
 };
 
 var Renderer = function Renderer(canvas) {
