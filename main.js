@@ -1781,6 +1781,15 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
   this.element = parseHtml(("\n      <li>\n        <div class=\"" + beginHandleClass + "\"></div>\n        <button type=\"button\">" + (this.effect.getDisplayName()) + "</button>\n        <div class=\"" + endHandleClass + "\"></div>\n      </li>\n    "));
   this.setupTimeAdjustHandles();
   this.setupDragAndDrop();
+  // Prevent a previous text selection from interfering with our custom
+  // drag and drop
+  this.element.addEventListener('mousedown', function () {
+    if (document.selection) {
+      document.selection.empty();
+    } else if (window.getSelection) {
+      window.getSelection().removeAllRanges();
+    }
+  });
 
   this.openConfigBtn = this.element.querySelector('button');
   this.openConfigBtn.addEventListener('click', function () {
@@ -1792,15 +1801,13 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
     .then(
       function (newState) {
         this$1.loadState(newState);
-        this$1.timeline.renderStyles();
         this$1.timeline.notifyChange();
       },
       function (deleted) {
         if (deleted) {
           this$1.timeline.deleteEntry(this$1);
-          this$1.timeline.notifyChange();
           this$1.timeline.renderHtml();
-          this$1.timeline.renderStyles();
+          this$1.timeline.notifyChange();
         }
       }
     );
@@ -1828,9 +1835,8 @@ TimelineEntry.prototype.setupHorizontalDragging = function setupHorizontalDraggi
         var delta = evt.clientX - prevX;
         prevX = evt.clientX;
         var duration = this$1.timeEnd - this$1.timeBegin;
-        this$1.timeBegin = Math.max(0, this$1.timeBegin + ((delta / this$1.timeline.pxPerSecond) * 1000));
+        this$1.timeBegin = Math.max(0, Math.round(this$1.timeBegin + ((delta / this$1.timeline.pxPerSecond) * 1000)));
         this$1.timeEnd = this$1.timeBegin + duration;
-        this$1.renderStyles();
         this$1.timeline.notifyChange();
       }
 
@@ -1900,7 +1906,6 @@ TimelineEntry.prototype.setupTimeAdjustHandles = function setupTimeAdjustHandles
     var newBegin = Math.max(0, this$1.timeBegin + ((delta / this$1.timeline.pxPerSecond) * 1000));
     if (newBegin < this$1.timeEnd) {
       this$1.timeBegin = Math.round(newBegin);
-      this$1.renderStyles();
       this$1.timeline.notifyChange();
     }
   });
@@ -1909,7 +1914,6 @@ TimelineEntry.prototype.setupTimeAdjustHandles = function setupTimeAdjustHandles
     var newEnd = this$1.timeEnd + ((delta / this$1.timeline.pxPerSecond) * 1000);
     if (newEnd > this$1.timeBegin) {
       this$1.timeEnd = Math.round(newEnd);
-      this$1.renderStyles();
       this$1.timeline.notifyChange();
     }
   });
@@ -1935,8 +1939,10 @@ TimelineEntry.prototype.getConfiguration = function getConfiguration () {
 };
 TimelineEntry.prototype.renderStyles = function renderStyles () {
   var li = this.getElement();
-  li.style.left = ((this.timeBegin / 1000) * this.timeline.pxPerSecond) + "px";
-  li.style.width = (((this.timeEnd - this.timeBegin) / 1000) * this.timeline.pxPerSecond) + "px";
+  var left = (this.timeBegin / 1000) * this.timeline.pxPerSecond;
+  var width = ((this.timeEnd - this.timeBegin) / 1000) * this.timeline.pxPerSecond;
+  li.style.left = left + "px";
+  li.style.width = width + "px";
 };
 
 /**
@@ -1946,9 +1952,10 @@ var TimelineTrack = function TimelineTrack(trackNumber, timeline) {
   this.elements = [];
   this.timeline = timeline;
   this.elements.push(parseHtml(("\n      <td>\n        <h3>Track " + trackNumber + "</h3>\n      </td>\n    ")));
-  this.elements.push(parseHtml("\n      <td width=\"99%\">\n        <ol>\n        </ol>\n      </td>\n    "));
+  this.elements.push(parseHtml("\n      <td>\n        <ol>\n        </ol>\n      </td>\n    "));
   this.entryListElm = this.elements[1].querySelector('ol');
   this.entryList = [];
+  this.width = 0;
 };
 
 TimelineTrack.prototype.dropNewEffect = function dropNewEffect (effect, clientX, clientY, width, height) {
@@ -1966,7 +1973,6 @@ TimelineTrack.prototype.dropNewEffect = function dropNewEffect (effect, clientX,
     });
     this.addEntry(entry);
     this.renderHtml();
-    this.renderStyles();
     this.timeline.notifyChange();
     return true;
   }
@@ -1998,9 +2004,16 @@ TimelineTrack.prototype.renderHtml = function renderHtml () {
 TimelineTrack.prototype.renderStyles = function renderStyles () {
     var this$1 = this;
 
+  var maxEnd = 0;
   for (var i = 0; i < this.entryList.length; i++) {
     var entry = this$1.entryList[i];
     entry.renderStyles();
+    maxEnd = Math.max(maxEnd, entry.timeEnd);
+  }
+  var width = Math.round(maxEnd / 1000 * this.timeline.pxPerSecond);
+  if (width > this.width) {
+    this.width = width;
+    this.getTrackElement().style.minWidth = width + "px";
   }
 };
 
@@ -2300,6 +2313,7 @@ Timeline.prototype.assertEmptyLastTrack = function assertEmptyLastTrack (render)
 Timeline.prototype.notifyChange = function notifyChange () {
   this.timeticks.setDuration(this.getTotalDuration());
   this.assertEmptyLastTrack();
+  this.renderStyles();
   this.menu.notifyChange();
 };
 Timeline.prototype.deleteEntry = function deleteEntry (remove) {

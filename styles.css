@@ -2694,7 +2694,8 @@
     overflow: scroll; }
     .menu-timeline-container .menu-timeline-content tr > th:first-child,
     .menu-timeline-container .menu-timeline-content tr > td:first-child {
-      white-space: nowrap; }
+      white-space: nowrap;
+      width: 1px; }
     .menu-timeline-container .menu-timeline-content tr > th:first-child + th,
     .menu-timeline-container .menu-timeline-content tr > td:first-child + td {
       border-left: 10px solid transparent; }
@@ -2805,7 +2806,20 @@
                 border: none;
                 text-align: left;
                 text-overflow: ellipsis;
-                overflow: hidden; }
+                overflow: hidden;
+                -webkit-touch-callout: none;
+                /* iOS Safari */
+                -webkit-user-select: none;
+                /* Safari */
+                -khtml-user-select: none;
+                /* Konqueror HTML */
+                -moz-user-select: none;
+                /* Firefox */
+                -ms-user-select: none;
+                /* Internet Explorer/Edge */
+                user-select: none;
+                /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */ }
   .menu-timeline-container .menu-timeline-position-indicator {
     display: block;
     position: absolute;
