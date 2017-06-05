@@ -195,6 +195,9 @@ export class RendererState {
     ]);
     return this.particleDataStore.length - 1;
   }
+  createParticleDataFromDomImg(domImg, width, height) {
+    return this.createParticleData(domImgToCanvas(domImg), width, height);
+  }
   getCurrentParticleData() {
     if (this.particleData < 0) {
       return null;
@@ -246,7 +249,11 @@ export default class Renderer {
     this.config = config;
     // TODO: rebuild command only when necessary
     this.state.adaptToConfig(config);
-    this.commandBuilder.buildCommand(this.config, this.state)
+    this.commandBuilder.buildCommand({
+        config: this.config,
+        state:  this.state,
+        clock:  this.clock
+    })
     .then((command) => {
       this.clock.reset();
       this.clock.setPeriod(this.config.duration);

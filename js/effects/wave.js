@@ -51,7 +51,7 @@ class WaveConfigUI extends ConfigUI {
 }
 
 export default class WaveEffect extends Effect {
-  static register(instance, state, uniforms, vertexShader) {
+  static register(instance, props, uniforms, vertexShader) {
     const time = uniforms.addUniform('time', 'float', (ctx, props) => fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()));
     const rep = uniforms.addUniform('repetition', 'int', (ctx, props) => Math.floor((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()));
     const multiplier = instance.config.multiplier;

@@ -68,7 +68,7 @@ class HueDisplaceConfigUI extends ConfigUI {
 }
 
 export default class HueDisplaceEffect extends Effect {
-  static register(instance, state, uniforms, vertexShader) {
+  static register(instance, props, uniforms, vertexShader) {
     if (instance.config.distance !== 0) {
       const distance = uniforms.addUniform('hueDisplaceDistance', 'float', instance.config.distance);
       const time = uniforms.addUniform('hueDisplaceTime', 'float', (ctx, props) =>

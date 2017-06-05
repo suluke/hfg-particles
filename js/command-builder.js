@@ -70,9 +70,11 @@ class Uniforms {
 }
 
 export default class CommandBuilder {
-  buildCommand(config, state) {
-    this.config = config;
-    this.state = state;
+  buildCommand(props) {
+    this.config = props.config;
+    this.state = props.state;
+    this.clock = props.clock;
+    this.props = props;
 
     return this.assembleCommand();
   }
@@ -216,12 +218,12 @@ export default class CommandBuilder {
       const registerEffects = (res, rej) => {
         const effectConfig = nextEffect();
         if (effectConfig === null) {
-          res();
+          return res();
         }
         const effectUniforms = new Uniforms(globalId);
         const effectClass = effectConfig.getEffectClass();
         vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
-        effectClass.registerAsync(effectConfig, this.state, effectUniforms, vert)
+        effectClass.registerAsync(effectConfig, this.props, effectUniforms, vert)
         .then(() => {
           console.log(`registered effect ${effectClass.getId()}`);
           vert.mainBody += '}';
