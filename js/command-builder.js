@@ -225,7 +225,6 @@ export default class CommandBuilder {
         vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
         effectClass.registerAsync(effectConfig, this.props, effectUniforms, vert)
         .then(() => {
-          console.log(`registered effect ${effectClass.getId()}`);
           vert.mainBody += '}';
 
           effectUniforms.compile(vert, uniforms);

@@ -158,6 +158,7 @@ export class RendererState {
     // Properties
     this.particleData = -1;
     this.particleDataStore = [[null, null]];
+    this.hooks = [];
   }
   adaptToConfig(config) {
     // Update default particle data
@@ -179,6 +180,10 @@ export class RendererState {
       this.particleDataStore[i][1].destroy();
     }
     this.particleDataStore.length = 1;
+    // run hooks
+    for (let i = 0; i < this.hooks.length; i++) {
+      this.hooks[i]();
+    }
   }
   setParticleData(id) {
     this.particleData = id;
@@ -210,6 +215,9 @@ export class RendererState {
   setDefaultDomImage(domImage) {
     this.particleDataStore[0][0] = domImgToCanvas(domImage);
     this.particleData = 0;
+  }
+  addHook(hook) {
+    this.hooks.push(hook);
   }
 }
 
