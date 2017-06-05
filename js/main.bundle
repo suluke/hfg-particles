@@ -34,7 +34,7 @@ srcImage.src = 'tron.jpg';
 srcImage.onload = () => {
   imgDimWarn.verify(srcImage)
   .then(({ xParticlesCount, yParticlesCount }) => {
-    renderer.loadImageData(srcImage);
+    renderer.getState().setDefaultDomImage(srcImage);
     const config = Object.assign({}, menu.submittedConfig, { xParticlesCount, yParticlesCount });
     menu.applyConfig(config);
     menu.submit();

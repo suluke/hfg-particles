@@ -58,57 +58,15 @@ class RendererClock {
   }
 }
 
-export default class Renderer {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.regl = createRegl({ canvas });
-    console.log(`max texture size: ${this.regl.limits.maxTextureSize}`);
-    console.log(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
-    console.log(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
-    this.particleData = null;
-    this.config = null;
-    this.command = null;
-    this.commandBuilder = new CommandBuilder();
-    this.clock = new RendererClock();
-    this.regl.frame(() => {
-      if (this.command === null) {
-        return;
-      }
-      this.clock.frame();
-      this.regl.clear({ color: this.config.backgroundColor });
-      this.command({
-        config:       this.config,
-        particleData: this.particleData,
-        clock:        this.clock
-      });
-    });
-  }
-
-  getClock() {
-    return this.clock;
-  }
-
-  loadImageData(img) {
-    const fullresCanvas = document.createElement('canvas');
-    const fullresContext = fullresCanvas.getContext('2d');
-    fullresCanvas.width = img.naturalWidth;
-    fullresCanvas.height = img.naturalHeight;
-    // flipped y-axis
-    fullresContext.translate(0, img.naturalHeight);
-    fullresContext.scale(1, -1);
-    fullresContext.drawImage(img, 0, 0);
-    this.imgData = fullresCanvas;
-  }
-
-  createParticleData() {
-    this.destroyParticleData();
-
-    const imgData = this.imgData;
+export class ParticleData {
+  constructor(imageData, regl, width, height) {
+    this.destroyed = false;
+    
     const scalingCanvas = document.createElement('canvas');
     const scalingContext = scalingCanvas.getContext('2d');
-    scalingCanvas.width = this.config.xParticlesCount || imgData.width;
-    scalingCanvas.height = this.config.yParticlesCount || imgData.height;
-    scalingContext.drawImage(imgData, 0, 0, scalingCanvas.width, scalingCanvas.height);
+    scalingCanvas.width = width;
+    scalingCanvas.height = height;
+    scalingContext.drawImage(imageData, 0, 0, scalingCanvas.width, scalingCanvas.height);
     const scaledData = scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
 
     const w = scaledData.width;
@@ -151,48 +109,117 @@ export default class Renderer {
 
       return [_h * 60 * (Math.PI / 180), d / cMax, cMax];
     });
-
-    this.particleData = {
-      width:           w,
-      height:          h,
-      aspectRatio:     imgData.width / imgData.height,
-      texcoordsBuffer: this.regl.buffer(texcoords),
-      rgbBuffer:       this.regl.buffer(rgb),
-      hsvBuffer:       this.regl.buffer(hsv)
-    };
+    this.width           = w;
+    this.height          = h;
+    this.aspectRatio     = imageData.width / imageData.height;
+    this.texcoordsBuffer = regl.buffer(texcoords);
+    this.rgbBuffer       = regl.buffer(rgb);
+    this.hsvBuffer       = regl.buffer(hsv);
   }
-
-  destroyParticleData() {
-    this.setCommand(null);
-    if (this.particleData !== null) {
-      this.particleData.texcoordsBuffer.destroy();
-      this.particleData.rgbBuffer.destroy();
-      this.particleData.hsvBuffer.destroy();
-      this.particleData = null;
+  destroy() {
+    if (!this.destroyed) {
+      this.texcoordsBuffer.destroy();
+      this.rgbBuffer.destroy();
+      this.hsvBuffer.destroy();
+      this.destroyed = true;
     }
   }
+}
 
-  setCommand(command) {
-    this.clock.reset();
-    this.clock.setPeriod(this.config.duration);
-    this.command = command;
+function domImgToCanvas(img) {
+  const fullresCanvas = document.createElement('canvas');
+  const fullresContext = fullresCanvas.getContext('2d');
+  fullresCanvas.width = img.naturalWidth;
+  fullresCanvas.height = img.naturalHeight;
+  // flipped y-axis
+  fullresContext.translate(0, img.naturalHeight);
+  fullresContext.scale(1, -1);
+  fullresContext.drawImage(img, 0, 0);
+  return fullresCanvas;
+}
+
+/**
+ * Encapsulates the parts of the render pipeline which are subject to
+ * dynamic change, i.e. data that can be changed by effects.
+ * 
+ * In contrast to this, data inside a `config` object is always immutable
+ * (as long as the user does not request changes to be applied - which
+ * generates a new `config` object).
+ * The most important thing to note is that both `state` *and* `config`
+ * objects "live on" if the other object is changed, whereas only `state`
+ * is ever influenced by `config` - never the other way around.
+ * E.g. config's xParticleCount influences state's particleData.
+ * On the other hand, `state` does not need to be serializable
+ */
+export class RendererState {
+  constructor(regl) {
+    this.regl = regl;
+
+    // Properties
+    this.sourceImageData = null;
+    this.particleData = null;
+  }
+  adaptToConfig(config) {
+    if (this.particleData !== null) {
+      this.particleData.destroy();
+    }
+    this.particleData = new ParticleData(
+      this.sourceImageData,
+      this.regl,
+      config.xParticlesCount || this.sourceImageData.width,
+      config.yParticlesCount || this.sourceImageData.height
+    );
+  }
+  isValid() {
+    return this.particleData !== null;
+  }
+  setDefaultDomImage(domImage) {
+    this.sourceImageData = domImgToCanvas(domImage);
+  }
+}
+
+export default class Renderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.regl = createRegl({ canvas });
+    console.log(`max texture size: ${this.regl.limits.maxTextureSize}`);
+    console.log(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
+    console.log(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
+    this.defaultParticleData = null;
+    this.state = new RendererState(this.regl);
+    this.config = null;
+    this.command = null;
+    this.commandBuilder = new CommandBuilder();
+    this.clock = new RendererClock();
+    this.regl.frame(() => {
+      if (this.command === null || !this.state.isValid()) {
+        return;
+      }
+      this.clock.frame();
+      this.regl.clear({ color: this.config.backgroundColor });
+      this.command({
+        config: this.config,
+        state:  this.state,
+        clock:  this.clock
+      });
+    });
   }
 
-  rebuildCommand() {
-    const cmd = this.commandBuilder.buildCommand(this.particleData, this.config);
-    this.setCommand(this.regl(cmd));
-  }
-
-  loadImage(img) {
-    this.loadImageData(img);
-    this.createParticleData();
-    this.rebuildCommand();
+  getClock() {
+    return this.clock;
   }
 
   setConfig(config) {
+    this.command = null;
     this.config = config;
     // TODO: rebuild command only when necessary
-    this.createParticleData();
-    this.rebuildCommand();
+    this.clock.reset();
+    this.clock.setPeriod(this.config.duration);
+    this.state.adaptToConfig(config);
+    this.command = this.regl(this.commandBuilder.buildCommand(this.config, this.state));
+  }
+
+  getState() {
+    return this.state;
   }
 }
