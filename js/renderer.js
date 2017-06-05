@@ -191,9 +191,10 @@ export class RendererState {
     }
     // release resources
     for (let i = 1; i < this.particleDataStore.length; i++) {
-      this.particleDataStore[i][1].destroy();
+      this.destroyParticleData(i);
     }
     this.particleDataStore.length = 1;
+    this.particleData = 0;
     // run hooks
     for (let i = 0; i < this.hooks.length; i++) {
       this.hooks[i]();
@@ -216,6 +217,12 @@ export class RendererState {
   }
   createParticleDataFromDomImg(domImg, width, height) {
     return this.createParticleData(domImgToCanvas(domImg), width, height);
+  }
+  destroyParticleData(id) {
+    if (this.particleDataStore[id][1]) {
+      this.particleDataStore[id][1].destroy();
+      this.particleDataStore[id] = [null, null];
+    }
   }
   getCurrentParticleData() {
     if (this.particleData < 0) {

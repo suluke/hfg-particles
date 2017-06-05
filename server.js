@@ -6,6 +6,8 @@ const fs              = require('fs-promise');
 const resolve         = require('rollup-plugin-node-resolve');
 const commonjs        = require('rollup-plugin-commonjs');
 const replace         = require('rollup-plugin-replace');
+const json            = require('rollup-plugin-json');
+
 const git             = require('git-rev');
 
 const path            = require('path');
@@ -26,6 +28,7 @@ fs.mkdirp(StaticPath)
     serve: 'on-compile',
     rollupOpts: {
       plugins: [
+        json(),
         replace({
           include: 'js/config.js',
           delimiters: [ '<@', '@>' ],
@@ -35,8 +38,15 @@ fs.mkdirp(StaticPath)
           }
         }),
         buble(),
-        resolve({ jsnext: true, main: true }),
-        commonjs()
+        resolve({
+          jsnext: true,
+          main: true,
+          extensions: [ '.js', '.json' ]
+        }),
+        commonjs({
+          extensions: [ '.js', '.json' ],
+          ignore: ['flickr-sdk/build/flickr-sdk']
+        }),
       ]
     }
   });
