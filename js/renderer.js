@@ -245,10 +245,13 @@ export default class Renderer {
     this.command = null;
     this.config = config;
     // TODO: rebuild command only when necessary
-    this.clock.reset();
-    this.clock.setPeriod(this.config.duration);
     this.state.adaptToConfig(config);
-    this.command = this.regl(this.commandBuilder.buildCommand(this.config, this.state));
+    this.commandBuilder.buildCommand(this.config, this.state)
+    .then((command) => {
+      this.clock.reset();
+      this.clock.setPeriod(this.config.duration);
+      this.command = this.regl(command);
+    }, (error) => console.error(error));
   }
 
   getState() {

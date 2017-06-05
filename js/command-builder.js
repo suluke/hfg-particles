@@ -150,74 +150,98 @@ export default class CommandBuilder {
   }
 
   assembleCommand() {
-    const uniforms = {};
-    const vert = CommandBuilder.prepareVertexShader();
-    const frag = this.assembleFragmentShader();
-    this.makeUniforms().compile(vert, uniforms);
+    return new Promise((res, rej) => {
+      const uniforms = {};
+      const vert = CommandBuilder.prepareVertexShader();
+      const frag = this.assembleFragmentShader();
+      this.makeUniforms().compile(vert, uniforms);
 
-    const result = {
-      primitive:  'points',
-      // TODO This cannot be changed ad-hoc. A new command would be necessary.
-      // regl.elements (http://regl.party/api#elements) could be an alternative here
-      count:      this.config.xParticlesCount * this.config.yParticlesCount,
-      attributes: {
-        texcoord: () => this.state.getCurrentParticleData().texcoordsBuffer,
-        rgb:      () => this.state.getCurrentParticleData().rgbBuffer,
-        hsv:      () => this.state.getCurrentParticleData().hsvBuffer
-      },
-      uniforms,
-      frag,
-      depth: { enable: false }
-    };
+      const result = {
+        primitive:  'points',
+        // TODO This cannot be changed ad-hoc. A new command would be necessary.
+        // regl.elements (http://regl.party/api#elements) could be an alternative here
+        count:      this.config.xParticlesCount * this.config.yParticlesCount,
+        attributes: {
+          texcoord: () => this.state.getCurrentParticleData().texcoordsBuffer,
+          rgb:      () => this.state.getCurrentParticleData().rgbBuffer,
+          hsv:      () => this.state.getCurrentParticleData().hsvBuffer
+        },
+        uniforms,
+        frag,
+        depth: { enable: false }
+      };
 
-    switch (this.config.particleOverlap) {
-      case 'add':
-        result.blend = {
-          enable: true,
-          func:   { src: 'one', dst: 'one' }
-        };
-        break;
-      case 'alpha blend':
-        result.blend = {
-          enable: true,
-          func:   { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
-        };
-        break;
-      default:
-        throw new Error(`Unknown particle overlap mode: ${this.config.particleOverlap}`);
-    }
-
-    vert.mainBody += `
-      vec3 initialPosition = vec3(texcoord, 0);
-      initialPosition.y *= invImageAspectRatio;
-      
-      vec3 position = initialPosition;
-    `;
-    let globalId = 0;
-    for (let i = 0; i < this.config.effects.length; i++) {
-      const track = this.config.effects[i];
-      for (let j = 0; j < track.length; j++) {
-        const effectUniforms = new Uniforms(globalId);
-        const effectConfig = track[j];
-        const effectClass = track[j].getEffectClass();
-
-        vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
-        effectClass.register(effectConfig, this.state, effectUniforms, vert);
-        vert.mainBody += '}';
-        
-        effectUniforms.compile(vert, uniforms);
-        globalId += 1;
+      switch (this.config.particleOverlap) {
+        case 'add':
+          result.blend = {
+            enable: true,
+            func:   { src: 'one', dst: 'one' }
+          };
+          break;
+        case 'alpha blend':
+          result.blend = {
+            enable: true,
+            func:   { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
+          };
+          break;
+        default:
+          throw new Error(`Unknown particle overlap mode: ${this.config.particleOverlap}`);
       }
-    }
 
-    vert.mainBody += `
-      color = rgb;
-      gl_PointSize = max(particleSize, 0.);
-      gl_Position = viewProjectionMatrix * vec4(position, 1.);
-    `;
+      vert.mainBody += `
+        vec3 initialPosition = vec3(texcoord, 0);
+        initialPosition.y *= invImageAspectRatio;
 
-    result.vert = vert.compile();
+        vec3 position = initialPosition;
+      `;
+      const nextEffect = (() => {
+        let i = 0;
+        let j = 0;
+        return () => {
+          if (i === this.config.effects.length) {
+            return null;
+          }
+          const track = this.config.effects[i];
+          if (j === track.length) {
+            i++;
+            j = 0;
+            return nextEffect();
+          }
+          const effect = track[j];
+          j = j + 1;
+          return effect;
+        }
+      })();
+      let globalId = 0;
+      const registerEffects = (res, rej) => {
+        const effectConfig = nextEffect();
+        if (effectConfig === null) {
+          res();
+        }
+        const effectUniforms = new Uniforms(globalId);
+        const effectClass = effectConfig.getEffectClass();
+        vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
+        effectClass.registerAsync(effectConfig, this.state, effectUniforms, vert)
+        .then(() => {
+          console.log(`registered effect ${effectClass.getId()}`);
+          vert.mainBody += '}';
 
-    return result;
+          effectUniforms.compile(vert, uniforms);
+          globalId += 1;
+          registerEffects(res, rej);
+        });
+      };
+      return new Promise(registerEffects).then(() => {
+        vert.mainBody += `
+          color = rgb;
+          gl_PointSize = max(particleSize, 0.);
+          gl_Position = viewProjectionMatrix * vec4(position, 1.);
+        `;
+
+        result.vert = vert.compile();
+
+        res(result);
+      });
+    });
   }
 }

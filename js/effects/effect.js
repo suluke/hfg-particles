@@ -6,6 +6,11 @@ export default class Effect {
     throw new Error('Method not implemented');
   }
 
+  static registerAsync(instance, state, uniforms, vertexShader) {
+    this.register(instance, state, uniforms, vertexShader);
+    return Promise.resolve();
+  }
+
   static getId() {
     // Static + this = JS <3
     return this.name;
