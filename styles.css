@@ -2729,6 +2729,13 @@
           font-family: FontAwesome; }
           .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause.paused:before {
             content: ""; }
+      .menu-timeline-container .menu-timeline-content tr th .menu-timeline-randomplay {
+        /* the default mixins set font-size, which interferes when changing icons depenging on state */
+        /* @include fa-icon; // in _mixins.scss */
+        /* @extend .fa; // in _core.scss*/
+        font-family: FontAwesome; }
+        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-randomplay:before {
+          content: ""; }
       .menu-timeline-container .menu-timeline-content tr th.menu-timeline-timeticks {
         cursor: pointer; }
         .menu-timeline-container .menu-timeline-content tr th.menu-timeline-timeticks .menu-timeline-timetick {

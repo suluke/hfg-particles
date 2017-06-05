@@ -1257,8 +1257,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-06-04T09:56:56.030Z',
-  git_rev:               'cdefd5c',
+  timestamp:             '2017-06-05T18:04:03.635Z',
+  git_rev:               'bf2a06a',
   export_schema_version: 0
 };
 
@@ -1332,8 +1332,13 @@ EffectConfigDialog.prototype.promptUser = function promptUser (entry) {
  */
 var Effect = function Effect () {};
 
-Effect.register = function register (/* instance, uniforms, vertexShader */) {
+Effect.register = function register (/* instance, props, uniforms, vertexShader */) {
   throw new Error('Method not implemented');
+};
+
+Effect.registerAsync = function registerAsync (instance, props, uniforms, vertexShader) {
+  this.register(instance, props, uniforms, vertexShader);
+  return Promise.resolve();
 };
 
 Effect.getId = function getId () {
@@ -1350,6 +1355,10 @@ Effect.getConfigUI = function getConfigUI () {
 };
 
 Effect.getDefaultConfig = function getDefaultConfig () {
+  throw new Error('Method not implemented');
+};
+
+Effect.getRandomConfig = function getRandomConfig () {
   throw new Error('Method not implemented');
 };
 
@@ -1442,7 +1451,7 @@ var HueDisplaceEffect = (function (Effect$$1) {
   HueDisplaceEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
   HueDisplaceEffect.prototype.constructor = HueDisplaceEffect;
 
-  HueDisplaceEffect.register = function register (instance, uniforms, vertexShader) {
+  HueDisplaceEffect.register = function register (instance, props, uniforms, vertexShader) {
     if (instance.config.distance !== 0) {
       var distance = uniforms.addUniform('hueDisplaceDistance', 'float', instance.config.distance);
       var time = uniforms.addUniform('hueDisplaceTime', 'float', function (ctx, props) { return ((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()) * 2 * Math.PI; });
@@ -1486,6 +1495,15 @@ var HueDisplaceEffect = (function (Effect$$1) {
     };
   };
 
+  HueDisplaceEffect.getRandomConfig = function getRandomConfig () {
+    return {
+      distance:              Math.random(),
+      scaleByValue:          Math.random(),
+      randomDirectionOffset: Math.random() > .5 ? true : false,
+      rotate:                Math.random()
+    };
+  };
+
   return HueDisplaceEffect;
 }(Effect));
 
@@ -1526,7 +1544,7 @@ var ConvergePointEffect = (function (Effect$$1) {
   ConvergePointEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
   ConvergePointEffect.prototype.constructor = ConvergePointEffect;
 
-  ConvergePointEffect.register = function register (instance, uniforms, vertexShader) {
+  ConvergePointEffect.register = function register (instance, props, uniforms, vertexShader) {
     var time = uniforms.addUniform('convergeTime', 'float', function (ctx, props) { return (props.clock.getTime() - instance.timeBegin) % instance.getPeriod(); });
     var speed = uniforms.addUniform('convergeSpeed', 'float', 2 * 2 / (instance.getPeriod() / 2 * instance.getPeriod() / 2));
     var maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', instance.getPeriod() / 2);
@@ -1548,6 +1566,11 @@ var ConvergePointEffect = (function (Effect$$1) {
   };
 
   ConvergePointEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+    };
+  };
+
+  ConvergePointEffect.getRandomConfig = function getRandomConfig () {
     return {
     };
   };
@@ -1600,7 +1623,7 @@ var ConvergeCircleEffect = (function (Effect$$1) {
   ConvergeCircleEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
   ConvergeCircleEffect.prototype.constructor = ConvergeCircleEffect;
 
-  ConvergeCircleEffect.register = function register (instance, uniforms, vertexShader) {
+  ConvergeCircleEffect.register = function register (instance, props, uniforms, vertexShader) {
     var time = uniforms.addUniform('convergeTime', 'float', function (ctx, props) { return (props.clock.getTime() - instance.timeBegin) % instance.getPeriod(); });
     var speed = uniforms.addUniform('convergeSpeed', 'float', 2 * 2 / (instance.getPeriod() / 2 * instance.getPeriod() / 2));
     var rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', instance.config.rotationSpeed / 1000);
@@ -1626,6 +1649,12 @@ var ConvergeCircleEffect = (function (Effect$$1) {
     return {
       rotationSpeed: 0
     };
+  };
+
+  ConvergeCircleEffect.getRandomConfig = function getRandomConfig () {
+    return {
+      rotationSpeed: Math.random()
+    }
   };
 
   return ConvergeCircleEffect;
@@ -1685,7 +1714,7 @@ var WaveEffect = (function (Effect$$1) {
   WaveEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
   WaveEffect.prototype.constructor = WaveEffect;
 
-  WaveEffect.register = function register (instance, uniforms, vertexShader) {
+  WaveEffect.register = function register (instance, props, uniforms, vertexShader) {
     var time = uniforms.addUniform('time', 'float', function (ctx, props) { return fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()); });
     var rep = uniforms.addUniform('repetition', 'int', function (ctx, props) { return Math.floor((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()); });
     var multiplier = instance.config.multiplier;
@@ -1694,6 +1723,7 @@ var WaveEffect = (function (Effect$$1) {
     // goes from 0 (leftmost, begin) to 2 (leftmost, end)
     // but `reached` + `notOver` clamp it to 0 to 1
     var x = "(2. * " + time + " - initialPosition.x)";
+    // Closed formula (with ease): (cos(​(x*​2-​1)*​π)+​1)/​2 * ​sin(​x*​3*​π-​0.5*​π)/​0.8
     var curve = function (x) { return ("(sin(" + x + " * float(" + multiplier + ") * 3. * PI - 0.5 * PI))"); };
     // The ease function is a cos spanning two negative peaks with a positive peak
     // in between. This is is then translated (+1, /2) to go from 0 to 1
@@ -1724,14 +1754,2152 @@ var WaveEffect = (function (Effect$$1) {
     };
   };
 
+  WaveEffect.getRandomConfig = function getRandomConfig () {
+    return {
+      multiplier: Math.random(),
+      amplitude: Math.random()
+    };
+  };
+
   return WaveEffect;
+}(Effect));
+
+(function() {
+ var Utils = {};
+Utils.encodeRFC5987ValueChars = function (str) {
+      return encodeURIComponent(str).
+      replace(/['()!]/g, escape).
+      replace(/\*/g, '%2A').
+      replace(/%(?:7C|60|5E)/g, unescape);
+    };
+Utils.formQueryString = function (queryArguments) {
+      var Utils = this,
+          args = [],
+          append = function(key) {
+            args.push(key + "=" + Utils.encodeRFC5987ValueChars(queryArguments[key]));
+          };
+      Object.keys(queryArguments).sort().forEach(append);
+      return args.join("&");
+    };
+Utils.checkRequirements = function (method_name, required, callOptions, callback) {
+    required = required || [];
+    for(var r=0, last=required.length, arg; r<last; r++) {
+      arg = required[r];
+      if(arg.name === "api_key") { continue; }
+      if(!callOptions.hasOwnProperty(arg.name)) {
+        return callback(new Error("missing required argument '"+arg.name+"' in call to "+method_name));
+      }
+    }
+  };
+Utils.generateAPIFunction = function (method) {
+    return function(callOptions, callback) {
+      if(callOptions && !callback) { callback = callOptions; callOptions = {}; }
+      var queryArguments = Utils.generateQueryArguments(method.name, this.flickrOptions, callOptions);
+      Utils.queryFlickr(queryArguments, this.flickrOptions, method.security, callback);
+    };
+  };
+Utils.generateAPIDevFunction = function (method) {
+    return function(callOptions, callback) {
+      if(callOptions && !callback) { callback = callOptions; callOptions = {}; }
+      Utils.checkRequirements(method.name, method.required, callOptions, callback);
+      var queryArguments = Utils.generateQueryArguments(method.name, this.flickrOptions, callOptions);
+      Utils.queryFlickr(queryArguments, this.flickrOptions, method.security, callback, method.errors);
+    };
+  };
+Utils.generateQueryArguments = function (method_name, flickrOptions, callOptions) {
+    // set up authorized method access
+    var queryArguments = {
+      method: method_name,
+      format: "json",
+    };
+    if(flickrOptions.api_key) {
+      queryArguments.api_key = flickrOptions.api_key;
+    }
+    // set up bindings for method-specific args
+    Object.keys(callOptions).forEach(function(key) {
+      queryArguments[key] = callOptions[key];
+    });
+    return queryArguments;
+  };
+Utils.queryFlickr = function (queryArguments, flickrOptions, security, processResult) {
+    if(flickrOptions.endpoint) {
+      return this.queryProxyEndpoint(queryArguments, flickrOptions, processResult);
+    }
+    return this.queryFlickrAPI(queryArguments, flickrOptions, security, processResult);
+  };
+Utils.upload = function (uploadOptions, flickrOptions, processResult) {
+    return processResult(new Error("Uploading directly from the browser is not supported"));
+  };
+Utils.queryFlickrAPI = function (queryArguments, flickrOptions, security, processResult) {
+    var url = "https://api.flickr.com/services/rest/",
+        queryString = this.formQueryString(queryArguments),
+        flickrURL = url + "?" + queryString;
+    // Do we need special permissions? (read private, 1, write, 2, or delete, 3)?
+    // if so, those are currently not supported. Send an error-notification.
+    if(security.requiredperms > 0) {
+      return processResult(new Error("signed calls (write/delete) currently not supported"));
+    }
+    this.handleURLRequest("GET", flickrURL, processResult);
+  };
+Utils.queryProxyEndpoint = function (queryArguments, flickrOptions, processResult) {
+    var queryString = this.formQueryString(queryArguments),
+        url = flickrOptions.endpoint + "?" + queryString;
+    this.handleURLRequest("POST", url, processResult, queryArguments);
+  };
+Utils.handleURLRequest = function (verb, url, processResult, postdata) {
+    var xhr = new XMLHttpRequest();
+    xhr.open(verb, url, true);
+    if(postdata) {
+      xhr.setRequestHeader("Content-Type", "application/json");
+    }
+    xhr.onreadystatechange = function() {
+      if(xhr.readyState === 4) {
+        if(xhr.status == 200) {
+          var error = false,
+              body = xhr.responseText;
+          // we get a response, but there's no response body. That's a problem.
+          if(!body) {
+            error = "HTTP Error " + response.statusCode + " (" + statusCodes[response.statusCode] + ")";
+            return processResult(error);
+          }
+          // we get a response, and there were no errors
+          if(!error) {
+            try {
+              body = body.trim().replace(/^jsonFlickrApi\(/,'').replace(/\}\)$/,'}');
+              body = JSON.parse(body);
+              if(body.stat !== "ok") {
+                // There was a request error, and the JSON .stat property
+                // will tell us what that error was.
+                return processResult(body.message);
+              }
+            } catch (e) {
+              // general JSON error
+              return processResult("could not parse body as JSON");
+            }
+          }
+          // Some kind of other error occurred. Simply call the process
+          // handler blindly with both the error and error body.
+          processResult(error, body);
+        }
+        else { processResult("HTTP status not 200 (received "+xhr.status+")"); }
+      }
+    };
+    xhr.send(postdata ? JSON.stringify(postdata) : null);
+  };
+ Utils.errors = {
+    "95": {
+        "code": 95,
+        "message": "SSL is required",
+        "_content": "SSL is required to access the Flickr API."
+    },
+    "96": {
+        "code": 96,
+        "message": "Invalid signature",
+        "_content": "The passed signature was invalid."
+    },
+    "97": {
+        "code": 97,
+        "message": "Missing signature",
+        "_content": "The call required signing but no signature was sent."
+    },
+    "98": {
+        "code": 98,
+        "message": "Login failed / Invalid auth token",
+        "_content": "The login details or auth token passed were invalid."
+    },
+    "99": {
+        "code": 99,
+        "message": "User not logged in / Insufficient permissions",
+        "_content": "The method requires user authentication but the user was not logged in, or the authenticated method call did not have the required permissions."
+    },
+    "100": {
+        "code": 100,
+        "message": "Invalid API Key",
+        "_content": "The API key passed was not valid or has expired."
+    },
+    "105": {
+        "code": 105,
+        "message": "Service currently unavailable",
+        "_content": "The requested service is temporarily unavailable."
+    },
+    "106": {
+        "code": 106,
+        "message": "Write operation failed",
+        "_content": "The requested operation failed due to a temporary issue."
+    },
+    "108": {
+        "code": "108",
+        "message": "Invalid frob",
+        "_content": "The specified frob does not exist or has already been used."
+    },
+    "111": {
+        "code": 111,
+        "message": "Format \"xxx\" not found",
+        "_content": "The requested response format was not found."
+    },
+    "112": {
+        "code": 112,
+        "message": "Method \"xxx\" not found",
+        "_content": "The requested method was not found."
+    },
+    "114": {
+        "code": 114,
+        "message": "Invalid SOAP envelope",
+        "_content": "The SOAP envelope send in the request could not be parsed."
+    },
+    "115": {
+        "code": 115,
+        "message": "Invalid XML-RPC Method Call",
+        "_content": "The XML-RPC request document could not be parsed."
+    },
+    "116": {
+        "code": 116,
+        "message": "Bad URL found",
+        "_content": "One or more arguments contained a URL that has been used for abuse on Flickr."
+    }
+};
+ var Flickr = function (flickrOptions) {
+  this.bindOptions(flickrOptions);
+};
+ Flickr.prototype = {};
+ Flickr.methods = {
+ "flickr.activity.userComments": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.activity.userComments"
+ },
+ "flickr.activity.userPhotos": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.activity.userPhotos"
+ },
+ "flickr.auth.checkToken": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.auth.checkToken"
+ },
+ "flickr.auth.getFrob": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.auth.getFrob"
+ },
+ "flickr.auth.getFullToken": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.auth.getFullToken"
+ },
+ "flickr.auth.getToken": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.auth.getToken"
+ },
+ "flickr.auth.oauth.checkToken": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 1,
+   "requiredperms": 0
+  },
+  "name": "flickr.auth.oauth.checkToken"
+ },
+ "flickr.auth.oauth.getAccessToken": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 1,
+   "requiredperms": 0
+  },
+  "name": "flickr.auth.oauth.getAccessToken"
+ },
+ "flickr.blogs.getList": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.blogs.getList"
+ },
+ "flickr.blogs.getServices": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.blogs.getServices"
+ },
+ "flickr.blogs.postPhoto": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.blogs.postPhoto"
+ },
+ "flickr.cameras.getBrandModels": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.cameras.getBrandModels"
+ },
+ "flickr.cameras.getBrands": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.cameras.getBrands"
+ },
+ "flickr.collections.getInfo": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.collections.getInfo"
+ },
+ "flickr.collections.getTree": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.collections.getTree"
+ },
+ "flickr.commons.getInstitutions": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.commons.getInstitutions"
+ },
+ "flickr.contacts.getList": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.contacts.getList"
+ },
+ "flickr.contacts.getListRecentlyUploaded": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.contacts.getListRecentlyUploaded"
+ },
+ "flickr.contacts.getPublicList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.contacts.getPublicList"
+ },
+ "flickr.contacts.getTaggingSuggestions": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.contacts.getTaggingSuggestions"
+ },
+ "flickr.favorites.add": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.favorites.add"
+ },
+ "flickr.favorites.getContext": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.favorites.getContext"
+ },
+ "flickr.favorites.getList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.favorites.getList"
+ },
+ "flickr.favorites.getPublicList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.favorites.getPublicList"
+ },
+ "flickr.favorites.remove": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.favorites.remove"
+ },
+ "flickr.galleries.addPhoto": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.galleries.addPhoto"
+ },
+ "flickr.galleries.create": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.galleries.create"
+ },
+ "flickr.galleries.editMeta": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.galleries.editMeta"
+ },
+ "flickr.galleries.editPhoto": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.galleries.editPhoto"
+ },
+ "flickr.galleries.editPhotos": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.galleries.editPhotos"
+ },
+ "flickr.galleries.getInfo": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.galleries.getInfo"
+ },
+ "flickr.galleries.getList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.galleries.getList"
+ },
+ "flickr.galleries.getListForPhoto": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.galleries.getListForPhoto"
+ },
+ "flickr.galleries.getPhotos": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.galleries.getPhotos"
+ },
+ "flickr.groups.browse": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.groups.browse"
+ },
+ "flickr.groups.discuss.replies.add": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.groups.discuss.replies.add"
+ },
+ "flickr.groups.discuss.replies.delete": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 3
+  },
+  "name": "flickr.groups.discuss.replies.delete"
+ },
+ "flickr.groups.discuss.replies.edit": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.groups.discuss.replies.edit"
+ },
+ "flickr.groups.discuss.replies.getInfo": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.groups.discuss.replies.getInfo"
+ },
+ "flickr.groups.discuss.replies.getList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.groups.discuss.replies.getList"
+ },
+ "flickr.groups.discuss.topics.add": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.groups.discuss.topics.add"
+ },
+ "flickr.groups.discuss.topics.getInfo": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.groups.discuss.topics.getInfo"
+ },
+ "flickr.groups.discuss.topics.getList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.groups.discuss.topics.getList"
+ },
+ "flickr.groups.getInfo": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.groups.getInfo"
+ },
+ "flickr.groups.join": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.groups.join"
+ },
+ "flickr.groups.joinRequest": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.groups.joinRequest"
+ },
+ "flickr.groups.leave": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 3
+  },
+  "name": "flickr.groups.leave"
+ },
+ "flickr.groups.members.getList": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.groups.members.getList"
+ },
+ "flickr.groups.pools.add": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.groups.pools.add"
+ },
+ "flickr.groups.pools.getContext": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.groups.pools.getContext"
+ },
+ "flickr.groups.pools.getGroups": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.groups.pools.getGroups"
+ },
+ "flickr.groups.pools.getPhotos": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.groups.pools.getPhotos"
+ },
+ "flickr.groups.pools.remove": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.groups.pools.remove"
+ },
+ "flickr.groups.search": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.groups.search"
+ },
+ "flickr.interestingness.getList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.interestingness.getList"
+ },
+ "flickr.machinetags.getNamespaces": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.machinetags.getNamespaces"
+ },
+ "flickr.machinetags.getPairs": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.machinetags.getPairs"
+ },
+ "flickr.machinetags.getPredicates": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.machinetags.getPredicates"
+ },
+ "flickr.machinetags.getRecentValues": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.machinetags.getRecentValues"
+ },
+ "flickr.machinetags.getValues": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.machinetags.getValues"
+ },
+ "flickr.panda.getList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.panda.getList"
+ },
+ "flickr.panda.getPhotos": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.panda.getPhotos"
+ },
+ "flickr.people.findByEmail": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.people.findByEmail"
+ },
+ "flickr.people.findByUsername": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.people.findByUsername"
+ },
+ "flickr.people.getGroups": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.people.getGroups"
+ },
+ "flickr.people.getInfo": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.people.getInfo"
+ },
+ "flickr.people.getLimits": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.people.getLimits"
+ },
+ "flickr.people.getPhotos": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.people.getPhotos"
+ },
+ "flickr.people.getPhotosOf": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.people.getPhotosOf"
+ },
+ "flickr.people.getPublicGroups": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.people.getPublicGroups"
+ },
+ "flickr.people.getPublicPhotos": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.people.getPublicPhotos"
+ },
+ "flickr.people.getUploadStatus": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.people.getUploadStatus"
+ },
+ "flickr.photos.addTags": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.addTags"
+ },
+ "flickr.photos.comments.addComment": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.comments.addComment"
+ },
+ "flickr.photos.comments.deleteComment": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.comments.deleteComment"
+ },
+ "flickr.photos.comments.editComment": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.comments.editComment"
+ },
+ "flickr.photos.comments.getList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.comments.getList"
+ },
+ "flickr.photos.comments.getRecentForContacts": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.comments.getRecentForContacts"
+ },
+ "flickr.photos.delete": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 3
+  },
+  "name": "flickr.photos.delete"
+ },
+ "flickr.photos.geo.batchCorrectLocation": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.geo.batchCorrectLocation"
+ },
+ "flickr.photos.geo.correctLocation": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.geo.correctLocation"
+ },
+ "flickr.photos.geo.getLocation": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.geo.getLocation"
+ },
+ "flickr.photos.geo.getPerms": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.geo.getPerms"
+ },
+ "flickr.photos.geo.photosForLocation": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.geo.photosForLocation"
+ },
+ "flickr.photos.geo.removeLocation": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.geo.removeLocation"
+ },
+ "flickr.photos.geo.setContext": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.geo.setContext"
+ },
+ "flickr.photos.geo.setLocation": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.geo.setLocation"
+ },
+ "flickr.photos.geo.setPerms": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.geo.setPerms"
+ },
+ "flickr.photos.getAllContexts": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.getAllContexts"
+ },
+ "flickr.photos.getContactsPhotos": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.getContactsPhotos"
+ },
+ "flickr.photos.getContactsPublicPhotos": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.getContactsPublicPhotos"
+ },
+ "flickr.photos.getContext": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.getContext"
+ },
+ "flickr.photos.getCounts": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.getCounts"
+ },
+ "flickr.photos.getExif": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.getExif"
+ },
+ "flickr.photos.getFavorites": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.getFavorites"
+ },
+ "flickr.photos.getInfo": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.getInfo"
+ },
+ "flickr.photos.getNotInSet": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.getNotInSet"
+ },
+ "flickr.photos.getPerms": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.getPerms"
+ },
+ "flickr.photos.getRecent": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.getRecent"
+ },
+ "flickr.photos.getSizes": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.getSizes"
+ },
+ "flickr.photos.getUntagged": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.getUntagged"
+ },
+ "flickr.photos.getWithGeoData": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.getWithGeoData"
+ },
+ "flickr.photos.getWithoutGeoData": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.getWithoutGeoData"
+ },
+ "flickr.photos.licenses.getInfo": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.licenses.getInfo"
+ },
+ "flickr.photos.licenses.setLicense": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.licenses.setLicense"
+ },
+ "flickr.photos.notes.add": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.notes.add"
+ },
+ "flickr.photos.notes.delete": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.notes.delete"
+ },
+ "flickr.photos.notes.edit": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.notes.edit"
+ },
+ "flickr.photos.people.add": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.people.add"
+ },
+ "flickr.photos.people.delete": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.people.delete"
+ },
+ "flickr.photos.people.deleteCoords": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.people.deleteCoords"
+ },
+ "flickr.photos.people.editCoords": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.people.editCoords"
+ },
+ "flickr.photos.people.getList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.people.getList"
+ },
+ "flickr.photos.recentlyUpdated": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.recentlyUpdated"
+ },
+ "flickr.photos.removeTag": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.removeTag"
+ },
+ "flickr.photos.search": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.search"
+ },
+ "flickr.photos.setContentType": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.setContentType"
+ },
+ "flickr.photos.setDates": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.setDates"
+ },
+ "flickr.photos.setMeta": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.setMeta"
+ },
+ "flickr.photos.setPerms": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.setPerms"
+ },
+ "flickr.photos.setSafetyLevel": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.setSafetyLevel"
+ },
+ "flickr.photos.setTags": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.setTags"
+ },
+ "flickr.photos.suggestions.approveSuggestion": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.suggestions.approveSuggestion"
+ },
+ "flickr.photos.suggestions.getList": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.photos.suggestions.getList"
+ },
+ "flickr.photos.suggestions.rejectSuggestion": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.suggestions.rejectSuggestion"
+ },
+ "flickr.photos.suggestions.removeSuggestion": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.suggestions.removeSuggestion"
+ },
+ "flickr.photos.suggestions.suggestLocation": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.suggestions.suggestLocation"
+ },
+ "flickr.photos.transform.rotate": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photos.transform.rotate"
+ },
+ "flickr.photos.upload.checkTickets": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photos.upload.checkTickets"
+ },
+ "flickr.photosets.addPhoto": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.addPhoto"
+ },
+ "flickr.photosets.comments.addComment": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.comments.addComment"
+ },
+ "flickr.photosets.comments.deleteComment": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.comments.deleteComment"
+ },
+ "flickr.photosets.comments.editComment": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.comments.editComment"
+ },
+ "flickr.photosets.comments.getList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photosets.comments.getList"
+ },
+ "flickr.photosets.create": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.create"
+ },
+ "flickr.photosets.delete": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.delete"
+ },
+ "flickr.photosets.editMeta": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.editMeta"
+ },
+ "flickr.photosets.editPhotos": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.editPhotos"
+ },
+ "flickr.photosets.getContext": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photosets.getContext"
+ },
+ "flickr.photosets.getInfo": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photosets.getInfo"
+ },
+ "flickr.photosets.getList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photosets.getList"
+ },
+ "flickr.photosets.getPhotos": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.photosets.getPhotos"
+ },
+ "flickr.photosets.orderSets": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.orderSets"
+ },
+ "flickr.photosets.removePhoto": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.removePhoto"
+ },
+ "flickr.photosets.removePhotos": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.removePhotos"
+ },
+ "flickr.photosets.reorderPhotos": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.reorderPhotos"
+ },
+ "flickr.photosets.setPrimaryPhoto": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 2
+  },
+  "name": "flickr.photosets.setPrimaryPhoto"
+ },
+ "flickr.places.find": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.find"
+ },
+ "flickr.places.findByLatLon": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.findByLatLon"
+ },
+ "flickr.places.getChildrenWithPhotosPublic": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.getChildrenWithPhotosPublic"
+ },
+ "flickr.places.getInfo": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.getInfo"
+ },
+ "flickr.places.getInfoByUrl": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.getInfoByUrl"
+ },
+ "flickr.places.getPlaceTypes": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.getPlaceTypes"
+ },
+ "flickr.places.getShapeHistory": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.getShapeHistory"
+ },
+ "flickr.places.getTopPlacesList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.getTopPlacesList"
+ },
+ "flickr.places.placesForBoundingBox": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.placesForBoundingBox"
+ },
+ "flickr.places.placesForContacts": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.places.placesForContacts"
+ },
+ "flickr.places.placesForTags": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.placesForTags"
+ },
+ "flickr.places.placesForUser": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.places.placesForUser"
+ },
+ "flickr.places.resolvePlaceId": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.resolvePlaceId"
+ },
+ "flickr.places.resolvePlaceURL": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.resolvePlaceURL"
+ },
+ "flickr.places.tagsForPlace": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.places.tagsForPlace"
+ },
+ "flickr.prefs.getContentType": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.prefs.getContentType"
+ },
+ "flickr.prefs.getGeoPerms": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.prefs.getGeoPerms"
+ },
+ "flickr.prefs.getHidden": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.prefs.getHidden"
+ },
+ "flickr.prefs.getPrivacy": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.prefs.getPrivacy"
+ },
+ "flickr.prefs.getSafetyLevel": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.prefs.getSafetyLevel"
+ },
+ "flickr.push.getSubscriptions": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.push.getSubscriptions"
+ },
+ "flickr.push.getTopics": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.push.getTopics"
+ },
+ "flickr.push.subscribe": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.push.subscribe"
+ },
+ "flickr.push.unsubscribe": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.push.unsubscribe"
+ },
+ "flickr.reflection.getMethodInfo": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.reflection.getMethodInfo"
+ },
+ "flickr.reflection.getMethods": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.reflection.getMethods"
+ },
+ "flickr.stats.getCollectionDomains": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getCollectionDomains"
+ },
+ "flickr.stats.getCollectionReferrers": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getCollectionReferrers"
+ },
+ "flickr.stats.getCollectionStats": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getCollectionStats"
+ },
+ "flickr.stats.getCSVFiles": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getCSVFiles"
+ },
+ "flickr.stats.getPhotoDomains": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getPhotoDomains"
+ },
+ "flickr.stats.getPhotoReferrers": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getPhotoReferrers"
+ },
+ "flickr.stats.getPhotosetDomains": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getPhotosetDomains"
+ },
+ "flickr.stats.getPhotosetReferrers": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getPhotosetReferrers"
+ },
+ "flickr.stats.getPhotosetStats": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getPhotosetStats"
+ },
+ "flickr.stats.getPhotoStats": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getPhotoStats"
+ },
+ "flickr.stats.getPhotostreamDomains": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getPhotostreamDomains"
+ },
+ "flickr.stats.getPhotostreamReferrers": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getPhotostreamReferrers"
+ },
+ "flickr.stats.getPhotostreamStats": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getPhotostreamStats"
+ },
+ "flickr.stats.getPopularPhotos": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getPopularPhotos"
+ },
+ "flickr.stats.getTotalViews": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.stats.getTotalViews"
+ },
+ "flickr.tags.getClusterPhotos": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.tags.getClusterPhotos"
+ },
+ "flickr.tags.getClusters": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.tags.getClusters"
+ },
+ "flickr.tags.getHotList": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.tags.getHotList"
+ },
+ "flickr.tags.getListPhoto": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.tags.getListPhoto"
+ },
+ "flickr.tags.getListUser": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.tags.getListUser"
+ },
+ "flickr.tags.getListUserPopular": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.tags.getListUserPopular"
+ },
+ "flickr.tags.getListUserRaw": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.tags.getListUserRaw"
+ },
+ "flickr.tags.getMostFrequentlyUsed": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.tags.getMostFrequentlyUsed"
+ },
+ "flickr.tags.getRelated": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.tags.getRelated"
+ },
+ "flickr.test.echo": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.test.echo"
+ },
+ "flickr.test.login": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.test.login"
+ },
+ "flickr.test.null": {
+  "security": {
+   "needslogin": 1,
+   "needssigning": 1,
+   "requiredperms": 1
+  },
+  "name": "flickr.test.null"
+ },
+ "flickr.urls.getGroup": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.urls.getGroup"
+ },
+ "flickr.urls.getUserPhotos": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.urls.getUserPhotos"
+ },
+ "flickr.urls.getUserProfile": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.urls.getUserProfile"
+ },
+ "flickr.urls.lookupGallery": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.urls.lookupGallery"
+ },
+ "flickr.urls.lookupGroup": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.urls.lookupGroup"
+ },
+ "flickr.urls.lookupUser": {
+  "security": {
+   "needslogin": 0,
+   "needssigning": 0,
+   "requiredperms": 0
+  },
+  "name": "flickr.urls.lookupUser"
+ }
+};
+
+(function () {
+  Object.keys(Flickr.methods).forEach(function(method) {
+    var level = method.split(".").slice(1);
+    var e = Flickr.prototype, key;
+    while(level.length > 1) {
+      key = level.splice(0,1)[0];
+      if(!e[key]) { e[key] = {}; }
+      e = e[key];
+    }
+    e[level] = Utils.generateAPIFunction(Flickr.methods[method]);
+  });
+}());
+
+ Flickr.prototype.bindOptions = function (flickrOptions) {
+  this.flickrOptions = flickrOptions;
+  (function bindOptions(obj, props) {
+    Object.keys(props).forEach(function(key) {
+      if (key === "flickrOptions") { return; }
+      if (typeof obj[key] === "object") {
+        bindOptions(obj[key], props[key]);
+        obj[key].flickrOptions = flickrOptions;
+      }
+    });
+  }(this, Flickr.prototype));
+};
+
+ window.Flickr = Flickr;
+}());
+
+/**
+ * Since the flickrapi package is neither a module (it sets a global)
+ * nor does it export promisified functions, we have our own little
+ * wrapper here
+ */
+var Flickr = window.Flickr;
+delete window.Flickr;
+
+var ApiKey = 'bbd60ce148c0a1dedcaaffd228a03264';
+
+var FlickrP$1 = (function (Flickr) {
+  function FlickrP() {
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ];
+
+    Flickr.apply(this, args);
+  }
+
+  if ( Flickr ) FlickrP.__proto__ = Flickr;
+  FlickrP.prototype = Object.create( Flickr && Flickr.prototype );
+  FlickrP.prototype.constructor = FlickrP;
+
+  return FlickrP;
+}(Flickr));
+
+function recursivePromisify(obj) {
+  var res = {};
+  var loop = function ( prop ) {
+    if (!obj.hasOwnProperty(prop)) {
+      return;
+    }
+    if (typeof obj[prop] === 'function') {
+      res[prop] = function() {
+        var this$1 = this;
+        var args = [], len = arguments.length;
+        while ( len-- ) args[ len ] = arguments[ len ];
+
+        return new Promise(function (res, rej) {
+          (ref = obj[prop]).call.apply(ref, [ this$1 ].concat( args,[function (error, response) {
+            if (error) {
+              rej(error);
+            } else {
+              res(response);
+            }
+          }] ));
+          var ref;
+        });
+      };
+    } else if (typeof obj[prop] === 'object') {
+      res[prop] = recursivePromisify(obj[prop]);
+    } else {
+      res[prop] = obj[prop];
+    }
+  };
+
+  for (var prop in obj) loop( prop );
+  return res;
+}
+FlickrP$1.prototype = recursivePromisify(Flickr.prototype);
+
+var EffectName$1 = 'Flickr Image';
+var FlickrImageConfigUI = (function (ConfigUI$$1) {
+  function FlickrImageConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    var searchInputClass = 'effect-flickr-img-search-term';
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$1 + "</legend>\n        <label>\n          Search term:\n          <input type=\"text\" class=\"" + searchInputClass + "\"/>\n        </label>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.searchTermInput = this.element.querySelector(("." + searchInputClass));
+    this.searchTermInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+  }
+
+  if ( ConfigUI$$1 ) FlickrImageConfigUI.__proto__ = ConfigUI$$1;
+  FlickrImageConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  FlickrImageConfigUI.prototype.constructor = FlickrImageConfigUI;
+
+  FlickrImageConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  FlickrImageConfigUI.prototype.getConfig = function getConfig () {
+    var config = {};
+
+    config.searchTerm = this.searchTermInput.value;
+
+    return config;
+  };
+
+  FlickrImageConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.searchTermInput.value = config.searchTerm;
+  };
+
+  return FlickrImageConfigUI;
+}(ConfigUI));
+
+var flickr = new FlickrP$1({ api_key: ApiKey });
+
+var FlickrImageEffect = (function (Effect$$1) {
+  function FlickrImageEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) FlickrImageEffect.__proto__ = Effect$$1;
+  FlickrImageEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  FlickrImageEffect.prototype.constructor = FlickrImageEffect;
+
+  FlickrImageEffect.registerAsync = function registerAsync (instance, props, uniforms, vertexShader) {
+    var prefetchCount = 5;
+
+    // The logic for getting a continuous stream of images from flickr
+    var page = 1;
+    var loadsInProgress = 0;
+    var initialQueryTime = Math.floor(Date.now() / 1000);
+    var runFlickrQuery = function (processResponse) {
+      // Two different flickr apis, depending on search string content
+      var query = null;
+      if (instance.config.searchTerm === '') {
+        query = flickr
+        .photos
+        .getRecent({
+          per_page: prefetchCount,
+          page: page,
+          max_upload_date: initialQueryTime
+        }).then(processResponse);
+      } else {
+        query = flickr
+        .photos
+        .search({
+          text: instance.config.searchTerm,
+          per_page: prefetchCount,
+          page: page,
+          max_upload_date: initialQueryTime
+        }).then(processResponse);
+      }
+      loadsInProgress += prefetchCount;
+      page = page + 1;
+      return query;
+    };
+
+    // This method is called the first time we have a list of potential images
+    var onInitialFlickrResponse = function (photos) { return new Promise(function (finishRegister, rej) {
+      var loadedImgs = [];
+      var particleDataQueue = [];
+      var loadQueue = [];
+
+      var processPhoto = function (photo) { return flickr.photos.getSizes({
+        photo_id: photo.id
+      }).then(function (sizes) { return new Promise(function (res, rej) {
+        var original = sizes.sizes.size.find(function (size) {
+          return size.width >= props.config.xParticlesCount;
+        }) || sizes.sizes.size[sizes.sizes.size.length - 1];
+        var url = original.source;
+        var loader = document.createElement('img');
+        loader.crossOrigin = 'Anonymous';
+        loader.src = url;
+        loader.onload = function () {
+          loadedImgs.push(loader);
+          loadsInProgress = loadsInProgress - 1;
+          res();
+        };
+      }); }); };
+      
+      // kick off loading process for each image
+      for (var i = 0; i < photos.photos.photo.length; i++) {
+        loadQueue.push(processPhoto(photos.photos.photo[i]));
+      }
+      // As soon as we have a fully-loaded image, use it!
+      Promise.race(loadQueue).then(function () {
+        var alive = true;
+        var prevWasChange = false;
+        var displayed = -1;
+        // Run this in a loop to check if we need to update the image
+        var checkTime = function () {
+          if (!alive) {
+            return;
+          }
+          // synchronize the contents of loadedImgs with particleDataQueue
+          while(particleDataQueue.length < loadedImgs.length) {
+            particleDataQueue.push(
+              props.state.createParticleDataFromDomImg(
+                loadedImgs[particleDataQueue.length],
+                props.config.xParticlesCount, props.config.yParticlesCount
+              )
+            );
+            // intentional break. Avoid too much work per RAF iteration
+            break;
+          }
+          var tDist = instance.timeBegin - props.clock.getTime();
+          if (tDist >= 0 && tDist <= props.clock.getDelta()) {
+            // free unneeded resources when we proceed to the next image
+            var freed = -1;
+            if (displayed !== -1 && particleDataQueue.length > 1) {
+              loadedImgs.shift();
+              freed = particleDataQueue.shift();
+            }
+            displayed = particleDataQueue[0];
+            props.state.setParticleData(displayed);
+            // do the free AFTER we setParticleData to a new one
+            if (freed !== -1) {
+              props.state.destroyParticleData(freed);
+              if (loadsInProgress < prefetchCount && loadedImgs.length < prefetchCount) {
+                console.log('Kick off new query');
+                runFlickrQuery(function (photos) {
+                  for (var i = 0; i < photos.photos.photo.length; i++) {
+                    processPhoto(photos.photos.photo[i]);
+                  }
+                });
+              }
+            }
+          }
+          window.requestAnimationFrame(checkTime);
+        };
+        checkTime();
+        props.state.addHook(function () {
+          alive = false;
+        });
+        
+        finishRegister();
+      });
+    }); };
+
+    return runFlickrQuery(onInitialFlickrResponse);
+  };
+
+  FlickrImageEffect.getDisplayName = function getDisplayName () {
+    return EffectName$1;
+  };
+
+  FlickrImageEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new FlickrImageConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  FlickrImageEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+      searchTerm: ''
+    };
+  };
+
+  FlickrImageEffect.getRandomConfig = function getRandomConfig () {
+    return this.getDefaultConfig();
+  };
+
+  return FlickrImageEffect;
 }(Effect));
 
 var effectList = [
   HueDisplaceEffect,
   ConvergePointEffect,
   ConvergeCircleEffect,
-  WaveEffect
+  WaveEffect,
+  FlickrImageEffect
 ];
 var byId = {};
 for (var i = 0; i < effectList.length; i++) {
@@ -1762,6 +3930,23 @@ EffectConfig.deserialize = function deserialize (obj) {
     return new EffectConfig(obj.id, obj.timeBegin, obj.timeEnd, obj.repetitions, obj.config);
   }
 };
+
+function generateRandomTimeline(config) {
+  config.effects = [[]];
+  config.duration = 0;
+  for(var i=0; i<effectList.length; ++i) {
+    config.effects[0].push(new EffectConfig(
+      effectList[i].getId(),
+      Math.random() * 10000,
+      Math.random() * 10000,
+      1,
+      effectList[i].getRandomConfig()
+    ));
+    // HACK
+    config.duration = Math.max(config.duration, config.effects[0][config.effects[0].length-1].timeEnd);
+  }
+  return config;
+}
 
 /**
  *
@@ -2192,6 +4377,27 @@ var PauseButton = function PauseButton(clock) {
   });
 };
 
+var RandomplayButton = function RandomplayButton(clock, menu) {
+  var this$1 = this;
+
+  this.clock = clock;
+  this.onClockWrap = null;
+  this.element = document.querySelector('.menu-timeline-randomplay');
+  this.element.addEventListener('click', function () {
+    if(this$1.onClockWrap === null) {
+      this$1.onClockWrap = function () {
+        var config = generateRandomTimeline(Object.assign({}, menu.submittedConfig));
+        menu.applyConfig(config);
+        menu.submit();
+      };
+      this$1.clock.addWrapListener(this$1.onClockWrap);
+    } else {
+      this$1.clock.removeWrapListener(this$1.onClockWrap);
+      this$1.onClockWrap = null;
+    }
+  });
+};
+
 var TimeDisplay = function TimeDisplay(clock) {
   var this$1 = this;
 
@@ -2221,6 +4427,7 @@ var Timeline = function Timeline(menu) {
   this.timeticks = new Timeticks(menu.clock);
   this.timeDisplay = new TimeDisplay(menu.clock);
   this.pauseButton = new PauseButton(menu.clock);
+  this.randomplayButton = new RandomplayButton(menu.clock, menu);
   this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
   this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
   this.timeticks.addScaleChangeListener(function () {
@@ -2313,7 +4520,7 @@ Timeline.prototype.assertEmptyLastTrack = function assertEmptyLastTrack (render)
     tracks.splice(tracks.length - 1, 1);
     changed = true;
   }
-  if (tracks[tracks.length - 1].entryList.length !== 0) {
+  if (tracks.length === 0 || tracks[tracks.length - 1].entryList.length !== 0) {
     var track = new TimelineTrack(tracks.length + 1, this);
     tracks.push(track);
     changed = true;
@@ -12400,9 +14607,11 @@ Uniforms.prototype.compile = function compile (shader, uniforms) {
 
 var CommandBuilder = function CommandBuilder () {};
 
-CommandBuilder.prototype.buildCommand = function buildCommand (particleData, config) {
-  this.config = config;
-  this.particleData = particleData;
+CommandBuilder.prototype.buildCommand = function buildCommand (props) {
+  this.config = props.config;
+  this.state = props.state;
+  this.clock = props.clock;
+  this.props = props;
 
   return this.assembleCommand();
 };
@@ -12411,12 +14620,12 @@ CommandBuilder.prototype.makeUniforms = function makeUniforms () {
     var this$1 = this;
 
   var uniforms = new Uniforms();
-  uniforms.addUniform('invImageAspectRatio', 'float', 1 / this.particleData.aspectRatio);
+  uniforms.addUniform('invImageAspectRatio', 'float', function () { return 1 / this$1.state.getCurrentParticleData().aspectRatio; });
   uniforms.addUniform('invScreenAspectRatio', 'float', function (ctx) { return ctx.viewportHeight / ctx.viewportWidth; });
   uniforms.addUniform('viewProjectionMatrix', 'mat4', function (ctx) {
     var aspect = ctx.viewportWidth / ctx.viewportHeight;
     var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                          (this$1.particleData.aspectRatio));
+                          (this$1.state.getCurrentParticleData().aspectRatio));
 
     return [
       2, 0, 0, 0,
@@ -12428,7 +14637,7 @@ CommandBuilder.prototype.makeUniforms = function makeUniforms () {
   uniforms.addUniform('invViewProjectionMatrix', 'mat4', function (ctx) {
     var aspect = ctx.viewportWidth / ctx.viewportHeight;
     var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                          (this$1.particleData.aspectRatio));
+                          (this$1.state.getCurrentParticleData().aspectRatio));
 
     return [
       0.5, 0, 0, 0,
@@ -12437,7 +14646,7 @@ CommandBuilder.prototype.makeUniforms = function makeUniforms () {
       0.5, (-0.5 * ((underscan * 2) - 1)) / aspect, 0, 1
     ];
   });
-  uniforms.addUniform('particleSize', 'float', function (ctx) { return (ctx.viewportWidth / this$1.particleData.width) * 2 * this$1.config.particleScaling; });
+  uniforms.addUniform('particleSize', 'float', function (ctx) { return (ctx.viewportWidth / this$1.state.getCurrentParticleData().width) * 2 * this$1.config.particleScaling; });
   uniforms.addUniform('globalTime', 'int', function (ctx, props) { return props.clock.getTime(); });
   return uniforms;
 };
@@ -12474,64 +14683,89 @@ CommandBuilder.prototype.assembleFragmentShader = function assembleFragmentShade
 CommandBuilder.prototype.assembleCommand = function assembleCommand () {
     var this$1 = this;
 
-  var uniforms = {};
-  var vert = CommandBuilder.prepareVertexShader();
-  var frag = this.assembleFragmentShader();
-  this.makeUniforms().compile(vert, uniforms);
+  return new Promise(function (res, rej) {
+    var uniforms = {};
+    var vert = CommandBuilder.prepareVertexShader();
+    var frag = this$1.assembleFragmentShader();
+    this$1.makeUniforms().compile(vert, uniforms);
 
-  var result = {
-    primitive:'points',
-    count:    this.particleData.width * this.particleData.height,
-    attributes: {
-      texcoord: this.particleData.texcoordsBuffer,
-      rgb:    this.particleData.rgbBuffer,
-      hsv:    this.particleData.hsvBuffer
-    },
-    uniforms: uniforms,
-    frag: frag,
-    depth: { enable: false }
-  };
+    var result = {
+      primitive:'points',
+      // TODO This cannot be changed ad-hoc. A new command would be necessary.
+      // regl.elements (http://regl.party/api#elements) could be an alternative here
+      count:    this$1.config.xParticlesCount * this$1.config.yParticlesCount,
+      attributes: {
+        texcoord: function () { return this$1.state.getCurrentParticleData().texcoordsBuffer; },
+        rgb:    function () { return this$1.state.getCurrentParticleData().rgbBuffer; },
+        hsv:    function () { return this$1.state.getCurrentParticleData().hsvBuffer; }
+      },
+      uniforms: uniforms,
+      frag: frag,
+      depth: { enable: false }
+    };
 
-  switch (this.config.particleOverlap) {
-    case 'add':
-      result.blend = {
-        enable: true,
-        func: { src: 'one', dst: 'one' }
-      };
-      break;
-    case 'alpha blend':
-      result.blend = {
-        enable: true,
-        func: { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
-      };
-      break;
-    default:
-      throw new Error(("Unknown particle overlap mode: " + (this.config.particleOverlap)));
-  }
-
-  vert.mainBody += "\n      vec3 initialPosition = vec3(texcoord, 0);\n      initialPosition.y *= invImageAspectRatio;\n      \n      vec3 position = initialPosition;\n    ";
-  var globalId = 0;
-  for (var i = 0; i < this.config.effects.length; i++) {
-    var track = this$1.config.effects[i];
-    for (var j = 0; j < track.length; j++) {
-      var effectUniforms = new Uniforms(globalId);
-      var effectConfig = track[j];
-      var effectClass = track[j].getEffectClass();
-
-      vert.mainBody += "if (" + (effectConfig.timeBegin) + " <= globalTime && globalTime <= " + (effectConfig.timeEnd) + ") {";
-      effectClass.register(effectConfig, effectUniforms, vert);
-      vert.mainBody += '}';
-        
-      effectUniforms.compile(vert, uniforms);
-      globalId += 1;
+    switch (this$1.config.particleOverlap) {
+      case 'add':
+        result.blend = {
+          enable: true,
+          func: { src: 'one', dst: 'one' }
+        };
+        break;
+      case 'alpha blend':
+        result.blend = {
+          enable: true,
+          func: { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
+        };
+        break;
+      default:
+        throw new Error(("Unknown particle overlap mode: " + (this$1.config.particleOverlap)));
     }
-  }
 
-  vert.mainBody += "\n      color = rgb;\n      gl_PointSize = max(particleSize, 0.);\n      gl_Position = viewProjectionMatrix * vec4(position, 1.);\n    ";
+    vert.mainBody += "\n        vec3 initialPosition = vec3(texcoord, 0);\n        initialPosition.y *= invImageAspectRatio;\n\n        vec3 position = initialPosition;\n      ";
+    var nextEffect = (function () {
+      var i = 0;
+      var j = 0;
+      return function () {
+        if (i === this$1.config.effects.length) {
+          return null;
+        }
+        var track = this$1.config.effects[i];
+        if (j === track.length) {
+          i++;
+          j = 0;
+          return nextEffect();
+        }
+        var effect = track[j];
+        j = j + 1;
+        return effect;
+      }
+    })();
+    var globalId = 0;
+    var registerEffects = function (res, rej) {
+      var effectConfig = nextEffect();
+      if (effectConfig === null) {
+        return res();
+      }
+      var effectUniforms = new Uniforms(globalId);
+      var effectClass = effectConfig.getEffectClass();
+      vert.mainBody += "if (" + (effectConfig.timeBegin) + " <= globalTime && globalTime <= " + (effectConfig.timeEnd) + ") {";
+      effectClass.registerAsync(effectConfig, this$1.props, effectUniforms, vert)
+      .then(function () {
+        vert.mainBody += '}';
 
-  result.vert = vert.compile();
+        effectUniforms.compile(vert, uniforms);
+        globalId += 1;
+        registerEffects(res, rej);
+      });
+    };
+    return new Promise(registerEffects).then(function () {
+      vert.mainBody += "\n          color = rgb;\n          gl_PointSize = max(particleSize, 0.);\n          gl_Position = viewProjectionMatrix * vec4(position, 1.);\n        ";
 
-  return result;
+      result.vert = vert.compile();
+
+      res(result);
+    });
+  });
 };
 
 var RendererClock = function RendererClock() {
@@ -12540,9 +14774,13 @@ var RendererClock = function RendererClock() {
   this.absTime = Date.now();
   this.period = 1000;
   this.paused = false;
+  this.wrapListeners = [];
 };
 RendererClock.prototype.frame = function frame () {
-  if (this.paused) {
+    var this$1 = this;
+
+  if (this.paused || this.period === 0) {
+    this.delta = 0;
     return;
   }
   if (this.time === -1) {
@@ -12553,7 +14791,15 @@ RendererClock.prototype.frame = function frame () {
     var oldTime = this.absTime;
     this.absTime = Date.now();
     this.delta = this.absTime - oldTime;
-    this.time = (this.time + this.delta) % this.period;
+    this.time += this.delta;
+    while(this.time >= this.period) {
+      this$1.time -= this$1.period;
+      var loop = function ( i ) {
+        window.setTimeout(function () { return this$1.wrapListeners[i](); }, 0);
+      };
+
+        for (var i = 0; i < this.wrapListeners.length; i++) loop( i );
+    }
   }
 };
 RendererClock.prototype.reset = function reset () {
@@ -12590,59 +14836,21 @@ RendererClock.prototype.setPaused = function setPaused (paused) {
 RendererClock.prototype.getPaused = function getPaused () {
   return this.paused;
 };
-
-var Renderer = function Renderer(canvas) {
-  var this$1 = this;
-
-  this.canvas = canvas;
-  this.regl = regl$1({ canvas: canvas });
-  console.log(("max texture size: " + (this.regl.limits.maxTextureSize)));
-  console.log(("point size dims: " + (this.regl.limits.pointSizeDims[0]) + " " + (this.regl.limits.pointSizeDims[1])));
-  console.log(("max uniforms: " + (this.regl.limits.maxVertexUniforms) + " " + (this.regl.limits.maxFragmentUniforms)));
-  this.particleData = null;
-  this.config = null;
-  this.command = null;
-  this.commandBuilder = new CommandBuilder();
-  this.clock = new RendererClock();
-  this.regl.frame(function () {
-    if (this$1.command === null) {
-      return;
-    }
-    this$1.clock.frame();
-    this$1.regl.clear({ color: this$1.config.backgroundColor });
-    this$1.command({
-      config:     this$1.config,
-      particleData: this$1.particleData,
-      clock:      this$1.clock
-    });
-  });
+RendererClock.prototype.addWrapListener = function addWrapListener (listener) {
+  this.wrapListeners.push(listener);
+};
+RendererClock.prototype.removeWrapListener = function removeWrapListener (listener) {
+  this.wrapListeners.splice(this.wrapListeners.indexOf(listener), 1);
 };
 
-Renderer.prototype.getClock = function getClock () {
-  return this.clock;
-};
-
-Renderer.prototype.loadImageData = function loadImageData (img) {
-  var fullresCanvas = document.createElement('canvas');
-  var fullresContext = fullresCanvas.getContext('2d');
-  fullresCanvas.width = img.naturalWidth;
-  fullresCanvas.height = img.naturalHeight;
-  // flipped y-axis
-  fullresContext.translate(0, img.naturalHeight);
-  fullresContext.scale(1, -1);
-  fullresContext.drawImage(img, 0, 0);
-  this.imgData = fullresCanvas;
-};
-
-Renderer.prototype.createParticleData = function createParticleData () {
-  this.destroyParticleData();
-
-  var imgData = this.imgData;
+var ParticleData = function ParticleData(imageData, regl, width, height) {
+  this.destroyed = false;
+    
   var scalingCanvas = document.createElement('canvas');
   var scalingContext = scalingCanvas.getContext('2d');
-  scalingCanvas.width = this.config.xParticlesCount || imgData.width;
-  scalingCanvas.height = this.config.yParticlesCount || imgData.height;
-  scalingContext.drawImage(imgData, 0, 0, scalingCanvas.width, scalingCanvas.height);
+  scalingCanvas.width = width;
+  scalingCanvas.height = height;
+  scalingContext.drawImage(imageData, 0, 0, scalingCanvas.width, scalingCanvas.height);
   var scaledData = scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
 
   var w = scaledData.width;
@@ -12685,49 +14893,177 @@ Renderer.prototype.createParticleData = function createParticleData () {
 
     return [_h * 60 * (Math.PI / 180), d / cMax, cMax];
   });
-
-  this.particleData = {
-    width:         w,
-    height:        h,
-    aspectRatio:   imgData.width / imgData.height,
-    texcoordsBuffer: this.regl.buffer(texcoords),
-    rgbBuffer:     this.regl.buffer(rgb),
-    hsvBuffer:     this.regl.buffer(hsv)
-  };
+  this.width         = w;
+  this.height        = h;
+  this.aspectRatio   = imageData.width / imageData.height;
+  this.texcoordsBuffer = regl.buffer(texcoords);
+  this.rgbBuffer     = regl.buffer(rgb);
+  this.hsvBuffer     = regl.buffer(hsv);
 };
-
-Renderer.prototype.destroyParticleData = function destroyParticleData () {
-  this.setCommand(null);
-  if (this.particleData !== null) {
-    this.particleData.texcoordsBuffer.destroy();
-    this.particleData.rgbBuffer.destroy();
-    this.particleData.hsvBuffer.destroy();
-    this.particleData = null;
+ParticleData.prototype.destroy = function destroy () {
+  if (!this.destroyed) {
+    this.texcoordsBuffer.destroy();
+    this.rgbBuffer.destroy();
+    this.hsvBuffer.destroy();
+    this.destroyed = true;
   }
 };
 
-Renderer.prototype.setCommand = function setCommand (command) {
-  this.clock.reset();
-  this.clock.setPeriod(this.config.duration);
-  this.command = command;
+function domImgToCanvas(img) {
+  var fullresCanvas = document.createElement('canvas');
+  var fullresContext = fullresCanvas.getContext('2d');
+  fullresCanvas.width = img.naturalWidth;
+  fullresCanvas.height = img.naturalHeight;
+  // flipped y-axis
+  fullresContext.translate(0, img.naturalHeight);
+  fullresContext.scale(1, -1);
+  fullresContext.drawImage(img, 0, 0);
+  return fullresCanvas;
+}
+
+/**
+ * Encapsulates the parts of the render pipeline which are subject to
+ * dynamic change, i.e. data that can be changed by effects.
+ * 
+ * In contrast to this, data inside a `config` object is always immutable
+ * (as long as the user does not request changes to be applied - which
+ * generates a new `config` object).
+ * The most important thing to note is that both `state` *and* `config`
+ * objects "live on" if the other object is changed, whereas only `state`
+ * is ever influenced by `config` - never the other way around.
+ * E.g. config's xParticleCount influences state's particleData.
+ * On the other hand, `state` does not need to be serializable
+ */
+var RendererState = function RendererState(regl) {
+  this.regl = regl;
+
+  // Properties
+  this.particleData = -1;
+  this.particleDataStore = [[null, null]];
+  this.hooks = [];
+};
+RendererState.prototype.adaptToConfig = function adaptToConfig (config) {
+    var this$1 = this;
+
+  // Update default particle data
+  var defaultImg = this.particleDataStore[0][0];
+  if (defaultImg !== null) {
+    var defaultParticleData = this.particleDataStore[0][1];
+    if (defaultParticleData !== null) {
+      defaultParticleData.destroy();
+    }
+    this.particleDataStore[0][1] = new ParticleData(
+      defaultImg,
+      this.regl,
+      config.xParticlesCount || defaultImg.width,
+      config.yParticlesCount || defaultImg.height
+    );
+  }
+  // release resources
+  for (var i = 1; i < this.particleDataStore.length; i++) {
+    this$1.destroyParticleData(i);
+  }
+  this.particleDataStore.length = 1;
+  this.particleData = 0;
+  // run hooks
+  for (var i$1 = 0; i$1 < this.hooks.length; i$1++) {
+    this$1.hooks[i$1]();
+  }
+};
+RendererState.prototype.setParticleData = function setParticleData (id) {
+  this.particleData = id;
+};
+RendererState.prototype.createParticleData = function createParticleData (imgData, width, height) {
+  this.particleDataStore.push([
+    imgData,
+    new ParticleData(
+      imgData,
+      this.regl,
+      width,
+      height
+    )
+  ]);
+  return this.particleDataStore.length - 1;
+};
+RendererState.prototype.createParticleDataFromDomImg = function createParticleDataFromDomImg (domImg, width, height) {
+  return this.createParticleData(domImgToCanvas(domImg), width, height);
+};
+RendererState.prototype.destroyParticleData = function destroyParticleData (id) {
+  if (this.particleDataStore[id][1]) {
+    this.particleDataStore[id][1].destroy();
+    this.particleDataStore[id] = [null, null];
+  }
+};
+RendererState.prototype.getCurrentParticleData = function getCurrentParticleData () {
+  if (this.particleData < 0) {
+    return null;
+  }
+  return this.particleDataStore[this.particleData][1];
+};
+RendererState.prototype.isValid = function isValid () {
+  return this.particleData >= 0;
+};
+RendererState.prototype.setDefaultDomImage = function setDefaultDomImage (domImage) {
+  this.particleDataStore[0][0] = domImgToCanvas(domImage);
+  this.particleData = 0;
+};
+RendererState.prototype.addHook = function addHook (hook) {
+  this.hooks.push(hook);
 };
 
-Renderer.prototype.rebuildCommand = function rebuildCommand () {
-  var cmd = this.commandBuilder.buildCommand(this.particleData, this.config);
-  this.setCommand(this.regl(cmd));
+var Renderer = function Renderer(canvas) {
+  var this$1 = this;
+
+  this.canvas = canvas;
+  this.regl = regl$1({ canvas: canvas });
+  console.log(("max texture size: " + (this.regl.limits.maxTextureSize)));
+  console.log(("point size dims: " + (this.regl.limits.pointSizeDims[0]) + " " + (this.regl.limits.pointSizeDims[1])));
+  console.log(("max uniforms: " + (this.regl.limits.maxVertexUniforms) + " " + (this.regl.limits.maxFragmentUniforms)));
+  this.defaultParticleData = null;
+  this.state = new RendererState(this.regl);
+  this.config = null;
+  this.command = null;
+  this.commandBuilder = new CommandBuilder();
+  this.clock = new RendererClock();
+  this.regl.frame(function () {
+    if (this$1.command === null || !this$1.state.isValid()) {
+      return;
+    }
+    this$1.clock.frame();
+    this$1.regl.clear({ color: this$1.config.backgroundColor });
+    this$1.command({
+      config: this$1.config,
+      state:this$1.state,
+      clock:this$1.clock
+    });
+  });
 };
 
-Renderer.prototype.loadImage = function loadImage (img) {
-  this.loadImageData(img);
-  this.createParticleData();
-  this.rebuildCommand();
+Renderer.prototype.getClock = function getClock () {
+  return this.clock;
 };
 
 Renderer.prototype.setConfig = function setConfig (config) {
+    var this$1 = this;
+
+  this.command = null;
   this.config = config;
   // TODO: rebuild command only when necessary
-  this.createParticleData();
-  this.rebuildCommand();
+  this.state.adaptToConfig(config);
+  this.commandBuilder.buildCommand({
+      config: this.config,
+      state:this.state,
+      clock:this.clock
+  })
+  .then(function (command) {
+    this$1.clock.reset();
+    this$1.clock.setPeriod(this$1.config.duration);
+    this$1.command = this$1.regl(command);
+  }, function (error) { return console.error(error); });
+};
+
+Renderer.prototype.getState = function getState () {
+  return this.state;
 };
 
 console.log(Config);
@@ -12760,7 +15096,7 @@ srcImage.onload = function () {
     var xParticlesCount = ref.xParticlesCount;
     var yParticlesCount = ref.yParticlesCount;
 
-    renderer.loadImageData(srcImage);
+    renderer.getState().setDefaultDomImage(srcImage);
     var config = Object.assign({}, menu.submittedConfig, { xParticlesCount: xParticlesCount, yParticlesCount: yParticlesCount });
     menu.applyConfig(config);
     menu.submit();
