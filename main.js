@@ -3846,7 +3846,6 @@ var FlickrImageEffect = (function (Effect$$1) {
             if (freed !== -1) {
               props.state.destroyParticleData(freed);
               if (loadsInProgress < prefetchCount && loadedImgs.length < prefetchCount) {
-                console.log('Kick off new query');
                 runFlickrQuery(function (photos) {
                   for (var i = 0; i < photos.photos.photo.length; i++) {
                     processPhoto(photos.photos.photo[i]);
