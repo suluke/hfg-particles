@@ -38,7 +38,7 @@ class ConvergeCircleConfigUI extends ConfigUI {
 }
 
 export default class ConvergeCircleEffect extends Effect {
-  static register(instance, uniforms, vertexShader) {
+  static register(instance, state, uniforms, vertexShader) {
     const time = uniforms.addUniform('convergeTime', 'float', (ctx, props) => (props.clock.getTime() - instance.timeBegin) % instance.getPeriod());
     const speed = uniforms.addUniform('convergeSpeed', 'float', 2 * 2 / (instance.getPeriod() / 2 * instance.getPeriod() / 2));
     const rotationSpeed = uniforms.addUniform('convergeRotationSpeed', 'float', instance.config.rotationSpeed / 1000);

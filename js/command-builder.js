@@ -79,12 +79,12 @@ export default class CommandBuilder {
 
   makeUniforms() {
     const uniforms = new Uniforms();
-    uniforms.addUniform('invImageAspectRatio', 'float', () => 1 / this.state.particleData.aspectRatio);
+    uniforms.addUniform('invImageAspectRatio', 'float', () => 1 / this.state.getCurrentParticleData().aspectRatio);
     uniforms.addUniform('invScreenAspectRatio', 'float', (ctx) => ctx.viewportHeight / ctx.viewportWidth);
     uniforms.addUniform('viewProjectionMatrix', 'mat4', (ctx) => {
       const aspect = ctx.viewportWidth / ctx.viewportHeight;
       const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.state.particleData.aspectRatio));
+                            (this.state.getCurrentParticleData().aspectRatio));
 
       return [
         2, 0, 0, 0,
@@ -96,7 +96,7 @@ export default class CommandBuilder {
     uniforms.addUniform('invViewProjectionMatrix', 'mat4', (ctx) => {
       const aspect = ctx.viewportWidth / ctx.viewportHeight;
       const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.state.particleData.aspectRatio));
+                            (this.state.getCurrentParticleData().aspectRatio));
 
       return [
         0.5, 0, 0, 0,
@@ -105,7 +105,7 @@ export default class CommandBuilder {
         0.5, (-0.5 * ((underscan * 2) - 1)) / aspect, 0, 1
       ];
     });
-    uniforms.addUniform('particleSize', 'float', (ctx) => (ctx.viewportWidth / this.state.particleData.width) * 2 * this.config.particleScaling);
+    uniforms.addUniform('particleSize', 'float', (ctx) => (ctx.viewportWidth / this.state.getCurrentParticleData().width) * 2 * this.config.particleScaling);
     uniforms.addUniform('globalTime', 'int', (ctx, props) => props.clock.getTime());
     return uniforms;
   }
@@ -161,9 +161,9 @@ export default class CommandBuilder {
       // regl.elements (http://regl.party/api#elements) could be an alternative here
       count:      this.config.xParticlesCount * this.config.yParticlesCount,
       attributes: {
-        texcoord: () => this.state.particleData.texcoordsBuffer,
-        rgb:      () => this.state.particleData.rgbBuffer,
-        hsv:      () => this.state.particleData.hsvBuffer
+        texcoord: () => this.state.getCurrentParticleData().texcoordsBuffer,
+        rgb:      () => this.state.getCurrentParticleData().rgbBuffer,
+        hsv:      () => this.state.getCurrentParticleData().hsvBuffer
       },
       uniforms,
       frag,
@@ -202,7 +202,7 @@ export default class CommandBuilder {
         const effectClass = track[j].getEffectClass();
 
         vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
-        effectClass.register(effectConfig, effectUniforms, vert);
+        effectClass.register(effectConfig, this.state, effectUniforms, vert);
         vert.mainBody += '}';
         
         effectUniforms.compile(vert, uniforms);

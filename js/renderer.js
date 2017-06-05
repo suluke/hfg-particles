@@ -58,7 +58,7 @@ class RendererClock {
   }
 }
 
-export class ParticleData {
+class ParticleData {
   constructor(imageData, regl, width, height) {
     this.destroyed = false;
     
@@ -156,25 +156,57 @@ export class RendererState {
     this.regl = regl;
 
     // Properties
-    this.sourceImageData = null;
-    this.particleData = null;
+    this.particleData = -1;
+    this.particleDataStore = [[null, null]];
   }
   adaptToConfig(config) {
-    if (this.particleData !== null) {
-      this.particleData.destroy();
+    // Update default particle data
+    const defaultImg = this.particleDataStore[0][0];
+    if (defaultImg !== null) {
+      const defaultParticleData = this.particleDataStore[0][1];
+      if (defaultParticleData !== null) {
+        defaultParticleData.destroy();
+      }
+      this.particleDataStore[0][1] = new ParticleData(
+        defaultImg,
+        this.regl,
+        config.xParticlesCount || defaultImg.width,
+        config.yParticlesCount || defaultImg.height
+      );
     }
-    this.particleData = new ParticleData(
-      this.sourceImageData,
-      this.regl,
-      config.xParticlesCount || this.sourceImageData.width,
-      config.yParticlesCount || this.sourceImageData.height
-    );
+    // release resources
+    for (let i = 1; i < this.particleDataStore.length; i++) {
+      this.particleDataStore[i][1].destroy();
+    }
+    this.particleDataStore.length = 1;
+  }
+  setParticleData(id) {
+    this.particleData = id;
+  }
+  createParticleData(imgData, width, height) {
+    this.particleDataStore.push([
+      imgData,
+      new ParticleData(
+        imgData,
+        this.regl,
+        width,
+        height
+      )
+    ]);
+    return this.particleDataStore.length - 1;
+  }
+  getCurrentParticleData() {
+    if (this.particleData < 0) {
+      return null;
+    }
+    return this.particleDataStore[this.particleData][1];
   }
   isValid() {
-    return this.particleData !== null;
+    return this.particleData >= 0;
   }
   setDefaultDomImage(domImage) {
-    this.sourceImageData = domImgToCanvas(domImage);
+    this.particleDataStore[0][0] = domImgToCanvas(domImage);
+    this.particleData = 0;
   }
 }
 

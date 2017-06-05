@@ -28,7 +28,7 @@ class ConvergePointConfigUI extends ConfigUI {
 }
 
 export default class ConvergePointEffect extends Effect {
-  static register(instance, uniforms, vertexShader) {
+  static register(instance, state, uniforms, vertexShader) {
     const time = uniforms.addUniform('convergeTime', 'float', (ctx, props) => (props.clock.getTime() - instance.timeBegin) % instance.getPeriod());
     const speed = uniforms.addUniform('convergeSpeed', 'float', 2 * 2 / (instance.getPeriod() / 2 * instance.getPeriod() / 2));
     const maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', instance.getPeriod() / 2);
