@@ -79,4 +79,9 @@ export default class ConvergePointEffect extends Effect {
     return {
     };
   }
+
+  static getRandomConfig() {
+    return {
+    };
+  }
 }

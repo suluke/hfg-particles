@@ -91,4 +91,10 @@ export default class ConvergeCircleEffect extends Effect {
       rotationSpeed: 0
     };
   }
+
+  static getRandomConfig() {
+    return {
+      rotationSpeed: Math.random()
+    }
+  };
 }

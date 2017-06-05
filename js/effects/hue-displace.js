@@ -118,4 +118,13 @@ export default class HueDisplaceEffect extends Effect {
       rotate:                0
     };
   }
+
+  static getRandomConfig() {
+    return {
+      distance:              Math.random(),
+      scaleByValue:          Math.random(),
+      randomDirectionOffset: Math.random() > .5 ? true : false,
+      rotate:                Math.random()
+    };
+  }
 }

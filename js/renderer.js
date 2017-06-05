@@ -8,9 +8,11 @@ class RendererClock {
     this.absTime = Date.now();
     this.period = 1000;
     this.paused = false;
+    this.wrapListeners = [];
   }
   frame() {
-    if (this.paused) {
+    if (this.paused || this.period === 0) {
+      this.delta = 0;
       return;
     }
     if (this.time === -1) {
@@ -21,7 +23,13 @@ class RendererClock {
       const oldTime = this.absTime;
       this.absTime = Date.now();
       this.delta = this.absTime - oldTime;
-      this.time = (this.time + this.delta) % this.period;
+      this.time += this.delta;
+      while(this.time >= this.period) {
+        this.time -= this.period;
+        for (let i = 0; i < this.wrapListeners.length; i++) {
+          window.setTimeout(() => this.wrapListeners[i](), 0);
+        }
+      }
     }
   }
   reset() {
@@ -55,6 +63,12 @@ class RendererClock {
   }
   getPaused() {
     return this.paused;
+  }
+  addWrapListener(listener) {
+    this.wrapListeners.push(listener);
+  }
+  removeWrapListener(listener) {
+    this.wrapListeners.splice(this.wrapListeners.indexOf(listener), 1);
   }
 }
 

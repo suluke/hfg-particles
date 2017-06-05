@@ -1,6 +1,7 @@
 import EffectConfigDialog from './effect-config-dialog';
 import { parseHtml, clearChildNodes } from './util';
 import EffectConfig from '../effects/effect-config';
+import { generateRandomTimeline } from '../randomplay';
 
 /**
  *
@@ -450,6 +451,27 @@ class PauseButton {
   }
 }
 
+class RandomplayButton {
+  constructor(clock, menu) {
+    this.clock = clock;
+    this.onClockWrap = null;
+    this.element = document.querySelector('.menu-timeline-randomplay');
+    this.element.addEventListener('click', () => {
+      if(this.onClockWrap === null) {
+        this.onClockWrap = () => {
+          const config = generateRandomTimeline(Object.assign({}, menu.submittedConfig));
+          menu.applyConfig(config);
+          menu.submit();
+        };
+        this.clock.addWrapListener(this.onClockWrap);
+      } else {
+        this.clock.removeWrapListener(this.onClockWrap);
+        this.onClockWrap = null;
+      }
+    });
+  }
+}
+
 class TimeDisplay {
   constructor(clock) {
     this.element = document.querySelector('.menu-timeline-current-time');
@@ -478,6 +500,7 @@ export default class Timeline {
     this.timeticks = new Timeticks(menu.clock);
     this.timeDisplay = new TimeDisplay(menu.clock);
     this.pauseButton = new PauseButton(menu.clock);
+    this.randomplayButton = new RandomplayButton(menu.clock, menu);
     this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
     this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
     this.timeticks.addScaleChangeListener(() => {
@@ -556,7 +579,7 @@ export default class Timeline {
       tracks.splice(tracks.length - 1, 1);
       changed = true;
     }
-    if (tracks[tracks.length - 1].entryList.length !== 0) {
+    if (tracks.length === 0 || tracks[tracks.length - 1].entryList.length !== 0) {
       const track = new TimelineTrack(tracks.length + 1, this);
       tracks.push(track);
       changed = true;

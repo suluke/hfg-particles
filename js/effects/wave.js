@@ -111,4 +111,11 @@ export default class WaveEffect extends Effect {
       amplitude: 0.05
     };
   }
+
+  static getRandomConfig() {
+    return {
+      multiplier: Math.random(),
+      amplitude: Math.random()
+    };
+  }
 }

@@ -72,4 +72,9 @@ export default class ChangeImageEffect extends Effect {
     return {
     };
   }
+
+  static getRandomConfig() {
+    return {
+    };
+  }
 }
