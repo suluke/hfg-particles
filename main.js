@@ -3981,6 +3981,18 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
       window.getSelection().removeAllRanges();
     }
   });
+  this.element.addEventListener('mousedown', function (evt) {
+    // middle mouse button
+    if (/* Middle mouse button: */ evt.which == 2 || evt.button == 4) {
+      evt.preventDefault();
+      this$1.remove();
+    }
+  });
+  this.element.addEventListener('contextmenu', function (evt) {
+    // right mouse button
+    evt.preventDefault();
+    this$1.remove();
+  });
 
   this.openConfigBtn = this.element.querySelector('button');
   this.openConfigBtn.addEventListener('click', function () {
@@ -3996,13 +4008,17 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
       },
       function (deleted) {
         if (deleted) {
-          this$1.timeline.deleteEntry(this$1);
-          this$1.timeline.renderHtml();
-          this$1.timeline.notifyChange();
+          this$1.remove();
         }
       }
     );
   });
+};
+
+TimelineEntry.prototype.remove = function remove () {
+  this.timeline.deleteEntry(this);
+  this.timeline.renderHtml();
+  this.timeline.notifyChange();
 };
 
 TimelineEntry.prototype.setupHorizontalDragging = function setupHorizontalDragging () {
