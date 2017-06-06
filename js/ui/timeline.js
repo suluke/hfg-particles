@@ -35,6 +35,18 @@ class TimelineEntry {
         window.getSelection().removeAllRanges();
       }
     });
+    this.element.addEventListener('mousedown', (evt) => {
+      // middle mouse button
+      if (/* Middle mouse button: */ evt.which == 2 || evt.button == 4) {
+        evt.preventDefault();
+        this.remove();
+      }
+    });
+    this.element.addEventListener('contextmenu', (evt) => {
+      // right mouse button
+      evt.preventDefault();
+      this.remove();
+    });
 
     this.openConfigBtn = this.element.querySelector('button');
     this.openConfigBtn.addEventListener('click', () => {
@@ -50,13 +62,17 @@ class TimelineEntry {
         },
         (deleted) => {
           if (deleted) {
-            this.timeline.deleteEntry(this);
-            this.timeline.renderHtml();
-            this.timeline.notifyChange();
+            this.remove();
           }
         }
       );
     });
+  }
+
+  remove() {
+    this.timeline.deleteEntry(this);
+    this.timeline.renderHtml();
+    this.timeline.notifyChange();
   }
 
   setupHorizontalDragging() {
