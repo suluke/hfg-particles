@@ -499,7 +499,11 @@ class TimeDisplay {
     updateLoop();
   }
   update() {
-    this.element.innerHTML = Timeticks.msToStr(this.clock.getTime());
+    let time = this.clock.getTime();
+    if (time < 0) {
+      time = 0;
+    }
+    this.element.innerHTML = Timeticks.msToStr(time);
   }
 }
 
