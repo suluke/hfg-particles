@@ -70,12 +70,18 @@
           <ul class="menu-effect-list">
             
           </ul>
-          <label id="menu-btn-importstate" class="menu-btn-importstate">
-            Load
-            <input type="file" accept=".json,application/json"/>
-          </label>
-          <button type="button" id="menu-btn-exportstate" class="menu-btn-exportstate">Save</button>
-          <button type="button" id="menu-btn-resetstate" class="menu-btn-resetstate">Reset</button>
+          <!--
+          TODO no idea why the wrapper div is necessary. Without it, there
+          is a lot of unnecessary space before and after the buttons
+          -->
+          <div>
+            <label id="menu-btn-importstate" class="menu-btn-importstate">
+              Load
+              <input type="file" accept=".json,application/json"/>
+            </label>
+            <button type="button" id="menu-btn-exportstate" class="menu-btn-exportstate">Save</button>
+            <button type="button" id="menu-btn-resetstate" class="menu-btn-resetstate">Reset</button>
+          </div>
         </div>
         <button type="button"
           id="menu-btn-apply"
