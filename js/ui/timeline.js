@@ -455,7 +455,7 @@ class RandomplayButton {
   constructor(clock, menu) {
     this.clock = clock;
     this.onClockWrap = null;
-    this.element = document.querySelector('.menu-timeline-randomplay');
+    this.element = document.getElementById('menu-timeline-randomplay');
     this.element.addEventListener('click', () => {
       if(this.onClockWrap === null) {
         this.onClockWrap = () => {

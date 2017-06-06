@@ -1,6 +1,8 @@
 @import 'mixins/centering';
 @import 'mixins/unselectable';
 @import 'mixins/icons';
+@import 'mixins/hide';
+@import 'mixins/button';
 
 .menu-timeline-container {
   overflow-y: scroll;
@@ -22,20 +24,36 @@
       th {
         position: relative;
 
+        @mixin timeline-icon-btn($icon) {
+          @include btn-base;
+          @include icon($icon);
+          display: inline-block;
+          padding: 2px;
+          margin-right: 1px;
+          font-size: 1em;
+          width: 17px;
+          height: 17px;
+        }
         .menu-timeline-zoom-in {
-          @include icon($fa-var-search-plus);
+          @include timeline-icon-btn($fa-var-search-plus);
         }
         .menu-timeline-zoom-out {
-          @include icon($fa-var-search-minus);
+          @include timeline-icon-btn($fa-var-search-minus);
         }
         .menu-timeline-pause {
-          @include icon($fa-var-pause);
+          @include timeline-icon-btn($fa-var-pause);
           &.paused {
             @include icon($fa-var-play);
           }
         }
-        .menu-timeline-randomplay {
-          @include icon($fa-var-random);
+        #menu-timeline-randomplay {
+          @include visuallyhidden;
+          & + label {
+            @include timeline-icon-btn($fa-var-random);
+          }
+          &:checked + label {
+            background-color: #5CB85C;
+          }
         }
 
         &.menu-timeline-timeticks {

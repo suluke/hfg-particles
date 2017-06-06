@@ -1,6 +1,7 @@
 @import 'mixins/hide';
 @import 'mixins/centering';
 @import 'mixins/unselectable';
+@import 'mixins/button';
 
 $menu-background-color: rgba(255, 255, 255, 0.9);
 $menu-apply-btn-height: 10%;
@@ -102,31 +103,22 @@ $menu-apply-btn-height: 10%;
        * Load/Store/Reset Buttons
        */
       @mixin load-store-btn {
-        background-color: #eee;
-        border-color: #555;
-        border-style: solid;
-        border-width: 1px;
-        border-radius: 5px;
-        padding: 5px;
+        @include btn-base;
         font-size: 1em;
+        padding: 5px;
         margin: 5px;
-        color: #000;
-        &:focus,
-        &:hover {
-          background-color: #fff;
-        }
       }
       .menu-btn-importstate {
-        @include load-store-btn
+        @include load-store-btn;
         & > input[type="file"] {
           @include visuallyhidden;
         }
       }
       .menu-btn-exportstate {
-        @include load-store-btn
+        @include load-store-btn;
       }
       .menu-btn-resetstate {
-        @include load-store-btn
+        @include load-store-btn;
       }
     }
   }

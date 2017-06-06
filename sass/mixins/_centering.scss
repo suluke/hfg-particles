@@ -1,10 +1,20 @@
-@mixin vCenterText {
-  &:before {
-    content: "";
-    display: inline-block;
-    height: 100%;
-    vertical-align: middle;
-    width: 0;
+@mixin vCenterText($after: false) {
+  @if ($after) {
+    &:after {
+      content: "";
+      display: inline-block;
+      height: 100%;
+      vertical-align: middle;
+      width: 0;
+    }
+  } @else {
+    &:before {
+      content: "";
+      display: inline-block;
+      height: 100%;
+      vertical-align: middle;
+      width: 0;
+    }
   }
 }
 

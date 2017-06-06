@@ -1,0 +1,20 @@
+@import 'mixins/centering';
+
+@mixin btn-base {
+  cursor: pointer;
+  background-color: #eee;
+  border-color: #555;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  color: #000;
+  text-align: center;
+  box-sizing: content-box;
+  /* Use :after for vCenter - in case an icon is used (uses :before) */
+  @include vCenterText(true);
+  &:focus,
+  &:hover,
+  &.pressed {
+    background-color: #fff;
+  }
+}
