@@ -1257,8 +1257,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-06-05T18:04:03.635Z',
-  git_rev:               'bf2a06a',
+  timestamp:             '2017-06-06T19:02:04.628Z',
+  git_rev:               '0c004b3',
   export_schema_version: 0
 };
 
@@ -3759,6 +3759,13 @@ var FlickrImageEffect = (function (Effect$$1) {
     var loadsInProgress = 0;
     var initialQueryTime = Math.floor(Date.now() / 1000);
     var runFlickrQuery = function (processResponse) {
+      var onResponse = function (response) {
+        // since page is 1-indexed, a real greater is necessary
+        if (page > response.photos.pages) {
+          page = 1;
+        }
+        processResponse(response);
+      };
       // Two different flickr apis, depending on search string content
       var query = null;
       if (instance.config.searchTerm === '') {
@@ -3768,7 +3775,7 @@ var FlickrImageEffect = (function (Effect$$1) {
           per_page: prefetchCount,
           page: page,
           max_upload_date: initialQueryTime
-        }).then(processResponse);
+        }).then(onResponse);
       } else {
         query = flickr
         .photos
@@ -3777,7 +3784,7 @@ var FlickrImageEffect = (function (Effect$$1) {
           per_page: prefetchCount,
           page: page,
           max_upload_date: initialQueryTime
-        }).then(processResponse);
+        }).then(onResponse);
       }
       loadsInProgress += prefetchCount;
       page = page + 1;
@@ -4381,7 +4388,7 @@ var RandomplayButton = function RandomplayButton(clock, menu) {
 
   this.clock = clock;
   this.onClockWrap = null;
-  this.element = document.querySelector('.menu-timeline-randomplay');
+  this.element = document.getElementById('menu-timeline-randomplay');
   this.element.addEventListener('click', function () {
     if(this$1.onClockWrap === null) {
       this$1.onClockWrap = function () {

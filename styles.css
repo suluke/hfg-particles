@@ -2619,16 +2619,26 @@
             vertical-align: middle;
             width: 0; }
       .menu-container .menu-content .menu-content-inner .menu-btn-importstate {
+        cursor: pointer;
         background-color: #eee;
         border-color: #555;
         border-style: solid;
         border-width: 1px;
         border-radius: 5px;
-        padding: 5px;
+        color: #000;
+        text-align: center;
+        box-sizing: content-box;
+        /* Use :after for vCenter - in case an icon is used (uses :before) */
         font-size: 1em;
-        margin: 5px;
-        color: #000; }
-        .menu-container .menu-content .menu-content-inner .menu-btn-importstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-importstate:hover {
+        padding: 5px;
+        margin: 5px; }
+        .menu-container .menu-content .menu-content-inner .menu-btn-importstate:after {
+          content: "";
+          display: inline-block;
+          height: 100%;
+          vertical-align: middle;
+          width: 0; }
+        .menu-container .menu-content .menu-content-inner .menu-btn-importstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-importstate:hover, .menu-container .menu-content .menu-content-inner .menu-btn-importstate.pressed {
           background-color: #fff; }
         .menu-container .menu-content .menu-content-inner .menu-btn-importstate > input[type="file"] {
           position: absolute;
@@ -2641,28 +2651,48 @@
           overflow: hidden;
           clip: rect(1px, 1px, 1px, 1px); }
       .menu-container .menu-content .menu-content-inner .menu-btn-exportstate {
+        cursor: pointer;
         background-color: #eee;
         border-color: #555;
         border-style: solid;
         border-width: 1px;
         border-radius: 5px;
-        padding: 5px;
+        color: #000;
+        text-align: center;
+        box-sizing: content-box;
+        /* Use :after for vCenter - in case an icon is used (uses :before) */
         font-size: 1em;
-        margin: 5px;
-        color: #000; }
-        .menu-container .menu-content .menu-content-inner .menu-btn-exportstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-exportstate:hover {
+        padding: 5px;
+        margin: 5px; }
+        .menu-container .menu-content .menu-content-inner .menu-btn-exportstate:after {
+          content: "";
+          display: inline-block;
+          height: 100%;
+          vertical-align: middle;
+          width: 0; }
+        .menu-container .menu-content .menu-content-inner .menu-btn-exportstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-exportstate:hover, .menu-container .menu-content .menu-content-inner .menu-btn-exportstate.pressed {
           background-color: #fff; }
       .menu-container .menu-content .menu-content-inner .menu-btn-resetstate {
+        cursor: pointer;
         background-color: #eee;
         border-color: #555;
         border-style: solid;
         border-width: 1px;
         border-radius: 5px;
-        padding: 5px;
+        color: #000;
+        text-align: center;
+        box-sizing: content-box;
+        /* Use :after for vCenter - in case an icon is used (uses :before) */
         font-size: 1em;
-        margin: 5px;
-        color: #000; }
-        .menu-container .menu-content .menu-content-inner .menu-btn-resetstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-resetstate:hover {
+        padding: 5px;
+        margin: 5px; }
+        .menu-container .menu-content .menu-content-inner .menu-btn-resetstate:after {
+          content: "";
+          display: inline-block;
+          height: 100%;
+          vertical-align: middle;
+          width: 0; }
+        .menu-container .menu-content .menu-content-inner .menu-btn-resetstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-resetstate:hover, .menu-container .menu-content .menu-content-inner .menu-btn-resetstate.pressed {
           background-color: #fff; }
   .menu-container .menu-timeline-container {
     position: absolute;
@@ -2702,24 +2732,96 @@
     .menu-timeline-container .menu-timeline-content tr th {
       position: relative; }
       .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-in {
+        cursor: pointer;
+        background-color: #eee;
+        border-color: #555;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        color: #000;
+        text-align: center;
+        box-sizing: content-box;
+        /* Use :after for vCenter - in case an icon is used (uses :before) */
         /* the default mixins set font-size, which interferes when changing icons depenging on state */
         /* @include fa-icon; // in _mixins.scss */
         /* @extend .fa; // in _core.scss*/
-        font-family: FontAwesome; }
+        font-family: FontAwesome;
+        display: inline-block;
+        padding: 2px;
+        margin-right: 1px;
+        font-size: 1em;
+        width: 17px;
+        height: 17px; }
+        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-in:after {
+          content: "";
+          display: inline-block;
+          height: 100%;
+          vertical-align: middle;
+          width: 0; }
+        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-in:focus, .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-in:hover, .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-in.pressed {
+          background-color: #fff; }
         .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-in:before {
           content: ""; }
       .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-out {
+        cursor: pointer;
+        background-color: #eee;
+        border-color: #555;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        color: #000;
+        text-align: center;
+        box-sizing: content-box;
+        /* Use :after for vCenter - in case an icon is used (uses :before) */
         /* the default mixins set font-size, which interferes when changing icons depenging on state */
         /* @include fa-icon; // in _mixins.scss */
         /* @extend .fa; // in _core.scss*/
-        font-family: FontAwesome; }
+        font-family: FontAwesome;
+        display: inline-block;
+        padding: 2px;
+        margin-right: 1px;
+        font-size: 1em;
+        width: 17px;
+        height: 17px; }
+        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-out:after {
+          content: "";
+          display: inline-block;
+          height: 100%;
+          vertical-align: middle;
+          width: 0; }
+        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-out:focus, .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-out:hover, .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-out.pressed {
+          background-color: #fff; }
         .menu-timeline-container .menu-timeline-content tr th .menu-timeline-zoom-out:before {
           content: ""; }
       .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause {
+        cursor: pointer;
+        background-color: #eee;
+        border-color: #555;
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 5px;
+        color: #000;
+        text-align: center;
+        box-sizing: content-box;
+        /* Use :after for vCenter - in case an icon is used (uses :before) */
         /* the default mixins set font-size, which interferes when changing icons depenging on state */
         /* @include fa-icon; // in _mixins.scss */
         /* @extend .fa; // in _core.scss*/
-        font-family: FontAwesome; }
+        font-family: FontAwesome;
+        display: inline-block;
+        padding: 2px;
+        margin-right: 1px;
+        font-size: 1em;
+        width: 17px;
+        height: 17px; }
+        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause:after {
+          content: "";
+          display: inline-block;
+          height: 100%;
+          vertical-align: middle;
+          width: 0; }
+        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause:focus, .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause:hover, .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause.pressed {
+          background-color: #fff; }
         .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause:before {
           content: ""; }
         .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause.paused {
@@ -2729,13 +2831,49 @@
           font-family: FontAwesome; }
           .menu-timeline-container .menu-timeline-content tr th .menu-timeline-pause.paused:before {
             content: ""; }
-      .menu-timeline-container .menu-timeline-content tr th .menu-timeline-randomplay {
-        /* the default mixins set font-size, which interferes when changing icons depenging on state */
-        /* @include fa-icon; // in _mixins.scss */
-        /* @extend .fa; // in _core.scss*/
-        font-family: FontAwesome; }
-        .menu-timeline-container .menu-timeline-content tr th .menu-timeline-randomplay:before {
-          content: ""; }
+      .menu-timeline-container .menu-timeline-content tr th #menu-timeline-randomplay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0.1px;
+        height: 0.1px;
+        opacity: 0;
+        z-index: -1;
+        overflow: hidden;
+        clip: rect(1px, 1px, 1px, 1px); }
+        .menu-timeline-container .menu-timeline-content tr th #menu-timeline-randomplay + label {
+          cursor: pointer;
+          background-color: #eee;
+          border-color: #555;
+          border-style: solid;
+          border-width: 1px;
+          border-radius: 5px;
+          color: #000;
+          text-align: center;
+          box-sizing: content-box;
+          /* Use :after for vCenter - in case an icon is used (uses :before) */
+          /* the default mixins set font-size, which interferes when changing icons depenging on state */
+          /* @include fa-icon; // in _mixins.scss */
+          /* @extend .fa; // in _core.scss*/
+          font-family: FontAwesome;
+          display: inline-block;
+          padding: 2px;
+          margin-right: 1px;
+          font-size: 1em;
+          width: 17px;
+          height: 17px; }
+          .menu-timeline-container .menu-timeline-content tr th #menu-timeline-randomplay + label:after {
+            content: "";
+            display: inline-block;
+            height: 100%;
+            vertical-align: middle;
+            width: 0; }
+          .menu-timeline-container .menu-timeline-content tr th #menu-timeline-randomplay + label:focus, .menu-timeline-container .menu-timeline-content tr th #menu-timeline-randomplay + label:hover, .menu-timeline-container .menu-timeline-content tr th #menu-timeline-randomplay + label.pressed {
+            background-color: #fff; }
+          .menu-timeline-container .menu-timeline-content tr th #menu-timeline-randomplay + label:before {
+            content: ""; }
+        .menu-timeline-container .menu-timeline-content tr th #menu-timeline-randomplay:checked + label {
+          background-color: #5CB85C; }
       .menu-timeline-container .menu-timeline-content tr th.menu-timeline-timeticks {
         cursor: pointer; }
         .menu-timeline-container .menu-timeline-content tr th.menu-timeline-timeticks .menu-timeline-timetick {
