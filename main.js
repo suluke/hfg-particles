@@ -4432,7 +4432,11 @@ var TimeDisplay = function TimeDisplay(clock) {
   updateLoop();
 };
 TimeDisplay.prototype.update = function update () {
-  this.element.innerHTML = Timeticks.msToStr(this.clock.getTime());
+  var time = this.clock.getTime();
+  if (time < 0) {
+    time = 0;
+  }
+  this.element.innerHTML = Timeticks.msToStr(time);
 };
 
 /**
