@@ -53,6 +53,13 @@ export default class FlickrImageEffect extends Effect {
     let loadsInProgress = 0;
     const initialQueryTime = Math.floor(Date.now() / 1000);
     const runFlickrQuery = (processResponse) => {
+      const onResponse = (response) => {
+        // since page is 1-indexed, a real greater is necessary
+        if (page > response.photos.pages) {
+          page = 1;
+        }
+        processResponse(response);
+      };
       // Two different flickr apis, depending on search string content
       let query = null;
       if (instance.config.searchTerm === '') {
@@ -62,7 +69,7 @@ export default class FlickrImageEffect extends Effect {
           per_page: prefetchCount,
           page,
           max_upload_date: initialQueryTime
-        }).then(processResponse);
+        }).then(onResponse);
       } else {
         query = flickr
         .photos
@@ -71,7 +78,7 @@ export default class FlickrImageEffect extends Effect {
           per_page: prefetchCount,
           page,
           max_upload_date: initialQueryTime
-        }).then(processResponse);
+        }).then(onResponse);
       }
       loadsInProgress += prefetchCount;
       page = page + 1;
