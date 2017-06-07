@@ -475,7 +475,7 @@ class RandomplayButton {
     this.element.addEventListener('click', () => {
       if(this.onClockWrap === null) {
         this.onClockWrap = () => {
-          const config = generateRandomTimeline(Object.assign({}, menu.submittedConfig));
+          const config = generateRandomTimeline(menu.submittedConfig);
           menu.applyConfig(config);
           menu.submit();
         };
