@@ -380,7 +380,12 @@ export default class Renderer {
           clock:  this.clock
         });
       } else {
-        this.accumulationStepCommand();
+        // the loop is just here to demonstrate how we could render multiple accumulation effects
+        do {
+          [this.accumulationReadFramebuffer, this.accumulationWriteFramebuffer] = [this.accumulationWriteFramebuffer, this.accumulationReadFramebuffer];
+          this.accumulationStepCommand();
+        } while(false);
+
         this.copyAccumulationToResultCommand();
 
         //TODO: does config.backgroundColor make sense here?
@@ -397,8 +402,6 @@ export default class Renderer {
         this.applyParticleToAccumulationCommand();
 
         this.copyResultToDrawingCommand();
-
-        [this.accumulationReadFramebuffer, this.accumulationWriteFramebuffer] = [this.accumulationWriteFramebuffer, this.accumulationReadFramebuffer];
       }
     });
   }
