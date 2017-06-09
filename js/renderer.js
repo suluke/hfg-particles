@@ -285,7 +285,6 @@ export default class Renderer {
     this.particleFramebuffer = new Framebuffer(this.regl);
     this.accumulationReadFramebuffer = new Framebuffer(this.regl);
     this.accumulationWriteFramebuffer = new Framebuffer(this.regl);
-    this.resultFramebuffer = new Framebuffer(this.regl); //HACKFIX: blending in the drawing buffer doesn't work...
     this.accumulationStepCommand = this.regl(Object.assign({
       frag:`
       precision highp float;
@@ -300,40 +299,6 @@ export default class Renderer {
         texture: () => this.accumulationReadFramebuffer.texture
       },
       framebuffer: () => this.accumulationWriteFramebuffer.framebuffer
-    }, fullscreenRectOptions));
-    this.copyAccumulationToResultCommand = this.regl(Object.assign({
-      frag:`
-      precision highp float;
-      uniform sampler2D texture;
-      varying vec2 texcoord;
-      void main() {
-        vec3 color = texture2D(texture, texcoord).rgb;
-        color *= .5;
-        gl_FragColor = vec4(color, 1);
-      }`,
-      uniforms: {
-        texture: () => this.accumulationWriteFramebuffer.texture
-      },
-      framebuffer: this.resultFramebuffer.framebuffer
-    }, fullscreenRectOptions));
-    this.applyParticleToResultCommand = this.regl(Object.assign({
-      frag:`
-      precision highp float;
-      uniform sampler2D texture;
-      varying vec2 texcoord;
-      void main() {
-        vec3 color = texture2D(texture, texcoord).rgb;
-        color *= .5;
-        gl_FragColor = vec4(color, 1);
-      }`,
-      uniforms: {
-        texture: this.particleFramebuffer.texture
-      },
-      blend: {
-        enable: true,
-        func:   { src: 'one', dst: 'one' }
-      },
-      framebuffer: this.resultFramebuffer.framebuffer
     }, fullscreenRectOptions));
     this.applyParticleToAccumulationCommand = this.regl(Object.assign({
       frag:`
@@ -354,17 +319,22 @@ export default class Renderer {
         func:   { src: 'one', dst: 'one' }
       }
     }, fullscreenRectOptions));
-    this.copyResultToDrawingCommand = this.regl(Object.assign({
+    this.compositParticleAccumulationCommand = this.regl(Object.assign({
       frag:`
       precision highp float;
-      uniform sampler2D texture;
+      uniform sampler2D particleTexture;
+      uniform sampler2D accumulationTexture;
       varying vec2 texcoord;
       void main() {
-        gl_FragColor = vec4(texture2D(texture, texcoord).rgb, 1);
+        vec3 particleColor = texture2D(particleTexture, texcoord).rgb;
+        vec3 accumulationColor = texture2D(accumulationTexture, texcoord).rgb;
+        vec3 color = (particleColor + accumulationColor) * .5;
+        gl_FragColor = vec4(color, 1);
       }`,
       uniforms: {
-        texture: () => this.resultFramebuffer.texture
-      }
+        particleTexture: this.particleFramebuffer.texture,
+        accumulationTexture: () => this.accumulationWriteFramebuffer.texture
+      },
     }, fullscreenRectOptions));
     this.clock = new RendererClock();
     this.regl.frame(() => {
@@ -386,8 +356,6 @@ export default class Renderer {
           this.accumulationStepCommand();
         } while(false);
 
-        this.copyAccumulationToResultCommand();
-
         //TODO: does config.backgroundColor make sense here?
         this.regl.clear({
           color: this.config.backgroundColor,
@@ -398,10 +366,10 @@ export default class Renderer {
           state:  this.state,
           clock:  this.clock
         });
-        this.applyParticleToResultCommand();
-        this.applyParticleToAccumulationCommand();
 
-        this.copyResultToDrawingCommand();
+        this.compositParticleAccumulationCommand();
+
+        this.applyParticleToAccumulationCommand();
       }
     });
   }
@@ -410,7 +378,6 @@ export default class Renderer {
     this.particleFramebuffer.resize(width, height);
     this.accumulationReadFramebuffer.resize(width, height);
     this.accumulationWriteFramebuffer.resize(width, height);
-    this.resultFramebuffer.resize(width, height);
   }
 
   getClock() {
