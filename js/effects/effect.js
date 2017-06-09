@@ -45,6 +45,13 @@ export class ConfigUI {
   getConfig() {
     throw new Error('Method not implemented');
   }
+
+  getConfigAsync() {
+    return new Promise((resolve) => {
+      resolve(this.getConfig());
+    });
+  }
+
   // eslint-disable-next-line class-methods-use-this
   applyConfig(/* config */) {
     throw new Error('Method not implemented');

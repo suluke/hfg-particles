@@ -14,6 +14,7 @@ class TimelineEntry {
     this.effect = effect;
     this.timeline = timeline;
     this.clickPrevented = false;
+    this.config = null;
 
     const beginHandleClass = 'timeline-entry-begin-time-adjust';
     const endHandleClass = 'timeline-entry-end-time-adjust';

@@ -246,9 +246,9 @@ export default class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
     this.regl = createRegl({ canvas });
-    console.log(`max texture size: ${this.regl.limits.maxTextureSize}`);
-    console.log(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
-    console.log(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
+    console.info(`max texture size: ${this.regl.limits.maxTextureSize}`);
+    console.info(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
+    console.info(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
     this.defaultParticleData = null;
     this.state = new RendererState(this.regl);
     this.config = null;

@@ -230,6 +230,14 @@ export default class CommandBuilder {
           effectUniforms.compile(vert, uniforms);
           globalId += 1;
           registerEffects(res, rej);
+        }, (err) => {
+          // TODO
+          console.error(err);
+          vert.mainBody += '}';
+
+          effectUniforms.compile(vert, uniforms);
+          globalId += 1;
+          registerEffects(res, rej);
         });
       };
       return new Promise(registerEffects).then(() => {

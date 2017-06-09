@@ -185,8 +185,8 @@ class ImportAppstateButton extends Control {
           json = JSON.parse(text);
         } catch (e) {
           // TODO correct error handling
-          console.log('Error reading user json file');
-          console.log(e);
+          console.error('Error reading user json file');
+          console.error(e);
 
           return;
         }

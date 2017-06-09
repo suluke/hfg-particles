@@ -7,7 +7,7 @@ import MainMenu from './ui/menu';
 import Renderer from './renderer';
 import Config from './config';
 
-console.log(Config);
+console.info(Config);
 
 // some constants
 const imageLoadingClass = 'loading-image';

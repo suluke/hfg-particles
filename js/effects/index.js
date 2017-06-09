@@ -2,6 +2,7 @@ import HueDisplaceEffect from './hue-displace';
 import ConvergePointEffect from './converge-point';
 import ConvergeCircleEffect from './converge-circle';
 import WaveEffect from './wave';
+import ChangeImageEffect from './change-image';
 import FlickrImageEffect from './flickr-image';
 
 const effectList = [
@@ -9,6 +10,7 @@ const effectList = [
   ConvergePointEffect,
   ConvergeCircleEffect,
   WaveEffect,
+  ChangeImageEffect,
   FlickrImageEffect
 ];
 const byId = {};

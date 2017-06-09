@@ -5,6 +5,7 @@
 @import 'mixins/button';
 
 .menu-timeline-container {
+  overflow: hidden; /* hide the position indicator */
   .menu-timeline-scrollable-container {
     overflow-y: scroll;
     display: block;

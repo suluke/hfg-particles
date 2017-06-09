@@ -1,0 +1,17 @@
+.effect-change-image-config {
+  label {
+    display: none;
+  }
+  input[type="radio"] {
+    &[value="file"]:checked {
+      & ~ .effect-change-image-file-tab {
+        display: block;
+      }
+    }
+    &[value="url"]:checked {
+      & ~ .effect-change-image-url-tab {
+        display: block;
+      }
+    }
+  }
+}

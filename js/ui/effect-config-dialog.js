@@ -33,11 +33,14 @@ export default class EffectConfigDialog {
     this.okBtn.addEventListener('click', (evt) => {
       evt.stopPropagation();
       this.hide();
-      this.resolve({
-        config:      this.ui.getConfig(),
-        timeBegin:   parseInt(this.startTimeInput.value, 10),
-        timeEnd:     parseInt(this.endTimeInput.value, 10),
-        repetitions: parseInt(this.repetitionsInput.value, 10),
+      this.ui.getConfigAsync()
+      .then((config) => {
+        this.resolve({
+          config:      config,
+          timeBegin:   parseInt(this.startTimeInput.value, 10),
+          timeEnd:     parseInt(this.endTimeInput.value, 10),
+          repetitions: parseInt(this.repetitionsInput.value, 10),
+        });
       });
     });
     this.cancelBtn.addEventListener('click', (evt) => {
@@ -64,6 +67,7 @@ export default class EffectConfigDialog {
       this.resolve = res;
       this.reject = rej;
       const ui = entry.effect.getConfigUI();
+      ui.applyConfig(entry.config);
       this.startTimeInput.value = entry.timeBegin;
       this.endTimeInput.value = entry.timeEnd;
       this.repetitionsInput.value = entry.repetitions;
