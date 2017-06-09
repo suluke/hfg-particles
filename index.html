@@ -90,24 +90,26 @@
         >Apply</button>
       </div>
       <div class="menu-timeline-container">
-        <table class="menu-timeline-content">
-          <thead class="menu-timeline-header">
-            <th class="menu-timeline-topleft-cell">
-              <button class="menu-timeline-zoom-in" type="button" title="zoom in"></button>
-              <button class="menu-timeline-zoom-out" type="button" title="zoom out"></button>
-              <button class="menu-timeline-pause" type="button" title="pause"></button>
-              <input type="checkbox" id="menu-timeline-randomplay" title="random play" />
-              <label for="menu-timeline-randomplay"></label>
-              <br/>
-              <span class="menu-timeline-current-time">00:00:00</span>
-            </th>
-            <th class="menu-timeline-timeticks">
-              <span class="menu-timeline-timetick">00:00:00</span>
-            </th>
-          </thead>
-          <tbody class="menu-timeline-tracks">
-          </tbody>
-        </table>
+        <div class="menu-timeline-scrollable-container">
+          <table class="menu-timeline-content">
+            <thead class="menu-timeline-header">
+              <th class="menu-timeline-topleft-cell">
+                <button class="menu-timeline-zoom-in" type="button" title="zoom in"></button>
+                <button class="menu-timeline-zoom-out" type="button" title="zoom out"></button>
+                <button class="menu-timeline-pause" type="button" title="pause"></button>
+                <input type="checkbox" id="menu-timeline-randomplay" title="random play" />
+                <label for="menu-timeline-randomplay"></label>
+                <br/>
+                <span class="menu-timeline-current-time">00:00:00</span>
+              </th>
+              <th class="menu-timeline-timeticks">
+                <span class="menu-timeline-timetick">00:00:00</span>
+              </th>
+            </thead>
+            <tbody class="menu-timeline-tracks">
+            </tbody>
+          </table>
+        </div>
         <div class="menu-timeline-position-indicator"></div>
       </div>
     </div>

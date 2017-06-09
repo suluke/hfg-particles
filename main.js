@@ -1257,8 +1257,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-06-06T19:02:04.628Z',
-  git_rev:               '0c004b3',
+  timestamp:             '2017-06-09T19:33:23.840Z',
+  git_rev:               '4824b04',
   export_schema_version: 0
 };
 
@@ -1285,11 +1285,14 @@ var EffectConfigDialog = function EffectConfigDialog() {
   this.okBtn.addEventListener('click', function (evt) {
     evt.stopPropagation();
     this$1.hide();
-    this$1.resolve({
-      config:    this$1.ui.getConfig(),
-      timeBegin: parseInt(this$1.startTimeInput.value, 10),
-      timeEnd:   parseInt(this$1.endTimeInput.value, 10),
-      repetitions: parseInt(this$1.repetitionsInput.value, 10),
+    this$1.ui.getConfigAsync()
+    .then(function (config) {
+      this$1.resolve({
+        config:    config,
+        timeBegin: parseInt(this$1.startTimeInput.value, 10),
+        timeEnd:   parseInt(this$1.endTimeInput.value, 10),
+        repetitions: parseInt(this$1.repetitionsInput.value, 10),
+      });
     });
   });
   this.cancelBtn.addEventListener('click', function (evt) {
@@ -1318,6 +1321,7 @@ EffectConfigDialog.prototype.promptUser = function promptUser (entry) {
     this$1.resolve = res;
     this$1.reject = rej;
     var ui = entry.effect.getConfigUI();
+    ui.applyConfig(entry.config);
     this$1.startTimeInput.value = entry.timeBegin;
     this$1.endTimeInput.value = entry.timeEnd;
     this$1.repetitionsInput.value = entry.repetitions;
@@ -1374,6 +1378,15 @@ ConfigUI.prototype.getElement = function getElement () {
 ConfigUI.prototype.getConfig = function getConfig () {
   throw new Error('Method not implemented');
 };
+
+ConfigUI.prototype.getConfigAsync = function getConfigAsync () {
+    var this$1 = this;
+
+  return new Promise(function (resolve) {
+    resolve(this$1.getConfig());
+  });
+};
+
 // eslint-disable-next-line class-methods-use-this
 ConfigUI.prototype.applyConfig = function applyConfig (/* config */) {
   throw new Error('Method not implemented');
@@ -1762,6 +1775,167 @@ var WaveEffect = (function (Effect$$1) {
   };
 
   return WaveEffect;
+}(Effect));
+
+var EffectName$1 = 'Change Image';
+
+var States = {
+  INVALID: 0,
+  VALID: 1,
+  LOADING: 2
+};
+
+var ChangeImageConfigUI = (function (ConfigUI$$1) {
+  function ChangeImageConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    this.element = parseHtml(("\n      <fieldset class=\"effect-change-image-config\">\n        <legend>" + EffectName$1 + "</legend>\n        <input type=\"radio\" name=\"effect-change-image-source-type\" value=\"file\" checked>\n          Upload own image\n        </input>\n        <input type=\"radio\" name=\"effect-change-image-source-type\" value=\"url\">\n          Load image from URL\n        </input>\n        <br/>\n        <label class=\"effect-change-image-file-tab\">\n          <input type=\"file\" accept=\"image/*\"/>\n        </label>\n        <label class=\"effect-change-image-url-tab\">\n          Enter image url\n          <input type=\"url\"/>\n        </label>\n        <br/>\n        <img class=\"effect-change-image-preview\">\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.radioButtons = ui.querySelectorAll('input[type="radio"][name="effect-change-image-source-type"]');
+    this.fileInput = ui.querySelector('.effect-change-image-file-tab input[type="file"]');
+    this.urlInput = ui.querySelector('.effect-change-image-url-tab input[type="url"]');
+    this.previewImg = ui.querySelector('img.effect-change-image-preview');
+    this.FR = new FileReader();
+    this.state = States.INVALID;
+    this.onload = null;
+
+    this.fileInput.addEventListener('change', function (evt) {
+      this$1.state = States.LOADING;
+      var file = this$1.fileInput.files[0];
+      if (file) {
+        this$1.FR.onload = function () {
+          this$1.previewImg.src = this$1.FR.result;
+        };
+        this$1.FR.onerror = function () {};
+        this$1.FR.readAsDataURL(file);
+      }
+    });
+    this.urlInput.addEventListener('input', function (evt) {
+      this$1.state = States.LOADING;
+      this$1.previewImg.src = this$1.urlInput.value;
+    });
+    this.previewImg.addEventListener('load', function () {
+      this$1.state = States.VALID;
+      if (this$1.onload !== null) {
+        this$1.onload();
+        this$1.onload = null;
+      }
+    });
+    this.previewImg.addEventListener('error', function () {
+      this$1.state = States.INVALID;
+      if (this$1.onload !== null) {
+        this$1.onload();
+        this$1.onload = null;
+      }
+    });
+  }
+
+  if ( ConfigUI$$1 ) ChangeImageConfigUI.__proto__ = ConfigUI$$1;
+  ChangeImageConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  ChangeImageConfigUI.prototype.constructor = ChangeImageConfigUI;
+
+  ChangeImageConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  ChangeImageConfigUI.prototype.getConfigAsync = function getConfigAsync () {
+    var this$1 = this;
+
+    var sourceTy = [].find.call(this.radioButtons, function (btn) { return btn.checked; }).value;
+    if (this.state === States.VALID) {
+      return Promise.resolve({
+        sourceTy: sourceTy,
+        url: this.previewImg.src
+      });
+    } else if (this.state === States.INVALID) {
+      return Promise.resolve({
+        sourceTy: sourceTy,
+        url: null
+      });
+    }
+    return new Promise(function (res) {
+      this$1.onload = function () { return this$1.getConfigAsync().then(res); };
+    });
+  };
+
+  ChangeImageConfigUI.prototype.applyConfig = function applyConfig (config) {
+    if (config.url === null || config.url === '#') {
+      this.previewImg.src = '#'; // https://stackoverflow.com/a/13726621/1468532
+      this.state = States.INVALID;
+    } else {
+      this.previewImg.src = config.url;
+      this.state = States.VALID;
+    }
+    [].forEach.call(this.radioButtons, function (btn) {
+      btn.checked = (btn.value === config.sourceTy);
+    });
+  };
+
+  return ChangeImageConfigUI;
+}(ConfigUI));
+
+var ChangeImageEffect = (function (Effect$$1) {
+  function ChangeImageEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) ChangeImageEffect.__proto__ = Effect$$1;
+  ChangeImageEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ChangeImageEffect.prototype.constructor = ChangeImageEffect;
+
+  ChangeImageEffect.registerAsync = function registerAsync (instance, props, uniforms, vertexShader) {
+    return new Promise(function (res, rej) {
+      var srcImage = document.createElement('img');
+      srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
+      srcImage.src = instance.config.url;
+      srcImage.onload = function () {
+        var particleData = props.state.createParticleDataFromDomImg(srcImage, props.config.xParticlesCount, props.config.yParticlesCount);
+        var alive = true;
+        var prevWasChange = false;
+        var checkTime = function () {
+          if (!alive) {
+            return;
+          }
+          if (instance.timeBegin - props.clock.getTime() <= props.clock.getDelta()) {
+            props.state.setParticleData(particleData);
+          }
+          window.requestAnimationFrame(checkTime);
+        };
+        checkTime();
+        props.state.addHook(function () {
+          alive = false;
+        });
+        res();
+      };
+      srcImage.onerror = rej;
+    });
+  };
+
+  ChangeImageEffect.getDisplayName = function getDisplayName () {
+    return EffectName$1;
+  };
+
+  ChangeImageEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new ChangeImageConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  ChangeImageEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+      sourceTy: 'file',
+      url: '#'
+    };
+  };
+
+  ChangeImageEffect.getRandomConfig = function getRandomConfig () {
+    return this.getDefaultConfig();
+  };
+
+  return ChangeImageEffect;
 }(Effect));
 
 (function() {
@@ -3702,14 +3876,14 @@ function recursivePromisify(obj) {
 }
 FlickrP$1.prototype = recursivePromisify(Flickr.prototype);
 
-var EffectName$1 = 'Flickr Image';
+var EffectName$2 = 'Flickr Image';
 var FlickrImageConfigUI = (function (ConfigUI$$1) {
   function FlickrImageConfigUI() {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
     var searchInputClass = 'effect-flickr-img-search-term';
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$1 + "</legend>\n        <label>\n          Search term:\n          <input type=\"text\" class=\"" + searchInputClass + "\"/>\n        </label>\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$2 + "</legend>\n        <label>\n          Search term:\n          <input type=\"text\" class=\"" + searchInputClass + "\"/>\n        </label>\n      </fieldset>\n    "));
     var ui = this.element;
     this.searchTermInput = this.element.querySelector(("." + searchInputClass));
     this.searchTermInput.addEventListener('change', function () {
@@ -3876,7 +4050,7 @@ var FlickrImageEffect = (function (Effect$$1) {
   };
 
   FlickrImageEffect.getDisplayName = function getDisplayName () {
-    return EffectName$1;
+    return EffectName$2;
   };
 
   FlickrImageEffect.getConfigUI = function getConfigUI () {
@@ -3905,6 +4079,7 @@ var effectList = [
   ConvergePointEffect,
   ConvergeCircleEffect,
   WaveEffect,
+  ChangeImageEffect,
   FlickrImageEffect
 ];
 var byId = {};
@@ -3937,20 +4112,32 @@ EffectConfig.deserialize = function deserialize (obj) {
   }
 };
 
-function generateRandomTimeline(config) {
-  config.effects = [[]];
+function generateRandomTimeline(currentConfig) {
+  var config = Object.assign({}, currentConfig);
+
+  config.effects = [];
   config.duration = 0;
+
   for(var i=0; i<effectList.length; ++i) {
-    config.effects[0].push(new EffectConfig(
+    if(effectList[i].getId() == "FlickrImageEffect") { continue; }
+
+    var timeBegin = Math.round(Math.random() * 10000);
+    var duration = Math.round(Math.random() * 9000 + 1000);
+
+    config.effects[i] = [new EffectConfig(
       effectList[i].getId(),
-      Math.random() * 10000,
-      Math.random() * 10000,
+      timeBegin,
+      timeBegin + duration,
       1,
       effectList[i].getRandomConfig()
-    ));
-    // HACK
-    config.duration = Math.max(config.duration, config.effects[0][config.effects[0].length-1].timeEnd);
+    )];
+
+    config.duration = Math.max(config.duration, timeBegin + duration);
   }
+
+  //TODO: does not work...
+  //config.effects.push([new EffectConfig("FlickrImageEffect", 0, config.duration, 1, { searchTerm: '' })]);
+
   return config;
 }
 
@@ -3966,6 +4153,7 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
   this.effect = effect;
   this.timeline = timeline;
   this.clickPrevented = false;
+  this.config = null;
 
   var beginHandleClass = 'timeline-entry-begin-time-adjust';
   var endHandleClass = 'timeline-entry-end-time-adjust';
@@ -4408,7 +4596,7 @@ var RandomplayButton = function RandomplayButton(clock, menu) {
   this.element.addEventListener('click', function () {
     if(this$1.onClockWrap === null) {
       this$1.onClockWrap = function () {
-        var config = generateRandomTimeline(Object.assign({}, menu.submittedConfig));
+        var config = generateRandomTimeline(menu.submittedConfig);
         menu.applyConfig(config);
         menu.submit();
       };
@@ -4804,8 +4992,8 @@ var ImportAppstateButton = (function (Control) {
           json = JSON.parse(text);
         } catch (e) {
           // TODO correct error handling
-          console.log('Error reading user json file');
-          console.log(e);
+          console.error('Error reading user json file');
+          console.error(e);
 
           return;
         }
@@ -14782,6 +14970,14 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
         effectUniforms.compile(vert, uniforms);
         globalId += 1;
         registerEffects(res, rej);
+      }, function (err) {
+        // TODO
+        console.error(err);
+        vert.mainBody += '}';
+
+        effectUniforms.compile(vert, uniforms);
+        globalId += 1;
+        registerEffects(res, rej);
       });
     };
     return new Promise(registerEffects).then(function () {
@@ -15042,9 +15238,9 @@ var Renderer = function Renderer(canvas) {
 
   this.canvas = canvas;
   this.regl = regl$1({ canvas: canvas });
-  console.log(("max texture size: " + (this.regl.limits.maxTextureSize)));
-  console.log(("point size dims: " + (this.regl.limits.pointSizeDims[0]) + " " + (this.regl.limits.pointSizeDims[1])));
-  console.log(("max uniforms: " + (this.regl.limits.maxVertexUniforms) + " " + (this.regl.limits.maxFragmentUniforms)));
+  console.info(("max texture size: " + (this.regl.limits.maxTextureSize)));
+  console.info(("point size dims: " + (this.regl.limits.pointSizeDims[0]) + " " + (this.regl.limits.pointSizeDims[1])));
+  console.info(("max uniforms: " + (this.regl.limits.maxVertexUniforms) + " " + (this.regl.limits.maxFragmentUniforms)));
   this.defaultParticleData = null;
   this.state = new RendererState(this.regl);
   this.config = null;
@@ -15092,7 +15288,7 @@ Renderer.prototype.getState = function getState () {
   return this.state;
 };
 
-console.log(Config);
+console.info(Config);
 
 // some constants
 var imageLoadingClass = 'loading-image';
