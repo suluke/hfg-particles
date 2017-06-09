@@ -245,7 +245,7 @@ export class RendererState {
 class Framebuffer {
   constructor(regl) {
     this.texture = regl.texture({ width: 1, height: 1 }); // call resize before first use !
-    this.framebuffer = regl.framebuffer({ color: [this.texture], depth: false, stencil: false, depthStencil: false });
+    this.framebuffer = regl.framebuffer({ color: this.texture, depth: false, stencil: false, depthStencil: false });
   }
 
   resize(width, height) {
@@ -374,7 +374,7 @@ export default class Renderer {
     });
   }
 
-  reshape(width, height) {
+  resize(width, height) {
     this.particleFramebuffer.resize(width, height);
     this.accumulationReadFramebuffer.resize(width, height);
     this.accumulationWriteFramebuffer.resize(width, height);
