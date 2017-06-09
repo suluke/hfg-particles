@@ -173,6 +173,10 @@ export default class CommandBuilder {
         depth: { enable: false }
       };
 
+      if(this.config.accumulationEffect !== 'none') {
+        result.framebuffer = this.props.particleFramebuffer;
+      }
+
       switch (this.config.particleOverlap) {
         case 'add':
           result.blend = {

@@ -242,6 +242,34 @@ export class RendererState {
   }
 }
 
+class Framebuffer {
+  constructor(regl) {
+    this.texture = regl.texture({ width: 1, height: 1 }); // call resize before first use !
+    this.framebuffer = regl.framebuffer({ color: [this.texture], depth: false, stencil: false, depthStencil: false });
+  }
+
+  resize(width, height) {
+    this.framebuffer.resize(width, height);
+  }
+}
+
+const fullscreenRectOptions = {
+  vert: `
+  precision highp float;
+  attribute vec2 v_texcoord;
+  varying vec2 texcoord;
+  void main() {
+    texcoord = v_texcoord;
+    gl_Position = vec4(v_texcoord * vec2(2) - vec2(1), 0, 1);
+  }`,
+  attributes: {
+    v_texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]]
+  },
+  depth: false,
+  primitive: 'triangle strip',
+  count: 4
+}
+
 export default class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -252,21 +280,134 @@ export default class Renderer {
     this.defaultParticleData = null;
     this.state = new RendererState(this.regl);
     this.config = null;
-    this.command = null;
+    this.particleCommand = null;
     this.commandBuilder = new CommandBuilder();
+    this.particleFramebuffer = new Framebuffer(this.regl);
+    this.accumulationReadFramebuffer = new Framebuffer(this.regl);
+    this.accumulationWriteFramebuffer = new Framebuffer(this.regl);
+    this.resultFramebuffer = new Framebuffer(this.regl); //HACKFIX: blending in the drawing buffer doesn't work...
+    this.accumulationStepCommand = this.regl(Object.assign({
+      frag:`
+      precision highp float;
+      uniform sampler2D texture;
+      varying vec2 texcoord;
+      void main() {
+        vec3 color = texture2D(texture, texcoord).rgb;
+        color *= .9;
+        gl_FragColor = vec4(color, 1);
+      }`,
+      uniforms: {
+        texture: () => this.accumulationReadFramebuffer.texture
+      },
+      framebuffer: () => this.accumulationWriteFramebuffer.framebuffer
+    }, fullscreenRectOptions));
+    this.copyAccumulationToResultCommand = this.regl(Object.assign({
+      frag:`
+      precision highp float;
+      uniform sampler2D texture;
+      varying vec2 texcoord;
+      void main() {
+        vec3 color = texture2D(texture, texcoord).rgb;
+        color *= .5;
+        gl_FragColor = vec4(color, 1);
+      }`,
+      uniforms: {
+        texture: () => this.accumulationWriteFramebuffer.texture
+      },
+      framebuffer: this.resultFramebuffer.framebuffer
+    }, fullscreenRectOptions));
+    this.applyParticleToResultCommand = this.regl(Object.assign({
+      frag:`
+      precision highp float;
+      uniform sampler2D texture;
+      varying vec2 texcoord;
+      void main() {
+        vec3 color = texture2D(texture, texcoord).rgb;
+        color *= .5;
+        gl_FragColor = vec4(color, 1);
+      }`,
+      uniforms: {
+        texture: this.particleFramebuffer.texture
+      },
+      blend: {
+        enable: true,
+        func:   { src: 'one', dst: 'one' }
+      },
+      framebuffer: this.resultFramebuffer.framebuffer
+    }, fullscreenRectOptions));
+    this.applyParticleToAccumulationCommand = this.regl(Object.assign({
+      frag:`
+      precision highp float;
+      uniform sampler2D texture;
+      varying vec2 texcoord;
+      void main() {
+        vec3 color = texture2D(texture, texcoord).rgb;
+        color *= .25;
+        gl_FragColor = vec4(color, 1);
+      }`,
+      uniforms: {
+        texture: this.particleFramebuffer.texture
+      },
+      framebuffer: () => this.accumulationWriteFramebuffer.framebuffer,
+      blend: {
+        enable: true,
+        func:   { src: 'one', dst: 'one' }
+      }
+    }, fullscreenRectOptions));
+    this.copyResultToDrawingCommand = this.regl(Object.assign({
+      frag:`
+      precision highp float;
+      uniform sampler2D texture;
+      varying vec2 texcoord;
+      void main() {
+        gl_FragColor = vec4(texture2D(texture, texcoord).rgb, 1);
+      }`,
+      uniforms: {
+        texture: () => this.resultFramebuffer.texture
+      }
+    }, fullscreenRectOptions));
     this.clock = new RendererClock();
     this.regl.frame(() => {
-      if (this.command === null || !this.state.isValid()) {
+      if (this.particleCommand === null || !this.state.isValid()) {
         return;
       }
       this.clock.frame();
-      this.regl.clear({ color: this.config.backgroundColor });
-      this.command({
-        config: this.config,
-        state:  this.state,
-        clock:  this.clock
-      });
+      if(this.config.accumulationEffect === 'none') {
+        this.regl.clear({ color: this.config.backgroundColor });
+        this.particleCommand({
+          config: this.config,
+          state:  this.state,
+          clock:  this.clock
+        });
+      } else {
+        this.accumulationStepCommand();
+        this.copyAccumulationToResultCommand();
+
+        //TODO: does config.backgroundColor make sense here?
+        this.regl.clear({
+          color: this.config.backgroundColor,
+          framebuffer: this.particleFramebuffer.framebuffer
+        });
+        this.particleCommand({
+          config: this.config,
+          state:  this.state,
+          clock:  this.clock
+        });
+        this.applyParticleToResultCommand();
+        this.applyParticleToAccumulationCommand();
+
+        this.copyResultToDrawingCommand();
+
+        [this.accumulationReadFramebuffer, this.accumulationWriteFramebuffer] = [this.accumulationWriteFramebuffer, this.accumulationReadFramebuffer];
+      }
     });
+  }
+
+  reshape(width, height) {
+    this.particleFramebuffer.resize(width, height);
+    this.accumulationReadFramebuffer.resize(width, height);
+    this.accumulationWriteFramebuffer.resize(width, height);
+    this.resultFramebuffer.resize(width, height);
   }
 
   getClock() {
@@ -274,19 +415,20 @@ export default class Renderer {
   }
 
   setConfig(config) {
-    this.command = null;
+    this.particleCommand = null;
     this.config = config;
     // TODO: rebuild command only when necessary
     this.state.adaptToConfig(config);
     this.commandBuilder.buildCommand({
-        config: this.config,
-        state:  this.state,
-        clock:  this.clock
+        config:              this.config,
+        state:               this.state,
+        clock:               this.clock,
+        particleFramebuffer: this.particleFramebuffer.framebuffer
     })
     .then((command) => {
       this.clock.reset();
       this.clock.setPeriod(this.config.duration);
-      this.command = this.regl(command);
+      this.particleCommand = this.regl(command);
     }, (error) => console.error(error));
   }
 

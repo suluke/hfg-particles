@@ -24,6 +24,7 @@ const menu = new MainMenu(renderer.getClock());
 const adjustCanvasSize = () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  renderer.reshape(window.innerWidth, window.innerHeight);
 };
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
