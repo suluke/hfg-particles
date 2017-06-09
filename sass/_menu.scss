@@ -1,3 +1,4 @@
+@import 'variables';
 @import 'mixins/hide';
 @import 'mixins/centering';
 @import 'mixins/unselectable';
@@ -129,6 +130,18 @@ $menu-apply-btn-height: 10%;
   }
 
   .menu-btn-apply {
+    @at-root {
+      @keyframes pulse-glow {
+        $glow-color: darken($apply-btn-active-color, 20%);
+        from { background-color: $apply-btn-active-color; box-shadow: 0 0 9px #fff inset; }
+        50% { background-color: $glow-color; box-shadow: 0 0 18px $glow-color inset; }
+        to { background-color: $apply-btn-active-color; box-shadow: 0 0 9px #fff inset; }
+      }
+    }
+    animation-name: pulse-glow;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+  
     display: block;
     position: absolute;
     height: $menu-apply-btn-height;
@@ -136,7 +149,7 @@ $menu-apply-btn-height: 10%;
     width: 100%;
     bottom: 0;
     border: none;
-    background-color: #5CB85C;
+    background-color: $apply-btn-active-color;
     color: #eee;
     cursor: pointer;
     &[disabled] {
@@ -145,12 +158,14 @@ $menu-apply-btn-height: 10%;
     font-size: 110%;
     &:hover,
     &:focus {
-      background-color: #449D44;
+      background-color: $apply-btn-focus-color;
     }
     &[disabled] {
+      animation: none;
+      background-color: $apply-btn-inactive-color;
       &:hover,
       &:focus {
-        background-color: #5CB85C;
+        background-color: $apply-btn-inactive-color;
       }
     }
   }
