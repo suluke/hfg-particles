@@ -1,31 +1,42 @@
-export class Framebuffer {
-  constructor(regl) {
-    this.texture = regl.texture({ width: 1, height: 1, min: 'linear', mag: 'linear' }); // call resize before first use !
-    this.framebuffer = regl.framebuffer({ color: this.texture, depth: false, stencil: false, depthStencil: false });
-  }
+import Effect, { ConfigUI, fract } from './effect';
+import { Framebuffer, FullscreenRectCommand } from '../regl-utils';
+import { parseHtml } from '../ui/util';
 
-  resize(width, height) {
-    this.framebuffer.resize(width, height);
-  }
-}
+const EffectName = 'Blur';
+const Modes = ['trails', 'smooth_trails', 'smear'];
 
-export class FullscreenRectCommand {
+class AccumulationConfigUI extends ConfigUI {
   constructor() {
-    this.vert = `
-      precision highp float;
-      attribute vec2 v_texcoord;
-      varying vec2 texcoord;
-      void main() {
-        texcoord = v_texcoord;
-        gl_Position = vec4(v_texcoord * vec2(2) - vec2(1), 0, 1);
-      }
-    `;
-    this.attributes = {
-      v_texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]]
-    };
-    this.depth = false;
-    this.primitive = 'triangle strip';
-    this.count = 4;
+    super();
+    this.element = parseHtml(`
+      <fieldset>
+        <legend>${EffectName}</legend>
+        <select>
+          <option value="trails">trails</option>
+          <option value="smooth_trails">smooth trails</option>
+          <option value="smear">smear</option>
+        </select>
+      </fieldset>
+    `);
+    const ui = this.element;
+    this.modeSelect = ui.querySelector('select');
+    this.modeSelect.addEventListener('input', () => {
+      this.notifyChange();
+    });
+  }
+
+  getElement() {
+    return this.element;
+  }
+
+  getConfig() {
+    const config = {};
+    config.mode = this.element.querySelector('option:checked').value;
+    return config;
+  }
+
+  applyConfig(config) {
+    this.element.querySelector(`option[value="${config.mode}"]`).selected = true;
   }
 }
 
@@ -149,42 +160,62 @@ class CompositeParticleAccumulationCommand extends FullscreenRectCommand {
   }
 }
 
-export default class Accumulation {
-  constructor(regl) {
-    // TODO Framebuffer should be managed by RendererState
-    this.readFramebuffer = new Framebuffer(regl);
-    this.writeFramebuffer = new Framebuffer(regl);
+export default class Accumulation extends Effect {
+  static register(instance, props) {
+    let readFramebuffer = props.state.acquireFramebuffer();
+    let writeFramebuffer = props.state.acquireFramebuffer();
 
-    const getReadTex = () => this.readFramebuffer.texture;
-    const getReadBuf = () => this.readFramebuffer.framebuffer;
-    const getWriteTex = () => this.writeFramebuffer.texture;
-    const getWriteBuf = () => this.writeFramebuffer.framebuffer;
+    const getReadTex = () => readFramebuffer.texture;
+    const getReadBuf = () => readFramebuffer.framebuffer;
+    const getWriteBuf = () => writeFramebuffer.framebuffer;
 
-    this.trailsAccumulationStepCommand = regl(new TrailsStepCommand(getReadTex, getWriteBuf));
-    this.smoothTrailsAccumulationStepCommand = regl(new SmoothTrailsStepCommand(getReadTex, getWriteBuf));
-    this.smearAccumulationStepCommand = regl(new SmearStepCommand(getReadTex, getWriteBuf));
-    this.applyParticleToAccumulationCommand = regl(new ApplyParticleToAccumulationCommand(getReadBuf));
-    this.compositeParticleAccumulationCommand = regl(new CompositeParticleAccumulationCommand(getReadTex, getWriteBuf));
-    this.stepCommands = {
-      trails: this.trailsAccumulationStepCommand,
-      smooth_trails: this.smoothTrailsAccumulationStepCommand,
-      smear: this.smearAccumulationStepCommand
+    const regl = props.state.regl;
+    const trailsAccumulationStepCommand = regl(new TrailsStepCommand(getReadTex, getWriteBuf));
+    const smoothTrailsAccumulationStepCommand = regl(new SmoothTrailsStepCommand(getReadTex, getWriteBuf));
+    const smearAccumulationStepCommand = regl(new SmearStepCommand(getReadTex, getWriteBuf));
+    const applyParticleToAccumulationCommand = regl(new ApplyParticleToAccumulationCommand(getReadBuf));
+    const compositeParticleAccumulationCommand = regl(new CompositeParticleAccumulationCommand(getReadTex, getWriteBuf));
+    const stepCommands = {
+      trails: trailsAccumulationStepCommand,
+      smooth_trails: smoothTrailsAccumulationStepCommand,
+      smear: smearAccumulationStepCommand
     }
+
+    props.state.pipeline.addPrePass(stepCommands[instance.config.mode]);
+    props.state.pipeline.addPostPass((props) => {
+      // pre-pass is done. That means it's a good time to consider the
+      // contents of the former writeFramebuffer as read-only
+      [readFramebuffer, writeFramebuffer] = [writeFramebuffer, readFramebuffer];
+      compositeParticleAccumulationCommand(props);
+      applyParticleToAccumulationCommand(props);
+      let outputBuf = writeFramebuffer;
+      // assume ownership over the former input framebuffer
+      writeFramebuffer = props.framebuffer;
+      return outputBuf;
+    });
   }
-  register(props) {
-    if (props.config.accumulationEffect !== 'none') {
-      props.state.pipeline.addPrePass(this.stepCommands[props.config.accumulationEffect]);
-      props.state.pipeline.addPostPass((props) => {
-        // pre-pass is done. That means it's a good time to consider the
-        // contents of the former writeFramebuffer as read-only
-        [this.readFramebuffer, this.writeFramebuffer] = [this.writeFramebuffer, this.readFramebuffer];
-        this.applyParticleToAccumulationCommand(props);
-        this.compositeParticleAccumulationCommand(props);
-        let outputBuf = this.writeFramebuffer;
-        // assume ownership over the former input framebuffer
-        this.writeFramebuffer = props.framebuffer;
-        return outputBuf;
-      });
+
+  static getDisplayName() {
+    return EffectName;
+  }
+
+  static getConfigUI() {
+    if (!this._configUI) {
+      this._configUI = new AccumulationConfigUI();
     }
+
+    return this._configUI;
+  }
+
+  static getDefaultConfig() {
+    return {
+      mode: 'trails'
+    };
+  }
+
+  static getRandomConfig() {
+    return {
+      mode: Modes[Math.floor(Math.random() * modes.length)]
+    };
   }
 }

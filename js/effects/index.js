@@ -4,6 +4,7 @@ import ConvergeCircleEffect from './converge-circle';
 import WaveEffect from './wave';
 import ChangeImageEffect from './change-image';
 import FlickrImageEffect from './flickr-image';
+import Accumulation from './accumulation';
 
 const effectList = [
   HueDisplaceEffect,
@@ -11,7 +12,8 @@ const effectList = [
   ConvergeCircleEffect,
   WaveEffect,
   ChangeImageEffect,
-  FlickrImageEffect
+  FlickrImageEffect,
+  Accumulation
 ];
 const byId = {};
 for (let i = 0; i < effectList.length; i++) {

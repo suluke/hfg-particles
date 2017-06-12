@@ -1,6 +1,6 @@
 import createRegl from 'regl';
 import CommandBuilder from './command-builder';
-import Accumulation, { Framebuffer, FullscreenRectCommand } from './accumulation';
+import { Framebuffer, FullscreenRectCommand } from './regl-utils';
 
 class RendererClock {
   constructor() {
@@ -178,7 +178,7 @@ export class RendererPipeline {
     this.mainCommand = null;
     this.postPasses = [];
     this.renderFramebufferCommand = regl(new RenderFramebufferCommand());
-    this.framebuffer = new Framebuffer(regl);
+    this.framebuffer = null;
   }
   addPrePass(pass) {
     this.prePasses.push(pass);
@@ -189,11 +189,12 @@ export class RendererPipeline {
   setMainCommand(cmd) {
     this.mainCommand = cmd;
   }
-  reset(clearColor) {
+  reset(clearColor, framebuffer) {
     this.prePasses.length = 0;
     this.postPasses.length = 0;
     this.mainCommand = null;
     this.clearColor = clearColor;
+    this.framebuffer = framebuffer;
   }
   run(props) {
     if (!this.mainCommand) {
@@ -249,11 +250,21 @@ export class RendererState {
     // Properties
     this.particleData = -1;
     this.particleDataStore = [[null, null]];
+    this.unallocatedFramebuffers = [];
+    this.allocatedFramebuffers = [];
     this.hooks = [];
-    this.accumulation = new Accumulation(regl);
+    this.width = 1;
+    this.height = 1;
   }
   adaptToConfig(config) {
-    this.pipeline.reset(config.backgroundColor);
+    for (let i = 0; i < this.allocatedFramebuffers.length; i++) {
+      this.unallocatedFramebuffers.push(this.allocatedFramebuffers[i]);
+    }
+    this.allocatedFramebuffers.length = 0;
+    // We MUST release and re-set the pipeline's framebuffer, since
+    // framebuffers are forwarded to/interchanged with postPasses.
+    this.pipeline.reset(config.backgroundColor, this.acquireFramebuffer());
+
     // Update default particle data
     const defaultImg = this.particleDataStore[0][0];
     if (defaultImg !== null) {
@@ -278,12 +289,6 @@ export class RendererState {
     for (let i = 0; i < this.hooks.length; i++) {
       this.hooks[i]();
     }
-
-    // TODO this will become an effect eventually
-    this.accumulation.register({
-      config,
-      state: this
-    });
   }
   setParticleData(id) {
     this.particleData = id;
@@ -309,6 +314,26 @@ export class RendererState {
       this.particleDataStore[id] = [null, null];
     }
   }
+  acquireFramebuffer() {
+    let buf = null;
+    if (this.unallocatedFramebuffers.length === 0) {
+      buf = new Framebuffer(this.regl);
+      buf.resize(this.width, this.height);
+    } else {
+      buf = this.unallocatedFramebuffers.pop();
+    }
+    this.allocatedFramebuffers.push(buf);
+    console.log(buf);
+    return buf;
+  }
+  releaseFramebuffer(buf) {
+    const pos = this.allocatedFramebuffers.indexOf(buf);
+    if (pos < 0) {
+      throw new Error('Releasing non-allocated Framebuffer');
+    }
+    this.allocatedFramebuffers.splice(pos, 1);
+    this.unallocatedFramebuffers.push(buf);
+  }
   getCurrentParticleData() {
     if (this.particleData < 0) {
       return null;
@@ -326,16 +351,22 @@ export class RendererState {
     this.hooks.push(hook);
   }
   resize(width, height) {
-    this.pipeline.framebuffer.resize(width, height);
-    this.accumulation.readFramebuffer.resize(width, height);
-    this.accumulation.writeFramebuffer.resize(width, height);
+    this.width = width;
+    this.height = height;
+    for (let i = 0; i < this.allocatedFramebuffers.length; i++) {
+      this.allocatedFramebuffers[i].resize(width, height);
+    }
+    // TODO should we also resize unallocated Framebuffers?
+    // At least if size decreases?
+    for (let i = 0; i < this.unallocatedFramebuffers.length; i++) {
+      this.unallocatedFramebuffers[i].resize(width, height);
+    }
   }
 }
 
 export default class Renderer {
   constructor(canvas) {
-    const regl = createRegl({ canvas });
-    this.regl = regl;
+    this.regl = createRegl({ canvas });
     this.canvas = canvas;
     console.info(`max texture size: ${this.regl.limits.maxTextureSize}`);
     console.info(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
@@ -349,12 +380,11 @@ export default class Renderer {
         return;
       }
       this.clock.frame();
-      const props = {
+      this.state.pipeline.run({
         config: this.config,
         state:  this.state,
         clock:  this.clock
-      };
-      this.state.pipeline.run(props);
+      });
     });
   }
 
@@ -371,9 +401,9 @@ export default class Renderer {
     // TODO: rebuild command only when necessary
     this.state.adaptToConfig(config);
     this.commandBuilder.buildCommand({
-        config:              this.config,
-        state:               this.state,
-        clock:               this.clock,
+        config: this.config,
+        state:  this.state,
+        clock:  this.clock,
     })
     .then((command) => {
       this.clock.reset();

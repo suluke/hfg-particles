@@ -129,27 +129,6 @@ class ParticleOverlapControl extends Control {
   }
 }
 
-class AccumulationEffectControl extends Control {
-  constructor(menu) {
-    super(menu);
-    this.elm = document.getElementById('menu-accumulation-effect-control');
-    this.select = this.elm.querySelector('select');
-
-    this.select.addEventListener('change', () => {
-      this.menu.notifyChange();
-    });
-  }
-
-  updateConfig(config) {
-    // eslint-disable-next-line no-param-reassign
-    config.accumulationEffect = this.select.value;
-  }
-
-  applyConfig(config) {
-    this.select.value = config.accumulationEffect;
-  }
-}
-
 /**
  *
  */
@@ -244,7 +223,6 @@ class ResetAppstateButton extends Control {
 
 const ControlsList = [
   BgColorPicker, ParticleCountControl, ParticleScalingControl, ParticleOverlapControl,
-  AccumulationEffectControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
