@@ -304,21 +304,21 @@ export default class Renderer {
       frag:`
       precision highp float;
       uniform sampler2D texture;
-      uniform vec2 invTextureSize;
+      uniform vec2 kernelSize;
       varying vec2 texcoord;
       void main() {
         vec3 color = /* texture2D(texture, vec2(texcoord.x, texcoord.y)).rgb * .2 + */
-          texture2D(texture, vec2(texcoord.x + invTextureSize.x, texcoord.y)).rgb * .25 +
-          texture2D(texture, vec2(texcoord.x - invTextureSize.x, texcoord.y)).rgb * .25 +
-          texture2D(texture, vec2(texcoord.x, texcoord.y + invTextureSize.y)).rgb * .25 +
-          texture2D(texture, vec2(texcoord.x, texcoord.y - invTextureSize.y)).rgb * .25;
+          texture2D(texture, vec2(texcoord.x + kernelSize.x, texcoord.y)).rgb * .25 +
+          texture2D(texture, vec2(texcoord.x - kernelSize.x, texcoord.y)).rgb * .25 +
+          texture2D(texture, vec2(texcoord.x, texcoord.y + kernelSize.y)).rgb * .25 +
+          texture2D(texture, vec2(texcoord.x, texcoord.y - kernelSize.y)).rgb * .25;
         color *= .98;
         gl_FragColor = vec4(color, 1);
       }
       `,
       uniforms: {
         texture: () => this.accumulationReadFramebuffer.texture,
-        invTextureSize: () => [4 / this.accumulationReadFramebuffer.texture.width, 4 / this.accumulationReadFramebuffer.texture.height]
+        kernelSize: () => [4 / this.accumulationReadFramebuffer.texture.width, 4 / this.accumulationReadFramebuffer.texture.height]
       },
       framebuffer: () => this.accumulationWriteFramebuffer.framebuffer
     }, fullscreenRectOptions));
