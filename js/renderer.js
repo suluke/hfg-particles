@@ -285,7 +285,7 @@ export default class Renderer {
     this.particleFramebuffer = new Framebuffer(this.regl);
     this.accumulationReadFramebuffer = new Framebuffer(this.regl);
     this.accumulationWriteFramebuffer = new Framebuffer(this.regl);
-    this.accumulationStepCommand = this.regl(Object.assign({
+    this.trailsAccumulationStepCommand = this.regl(Object.assign({
       frag:`
       precision highp float;
       uniform sampler2D texture;
@@ -297,6 +297,28 @@ export default class Renderer {
       }`,
       uniforms: {
         texture: () => this.accumulationReadFramebuffer.texture
+      },
+      framebuffer: () => this.accumulationWriteFramebuffer.framebuffer
+    }, fullscreenRectOptions));
+    this.smoothTrailsAccumulationStepCommand = this.regl(Object.assign({
+      frag:`
+      precision highp float;
+      uniform sampler2D texture;
+      uniform vec2 invTextureSize;
+      varying vec2 texcoord;
+      void main() {
+        vec3 color = /* texture2D(texture, vec2(texcoord.x, texcoord.y)).rgb * .2 + */
+          texture2D(texture, vec2(texcoord.x + invTextureSize.x, texcoord.y)).rgb * .25 +
+          texture2D(texture, vec2(texcoord.x - invTextureSize.x, texcoord.y)).rgb * .25 +
+          texture2D(texture, vec2(texcoord.x, texcoord.y + invTextureSize.y)).rgb * .25 +
+          texture2D(texture, vec2(texcoord.x, texcoord.y - invTextureSize.y)).rgb * .25;
+        color *= .98;
+        gl_FragColor = vec4(color, 1);
+      }
+      `,
+      uniforms: {
+        texture: () => this.accumulationReadFramebuffer.texture,
+        invTextureSize: () => [4 / this.accumulationReadFramebuffer.texture.width, 4 / this.accumulationReadFramebuffer.texture.height]
       },
       framebuffer: () => this.accumulationWriteFramebuffer.framebuffer
     }, fullscreenRectOptions));
@@ -328,7 +350,7 @@ export default class Renderer {
       void main() {
         vec3 particleColor = texture2D(particleTexture, texcoord).rgb;
         vec3 accumulationColor = texture2D(accumulationTexture, texcoord).rgb;
-        vec3 color = (particleColor + accumulationColor) * .5;
+        vec3 color = particleColor * .5 + accumulationColor * .5;
         gl_FragColor = vec4(color, 1);
       }`,
       uniforms: {
@@ -353,7 +375,11 @@ export default class Renderer {
         // the loop is just here to demonstrate how we could render multiple accumulation effects
         do {
           [this.accumulationReadFramebuffer, this.accumulationWriteFramebuffer] = [this.accumulationWriteFramebuffer, this.accumulationReadFramebuffer];
-          this.accumulationStepCommand();
+          if(this.config.accumulationEffect === 'trails') {
+            this.trailsAccumulationStepCommand();
+          } else {
+            this.smoothTrailsAccumulationStepCommand();
+          }
         } while(false);
 
         //TODO: does config.backgroundColor make sense here?
