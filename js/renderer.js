@@ -244,7 +244,7 @@ export class RendererState {
 
 class Framebuffer {
   constructor(regl) {
-    this.texture = regl.texture({ width: 1, height: 1 }); // call resize before first use !
+    this.texture = regl.texture({ width: 1, height: 1, min: 'linear', mag: 'linear' }); // call resize before first use !
     this.framebuffer = regl.framebuffer({ color: this.texture, depth: false, stencil: false, depthStencil: false });
   }
 
@@ -322,6 +322,25 @@ export default class Renderer {
       },
       framebuffer: () => this.accumulationWriteFramebuffer.framebuffer
     }, fullscreenRectOptions));
+    this.smearAccumulationStepCommand = this.regl(Object.assign({
+      frag:`
+      precision highp float;
+      uniform sampler2D texture;
+      uniform vec2 invTextureSize;
+      varying vec2 texcoord;
+      void main() {
+        vec2 smearDir = vec2(-texcoord.y + .5, texcoord.x - .5);
+        vec3 color = texture2D(texture, texcoord + smearDir * invTextureSize * 8.).rgb;
+        color *= .975;
+        gl_FragColor = vec4(color, 1);
+      }
+      `,
+      uniforms: {
+        texture: () => this.accumulationReadFramebuffer.texture,
+        invTextureSize: () => [1 / this.accumulationReadFramebuffer.texture.width, 1 / this.accumulationReadFramebuffer.texture.height]
+      },
+      framebuffer: () => this.accumulationWriteFramebuffer.framebuffer
+    }, fullscreenRectOptions));
     this.applyParticleToAccumulationCommand = this.regl(Object.assign({
       frag:`
       precision highp float;
@@ -377,8 +396,10 @@ export default class Renderer {
           [this.accumulationReadFramebuffer, this.accumulationWriteFramebuffer] = [this.accumulationWriteFramebuffer, this.accumulationReadFramebuffer];
           if(this.config.accumulationEffect === 'trails') {
             this.trailsAccumulationStepCommand();
-          } else {
+          } else if(this.config.accumulationEffect === 'smooth_trails') {
             this.smoothTrailsAccumulationStepCommand();
+          } else {
+            this.smearAccumulationStepCommand();
           }
         } while(false);
 
