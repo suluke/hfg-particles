@@ -323,7 +323,6 @@ export class RendererState {
       buf = this.unallocatedFramebuffers.pop();
     }
     this.allocatedFramebuffers.push(buf);
-    console.log(buf);
     return buf;
   }
   releaseFramebuffer(buf) {
@@ -367,7 +366,6 @@ export class RendererState {
 export default class Renderer {
   constructor(canvas) {
     this.regl = createRegl({ canvas });
-    this.canvas = canvas;
     console.info(`max texture size: ${this.regl.limits.maxTextureSize}`);
     console.info(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
     console.info(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
