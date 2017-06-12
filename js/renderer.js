@@ -1,6 +1,6 @@
 import createRegl from 'regl';
 import CommandBuilder from './command-builder';
-import Accumulation, { Framebuffer } from './accumulation';
+import Accumulation, { Framebuffer, FullscreenRectCommand } from './accumulation';
 
 class RendererClock {
   constructor() {
@@ -153,6 +153,81 @@ function domImgToCanvas(img) {
   return fullresCanvas;
 }
 
+class RenderFramebufferCommand extends FullscreenRectCommand {
+  constructor() {
+    super();
+    this.frag = `
+      precision highp float;
+      uniform sampler2D texture;
+      varying vec2 texcoord;
+      void main() {
+        vec3 color = texture2D(texture, texcoord).rgb;
+        gl_FragColor = vec4(color, 1);
+      }
+    `;
+    this.uniforms = {
+      texture: (ctx, props) => props.texture
+    };
+  }
+}
+
+export class RendererPipeline {
+  constructor(regl) {
+    this.regl = regl;
+    this.prePasses = [];
+    this.mainCommand = null;
+    this.postPasses = [];
+    this.renderFramebufferCommand = regl(new RenderFramebufferCommand());
+    this.framebuffer = new Framebuffer(regl);
+  }
+  addPrePass(pass) {
+    this.prePasses.push(pass);
+  }
+  addPostPass(pass) {
+    this.postPasses.push(pass);
+  }
+  setMainCommand(cmd) {
+    this.mainCommand = cmd;
+  }
+  reset(clearColor) {
+    this.prePasses.length = 0;
+    this.postPasses.length = 0;
+    this.mainCommand = null;
+    this.clearColor = clearColor;
+  }
+  run(props) {
+    if (!this.mainCommand) {
+      return;
+    }
+    for (let i = 0; i < this.prePasses.length; i++) {
+      this.prePasses[i](props);
+    }
+    if (this.postPasses.length === 0) {
+      this.regl.clear({ color: this.clearColor });
+      this.mainCommand(props);
+    } else {
+      this.regl.clear({
+        color: this.clearColor,
+        framebuffer: this.framebuffer.framebuffer
+      });
+      // need to give the postPasses access to mainCommand output
+      this.framebuffer.framebuffer.use(() => this.mainCommand(props));
+      props.framebuffer = this.framebuffer;
+      for (let i = 0; i < this.postPasses.length; i++) {
+        let result = this.postPasses[i](props);
+        if (result) {
+          props.framebuffer = result;
+        }
+      }
+      this.framebuffer = props.framebuffer;
+      this.renderFramebufferCommand({ texture: this.framebuffer.texture });
+    }
+  }
+  isValid() {
+    return this.mainCommand !== null;
+  }
+}
+
 /**
  * Encapsulates the parts of the render pipeline which are subject to
  * dynamic change, i.e. data that can be changed by effects.
@@ -169,13 +244,16 @@ function domImgToCanvas(img) {
 export class RendererState {
   constructor(regl) {
     this.regl = regl;
+    this.pipeline = new RendererPipeline(regl);
 
     // Properties
     this.particleData = -1;
     this.particleDataStore = [[null, null]];
     this.hooks = [];
+    this.accumulation = new Accumulation(regl);
   }
   adaptToConfig(config) {
+    this.pipeline.reset(config.backgroundColor);
     // Update default particle data
     const defaultImg = this.particleDataStore[0][0];
     if (defaultImg !== null) {
@@ -200,6 +278,12 @@ export class RendererState {
     for (let i = 0; i < this.hooks.length; i++) {
       this.hooks[i]();
     }
+
+    // TODO this will become an effect eventually
+    this.accumulation.register({
+      config,
+      state: this
+    });
   }
   setParticleData(id) {
     this.particleData = id;
@@ -232,7 +316,7 @@ export class RendererState {
     return this.particleDataStore[this.particleData][1];
   }
   isValid() {
-    return this.particleData >= 0;
+    return this.particleData >= 0 && this.pipeline.isValid();
   }
   setDefaultDomImage(domImage) {
     this.particleDataStore[0][0] = domImgToCanvas(domImage);
@@ -241,72 +325,41 @@ export class RendererState {
   addHook(hook) {
     this.hooks.push(hook);
   }
+  resize(width, height) {
+    this.pipeline.framebuffer.resize(width, height);
+    this.accumulation.readFramebuffer.resize(width, height);
+    this.accumulation.writeFramebuffer.resize(width, height);
+  }
 }
 
-export default class Renderer extends Accumulation {
+export default class Renderer {
   constructor(canvas) {
     const regl = createRegl({ canvas });
-    const particleFramebuffer = new Framebuffer(regl);
-    super(regl, particleFramebuffer);
     this.regl = regl;
     this.canvas = canvas;
     console.info(`max texture size: ${this.regl.limits.maxTextureSize}`);
     console.info(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
     console.info(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
-    this.defaultParticleData = null;
     this.state = new RendererState(this.regl);
     this.config = null;
-    this.particleCommand = null;
     this.commandBuilder = new CommandBuilder();
-    this.particleFramebuffer = particleFramebuffer;
     this.clock = new RendererClock();
     this.regl.frame(() => {
-      if (this.particleCommand === null || !this.state.isValid()) {
+      if (!this.state.isValid()) {
         return;
       }
       this.clock.frame();
-      if(this.config.accumulationEffect === 'none') {
-        this.regl.clear({ color: this.config.backgroundColor });
-        this.particleCommand({
-          config: this.config,
-          state:  this.state,
-          clock:  this.clock
-        });
-      } else {
-        // the loop is just here to demonstrate how we could render multiple accumulation effects
-        do {
-          [this.accumulationReadFramebuffer, this.accumulationWriteFramebuffer] = [this.accumulationWriteFramebuffer, this.accumulationReadFramebuffer];
-          if (this.config.accumulationEffect === 'trails') {
-            this.trailsAccumulationStepCommand();
-          } else if(this.config.accumulationEffect === 'smooth_trails') {
-            this.smoothTrailsAccumulationStepCommand();
-          } else {
-            this.smearAccumulationStepCommand();
-          }
-        } while(false);
-
-        //TODO: does config.backgroundColor make sense here?
-        this.regl.clear({
-          color: this.config.backgroundColor,
-          framebuffer: this.particleFramebuffer.framebuffer
-        });
-        this.particleCommand({
-          config: this.config,
-          state:  this.state,
-          clock:  this.clock
-        });
-
-        this.compositeParticleAccumulationCommand();
-
-        this.applyParticleToAccumulationCommand();
-      }
+      const props = {
+        config: this.config,
+        state:  this.state,
+        clock:  this.clock
+      };
+      this.state.pipeline.run(props);
     });
   }
 
   resize(width, height) {
-    this.particleFramebuffer.resize(width, height);
-    this.accumulationReadFramebuffer.resize(width, height);
-    this.accumulationWriteFramebuffer.resize(width, height);
+    this.state.resize(width, height);
   }
 
   getClock() {
@@ -314,7 +367,6 @@ export default class Renderer extends Accumulation {
   }
 
   setConfig(config) {
-    this.particleCommand = null;
     this.config = config;
     // TODO: rebuild command only when necessary
     this.state.adaptToConfig(config);
@@ -322,12 +374,11 @@ export default class Renderer extends Accumulation {
         config:              this.config,
         state:               this.state,
         clock:               this.clock,
-        particleFramebuffer: this.particleFramebuffer.framebuffer
     })
     .then((command) => {
       this.clock.reset();
       this.clock.setPeriod(this.config.duration);
-      this.particleCommand = this.regl(command);
+      this.state.pipeline.setMainCommand(this.regl(command));
     }, (error) => console.error(error));
   }
 

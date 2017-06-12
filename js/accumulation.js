@@ -9,7 +9,7 @@ export class Framebuffer {
   }
 }
 
-class FullscreenRectCommand {
+export class FullscreenRectCommand {
   constructor() {
     this.vert = `
       precision highp float;
@@ -102,9 +102,9 @@ class SmearStepCommand extends TextureToFramebufferCommand {
   }
 }
 
-class ApplyParticleToAccumulationCommand extends TextureToFramebufferCommand {
-  constructor(getReadTex, getWriteBuf) {
-    super(getReadTex, getWriteBuf);
+class ApplyParticleToAccumulationCommand extends FullscreenRectCommand {
+  constructor(getWriteBuf) {
+    super();
     this.frag = `
       precision highp float;
       uniform sampler2D texture;
@@ -115,6 +115,10 @@ class ApplyParticleToAccumulationCommand extends TextureToFramebufferCommand {
         gl_FragColor = vec4(color, 1);
       }
     `;
+    this.uniforms = {
+      texture: (ctx, props) => props.framebuffer.texture
+    };
+    this.framebuffer = getWriteBuf;
     this.blend = {
       enable: true,
       func:   { src: 'one', dst: 'one' }
@@ -123,7 +127,7 @@ class ApplyParticleToAccumulationCommand extends TextureToFramebufferCommand {
 }
 
 class CompositeParticleAccumulationCommand extends FullscreenRectCommand {
-  constructor(getParticleTex, getAccumulationTex) {
+  constructor(getAccumulationTex, getWriteBuf) {
     super();
     this.frag = `
       precision highp float;
@@ -138,25 +142,49 @@ class CompositeParticleAccumulationCommand extends FullscreenRectCommand {
       }
     `;
     this.uniforms = {
-      particleTexture: getParticleTex,
+      particleTexture: (ctx, props) => props.framebuffer.texture,
       accumulationTexture: getAccumulationTex
     };
+    this.framebuffer = getWriteBuf;
   }
 }
 
 export default class Accumulation {
-  constructor(regl, particleFramebuffer) {
-    this.accumulationReadFramebuffer = new Framebuffer(regl);
-    this.accumulationWriteFramebuffer = new Framebuffer(regl);
+  constructor(regl) {
+    // TODO Framebuffer should be managed by RendererState
+    this.readFramebuffer = new Framebuffer(regl);
+    this.writeFramebuffer = new Framebuffer(regl);
 
-    const getReadTex = () => this.accumulationReadFramebuffer.texture;
-    const getWriteTex = () => this.accumulationWriteFramebuffer.texture;
-    const getWriteBuf = () => this.accumulationWriteFramebuffer.framebuffer;
-    
+    const getReadTex = () => this.readFramebuffer.texture;
+    const getReadBuf = () => this.readFramebuffer.framebuffer;
+    const getWriteTex = () => this.writeFramebuffer.texture;
+    const getWriteBuf = () => this.writeFramebuffer.framebuffer;
+
     this.trailsAccumulationStepCommand = regl(new TrailsStepCommand(getReadTex, getWriteBuf));
     this.smoothTrailsAccumulationStepCommand = regl(new SmoothTrailsStepCommand(getReadTex, getWriteBuf));
     this.smearAccumulationStepCommand = regl(new SmearStepCommand(getReadTex, getWriteBuf));
-    this.applyParticleToAccumulationCommand = regl(new ApplyParticleToAccumulationCommand(particleFramebuffer.texture, getWriteBuf));
-    this.compositeParticleAccumulationCommand = regl(new CompositeParticleAccumulationCommand(particleFramebuffer.texture, getWriteTex));
+    this.applyParticleToAccumulationCommand = regl(new ApplyParticleToAccumulationCommand(getReadBuf));
+    this.compositeParticleAccumulationCommand = regl(new CompositeParticleAccumulationCommand(getReadTex, getWriteBuf));
+    this.stepCommands = {
+      trails: this.trailsAccumulationStepCommand,
+      smooth_trails: this.smoothTrailsAccumulationStepCommand,
+      smear: this.smearAccumulationStepCommand
+    }
+  }
+  register(props) {
+    if (props.config.accumulationEffect !== 'none') {
+      props.state.pipeline.addPrePass(this.stepCommands[props.config.accumulationEffect]);
+      props.state.pipeline.addPostPass((props) => {
+        // pre-pass is done. That means it's a good time to consider the
+        // contents of the former writeFramebuffer as read-only
+        [this.readFramebuffer, this.writeFramebuffer] = [this.writeFramebuffer, this.readFramebuffer];
+        this.applyParticleToAccumulationCommand(props);
+        this.compositeParticleAccumulationCommand(props);
+        let outputBuf = this.writeFramebuffer;
+        // assume ownership over the former input framebuffer
+        this.writeFramebuffer = props.framebuffer;
+        return outputBuf;
+      });
+    }
   }
 }
