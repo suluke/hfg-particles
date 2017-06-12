@@ -1,5 +1,6 @@
 import createRegl from 'regl';
 import CommandBuilder from './command-builder';
+import Accumulation, { Framebuffer } from './accumulation';
 
 class RendererClock {
   constructor() {
@@ -242,38 +243,13 @@ export class RendererState {
   }
 }
 
-class Framebuffer {
-  constructor(regl) {
-    this.texture = regl.texture({ width: 1, height: 1, min: 'linear', mag: 'linear' }); // call resize before first use !
-    this.framebuffer = regl.framebuffer({ color: this.texture, depth: false, stencil: false, depthStencil: false });
-  }
-
-  resize(width, height) {
-    this.framebuffer.resize(width, height);
-  }
-}
-
-const fullscreenRectOptions = {
-  vert: `
-  precision highp float;
-  attribute vec2 v_texcoord;
-  varying vec2 texcoord;
-  void main() {
-    texcoord = v_texcoord;
-    gl_Position = vec4(v_texcoord * vec2(2) - vec2(1), 0, 1);
-  }`,
-  attributes: {
-    v_texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]]
-  },
-  depth: false,
-  primitive: 'triangle strip',
-  count: 4
-}
-
-export default class Renderer {
+export default class Renderer extends Accumulation {
   constructor(canvas) {
+    const regl = createRegl({ canvas });
+    const particleFramebuffer = new Framebuffer(regl);
+    super(regl, particleFramebuffer);
+    this.regl = regl;
     this.canvas = canvas;
-    this.regl = createRegl({ canvas });
     console.info(`max texture size: ${this.regl.limits.maxTextureSize}`);
     console.info(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
     console.info(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
@@ -282,101 +258,7 @@ export default class Renderer {
     this.config = null;
     this.particleCommand = null;
     this.commandBuilder = new CommandBuilder();
-    this.particleFramebuffer = new Framebuffer(this.regl);
-    this.accumulationReadFramebuffer = new Framebuffer(this.regl);
-    this.accumulationWriteFramebuffer = new Framebuffer(this.regl);
-    this.trailsAccumulationStepCommand = this.regl(Object.assign({
-      frag:`
-      precision highp float;
-      uniform sampler2D texture;
-      varying vec2 texcoord;
-      void main() {
-        vec3 color = texture2D(texture, texcoord).rgb;
-        color *= .9;
-        gl_FragColor = vec4(color, 1);
-      }`,
-      uniforms: {
-        texture: () => this.accumulationReadFramebuffer.texture
-      },
-      framebuffer: () => this.accumulationWriteFramebuffer.framebuffer
-    }, fullscreenRectOptions));
-    this.smoothTrailsAccumulationStepCommand = this.regl(Object.assign({
-      frag:`
-      precision highp float;
-      uniform sampler2D texture;
-      uniform vec2 kernelSize;
-      varying vec2 texcoord;
-      void main() {
-        vec3 color = /* texture2D(texture, vec2(texcoord.x, texcoord.y)).rgb * .2 + */
-          texture2D(texture, vec2(texcoord.x + kernelSize.x, texcoord.y)).rgb * .25 +
-          texture2D(texture, vec2(texcoord.x - kernelSize.x, texcoord.y)).rgb * .25 +
-          texture2D(texture, vec2(texcoord.x, texcoord.y + kernelSize.y)).rgb * .25 +
-          texture2D(texture, vec2(texcoord.x, texcoord.y - kernelSize.y)).rgb * .25;
-        color *= .98;
-        gl_FragColor = vec4(color, 1);
-      }
-      `,
-      uniforms: {
-        texture: () => this.accumulationReadFramebuffer.texture,
-        kernelSize: () => [4 / this.accumulationReadFramebuffer.texture.width, 4 / this.accumulationReadFramebuffer.texture.height]
-      },
-      framebuffer: () => this.accumulationWriteFramebuffer.framebuffer
-    }, fullscreenRectOptions));
-    this.smearAccumulationStepCommand = this.regl(Object.assign({
-      frag:`
-      precision highp float;
-      uniform sampler2D texture;
-      uniform vec2 invTextureSize;
-      varying vec2 texcoord;
-      void main() {
-        vec2 smearDir = vec2(-texcoord.y + .5, texcoord.x - .5);
-        vec3 color = texture2D(texture, texcoord + smearDir * invTextureSize * 8.).rgb;
-        color *= .975;
-        gl_FragColor = vec4(color, 1);
-      }
-      `,
-      uniforms: {
-        texture: () => this.accumulationReadFramebuffer.texture,
-        invTextureSize: () => [1 / this.accumulationReadFramebuffer.texture.width, 1 / this.accumulationReadFramebuffer.texture.height]
-      },
-      framebuffer: () => this.accumulationWriteFramebuffer.framebuffer
-    }, fullscreenRectOptions));
-    this.applyParticleToAccumulationCommand = this.regl(Object.assign({
-      frag:`
-      precision highp float;
-      uniform sampler2D texture;
-      varying vec2 texcoord;
-      void main() {
-        vec3 color = texture2D(texture, texcoord).rgb;
-        color *= .25;
-        gl_FragColor = vec4(color, 1);
-      }`,
-      uniforms: {
-        texture: this.particleFramebuffer.texture
-      },
-      framebuffer: () => this.accumulationWriteFramebuffer.framebuffer,
-      blend: {
-        enable: true,
-        func:   { src: 'one', dst: 'one' }
-      }
-    }, fullscreenRectOptions));
-    this.compositParticleAccumulationCommand = this.regl(Object.assign({
-      frag:`
-      precision highp float;
-      uniform sampler2D particleTexture;
-      uniform sampler2D accumulationTexture;
-      varying vec2 texcoord;
-      void main() {
-        vec3 particleColor = texture2D(particleTexture, texcoord).rgb;
-        vec3 accumulationColor = texture2D(accumulationTexture, texcoord).rgb;
-        vec3 color = particleColor * .5 + accumulationColor * .5;
-        gl_FragColor = vec4(color, 1);
-      }`,
-      uniforms: {
-        particleTexture: this.particleFramebuffer.texture,
-        accumulationTexture: () => this.accumulationWriteFramebuffer.texture
-      },
-    }, fullscreenRectOptions));
+    this.particleFramebuffer = particleFramebuffer;
     this.clock = new RendererClock();
     this.regl.frame(() => {
       if (this.particleCommand === null || !this.state.isValid()) {
@@ -394,7 +276,7 @@ export default class Renderer {
         // the loop is just here to demonstrate how we could render multiple accumulation effects
         do {
           [this.accumulationReadFramebuffer, this.accumulationWriteFramebuffer] = [this.accumulationWriteFramebuffer, this.accumulationReadFramebuffer];
-          if(this.config.accumulationEffect === 'trails') {
+          if (this.config.accumulationEffect === 'trails') {
             this.trailsAccumulationStepCommand();
           } else if(this.config.accumulationEffect === 'smooth_trails') {
             this.smoothTrailsAccumulationStepCommand();
@@ -414,7 +296,7 @@ export default class Renderer {
           clock:  this.clock
         });
 
-        this.compositParticleAccumulationCommand();
+        this.compositeParticleAccumulationCommand();
 
         this.applyParticleToAccumulationCommand();
       }
