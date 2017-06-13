@@ -1,0 +1,79 @@
+import Effect, { ConfigUI, fract } from './effect';
+import AccumulationEffect from './accumulation';
+import { Framebuffer, FullscreenRectCommand, TextureToFramebufferCommand } from '../regl-utils';
+import { parseHtml } from '../ui/util';
+
+const EffectName = 'Smear';
+
+class SmearConfigUI extends ConfigUI {
+  constructor() {
+    super();
+    this.element = parseHtml(`
+      <fieldset>
+        <legend>${EffectName}</legend>
+      </fieldset>
+    `);
+  }
+
+  getElement() {
+    return this.element;
+  }
+
+  getConfig() {
+    const config = {};
+    return config;
+  }
+
+  applyConfig(config) {
+  }
+}
+
+class SmearStepCommand extends TextureToFramebufferCommand {
+  constructor(getReadTex, getWriteBuf) {
+    super(getReadTex, getWriteBuf);
+    this.frag = `
+      precision highp float;
+      uniform sampler2D texture;
+      uniform vec2 invTextureSize;
+      varying vec2 texcoord;
+      void main() {
+        vec2 smearDir = vec2(-texcoord.y + .5, texcoord.x - .5);
+        vec3 color = texture2D(texture, texcoord + smearDir * invTextureSize * 8.).rgb;
+        color *= .975;
+        gl_FragColor = vec4(color, 1);
+      }
+    `;
+    this.uniforms.invTextureSize = () => {
+      const readTex = getReadTex();
+      return [1 / readTex.width, 1 / readTex.height];
+    };
+  }
+}
+
+export default class SmearEffect extends AccumulationEffect {
+  static getEffectStepClass() {
+    return SmearStepCommand;
+  }
+
+  static getDisplayName() {
+    return EffectName;
+  }
+
+  static getConfigUI() {
+    if (!this._configUI) {
+      this._configUI = new SmearConfigUI();
+    }
+
+    return this._configUI;
+  }
+
+  static getDefaultConfig() {
+    return {
+    };
+  }
+
+  static getRandomConfig() {
+    return {
+    };
+  }
+}

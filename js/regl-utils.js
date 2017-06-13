@@ -28,3 +28,13 @@ export class FullscreenRectCommand {
     this.count = 4;
   }
 }
+
+export class TextureToFramebufferCommand extends FullscreenRectCommand {
+  constructor(getReadTex, getWriteBuf) {
+    super();
+    this.uniforms = {
+      texture: getReadTex
+    };
+    this.framebuffer = getWriteBuf;
+  }
+}

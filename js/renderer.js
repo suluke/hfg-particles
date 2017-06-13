@@ -401,7 +401,7 @@ export default class Renderer {
     this.commandBuilder.buildCommand({
         config: this.config,
         state:  this.state,
-        clock:  this.clock,
+        clock:  this.clock
     })
     .then((command) => {
       this.clock.reset();
