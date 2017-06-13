@@ -235,12 +235,17 @@ export class RendererPipeline {
       this.mainCommand(props);
     } else {
       props.particleFramebuffer = this.particleFramebuffer;
+      props.accumulationReadFramebuffer = this.accumulationReadFramebuffer;
+      props.accumulationWriteFramebuffer = this.accumulationWriteFramebuffer;
 
       for (let i = 0; i < this.accumulationPasses.length; i++) {
-        [this.accumulationReadFramebuffer, this.accumulationWriteFramebuffer] = [this.accumulationWriteFramebuffer, this.accumulationReadFramebuffer];
-        props.accumulationReadFramebuffer = this.accumulationReadFramebuffer;
-        props.accumulationWriteFramebuffer = this.accumulationWriteFramebuffer;
-        this.accumulationPasses[i](props);
+        const pass = this.accumulationPasses[i];
+        if(pass.isActive()) {
+          [this.accumulationReadFramebuffer, this.accumulationWriteFramebuffer] = [this.accumulationWriteFramebuffer, this.accumulationReadFramebuffer];
+          props.accumulationReadFramebuffer = this.accumulationReadFramebuffer;
+          props.accumulationWriteFramebuffer = this.accumulationWriteFramebuffer;
+          pass.render(props);
+        }
       }
 
       // need to give the postPasses access to mainCommand output

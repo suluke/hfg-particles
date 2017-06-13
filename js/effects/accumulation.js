@@ -11,11 +11,14 @@ export default class AccumulationEffect extends Effect {
     const StepClass = this.getEffectStepClass();
     const stepCommand = regl(new StepClass());
 
-    props.state.pipeline.addAccumulationPass((props) => {
-      //const time = props.clock.getTime();
-      //if (instance.timeBegin <= time && time <= instance.timeEnd) {
+    props.state.pipeline.addAccumulationPass({
+      isActive: () => {
+        const time = props.clock.getTime();
+        return instance.timeBegin <= time && time <= instance.timeEnd;
+      },
+      render: (props) => {
         stepCommand(props);
-      //}
+      }
     });
   }
 }
