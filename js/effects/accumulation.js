@@ -62,21 +62,31 @@ export default class AccumulationEffect extends Effect {
     const getWriteBuf = () => writeFramebuffer.framebuffer;
 
     const regl = props.state.regl;
-    const stepCommand = new this.getEffectStepClass();
+    const StepClass = this.getEffectStepClass();
+    const stepCommand = regl(new StepClass(getReadTex, getWriteBuf));
     const applyParticleToAccumulationCommand = regl(new ApplyParticleToAccumulationCommand(getReadBuf));
     const compositeParticleAccumulationCommand = regl(new CompositeParticleAccumulationCommand(getReadTex, getWriteBuf));
 
-    props.state.pipeline.addPrePass(stepCommand);
+    props.state.pipeline.addPrePass((props) => {
+      const time = props.clock.getTime();
+      if (instance.timeBegin <= time && time <= instance.timeEnd) {
+        stepCommand(props);
+      }
+    });
     props.state.pipeline.addPostPass((props) => {
-      // pre-pass is done. That means it's a good time to consider the
-      // contents of the former writeFramebuffer as read-only
-      [readFramebuffer, writeFramebuffer] = [writeFramebuffer, readFramebuffer];
-      compositeParticleAccumulationCommand(props);
-      applyParticleToAccumulationCommand(props);
-      let outputBuf = writeFramebuffer;
-      // assume ownership over the former input framebuffer
-      writeFramebuffer = props.framebuffer;
-      return outputBuf;
+      const time = props.clock.getTime();
+      if (instance.timeBegin <= time && time <= instance.timeEnd) {
+        // pre-pass is done. That means it's a good time to consider the
+        // contents of the former writeFramebuffer as read-only
+        [readFramebuffer, writeFramebuffer] = [writeFramebuffer, readFramebuffer];
+        compositeParticleAccumulationCommand(props);
+        applyParticleToAccumulationCommand(props);
+        let outputBuf = writeFramebuffer;
+        // assume ownership over the former input framebuffer
+        writeFramebuffer = props.framebuffer;
+        return outputBuf;
+      }
+      return null;
     });
   }
 }
