@@ -1,6 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import AccumulationEffect from './accumulation';
-import { Framebuffer, FullscreenRectCommand, TextureToFramebufferCommand } from '../regl-utils';
+import { Framebuffer, FullscreenRectCommand, AccumulationCommand } from '../regl-utils';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Trails';
@@ -28,9 +28,9 @@ class TrailsConfigUI extends ConfigUI {
   }
 }
 
-class TrailsStepCommand extends TextureToFramebufferCommand {
-  constructor(getReadTex, getWriteBuf) {
-    super(getReadTex, getWriteBuf);
+class TrailsStepCommand extends AccumulationCommand {
+  constructor() {
+    super();
     this.frag = `
       precision highp float;
       uniform sampler2D texture;

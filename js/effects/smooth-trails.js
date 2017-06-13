@@ -1,6 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import AccumulationEffect from './accumulation';
-import { Framebuffer, FullscreenRectCommand, TextureToFramebufferCommand } from '../regl-utils';
+import { Framebuffer, FullscreenRectCommand, AccumulationCommand } from '../regl-utils';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Smooth trails';
@@ -28,9 +28,9 @@ class SmoothTrailsConfigUI extends ConfigUI {
   }
 }
 
-class SmoothTrailsStepCommand extends TextureToFramebufferCommand {
-  constructor(getReadTex, getWriteBuf) {
-    super(getReadTex, getWriteBuf);
+class SmoothTrailsStepCommand extends AccumulationCommand {
+  constructor() {
+    super();
     this.frag = `
       precision highp float;
       uniform sampler2D texture;
@@ -46,8 +46,8 @@ class SmoothTrailsStepCommand extends TextureToFramebufferCommand {
         gl_FragColor = vec4(color, 1);
       }
     `;
-    this.uniforms.kernelSize = () => {
-      const readTex = getReadTex();
+    this.uniforms.kernelSize = (ctx, props) => {
+      const readTex = props.accumulationReadFramebuffer.texture;
       return [4 / readTex.width, 4 / readTex.height];
     };
   }

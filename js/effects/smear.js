@@ -1,6 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import AccumulationEffect from './accumulation';
-import { Framebuffer, FullscreenRectCommand, TextureToFramebufferCommand } from '../regl-utils';
+import { Framebuffer, FullscreenRectCommand, AccumulationCommand } from '../regl-utils';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Smear';
@@ -28,9 +28,9 @@ class SmearConfigUI extends ConfigUI {
   }
 }
 
-class SmearStepCommand extends TextureToFramebufferCommand {
-  constructor(getReadTex, getWriteBuf) {
-    super(getReadTex, getWriteBuf);
+class SmearStepCommand extends AccumulationCommand {
+  constructor() {
+    super();
     this.frag = `
       precision highp float;
       uniform sampler2D texture;
@@ -43,8 +43,8 @@ class SmearStepCommand extends TextureToFramebufferCommand {
         gl_FragColor = vec4(color, 1);
       }
     `;
-    this.uniforms.invTextureSize = () => {
-      const readTex = getReadTex();
+    this.uniforms.invTextureSize = (ctx, props) => {
+      const readTex = props.accumulationReadFramebuffer.texture;
       return [1 / readTex.width, 1 / readTex.height];
     };
   }

@@ -153,7 +153,29 @@ function domImgToCanvas(img) {
   return fullresCanvas;
 }
 
-class RenderFramebufferCommand extends FullscreenRectCommand {
+class CompositeParticleAccumulationCommand extends FullscreenRectCommand {
+  constructor() {
+    super();
+    this.frag = `
+      precision highp float;
+      uniform sampler2D particleTexture;
+      uniform sampler2D accumulationTexture;
+      varying vec2 texcoord;
+      void main() {
+        vec3 particleColor = texture2D(particleTexture, texcoord).rgb;
+        vec3 accumulationColor = texture2D(accumulationTexture, texcoord).rgb;
+        vec3 color = particleColor * .5 + accumulationColor * .5;
+        gl_FragColor = vec4(color, 1);
+      }
+    `;
+    this.uniforms = {
+      particleTexture: (ctx, props) => props.particleFramebuffer.texture,
+      accumulationTexture: (ctx, props) => props.accumulationWriteFramebuffer.texture
+    };
+  }
+}
+
+class ApplyParticleToAccumulationCommand extends FullscreenRectCommand {
   constructor() {
     super();
     this.frag = `
@@ -162,11 +184,17 @@ class RenderFramebufferCommand extends FullscreenRectCommand {
       varying vec2 texcoord;
       void main() {
         vec3 color = texture2D(texture, texcoord).rgb;
+        color *= .25;
         gl_FragColor = vec4(color, 1);
       }
     `;
     this.uniforms = {
-      texture: (ctx, props) => props.texture
+      texture: (ctx, props) => props.particleFramebuffer.texture
+    };
+    this.framebuffer = (ctx, props) => props.accumulationWriteFramebuffer.framebuffer;
+    this.blend = {
+      enable: true,
+      func:   { src: 'one', dst: 'one' }
     };
   }
 }
@@ -174,54 +202,56 @@ class RenderFramebufferCommand extends FullscreenRectCommand {
 export class RendererPipeline {
   constructor(regl) {
     this.regl = regl;
-    this.prePasses = [];
     this.mainCommand = null;
-    this.postPasses = [];
-    this.renderFramebufferCommand = regl(new RenderFramebufferCommand());
-    this.framebuffer = null;
+    this.accumulationPasses = [];
+    this.particleFramebuffer = new Framebuffer(this.regl);
+    this.accumulationReadFramebuffer = new Framebuffer(this.regl);
+    this.accumulationWriteFramebuffer = new Framebuffer(this.regl);
+    this.compositParticleAccumulationCommand = this.regl(new CompositeParticleAccumulationCommand());
+    this.applyParticleToAccumulationCommand = this.regl(new ApplyParticleToAccumulationCommand());
   }
-  addPrePass(pass) {
-    this.prePasses.push(pass);
-  }
-  addPostPass(pass) {
-    this.postPasses.push(pass);
+  addAccumulationPass(pass) {
+    this.accumulationPasses.push(pass);
   }
   setMainCommand(cmd) {
     this.mainCommand = cmd;
   }
-  reset(clearColor, framebuffer) {
-    this.prePasses.length = 0;
-    this.postPasses.length = 0;
+  reset(clearColor) {
+    this.accumulationPasses.length = 0;
     this.mainCommand = null;
     this.clearColor = clearColor;
-    this.framebuffer = framebuffer;
+  }
+  resize(width, height) {
+    this.particleFramebuffer.resize(width, height);
+    this.accumulationReadFramebuffer.resize(width, height);
+    this.accumulationWriteFramebuffer.resize(width, height);
   }
   run(props) {
     if (!this.mainCommand) {
       return;
     }
-    for (let i = 0; i < this.prePasses.length; i++) {
-      this.prePasses[i](props);
-    }
-    if (this.postPasses.length === 0) {
+    if (this.accumulationPasses.length === 0) {
       this.regl.clear({ color: this.clearColor });
       this.mainCommand(props);
     } else {
-      this.regl.clear({
-        color: this.clearColor,
-        framebuffer: this.framebuffer.framebuffer
-      });
-      // need to give the postPasses access to mainCommand output
-      this.framebuffer.framebuffer.use(() => this.mainCommand(props));
-      props.framebuffer = this.framebuffer;
-      for (let i = 0; i < this.postPasses.length; i++) {
-        let result = this.postPasses[i](props);
-        if (result) {
-          props.framebuffer = result;
-        }
+      props.particleFramebuffer = this.particleFramebuffer;
+
+      for (let i = 0; i < this.accumulationPasses.length; i++) {
+        [this.accumulationReadFramebuffer, this.accumulationWriteFramebuffer] = [this.accumulationWriteFramebuffer, this.accumulationReadFramebuffer];
+        props.accumulationReadFramebuffer = this.accumulationReadFramebuffer;
+        props.accumulationWriteFramebuffer = this.accumulationWriteFramebuffer;
+        this.accumulationPasses[i](props);
       }
-      this.framebuffer = props.framebuffer;
-      this.renderFramebufferCommand({ texture: this.framebuffer.texture });
+
+      // need to give the postPasses access to mainCommand output
+      this.particleFramebuffer.framebuffer.use(() => {
+        this.regl.clear({color: this.clearColor});
+        this.mainCommand(props);
+      });
+
+      this.compositParticleAccumulationCommand(props);
+
+      this.applyParticleToAccumulationCommand(props);
     }
   }
   isValid() {
@@ -250,20 +280,10 @@ export class RendererState {
     // Properties
     this.particleData = -1;
     this.particleDataStore = [[null, null]];
-    this.unallocatedFramebuffers = [];
-    this.allocatedFramebuffers = [];
     this.hooks = [];
-    this.width = 1;
-    this.height = 1;
   }
   adaptToConfig(config) {
-    for (let i = 0; i < this.allocatedFramebuffers.length; i++) {
-      this.unallocatedFramebuffers.push(this.allocatedFramebuffers[i]);
-    }
-    this.allocatedFramebuffers.length = 0;
-    // We MUST release and re-set the pipeline's framebuffer, since
-    // framebuffers are forwarded to/interchanged with postPasses.
-    this.pipeline.reset(config.backgroundColor, this.acquireFramebuffer());
+    this.pipeline.reset(config.backgroundColor);
 
     // Update default particle data
     const defaultImg = this.particleDataStore[0][0];
@@ -314,25 +334,6 @@ export class RendererState {
       this.particleDataStore[id] = [null, null];
     }
   }
-  acquireFramebuffer() {
-    let buf = null;
-    if (this.unallocatedFramebuffers.length === 0) {
-      buf = new Framebuffer(this.regl);
-      buf.resize(this.width, this.height);
-    } else {
-      buf = this.unallocatedFramebuffers.pop();
-    }
-    this.allocatedFramebuffers.push(buf);
-    return buf;
-  }
-  releaseFramebuffer(buf) {
-    const pos = this.allocatedFramebuffers.indexOf(buf);
-    if (pos < 0) {
-      throw new Error('Releasing non-allocated Framebuffer');
-    }
-    this.allocatedFramebuffers.splice(pos, 1);
-    this.unallocatedFramebuffers.push(buf);
-  }
   getCurrentParticleData() {
     if (this.particleData < 0) {
       return null;
@@ -350,16 +351,7 @@ export class RendererState {
     this.hooks.push(hook);
   }
   resize(width, height) {
-    this.width = width;
-    this.height = height;
-    for (let i = 0; i < this.allocatedFramebuffers.length; i++) {
-      this.allocatedFramebuffers[i].resize(width, height);
-    }
-    // TODO should we also resize unallocated Framebuffers?
-    // At least if size decreases?
-    for (let i = 0; i < this.unallocatedFramebuffers.length; i++) {
-      this.unallocatedFramebuffers[i].resize(width, height);
-    }
+    this.pipeline.resize(width, height);
   }
 }
 

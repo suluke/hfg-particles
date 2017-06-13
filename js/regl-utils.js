@@ -29,12 +29,12 @@ export class FullscreenRectCommand {
   }
 }
 
-export class TextureToFramebufferCommand extends FullscreenRectCommand {
-  constructor(getReadTex, getWriteBuf) {
+export class AccumulationCommand extends FullscreenRectCommand {
+  constructor() {
     super();
     this.uniforms = {
-      texture: getReadTex
+      texture: (ctx, props) => props.accumulationReadFramebuffer.texture
     };
-    this.framebuffer = getWriteBuf;
+    this.framebuffer = (ctx, props) => props.accumulationWriteFramebuffer.framebuffer;
   }
 }
