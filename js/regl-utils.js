@@ -28,13 +28,3 @@ export class FullscreenRectCommand {
     this.count = 4;
   }
 }
-
-export class AccumulationCommand extends FullscreenRectCommand {
-  constructor() {
-    super();
-    this.uniforms = {
-      texture: (ctx, props) => props.accumulationReadFramebuffer.texture
-    };
-    this.framebuffer = (ctx, props) => props.accumulationWriteFramebuffer.framebuffer;
-  }
-}

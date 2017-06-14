@@ -1,5 +1,22 @@
-import Effect, { ConfigUI, fract } from './effect';
-import { Framebuffer, FullscreenRectCommand } from '../regl-utils';
+import Effect from './effect';
+import { FullscreenRectCommand } from '../regl-utils'
+
+export class AccumulationCommand extends FullscreenRectCommand {
+  constructor() {
+    super();
+    this.uniforms = {
+      texture: (ctx, props) => props.accumulationReadFramebuffer.texture
+    };
+    this.framebuffer = (ctx, props) => props.accumulationWriteFramebuffer.framebuffer;
+  }
+}
+
+class AccumulationPass {
+  constructor(isActive, render) {
+    this.isActive = isActive;
+    this.render = render;
+  }
+}
 
 export default class AccumulationEffect extends Effect {
   static getEffectStepClass() {
@@ -11,14 +28,14 @@ export default class AccumulationEffect extends Effect {
     const StepClass = this.getEffectStepClass();
     const stepCommand = regl(new StepClass());
 
-    props.state.pipeline.addAccumulationPass({
-      isActive: () => {
+    props.state.pipeline.addAccumulationPass(new AccumulationPass(
+      () => {
         const time = props.clock.getTime();
         return instance.timeBegin <= time && time <= instance.timeEnd;
       },
-      render: (props) => {
+      (props) => {
         stepCommand(props);
       }
-    });
+    ));
   }
 }

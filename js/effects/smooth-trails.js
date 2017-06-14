@@ -1,7 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
-import AccumulationEffect from './accumulation';
-import { Framebuffer, FullscreenRectCommand, AccumulationCommand } from '../regl-utils';
 import { parseHtml } from '../ui/util';
+import AccumulationEffect, { AccumulationCommand } from './accumulation';
 
 const EffectName = 'Smooth trails';
 

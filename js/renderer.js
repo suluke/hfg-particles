@@ -153,7 +153,7 @@ function domImgToCanvas(img) {
   return fullresCanvas;
 }
 
-class CompositeParticleAccumulationCommand extends FullscreenRectCommand {
+class ComposeParticleAccumulationCommand extends FullscreenRectCommand {
   constructor() {
     super();
     this.frag = `
@@ -207,7 +207,7 @@ export class RendererPipeline {
     this.particleFramebuffer = new Framebuffer(this.regl);
     this.accumulationReadFramebuffer = new Framebuffer(this.regl);
     this.accumulationWriteFramebuffer = new Framebuffer(this.regl);
-    this.compositParticleAccumulationCommand = this.regl(new CompositeParticleAccumulationCommand());
+    this.composeParticleAccumulationCommand = this.regl(new ComposeParticleAccumulationCommand());
     this.applyParticleToAccumulationCommand = this.regl(new ApplyParticleToAccumulationCommand());
   }
   addAccumulationPass(pass) {
@@ -248,13 +248,12 @@ export class RendererPipeline {
         }
       }
 
-      // need to give the postPasses access to mainCommand output
       this.particleFramebuffer.framebuffer.use(() => {
         this.regl.clear({color: this.clearColor});
         this.mainCommand(props);
       });
 
-      this.compositParticleAccumulationCommand(props);
+      this.composeParticleAccumulationCommand(props);
 
       this.applyParticleToAccumulationCommand(props);
     }
