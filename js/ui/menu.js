@@ -231,7 +231,7 @@ class EffectListItem {
     this.effect = effect;
     this.timeline = timeline;
     this.element = parseHtml(`
-      <li>${effect.getDisplayName()}</li>
+      <li title="${effect.getDescription()}">${effect.getDisplayName()}</li>
     `);
     this.dragCopy = parseHtml(`
       <div class="effect-list-item drag-drop-copy">${effect.getDisplayName()}</div>

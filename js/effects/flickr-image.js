@@ -3,6 +3,7 @@ import { parseHtml } from '../ui/util';
 import Flickr, { ApiKey } from '../polyfills/flickr';
 
 const EffectName = 'Flickr Image';
+const EffectDescription = 'Changes the underlying image to one loaded from Flickr\'s recent images feed';
 const Attribution = 'This product uses the Flickr API but is not endorsed or certified by Flickr.';
 
 class FlickrImageConfigUI extends ConfigUI {
@@ -171,6 +172,10 @@ export default class FlickrImageEffect extends Effect {
 
   static getDisplayName() {
     return EffectName;
+  }
+
+  static getDescription() {
+    return EffectDescription;
   }
 
   static getConfigUI() {

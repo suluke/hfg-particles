@@ -1,12 +1,15 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
+const EffectName = 'Converge to point';
+const EffectDescription = 'Particles are attracted towards the center of the screen';
+
 class ConvergePointConfigUI extends ConfigUI {
   constructor() {
     super();
     this.element = parseHtml(`
       <fieldset>
-        <legend>Converge to point</legend>
+        <legend>${EffectName}</legend>
       </fieldset>
     `);
     const ui = this.element;
@@ -64,7 +67,11 @@ export default class ConvergePointEffect extends Effect {
   }
 
   static getDisplayName() {
-    return 'Converge to point';
+    return EffectName;
+  }
+
+  static getDescription() {
+    return EffectDescription;
   }
 
   static getConfigUI() {

@@ -1,12 +1,15 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
+const EffectName = 'Converge to circle';
+const EffectDescription = 'Particles are attracted towards their position on an HSV color wheel centered around the center of the screen';
+
 class ConvergeCircleConfigUI extends ConfigUI {
   constructor() {
     super();
     this.element = parseHtml(`
       <fieldset>
-        <legend>Converge</legend>
+        <legend>${EffectName}</legend>
         <label>
           Rotation speed:
           <input type="number" class="effect-converge-rotation-speed" value="0" />
@@ -75,7 +78,11 @@ export default class ConvergeCircleEffect extends Effect {
   }
 
   static getDisplayName() {
-    return 'Converge to circle';
+    return EffectName;
+  }
+
+  static getDescription() {
+    return EffectDescription;
   }
 
   static getConfigUI() {
