@@ -9,6 +9,7 @@ class RendererClock {
     this.period = 1000;
     this.paused = false;
     this.wrapListeners = [];
+    this.pauseListeners = [];
   }
   frame() {
     if (this.paused || this.period === 0) {
@@ -55,11 +56,17 @@ class RendererClock {
     return this.absTime;
   }
   setPaused(paused = true) {
-    if (this.paused && !paused) {
-      this.delta = 0;
-      this.absTime = Date.now();
+    if (paused !== this.paused) {
+      if (!paused) {
+        // on unpause
+        this.delta = 0;
+        this.absTime = Date.now();
+      }
+      this.paused = paused;
+      for (let i = 0; i < this.pauseListeners.length; i++) {
+        this.pauseListeners[i](paused);
+      }
     }
-    this.paused = paused;
   }
   getPaused() {
     return this.paused;
@@ -69,6 +76,12 @@ class RendererClock {
   }
   removeWrapListener(listener) {
     this.wrapListeners.splice(this.wrapListeners.indexOf(listener), 1);
+  }
+  addPauseListener(listener) {
+    this.pauseListeners.push(listener);
+  }
+  removePauseListener(listener) {
+    this.pauseListeners.splice(this.pauseListeners.indexOf(listener), 1);
   }
 }
 

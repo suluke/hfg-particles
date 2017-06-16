@@ -456,14 +456,15 @@ class PauseButton {
     this.clock = clock;
     this.element = document.querySelector('.menu-timeline-pause');
     this.element.addEventListener('click', () => {
-      const wasPaused = clock.getPaused();
+      clock.setPaused(!clock.getPaused());
+    });
+    clock.addPauseListener((paused) => {
       const onPauseClass = 'paused';
-      if (wasPaused) {
-        this.element.classList.remove(onPauseClass);
-      } else {
+      if (paused) {
         this.element.classList.add(onPauseClass);
+      } else {
+        this.element.classList.remove(onPauseClass);
       }
-      clock.setPaused(!wasPaused);
     });
   }
 }

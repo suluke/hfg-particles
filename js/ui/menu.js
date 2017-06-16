@@ -345,6 +345,7 @@ export default class MainMenu {
         this.toggle.checked = false;
       }
       this.submit();
+      this.clock.setPaused(false);
     });
 
     for (let i = 0; i < ControlsList.length; i++) {
