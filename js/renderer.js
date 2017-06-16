@@ -25,7 +25,7 @@ class RendererClock {
       this.absTime = Date.now();
       this.delta = this.absTime - oldTime;
       this.time += this.delta;
-      while(this.time >= this.period) {
+      while (this.time >= this.period) {
         this.time -= this.period;
         for (let i = 0; i < this.wrapListeners.length; i++) {
           window.setTimeout(() => this.wrapListeners[i](), 0);
