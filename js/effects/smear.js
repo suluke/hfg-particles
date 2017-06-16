@@ -1,6 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
-import AccumulationEffect, { AccumulationCommand } from './accumulation';
+import AccumulationEffect, { AccumulationAgent } from './accumulation';
 
 const EffectName = 'Smear';
 
@@ -27,31 +27,26 @@ class SmearConfigUI extends ConfigUI {
   }
 }
 
-class SmearStepCommand extends AccumulationCommand {
-  constructor() {
-    super();
-    this.frag = `
-      precision highp float;
-      uniform sampler2D texture;
-      uniform vec2 invTextureSize;
-      varying vec2 texcoord;
-      void main() {
-        vec2 smearDir = vec2(-texcoord.y + .5, texcoord.x - .5);
-        vec3 color = texture2D(texture, texcoord + smearDir * invTextureSize * 8.).rgb;
-        color *= .975;
-        gl_FragColor = vec4(color, 1);
-      }
+class SmearAgent extends AccumulationAgent {
+  constructor(instance) {
+    super(instance);
+  }
+  getFragmentCode(uniforms) {
+    const invTextureSize = uniforms.addUniform('invTextureSize', 'vec2', (ctx, props) => {
+      return [1 / props.state.getWidth(), 1 / props.state.getHeight()];
+    });
+    return `
+      vec2 smearDir = vec2(-texcoord.y + .5, texcoord.x - .5);
+      vec3 color = 0.8 * texture2D(historyTexture, texcoord + smearDir * ${invTextureSize} * 8.).rgb;
+      color += 0.2 * particleColor;
+      accumulationResult += color;
     `;
-    this.uniforms.invTextureSize = (ctx, props) => {
-      const readTex = props.accumulationReadFramebuffer.texture;
-      return [1 / readTex.width, 1 / readTex.height];
-    };
   }
 }
 
 export default class SmearEffect extends AccumulationEffect {
-  static getEffectStepClass() {
-    return SmearStepCommand;
+  static getAgentClass() {
+    return SmearAgent;
   }
 
   static getDisplayName() {

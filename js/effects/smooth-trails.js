@@ -1,6 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
-import AccumulationEffect, { AccumulationCommand } from './accumulation';
+import AccumulationEffect, { AccumulationAgent } from './accumulation';
 
 const EffectName = 'Smooth trails';
 
@@ -27,34 +27,31 @@ class SmoothTrailsConfigUI extends ConfigUI {
   }
 }
 
-class SmoothTrailsStepCommand extends AccumulationCommand {
-  constructor() {
-    super();
-    this.frag = `
-      precision highp float;
-      uniform sampler2D texture;
-      uniform vec2 kernelSize;
-      varying vec2 texcoord;
-      void main() {
-        vec3 color = /* texture2D(texture, vec2(texcoord.x, texcoord.y)).rgb * .2 + */
-          texture2D(texture, vec2(texcoord.x + kernelSize.x, texcoord.y)).rgb * .25 +
-          texture2D(texture, vec2(texcoord.x - kernelSize.x, texcoord.y)).rgb * .25 +
-          texture2D(texture, vec2(texcoord.x, texcoord.y + kernelSize.y)).rgb * .25 +
-          texture2D(texture, vec2(texcoord.x, texcoord.y - kernelSize.y)).rgb * .25;
-        color *= .98;
-        gl_FragColor = vec4(color, 1);
-      }
+class SmoothTrailsAgent extends AccumulationAgent {
+  constructor(instance) {
+    super(instance);
+  }
+
+  getFragmentCode(uniforms) {
+    const kernelSize = uniforms.addUniform('kernelSize', 'vec2', (ctx, props) => {
+      return [4 / props.state.getWidth(), 4 / props.state.getHeight()];
+    });
+    return `
+      vec3 color = /* texture2D(historyTexture, vec2(texcoord.x, texcoord.y)).rgb * .2 + */
+        texture2D(historyTexture, vec2(texcoord.x + ${kernelSize}.x, texcoord.y)).rgb * .25 +
+        texture2D(historyTexture, vec2(texcoord.x - ${kernelSize}.x, texcoord.y)).rgb * .25 +
+        texture2D(historyTexture, vec2(texcoord.x, texcoord.y + ${kernelSize}.y)).rgb * .25 +
+        texture2D(historyTexture, vec2(texcoord.x, texcoord.y - ${kernelSize}.y)).rgb * .25;
+      color *= 0.8;
+      color += 0.2 * particleColor;
+      accumulationResult += color;
     `;
-    this.uniforms.kernelSize = (ctx, props) => {
-      const readTex = props.accumulationReadFramebuffer.texture;
-      return [4 / readTex.width, 4 / readTex.height];
-    };
   }
 }
 
 export default class SmoothTrailsEffect extends AccumulationEffect {
-  static getEffectStepClass() {
-    return SmoothTrailsStepCommand;
+  static getAgentClass() {
+    return SmoothTrailsAgent;
   }
 
   static getDisplayName() {

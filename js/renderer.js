@@ -1,6 +1,6 @@
 import createRegl from 'regl';
 import CommandBuilder from './command-builder';
-import { Framebuffer, FullscreenRectCommand } from './regl-utils';
+import { Framebuffer, FullscreenRectCommand, Shader, Uniforms } from './regl-utils';
 
 class RendererClock {
   constructor() {
@@ -153,49 +153,69 @@ function domImgToCanvas(img) {
   return fullresCanvas;
 }
 
-class ComposeParticleAccumulationCommand extends FullscreenRectCommand {
-  constructor() {
+class PaintResultCommand extends FullscreenRectCommand {
+  constructor(getResult) {
     super();
     this.frag = `
       precision highp float;
-      uniform sampler2D particleTexture;
-      uniform sampler2D accumulationTexture;
+      uniform sampler2D resultTexture;
       varying vec2 texcoord;
       void main() {
-        vec3 particleColor = texture2D(particleTexture, texcoord).rgb;
-        vec3 accumulationColor = texture2D(accumulationTexture, texcoord).rgb;
-        vec3 color = particleColor * .5 + accumulationColor * .5;
+        vec3 color = texture2D(resultTexture, texcoord).rgb;
         gl_FragColor = vec4(color, 1);
       }
     `;
     this.uniforms = {
-      particleTexture: (ctx, props) => props.particleFramebuffer.texture,
-      accumulationTexture: (ctx, props) => props.accumulationWriteFramebuffer.texture
+      resultTexture: () => getResult().texture,
     };
   }
 }
 
-class ApplyParticleToAccumulationCommand extends FullscreenRectCommand {
-  constructor() {
+class AccumulationCommand extends FullscreenRectCommand {
+  constructor(getParticles, getHistory, getOutput, agents) {
     super();
-    this.frag = `
-      precision highp float;
-      uniform sampler2D texture;
-      varying vec2 texcoord;
-      void main() {
-        vec3 color = texture2D(texture, texcoord).rgb;
-        color *= .25;
-        gl_FragColor = vec4(color, 1);
+    this.uniforms = {};
+    const frag = new Shader();
+    const stdUniforms = new Uniforms();
+    stdUniforms.addUniform('particleTexture', 'sampler2D', () => getParticles().texture);
+    stdUniforms.addUniform('historyTexture', 'sampler2D', () => getHistory().texture);
+    stdUniforms.addUniform('globalTime', 'int', (ctx, props) => props.clock.getTime());
+    stdUniforms.compile(frag, this.uniforms);
+    frag.varyings += 'varying vec2 texcoord;\n'
+    frag.mainBody = `
+      vec3 historyColor = texture2D(historyTexture, texcoord).rgb;
+      vec3 particleColor = texture2D(particleTexture, texcoord).rgb;
+      vec3 accumulationResult = vec3(0.0);
+      int activeAgents = 0;
+
+      ${AccumulationCommand.fragmentCodeForAgents(agents, frag, this.uniforms)}
+
+      if (activeAgents > 0) {
+        accumulationResult /= float(activeAgents);
+      } else {
+        accumulationResult = particleColor;
       }
+
+      gl_FragColor = vec4(accumulationResult, 1);
     `;
-    this.uniforms = {
-      texture: (ctx, props) => props.particleFramebuffer.texture
-    };
-    this.framebuffer = (ctx, props) => props.accumulationWriteFramebuffer.framebuffer;
-    this.blend = {
-      enable: true,
-      func:   { src: 'one', dst: 'one' }
-    };
+    this.frag = frag.compile();
+    this.framebuffer = () => getOutput().framebuffer;
+  }
+  static fragmentCodeForAgents(agents, shader, uniforms) {
+    const code = [];
+
+    for (let i = 0; i < agents.length; i++) {
+      const agent = agents[i];
+      const agentUniforms = new Uniforms(i);
+      code.push(`
+        if (${agent.timeBegin} <= globalTime && globalTime <= ${agent.timeEnd}) {
+          activeAgents++;
+          ${agent.getFragmentCode(agentUniforms)}
+        }
+      `);
+      agentUniforms.compile(shader, uniforms);
+    }
+    return code.join('\n');
   }
 }
 
@@ -203,59 +223,60 @@ export class RendererPipeline {
   constructor(regl) {
     this.regl = regl;
     this.mainCommand = null;
-    this.accumulationPasses = [];
-    this.particleFramebuffer = new Framebuffer(this.regl);
-    this.accumulationReadFramebuffer = new Framebuffer(this.regl);
-    this.accumulationWriteFramebuffer = new Framebuffer(this.regl);
-    this.composeParticleAccumulationCommand = this.regl(new ComposeParticleAccumulationCommand());
-    this.applyParticleToAccumulationCommand = this.regl(new ApplyParticleToAccumulationCommand());
+    this.accumulationAgents = [];
+    this.particleBuffer = new Framebuffer(this.regl);
+    this.accuHistoryBuffer = new Framebuffer(this.regl);
+    this.resultBuffer = new Framebuffer(this.regl);
+    const getResult = () => this.resultBuffer;
+    this.accumulationCommand = null;
+    this.paintResultCommand = this.regl(new PaintResultCommand(getResult));
   }
-  addAccumulationPass(pass) {
-    this.accumulationPasses.push(pass);
+  addAccumulationAgent(agent) {
+    this.accumulationAgents.push(agent);
   }
-  setMainCommand(cmd) {
+  compile(cmd) {
     this.mainCommand = cmd;
+    const getParticles = () => this.particleBuffer;
+    const getHistory = () => this.accuHistoryBuffer;
+    const getOut = () => this.resultBuffer;
+    this.accumulationCommand = this.regl(
+      new AccumulationCommand(getParticles, getHistory, getOut, this.accumulationAgents)
+    );
   }
   reset(clearColor) {
-    this.accumulationPasses.length = 0;
+    this.accumulationAgents.length = 0;
     this.mainCommand = null;
     this.clearColor = clearColor;
   }
   resize(width, height) {
-    this.particleFramebuffer.resize(width, height);
-    this.accumulationReadFramebuffer.resize(width, height);
-    this.accumulationWriteFramebuffer.resize(width, height);
+    this.particleBuffer.resize(width, height);
+    this.accuHistoryBuffer.resize(width, height);
+    this.resultBuffer.resize(width, height);
   }
   run(props) {
     if (!this.mainCommand) {
       return;
     }
-    if (this.accumulationPasses.length === 0) {
+    if (this.accumulationAgents.length === 0) {
       this.regl.clear({ color: this.clearColor });
       this.mainCommand(props);
-    } else {
-      props.particleFramebuffer = this.particleFramebuffer;
-      props.accumulationReadFramebuffer = this.accumulationReadFramebuffer;
-      props.accumulationWriteFramebuffer = this.accumulationWriteFramebuffer;
+    } else { // Accumulation is active
+      if (props.clock.getPaused()) {
+        this.paintResultCommand(props);
+      } else {
+        // Do NOT change the buffers AFTER paintResultCommand, because if we
+        // pause at some point, the other if() branch above will have the
+        // two buffers alrady swapped - which we don't want. resultBuffer
+        // should still be resultBuffer
+        [this.accuHistoryBuffer, this.resultBuffer] = [this.resultBuffer, this.accuHistoryBuffer];
+        this.particleBuffer.framebuffer.use(() => {
+          this.regl.clear({color: this.clearColor});
+          this.mainCommand(props);
+        });
 
-      for (let i = 0; i < this.accumulationPasses.length; i++) {
-        const pass = this.accumulationPasses[i];
-        if(pass.isActive()) {
-          [this.accumulationReadFramebuffer, this.accumulationWriteFramebuffer] = [this.accumulationWriteFramebuffer, this.accumulationReadFramebuffer];
-          props.accumulationReadFramebuffer = this.accumulationReadFramebuffer;
-          props.accumulationWriteFramebuffer = this.accumulationWriteFramebuffer;
-          pass.render(props);
-        }
+        this.accumulationCommand(props);
+        this.paintResultCommand(props);
       }
-
-      this.particleFramebuffer.framebuffer.use(() => {
-        this.regl.clear({color: this.clearColor});
-        this.mainCommand(props);
-      });
-
-      this.composeParticleAccumulationCommand(props);
-
-      this.applyParticleToAccumulationCommand(props);
     }
   }
   isValid() {
@@ -285,6 +306,8 @@ export class RendererState {
     this.particleData = -1;
     this.particleDataStore = [[null, null]];
     this.hooks = [];
+    this.width = 0;
+    this.height = 0;
   }
   adaptToConfig(config) {
     this.pipeline.reset(config.backgroundColor);
@@ -355,7 +378,15 @@ export class RendererState {
     this.hooks.push(hook);
   }
   resize(width, height) {
+    this.width = width;
+    this.height = height;
     this.pipeline.resize(width, height);
+  }
+  getWidth() {
+    return this.width;
+  }
+  getHeight() {
+    return this.height;
   }
 }
 
@@ -402,7 +433,7 @@ export default class Renderer {
     .then((command) => {
       this.clock.reset();
       this.clock.setPeriod(this.config.duration);
-      this.state.pipeline.setMainCommand(this.regl(command));
+      this.state.pipeline.compile(this.regl(command));
     }, (error) => console.error(error));
   }
 

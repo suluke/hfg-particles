@@ -1,6 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
-import AccumulationEffect, { AccumulationCommand } from './accumulation';
+import AccumulationEffect, { AccumulationAgent } from './accumulation';
 
 const EffectName = 'Trails';
 
@@ -27,25 +27,21 @@ class TrailsConfigUI extends ConfigUI {
   }
 }
 
-class TrailsStepCommand extends AccumulationCommand {
-  constructor() {
-    super();
-    this.frag = `
-      precision highp float;
-      uniform sampler2D texture;
-      varying vec2 texcoord;
-      void main() {
-        vec3 color = texture2D(texture, texcoord).rgb;
-        color *= .9;
-        gl_FragColor = vec4(color, 1);
-      }
+class TrailsAgent extends AccumulationAgent {
+  constructor(instance) {
+    super(instance);
+  }
+  getFragmentCode(uniforms) {
+    return `
+      vec3 color = 0.7 * historyColor + 0.3 * particleColor;
+      accumulationResult += color;
     `;
   }
 }
 
 export default class TrailsEffect extends AccumulationEffect {
-  static getEffectStepClass() {
-    return TrailsStepCommand;
+  static getAgentClass() {
+    return TrailsAgent;
   }
 
   static getDisplayName() {
