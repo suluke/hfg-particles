@@ -1,7 +1,7 @@
 import EffectConfigDialog from './effect-config-dialog';
 import { parseHtml, clearChildNodes } from './util';
 import EffectConfig from '../effects/effect-config';
-import { generateRandomTimeline } from '../randomplay';
+import { effectList } from '../effects/index';
 
 /**
  *
@@ -228,6 +228,10 @@ class TimelineTrack {
   }
 
   dropNewEffect(effect, clientX, clientY, width, height) {
+    if (this.timeline.isLocked()) {
+      return false;
+    }
+
     const elm = this.getTrackElement();
     const rect = elm.getBoundingClientRect();
     if (clientX >= rect.left && clientX <= rect.right &&
@@ -470,23 +474,61 @@ class PauseButton {
 }
 
 class RandomplayButton {
-  constructor(clock, menu) {
-    this.clock = clock;
+  constructor(timeline) {
+    this.menu = timeline.menu;
+    const clock = this.menu.clock;
     this.onClockWrap = null;
     this.element = document.getElementById('menu-timeline-randomplay');
     this.element.addEventListener('click', () => {
       if(this.onClockWrap === null) {
-        this.onClockWrap = () => {
-          const config = generateRandomTimeline(menu.submittedConfig);
-          menu.applyConfig(config);
-          menu.submit();
-        };
-        this.clock.addWrapListener(this.onClockWrap);
+        this.onClockWrap = () => this.fillRandomTimeline();
+        clock.addWrapListener(this.onClockWrap);
+        this.fillRandomTimeline();
+        timeline.setLocked(true);
+        clock.setPaused(false);
       } else {
-        this.clock.removeWrapListener(this.onClockWrap);
+        clock.removeWrapListener(this.onClockWrap);
         this.onClockWrap = null;
+        timeline.setLocked(false);
       }
     });
+  }
+
+  fillRandomTimeline() {
+    const config = RandomplayButton.generateRandomTimeline(this.menu.submittedConfig);
+    this.menu.applyConfig(config);
+    this.menu.submit();
+  }
+
+  static generateRandomTimeline(currentConfig) {
+    const config = Object.assign({}, currentConfig);
+
+    config.effects = [];
+    config.duration = 0;
+
+    for (let i = 0; i < effectList.length; i++) {
+      if (effectList[i].getId() == "FlickrImageEffect") {
+        continue;
+      }
+
+      const timeBegin = Math.round(Math.random() * 10000);
+      const duration = Math.round(Math.random() * 9000 + 1000);
+
+      config.effects[i] = [new EffectConfig(
+        effectList[i].getId(),
+        timeBegin,
+        timeBegin + duration,
+        1,
+        effectList[i].getRandomConfig()
+      )];
+
+      config.duration = Math.max(config.duration, timeBegin + duration);
+    }
+
+    //TODO: does not work...
+    //config.effects.push([new EffectConfig("FlickrImageEffect", 0, config.duration, 1, { searchTerm: '' })]);
+
+    return config;
   }
 }
 
@@ -517,12 +559,13 @@ export default class Timeline {
     this.menu = menu;
     this.element = document.querySelector('.menu-timeline-container');
     this.trackList = [];
+    this.locked = false;
     this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
     this.effectConfigDialog = new EffectConfigDialog();
     this.timeticks = new Timeticks(menu.clock);
     this.timeDisplay = new TimeDisplay(menu.clock);
     this.pauseButton = new PauseButton(menu.clock);
-    this.randomplayButton = new RandomplayButton(menu.clock, menu);
+    this.randomplayButton = new RandomplayButton(this);
     this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
     this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
     this.timeticks.addScaleChangeListener(() => {
@@ -632,5 +675,19 @@ export default class Timeline {
       }
     }
     return false;
+  }
+  isLocked() {
+    return this.locked;
+  }
+  setLocked(locked = true) {
+    if (this.locked !== locked) {
+      this.locked = locked;
+      const lockedClass = 'locked';
+      if (locked) {
+        this.element.classList.add(lockedClass);
+      } else {
+        this.element.classList.remove(lockedClass);
+      }
+    }
   }
 }

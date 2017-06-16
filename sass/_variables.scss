@@ -1,5 +1,6 @@
 $apply-btn-active-color: #5cb85c;
 $apply-btn-focus-color: #449d44;
-$apply-btn-inactive-color: #aaa;
 
 $randomize-btn-active-color: #5cb85c;
+$ui-disabled-text-color: #aaa;
+$apply-btn-inactive-color: $ui-disabled-text-color;

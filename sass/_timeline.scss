@@ -3,6 +3,7 @@
 @import 'mixins/icons';
 @import 'mixins/hide';
 @import 'mixins/button';
+@import 'variables';
 
 .menu-timeline-container {
   overflow: hidden; /* hide the position indicator */
@@ -61,6 +62,13 @@
             }
           }
 
+          .menu-timeline-lockstate {
+            @include icon($fa-var-unlock);
+            @at-root .locked#{&} {
+              @include icon($fa-var-lock);
+            }
+          }
+
           &.menu-timeline-timeticks {
             cursor: pointer;
             .menu-timeline-timetick {
@@ -73,6 +81,10 @@
       }
 
       .menu-timeline-tracks {
+        @at-root .locked#{&} {
+          color: $ui-disabled-text-color !important;
+        }
+
         /* Timeline tracks */
         & > tr {
           height: 4em;
@@ -88,6 +100,17 @@
               }
             }
             & > ol {
+              @at-root .locked#{&}:after {
+                content: '';
+                position: absolute;
+                z-index: 100;
+                display: block;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+              }
+
               list-style-type: none;
               padding: 0;
               margin: 0;
@@ -129,6 +152,9 @@
                 }
 
                 & > button {
+                  @at-root .locked#{&} {
+                    color: $ui-disabled-text-color;
+                  }
                   display: inline-block;
                   padding: 0;
                   cursor: -moz-grab;
