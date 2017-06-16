@@ -358,6 +358,9 @@ export default class MainMenu {
     }
     this.effectList.appendChild(effectListElms);
 
+    this.defaultConfig = this.readConfig();
+
+    // now populate the initial config (NOT defaultConfig) with some effects
     const effectLen = 2500;
     const tracks = [];
     for (let i = 0; i < effects.length; i++) {
@@ -373,8 +376,7 @@ export default class MainMenu {
     }
     this.timeline.loadTimeline(tracks);
 
-    this.defaultConfig = this.readConfig();
-    this.submittedConfig = this.defaultConfig;
+    this.submittedConfig = this.readConfig();
   }
 
   applyConfig(config) {
