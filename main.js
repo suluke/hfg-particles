@@ -1257,8 +1257,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-06-09T19:33:23.840Z',
-  git_rev:               '4824b04',
+  timestamp:             '2017-06-19T07:45:42.011Z',
+  git_rev:               'caea34e',
   export_schema_version: 0
 };
 
@@ -1366,6 +1366,10 @@ Effect.getRandomConfig = function getRandomConfig () {
   throw new Error('Method not implemented');
 };
 
+Effect.getDescription = function getDescription () {
+  throw new Error('Method not implemented');
+};
+
 /**
  * Interface for config UIs
  */
@@ -1401,12 +1405,15 @@ function fract(x) {
   return x - Math.floor(x);
 }
 
+var EffectName = 'Displace by hue';
+var EffectDescription = 'Particles move into different directions depending on their hue';
+
 var HueDisplaceConfigUI = (function (ConfigUI$$1) {
   function HueDisplaceConfigUI() {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
-    this.element = parseHtml("\n      <fieldset>\n        <legend>Displace by hue</legend>\n        <label>\n          Distance:\n          <input type=\"number\" class=\"effect-hue-displace-distance\" value=\"10\" />\n        </label><br/>\n        <label>\n          Scale by brightness:\n          <input type=\"number\" class=\"effect-hue-displace-scale-by-value\" value=\"0\" />%\n        </label><br/>\n        <label>\n          Random direction offset:\n          <input type=\"checkbox\" class=\"effect-hue-displace-random-direction-offset\"/>\n        </label><br/>\n        <label>\n          Rotate:\n          <input type=\"number\" class=\"effect-hue-displace-rotate\" value=\"0\" />%\n        </label>\n      </fieldset>\n    ");
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName + "</legend>\n        <label>\n          Distance:\n          <input type=\"number\" class=\"effect-hue-displace-distance\" value=\"10\" />\n        </label><br/>\n        <label>\n          Scale by brightness:\n          <input type=\"number\" class=\"effect-hue-displace-scale-by-value\" value=\"0\" />%\n        </label><br/>\n        <label>\n          Random direction offset:\n          <input type=\"checkbox\" class=\"effect-hue-displace-random-direction-offset\"/>\n        </label><br/>\n        <label>\n          Rotate:\n          <input type=\"number\" class=\"effect-hue-displace-rotate\" value=\"0\" />%\n        </label>\n      </fieldset>\n    "));
     var ui = this.element;
     this.distanceInput = ui.querySelector('input.effect-hue-displace-distance');
     this.scaleByValInput = ui.querySelector('input.effect-hue-displace-scale-by-value');
@@ -1488,7 +1495,11 @@ var HueDisplaceEffect = (function (Effect$$1) {
   };
 
   HueDisplaceEffect.getDisplayName = function getDisplayName () {
-    return 'Hue Displace';
+    return EffectName;
+  };
+
+  HueDisplaceEffect.getDescription = function getDescription () {
+    return EffectDescription;
   };
 
   HueDisplaceEffect.getConfigUI = function getConfigUI () {
@@ -1520,10 +1531,13 @@ var HueDisplaceEffect = (function (Effect$$1) {
   return HueDisplaceEffect;
 }(Effect));
 
+var EffectName$1 = 'Converge to point';
+var EffectDescription$1 = 'Particles are attracted towards the center of the screen';
+
 var ConvergePointConfigUI = (function (ConfigUI$$1) {
   function ConvergePointConfigUI() {
     ConfigUI$$1.call(this);
-    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge to point</legend>\n      </fieldset>\n    ");
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$1 + "</legend>\n      </fieldset>\n    "));
     var ui = this.element;
 
   }
@@ -1567,7 +1581,11 @@ var ConvergePointEffect = (function (Effect$$1) {
   };
 
   ConvergePointEffect.getDisplayName = function getDisplayName () {
-    return 'Converge to point';
+    return EffectName$1;
+  };
+
+  ConvergePointEffect.getDescription = function getDescription () {
+    return EffectDescription$1;
   };
 
   ConvergePointEffect.getConfigUI = function getConfigUI () {
@@ -1591,12 +1609,15 @@ var ConvergePointEffect = (function (Effect$$1) {
   return ConvergePointEffect;
 }(Effect));
 
+var EffectName$2 = 'Converge to circle';
+var EffectDescription$2 = 'Particles are attracted towards their position on an HSV color wheel centered around the center of the screen';
+
 var ConvergeCircleConfigUI = (function (ConfigUI$$1) {
   function ConvergeCircleConfigUI() {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
-    this.element = parseHtml("\n      <fieldset>\n        <legend>Converge</legend>\n        <label>\n          Rotation speed:\n          <input type=\"number\" class=\"effect-converge-rotation-speed\" value=\"0\" />\n        </label>\n      </fieldset>\n    ");
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$2 + "</legend>\n        <label>\n          Rotation speed:\n          <input type=\"number\" class=\"effect-converge-rotation-speed\" value=\"0\" />\n        </label>\n      </fieldset>\n    "));
     var ui = this.element;
 
     this.rotationSpeedInput = ui.querySelector('input.effect-converge-rotation-speed');
@@ -1647,7 +1668,11 @@ var ConvergeCircleEffect = (function (Effect$$1) {
   };
 
   ConvergeCircleEffect.getDisplayName = function getDisplayName () {
-    return 'Converge to circle';
+    return EffectName$2;
+  };
+
+  ConvergeCircleEffect.getDescription = function getDescription () {
+    return EffectDescription$2;
   };
 
   ConvergeCircleEffect.getConfigUI = function getConfigUI () {
@@ -1673,14 +1698,15 @@ var ConvergeCircleEffect = (function (Effect$$1) {
   return ConvergeCircleEffect;
 }(Effect));
 
-var EffectName = 'Wave';
+var EffectName$3 = 'Wave';
+var EffectDescription$3 = 'A wave passes through the particles from left to right over the screen';
 
 var WaveConfigUI = (function (ConfigUI$$1) {
   function WaveConfigUI() {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName + "</legend>\n        <label>\n          Number of waves:\n          <input type=\"number\" min=\"1\" step=\"1\" value=\"1\" class=\"effect-wave-count\" />\n        </label><br/>\n        <label>\n          Amplitude:\n          <input type=\"number\" value=\"0.05\" class=\"effect-wave-amplitude\" />\n        </label>\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$3 + "</legend>\n        <label>\n          Number of waves:\n          <input type=\"number\" min=\"1\" step=\"1\" value=\"1\" class=\"effect-wave-count\" />\n        </label><br/>\n        <label>\n          Amplitude:\n          <input type=\"number\" value=\"0.05\" class=\"effect-wave-amplitude\" />\n        </label>\n      </fieldset>\n    "));
     var ui = this.element;
 
     this.waveCountInput = ui.querySelector('input.effect-wave-count');
@@ -1749,7 +1775,11 @@ var WaveEffect = (function (Effect$$1) {
   };
 
   WaveEffect.getDisplayName = function getDisplayName () {
-    return EffectName;
+    return EffectName$3;
+  };
+
+  WaveEffect.getDescription = function getDescription () {
+    return EffectDescription$3;
   };
 
   WaveEffect.getConfigUI = function getConfigUI () {
@@ -1777,7 +1807,8 @@ var WaveEffect = (function (Effect$$1) {
   return WaveEffect;
 }(Effect));
 
-var EffectName$1 = 'Change Image';
+var EffectName$4 = 'Change Image';
+var EffectDescription$4 = 'Changes the particle data to a configurable image (file or url)';
 
 var States = {
   INVALID: 0,
@@ -1790,7 +1821,7 @@ var ChangeImageConfigUI = (function (ConfigUI$$1) {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset class=\"effect-change-image-config\">\n        <legend>" + EffectName$1 + "</legend>\n        <input type=\"radio\" name=\"effect-change-image-source-type\" value=\"file\" checked>\n          Upload own image\n        </input>\n        <input type=\"radio\" name=\"effect-change-image-source-type\" value=\"url\">\n          Load image from URL\n        </input>\n        <br/>\n        <label class=\"effect-change-image-file-tab\">\n          <input type=\"file\" accept=\"image/*\"/>\n        </label>\n        <label class=\"effect-change-image-url-tab\">\n          Enter image url\n          <input type=\"url\"/>\n        </label>\n        <br/>\n        <img class=\"effect-change-image-preview\">\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset class=\"effect-change-image-config\">\n        <legend>" + EffectName$4 + "</legend>\n        <input type=\"radio\" name=\"effect-change-image-source-type\" value=\"file\" checked>\n          Upload own image\n        </input>\n        <input type=\"radio\" name=\"effect-change-image-source-type\" value=\"url\">\n          Load image from URL\n        </input>\n        <br/>\n        <label class=\"effect-change-image-file-tab\">\n          <input type=\"file\" accept=\"image/*\"/>\n        </label>\n        <label class=\"effect-change-image-url-tab\">\n          Enter image url\n          <input type=\"url\"/>\n        </label>\n        <br/>\n        <img class=\"effect-change-image-preview\">\n      </fieldset>\n    "));
     var ui = this.element;
     this.radioButtons = ui.querySelectorAll('input[type="radio"][name="effect-change-image-source-type"]');
     this.fileInput = ui.querySelector('.effect-change-image-file-tab input[type="file"]');
@@ -1913,7 +1944,11 @@ var ChangeImageEffect = (function (Effect$$1) {
   };
 
   ChangeImageEffect.getDisplayName = function getDisplayName () {
-    return EffectName$1;
+    return EffectName$4;
+  };
+
+  ChangeImageEffect.getDescription = function getDescription () {
+    return EffectDescription$4;
   };
 
   ChangeImageEffect.getConfigUI = function getConfigUI () {
@@ -3826,7 +3861,7 @@ delete window.Flickr;
 
 var ApiKey = 'bbd60ce148c0a1dedcaaffd228a03264';
 
-var FlickrP$1 = (function (Flickr) {
+var FlickrP = (function (Flickr) {
   function FlickrP() {
     var args = [], len = arguments.length;
     while ( len-- ) args[ len ] = arguments[ len ];
@@ -3874,16 +3909,17 @@ function recursivePromisify(obj) {
   for (var prop in obj) loop( prop );
   return res;
 }
-FlickrP$1.prototype = recursivePromisify(Flickr.prototype);
+FlickrP.prototype = recursivePromisify(Flickr.prototype);
 
-var EffectName$2 = 'Flickr Image';
+var EffectName$5 = 'Flickr Image';
+var EffectDescription$5 = 'Changes the underlying image to one loaded from Flickr\'s recent images feed';
 var FlickrImageConfigUI = (function (ConfigUI$$1) {
   function FlickrImageConfigUI() {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
     var searchInputClass = 'effect-flickr-img-search-term';
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$2 + "</legend>\n        <label>\n          Search term:\n          <input type=\"text\" class=\"" + searchInputClass + "\"/>\n        </label>\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$5 + "</legend>\n        <label>\n          Search term:\n          <input type=\"text\" class=\"" + searchInputClass + "\"/>\n        </label>\n      </fieldset>\n    "));
     var ui = this.element;
     this.searchTermInput = this.element.querySelector(("." + searchInputClass));
     this.searchTermInput.addEventListener('change', function () {
@@ -3914,7 +3950,132 @@ var FlickrImageConfigUI = (function (ConfigUI$$1) {
   return FlickrImageConfigUI;
 }(ConfigUI));
 
-var flickr = new FlickrP$1({ api_key: ApiKey });
+var prefetchCount = 5;
+var FlickrCacheEntry = function FlickrCacheEntry() {
+  this.page = 1;
+  this.initialQueryTime = Math.floor(Date.now() / 1000);
+  this.loadsInProgress = 0;
+  this.loadedImgs = [];
+  this.requests = [];
+};
+
+var FlickrImageCache = function FlickrImageCache() {
+  this.flickr = new FlickrP({ api_key: ApiKey });
+  this.byQuery = {};
+};
+
+FlickrImageCache.prototype.setProps = function setProps (props) {
+  this.props = props;
+};
+
+FlickrImageCache.prototype.runFlickrQuery = function runFlickrQuery (searchTerm) {
+  var entry = this.getEntryForSearchTerm(searchTerm);
+
+  var onResponse = function (response) {
+    // since page is 1-indexed, a real greater is necessary
+    if (entry.page > response.photos.pages) {
+      entry.page = 1;
+    }
+    return response;
+  };
+  // Two different flickr apis, depending on search string content
+  var query = null;
+  if (searchTerm === '') {
+    query = this.flickr
+    .photos
+    .getRecent({
+      per_page: prefetchCount,
+      page: entry.page,
+      max_upload_date: entry.initialQueryTime
+    }).then(onResponse);
+  } else {
+    query = this.flickr
+    .photos
+    .search({
+      text: searchTerm,
+      per_page: prefetchCount,
+      page: entry.page,
+      max_upload_date: entry.initialQueryTime
+    }).then(onResponse);
+  }
+  entry.loadsInProgress += prefetchCount;
+  entry.page = entry.page + 1;
+  return query;
+};
+
+FlickrImageCache.prototype.processSearchQueryResponse = function processSearchQueryResponse (response, entry) {
+    var this$1 = this;
+
+  var loadQueue = [];
+  for (var i = 0; i < response.photos.photo.length; i++) {
+    loadQueue.push(this$1.processPhoto(response.photos.photo[i], entry));
+  }
+  return loadQueue;
+};
+
+FlickrImageCache.prototype.processPhoto = function processPhoto (photo, entry) {
+  var props = this.props;
+  return this.flickr.photos.getSizes({
+    photo_id: photo.id
+  }).then(function (sizes) {
+    var original = sizes.sizes.size.find(function (size) {
+      return size.width >= props.config.xParticlesCount;
+    }) || sizes.sizes.size[sizes.sizes.size.length - 1];
+    var url = original.source;
+    var loader = document.createElement('img');
+    loader.crossOrigin = 'Anonymous';
+    loader.src = url;
+    loader.onload = function () {
+      entry.loadsInProgress = entry.loadsInProgress - 1;
+      if (entry.requests.length > 0) {
+        // resolve pending request directly
+        var request = entry.requests.shift();
+        request(props.state.createParticleDataFromDomImg(
+          loader, props.config.xParticlesCount, props.config.yParticlesCount
+        ));
+      } else {
+        entry.loadedImgs.push(loader);
+      }
+    };
+  });
+};
+
+FlickrImageCache.prototype.getEntryForSearchTerm = function getEntryForSearchTerm (searchTerm) {
+  if (!this.byQuery[searchTerm]) {
+    this.byQuery[searchTerm] = new FlickrCacheEntry();
+  }
+  return this.byQuery[searchTerm];
+};
+
+FlickrImageCache.prototype.shouldFireNewQuery = function shouldFireNewQuery (entry) {
+  if (entry.loadsInProgress + entry.loadedImgs.length -
+      entry.requests.length < prefetchCount
+  ) {
+    return true;
+  }
+  return false;
+};
+
+FlickrImageCache.prototype.getParticleDataForSearchTerm = function getParticleDataForSearchTerm (searchTerm) {
+    var this$1 = this;
+
+  var entry = this.getEntryForSearchTerm(searchTerm);
+  var props = this.props;
+  if (entry.loadedImgs.length === 0) {
+    return new Promise(function (res, rej) {
+      entry.requests.push(res);
+      if (this$1.shouldFireNewQuery(entry)) {
+        this$1.runFlickrQuery(searchTerm, entry)
+        .then(function (response) { return this$1.processSearchQueryResponse(response, entry); });
+      }
+    });
+  } else {
+    return Promise.resolve(props.state.createParticleDataFromDomImg(
+      entry.loadedImgs.shift(),
+      props.config.xParticlesCount, props.config.yParticlesCount
+    ));
+  }
+};
 
 var FlickrImageEffect = (function (Effect$$1) {
   function FlickrImageEffect () {
@@ -3925,132 +4086,60 @@ var FlickrImageEffect = (function (Effect$$1) {
   FlickrImageEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
   FlickrImageEffect.prototype.constructor = FlickrImageEffect;
 
-  FlickrImageEffect.registerAsync = function registerAsync (instance, props, uniforms, vertexShader) {
-    var prefetchCount = 5;
-
-    // The logic for getting a continuous stream of images from flickr
-    var page = 1;
-    var loadsInProgress = 0;
-    var initialQueryTime = Math.floor(Date.now() / 1000);
-    var runFlickrQuery = function (processResponse) {
-      var onResponse = function (response) {
-        // since page is 1-indexed, a real greater is necessary
-        if (page > response.photos.pages) {
-          page = 1;
-        }
-        processResponse(response);
-      };
-      // Two different flickr apis, depending on search string content
-      var query = null;
-      if (instance.config.searchTerm === '') {
-        query = flickr
-        .photos
-        .getRecent({
-          per_page: prefetchCount,
-          page: page,
-          max_upload_date: initialQueryTime
-        }).then(onResponse);
-      } else {
-        query = flickr
-        .photos
-        .search({
-          text: instance.config.searchTerm,
-          per_page: prefetchCount,
-          page: page,
-          max_upload_date: initialQueryTime
-        }).then(onResponse);
-      }
-      loadsInProgress += prefetchCount;
-      page = page + 1;
-      return query;
-    };
-
-    // This method is called the first time we have a list of potential images
-    var onInitialFlickrResponse = function (photos) { return new Promise(function (finishRegister, rej) {
-      var loadedImgs = [];
-      var particleDataQueue = [];
-      var loadQueue = [];
-
-      var processPhoto = function (photo) { return flickr.photos.getSizes({
-        photo_id: photo.id
-      }).then(function (sizes) { return new Promise(function (res, rej) {
-        var original = sizes.sizes.size.find(function (size) {
-          return size.width >= props.config.xParticlesCount;
-        }) || sizes.sizes.size[sizes.sizes.size.length - 1];
-        var url = original.source;
-        var loader = document.createElement('img');
-        loader.crossOrigin = 'Anonymous';
-        loader.src = url;
-        loader.onload = function () {
-          loadedImgs.push(loader);
-          loadsInProgress = loadsInProgress - 1;
-          res();
-        };
-      }); }); };
-      
-      // kick off loading process for each image
-      for (var i = 0; i < photos.photos.photo.length; i++) {
-        loadQueue.push(processPhoto(photos.photos.photo[i]));
-      }
-      // As soon as we have a fully-loaded image, use it!
-      Promise.race(loadQueue).then(function () {
-        var alive = true;
-        var prevWasChange = false;
-        var displayed = -1;
-        // Run this in a loop to check if we need to update the image
-        var checkTime = function () {
-          if (!alive) {
-            return;
-          }
-          // synchronize the contents of loadedImgs with particleDataQueue
-          while(particleDataQueue.length < loadedImgs.length) {
-            particleDataQueue.push(
-              props.state.createParticleDataFromDomImg(
-                loadedImgs[particleDataQueue.length],
-                props.config.xParticlesCount, props.config.yParticlesCount
-              )
-            );
-            // intentional break. Avoid too much work per RAF iteration
-            break;
-          }
-          var tDist = instance.timeBegin - props.clock.getTime();
-          if (tDist >= 0 && tDist <= props.clock.getDelta()) {
-            // free unneeded resources when we proceed to the next image
-            var freed = -1;
-            if (displayed !== -1 && particleDataQueue.length > 1) {
-              loadedImgs.shift();
-              freed = particleDataQueue.shift();
-            }
-            displayed = particleDataQueue[0];
-            props.state.setParticleData(displayed);
-            // do the free AFTER we setParticleData to a new one
-            if (freed !== -1) {
-              props.state.destroyParticleData(freed);
-              if (loadsInProgress < prefetchCount && loadedImgs.length < prefetchCount) {
-                runFlickrQuery(function (photos) {
-                  for (var i = 0; i < photos.photos.photo.length; i++) {
-                    processPhoto(photos.photos.photo[i]);
-                  }
-                });
-              }
-            }
-          }
-          window.requestAnimationFrame(checkTime);
-        };
-        checkTime();
-        props.state.addHook(function () {
-          alive = false;
+  FlickrImageEffect.registerAsync = function registerAsync (instance, props) {
+    var cache = FlickrImageEffect.getCache(props);
+    return cache.getParticleDataForSearchTerm(instance.config.searchTerm)
+    .then(function (particleData) {
+      var particleDataQueue = [particleData];
+      // We want to have some images pre-allocated to this effect
+      for (var i = 1; i < prefetchCount; i++) {
+        cache.getParticleDataForSearchTerm(instance.config.searchTerm)
+        .then(function (particleData) {
+          particleDataQueue.push(particleData);
         });
-        
-        finishRegister();
-      });
-    }); };
+      }
 
-    return runFlickrQuery(onInitialFlickrResponse);
+      var alive = true;
+      var displayed = -1;
+      // Run this in a loop to check if we need to update the image
+      var checkTime = function () {
+        if (!alive) {
+          return;
+        }
+        var tDist = props.clock.getTime() - instance.timeBegin;
+        if (tDist >= 0 && tDist <= props.clock.getDelta()) {
+          // free unneeded resources when we proceed to the next image
+          var freed = -1;
+          if (displayed !== -1 && particleDataQueue.length > 1) {
+            freed = particleDataQueue.shift();
+          }
+          displayed = particleDataQueue[0];
+          props.state.setParticleData(displayed);
+          // do the free AFTER we setParticleData to a new one
+          if (freed !== -1) {
+            props.state.destroyParticleData(freed);
+            // also look for a replacement
+            cache.getParticleDataForSearchTerm(instance.config.searchTerm)
+            .then(function (particleData) {
+              particleDataQueue.push(particleData);
+            });
+          }
+        }
+        window.requestAnimationFrame(checkTime);
+      };
+      checkTime();
+      props.state.addHook(function () {
+        alive = false;
+      });
+    });
   };
 
   FlickrImageEffect.getDisplayName = function getDisplayName () {
-    return EffectName$2;
+    return EffectName$5;
+  };
+
+  FlickrImageEffect.getDescription = function getDescription () {
+    return EffectDescription$5;
   };
 
   FlickrImageEffect.getConfigUI = function getConfigUI () {
@@ -4071,8 +4160,375 @@ var FlickrImageEffect = (function (Effect$$1) {
     return this.getDefaultConfig();
   };
 
+  FlickrImageEffect.getCache = function getCache (props) {
+    if (!this._cache) {
+      this._cache = new FlickrImageCache();
+    }
+    this._cache.setProps(props);
+
+    return this._cache;
+  };
+
   return FlickrImageEffect;
 }(Effect));
+
+var Framebuffer = function Framebuffer(regl) {
+  this.texture = regl.texture({ width: 1, height: 1, min: 'linear', mag: 'linear' }); // call resize before first use !
+  this.framebuffer = regl.framebuffer({ color: this.texture, depth: false, stencil: false, depthStencil: false });
+};
+
+Framebuffer.prototype.resize = function resize (width, height) {
+  this.framebuffer.resize(width, height);
+};
+
+var FullscreenRectCommand = function FullscreenRectCommand() {
+  this.vert = "\n      precision highp float;\n      attribute vec2 v_texcoord;\n      varying vec2 texcoord;\n      void main() {\n        texcoord = v_texcoord;\n        gl_Position = vec4(v_texcoord * vec2(2) - vec2(1), 0, 1);\n      }\n    ";
+  this.attributes = {
+    v_texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]]
+  };
+  this.depth = false;
+  this.primitive = 'triangle strip';
+  this.count = 4;
+};
+
+var Shader = function Shader() {
+  this.attributes = '';
+  this.uniforms = '';
+  this.varyings = '';
+  this.globals = '';
+  this.functions = '';
+  this.mainBody = '';
+};
+
+Shader.prototype.compile = function compile () {
+  return ("\n      precision highp float;\n\n      // Attributes\n      " + (this.attributes) + "\n\n      // Uniforms\n      " + (this.uniforms) + "\n\n      // Varyings\n      " + (this.varyings) + "\n\n      // Globals\n      " + (this.globals) + "\n\n      // Functions\n      " + (this.functions) + "\n\n      void main() {\n        " + (this.mainBody) + "\n      }\n    ");
+};
+
+var Uniforms = function Uniforms(id) {
+  this.uniforms = [];
+  this.id = id;
+};
+Uniforms.prototype.addUniform = function addUniform (name, type, value) {
+  var uniform = { name: name, type: type, value: value };
+  this.uniforms.push(uniform);
+
+  return this.getNameFor(uniform);
+};
+Uniforms.prototype.getNameFor = function getNameFor (uniform) {
+  if (this.id === undefined) {
+    return uniform.name;
+  } else {
+    return ((uniform.name) + "_" + (this.id));
+  }
+};
+Uniforms.prototype.compile = function compile (shader, uniforms) {
+    var this$1 = this;
+    if ( uniforms === void 0 ) uniforms = null;
+
+  var shaderStr = [];
+  for (var i = 0; i < this.uniforms.length; i++) {
+    var uniform = this$1.uniforms[i];
+    shaderStr.push(("uniform " + (uniform.type) + " " + (this$1.getNameFor(uniform)) + ";"));
+    if (uniforms !== null) {
+      // eslint-disable-next-line no-param-reassign
+      uniforms[this$1.getNameFor(uniform)] = uniform.value;
+    }
+  }
+  // eslint-disable-next-line no-param-reassign
+  shader.uniforms += shaderStr.join('\n') + '\n';
+};
+
+var AccumulationAgent = function AccumulationAgent(instance) {
+  this.timeBegin = instance.timeBegin;
+  this.timeEnd = instance.timeEnd;
+};
+AccumulationAgent.prototype.getFragmentCode = function getFragmentCode () {
+  throw new Error('Not implemented');
+};
+
+var AccumulationEffect = (function (Effect$$1) {
+  function AccumulationEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) AccumulationEffect.__proto__ = Effect$$1;
+  AccumulationEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  AccumulationEffect.prototype.constructor = AccumulationEffect;
+
+  AccumulationEffect.getAgentClass = function getAgentClass (/* instance */) {
+    throw new Error('Not implemented');
+  };
+
+  AccumulationEffect.register = function register (instance, props) {
+    var AgentClass = this.getAgentClass();
+    var agent = new AgentClass(instance);
+    props.state.pipeline.addAccumulationAgent(agent);
+  };
+
+  return AccumulationEffect;
+}(Effect));
+
+var EffectName$6 = 'Trails';
+var EffectDescription$6 = 'Enables an fading image echo';
+
+var TrailsConfigUI = (function (ConfigUI$$1) {
+  function TrailsConfigUI() {
+    ConfigUI$$1.call(this);
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$6 + "</legend>\n      </fieldset>\n    "));
+  }
+
+  if ( ConfigUI$$1 ) TrailsConfigUI.__proto__ = ConfigUI$$1;
+  TrailsConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  TrailsConfigUI.prototype.constructor = TrailsConfigUI;
+
+  TrailsConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  TrailsConfigUI.prototype.getConfig = function getConfig () {
+    var config = {};
+    return config;
+  };
+
+  TrailsConfigUI.prototype.applyConfig = function applyConfig (config) {
+  };
+
+  return TrailsConfigUI;
+}(ConfigUI));
+
+var TrailsAgent = (function (AccumulationAgent$$1) {
+  function TrailsAgent(instance) {
+    AccumulationAgent$$1.call(this, instance);
+  }
+
+  if ( AccumulationAgent$$1 ) TrailsAgent.__proto__ = AccumulationAgent$$1;
+  TrailsAgent.prototype = Object.create( AccumulationAgent$$1 && AccumulationAgent$$1.prototype );
+  TrailsAgent.prototype.constructor = TrailsAgent;
+  TrailsAgent.prototype.getFragmentCode = function getFragmentCode (uniforms) {
+    return "\n      vec3 color = 0.7 * historyColor + 0.3 * particleColor;\n      accumulationResult += color;\n    ";
+  };
+
+  return TrailsAgent;
+}(AccumulationAgent));
+
+var TrailsEffect = (function (AccumulationEffect$$1) {
+  function TrailsEffect () {
+    AccumulationEffect$$1.apply(this, arguments);
+  }
+
+  if ( AccumulationEffect$$1 ) TrailsEffect.__proto__ = AccumulationEffect$$1;
+  TrailsEffect.prototype = Object.create( AccumulationEffect$$1 && AccumulationEffect$$1.prototype );
+  TrailsEffect.prototype.constructor = TrailsEffect;
+
+  TrailsEffect.getAgentClass = function getAgentClass () {
+    return TrailsAgent;
+  };
+
+  TrailsEffect.getDisplayName = function getDisplayName () {
+    return EffectName$6;
+  };
+
+  TrailsEffect.getDescription = function getDescription () {
+    return EffectDescription$6;
+  };
+
+  TrailsEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new TrailsConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  TrailsEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+    };
+  };
+
+  TrailsEffect.getRandomConfig = function getRandomConfig () {
+    return {
+    };
+  };
+
+  return TrailsEffect;
+}(AccumulationEffect));
+
+var EffectName$7 = 'Smooth trails';
+var EffectDescription$7 = 'Enables an smoother fading image echo';
+
+var SmoothTrailsConfigUI = (function (ConfigUI$$1) {
+  function SmoothTrailsConfigUI() {
+    ConfigUI$$1.call(this);
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$7 + "</legend>\n      </fieldset>\n    "));
+  }
+
+  if ( ConfigUI$$1 ) SmoothTrailsConfigUI.__proto__ = ConfigUI$$1;
+  SmoothTrailsConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  SmoothTrailsConfigUI.prototype.constructor = SmoothTrailsConfigUI;
+
+  SmoothTrailsConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  SmoothTrailsConfigUI.prototype.getConfig = function getConfig () {
+    var config = {};
+    return config;
+  };
+
+  SmoothTrailsConfigUI.prototype.applyConfig = function applyConfig (config) {
+  };
+
+  return SmoothTrailsConfigUI;
+}(ConfigUI));
+
+var SmoothTrailsAgent = (function (AccumulationAgent$$1) {
+  function SmoothTrailsAgent(instance) {
+    AccumulationAgent$$1.call(this, instance);
+  }
+
+  if ( AccumulationAgent$$1 ) SmoothTrailsAgent.__proto__ = AccumulationAgent$$1;
+  SmoothTrailsAgent.prototype = Object.create( AccumulationAgent$$1 && AccumulationAgent$$1.prototype );
+  SmoothTrailsAgent.prototype.constructor = SmoothTrailsAgent;
+
+  SmoothTrailsAgent.prototype.getFragmentCode = function getFragmentCode (uniforms) {
+    var kernelSize = uniforms.addUniform('kernelSize', 'vec2', function (ctx, props) {
+      return [4 / props.state.getWidth(), 4 / props.state.getHeight()];
+    });
+    return ("\n      vec3 color = /* texture2D(historyTexture, vec2(texcoord.x, texcoord.y)).rgb * .2 + */\n        texture2D(historyTexture, vec2(texcoord.x + " + kernelSize + ".x, texcoord.y)).rgb * .25 +\n        texture2D(historyTexture, vec2(texcoord.x - " + kernelSize + ".x, texcoord.y)).rgb * .25 +\n        texture2D(historyTexture, vec2(texcoord.x, texcoord.y + " + kernelSize + ".y)).rgb * .25 +\n        texture2D(historyTexture, vec2(texcoord.x, texcoord.y - " + kernelSize + ".y)).rgb * .25;\n      color *= 0.8;\n      color += 0.2 * particleColor;\n      accumulationResult += color;\n    ");
+  };
+
+  return SmoothTrailsAgent;
+}(AccumulationAgent));
+
+var SmoothTrailsEffect = (function (AccumulationEffect$$1) {
+  function SmoothTrailsEffect () {
+    AccumulationEffect$$1.apply(this, arguments);
+  }
+
+  if ( AccumulationEffect$$1 ) SmoothTrailsEffect.__proto__ = AccumulationEffect$$1;
+  SmoothTrailsEffect.prototype = Object.create( AccumulationEffect$$1 && AccumulationEffect$$1.prototype );
+  SmoothTrailsEffect.prototype.constructor = SmoothTrailsEffect;
+
+  SmoothTrailsEffect.getAgentClass = function getAgentClass () {
+    return SmoothTrailsAgent;
+  };
+
+  SmoothTrailsEffect.getDisplayName = function getDisplayName () {
+    return EffectName$7;
+  };
+
+  SmoothTrailsEffect.getDescription = function getDescription () {
+    return EffectDescription$7;
+  };
+
+  SmoothTrailsEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new SmoothTrailsConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  SmoothTrailsEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+    };
+  };
+
+  SmoothTrailsEffect.getRandomConfig = function getRandomConfig () {
+    return {
+    };
+  };
+
+  return SmoothTrailsEffect;
+}(AccumulationEffect));
+
+var EffectName$8 = 'Smear';
+var EffectDescription$8 = 'Smears the image in a circular way';
+
+var SmearConfigUI = (function (ConfigUI$$1) {
+  function SmearConfigUI() {
+    ConfigUI$$1.call(this);
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$8 + "</legend>\n      </fieldset>\n    "));
+  }
+
+  if ( ConfigUI$$1 ) SmearConfigUI.__proto__ = ConfigUI$$1;
+  SmearConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  SmearConfigUI.prototype.constructor = SmearConfigUI;
+
+  SmearConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  SmearConfigUI.prototype.getConfig = function getConfig () {
+    var config = {};
+    return config;
+  };
+
+  SmearConfigUI.prototype.applyConfig = function applyConfig (config) {
+  };
+
+  return SmearConfigUI;
+}(ConfigUI));
+
+var SmearAgent = (function (AccumulationAgent$$1) {
+  function SmearAgent(instance) {
+    AccumulationAgent$$1.call(this, instance);
+  }
+
+  if ( AccumulationAgent$$1 ) SmearAgent.__proto__ = AccumulationAgent$$1;
+  SmearAgent.prototype = Object.create( AccumulationAgent$$1 && AccumulationAgent$$1.prototype );
+  SmearAgent.prototype.constructor = SmearAgent;
+  SmearAgent.prototype.getFragmentCode = function getFragmentCode (uniforms) {
+    var invTextureSize = uniforms.addUniform('invTextureSize', 'vec2', function (ctx, props) {
+      return [1 / props.state.getWidth(), 1 / props.state.getHeight()];
+    });
+    return ("\n      vec2 smearDir = vec2(-texcoord.y + .5, texcoord.x - .5);\n      vec3 color = 0.8 * texture2D(historyTexture, texcoord + smearDir * " + invTextureSize + " * 8.).rgb;\n      color += 0.2 * particleColor;\n      accumulationResult += color;\n    ");
+  };
+
+  return SmearAgent;
+}(AccumulationAgent));
+
+var SmearEffect = (function (AccumulationEffect$$1) {
+  function SmearEffect () {
+    AccumulationEffect$$1.apply(this, arguments);
+  }
+
+  if ( AccumulationEffect$$1 ) SmearEffect.__proto__ = AccumulationEffect$$1;
+  SmearEffect.prototype = Object.create( AccumulationEffect$$1 && AccumulationEffect$$1.prototype );
+  SmearEffect.prototype.constructor = SmearEffect;
+
+  SmearEffect.getAgentClass = function getAgentClass () {
+    return SmearAgent;
+  };
+
+  SmearEffect.getDisplayName = function getDisplayName () {
+    return EffectName$8;
+  };
+
+  SmearEffect.getDescription = function getDescription () {
+    return EffectDescription$8;
+  };
+
+  SmearEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new SmearConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  SmearEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+    };
+  };
+
+  SmearEffect.getRandomConfig = function getRandomConfig () {
+    return {
+    };
+  };
+
+  return SmearEffect;
+}(AccumulationEffect));
 
 var effectList = [
   HueDisplaceEffect,
@@ -4080,11 +4536,52 @@ var effectList = [
   ConvergeCircleEffect,
   WaveEffect,
   ChangeImageEffect,
-  FlickrImageEffect
+  FlickrImageEffect,
+  TrailsEffect,
+  SmoothTrailsEffect,
+  SmearEffect
 ];
 var byId = {};
 for (var i = 0; i < effectList.length; i++) {
   byId[effectList[i].getId()] = effectList[i];
+}
+
+// Best website: http://tools.medialab.sciences-po.fr/iwanthue/index.php
+var Colors = [
+  [211,79,52],
+  [98,112,225],
+  [90,183,78],
+  [176,95,211],
+  [219,156,54],
+  [209,78,175],
+  [79,182,148],
+  [219,68,120],
+  [82,119,51],
+  [110,85,168],
+  [150,174,62],
+  [75,121,187],
+  [163,175,104],
+  [156,84,154],
+  [171,117,61],
+  [80,179,221],
+  [204,109,101],
+  [164,152,224],
+  [159,68,100],
+  [221,135,188]
+];
+function getColorIndexForEffect(effect) {
+  var idx = effectList.indexOf(effect);
+  if (idx < 0) {
+    throw new Error('Cannot get color for unregistered effect');
+  }
+  if (idx >= Colors.length) {
+    console.warn('Not enough colors');
+    return Colors.length - 1;
+  }
+  return idx;
+}
+function getColorClassnameForEffect(effect) {
+  return ("effect-color-" + (getColorIndexForEffect(effect) + 1));
 }
 
 var EffectConfig = function EffectConfig(id, timeBegin, timeEnd, repetitions, config) {
@@ -4112,35 +4609,6 @@ EffectConfig.deserialize = function deserialize (obj) {
   }
 };
 
-function generateRandomTimeline(currentConfig) {
-  var config = Object.assign({}, currentConfig);
-
-  config.effects = [];
-  config.duration = 0;
-
-  for(var i=0; i<effectList.length; ++i) {
-    if(effectList[i].getId() == "FlickrImageEffect") { continue; }
-
-    var timeBegin = Math.round(Math.random() * 10000);
-    var duration = Math.round(Math.random() * 9000 + 1000);
-
-    config.effects[i] = [new EffectConfig(
-      effectList[i].getId(),
-      timeBegin,
-      timeBegin + duration,
-      1,
-      effectList[i].getRandomConfig()
-    )];
-
-    config.duration = Math.max(config.duration, timeBegin + duration);
-  }
-
-  //TODO: does not work...
-  //config.effects.push([new EffectConfig("FlickrImageEffect", 0, config.duration, 1, { searchTerm: '' })]);
-
-  return config;
-}
-
 /**
  *
  */
@@ -4157,7 +4625,7 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
 
   var beginHandleClass = 'timeline-entry-begin-time-adjust';
   var endHandleClass = 'timeline-entry-end-time-adjust';
-  this.element = parseHtml(("\n      <li>\n        <div class=\"" + beginHandleClass + "\"></div>\n        <button type=\"button\">" + (this.effect.getDisplayName()) + "</button>\n        <div class=\"" + endHandleClass + "\"></div>\n      </li>\n    "));
+  this.element = parseHtml(("\n      <li>\n        <div class=\"" + beginHandleClass + "\"></div>\n        <button type=\"button\" class=\"" + (getColorClassnameForEffect(this.effect)) + "\">\n          " + (this.effect.getDisplayName()) + "\n        </button>\n        <div class=\"" + endHandleClass + "\"></div>\n      </li>\n    "));
   this.setupTimeAdjustHandles();
   this.setupDragAndDrop();
   // Prevent a previous text selection from interfering with our custom
@@ -4354,6 +4822,10 @@ var TimelineTrack = function TimelineTrack(trackNumber, timeline) {
 };
 
 TimelineTrack.prototype.dropNewEffect = function dropNewEffect (effect, clientX, clientY, width, height) {
+  if (this.timeline.isLocked()) {
+    return false;
+  }
+
   var elm = this.getTrackElement();
   var rect = elm.getBoundingClientRect();
   if (clientX >= rect.left && clientX <= rect.right &&
@@ -4576,36 +5048,75 @@ var PauseButton = function PauseButton(clock) {
   this.clock = clock;
   this.element = document.querySelector('.menu-timeline-pause');
   this.element.addEventListener('click', function () {
-    var wasPaused = clock.getPaused();
+    clock.setPaused(!clock.getPaused());
+  });
+  clock.addPauseListener(function (paused) {
     var onPauseClass = 'paused';
-    if (wasPaused) {
-      this$1.element.classList.remove(onPauseClass);
-    } else {
+    if (paused) {
       this$1.element.classList.add(onPauseClass);
+    } else {
+      this$1.element.classList.remove(onPauseClass);
     }
-    clock.setPaused(!wasPaused);
   });
 };
 
-var RandomplayButton = function RandomplayButton(clock, menu) {
+var RandomplayButton = function RandomplayButton(timeline) {
   var this$1 = this;
 
-  this.clock = clock;
+  this.menu = timeline.menu;
+  var clock = this.menu.clock;
   this.onClockWrap = null;
   this.element = document.getElementById('menu-timeline-randomplay');
   this.element.addEventListener('click', function () {
     if(this$1.onClockWrap === null) {
-      this$1.onClockWrap = function () {
-        var config = generateRandomTimeline(menu.submittedConfig);
-        menu.applyConfig(config);
-        menu.submit();
-      };
-      this$1.clock.addWrapListener(this$1.onClockWrap);
+      this$1.onClockWrap = function () { return this$1.fillRandomTimeline(); };
+      clock.addWrapListener(this$1.onClockWrap);
+      this$1.fillRandomTimeline();
+      timeline.setLocked(true);
+      clock.setPaused(false);
     } else {
-      this$1.clock.removeWrapListener(this$1.onClockWrap);
+      clock.removeWrapListener(this$1.onClockWrap);
       this$1.onClockWrap = null;
+      timeline.setLocked(false);
     }
   });
+};
+
+RandomplayButton.prototype.fillRandomTimeline = function fillRandomTimeline () {
+  var config = RandomplayButton.generateRandomTimeline(this.menu.submittedConfig);
+  this.menu.applyConfig(config);
+  this.menu.submit();
+};
+
+RandomplayButton.generateRandomTimeline = function generateRandomTimeline (currentConfig) {
+  var config = Object.assign({}, currentConfig);
+
+  config.effects = [];
+  config.duration = 0;
+
+  for (var i = 0; i < effectList.length; i++) {
+    if (effectList[i].getId() == "FlickrImageEffect") {
+      continue;
+    }
+
+    var timeBegin = Math.round(Math.random() * 10000);
+    var duration = Math.round(Math.random() * 9000 + 1000);
+
+    config.effects.push([new EffectConfig(
+      effectList[i].getId(),
+      timeBegin,
+      timeBegin + duration,
+      1,
+      effectList[i].getRandomConfig()
+    )]);
+
+    config.duration = Math.max(config.duration, timeBegin + duration);
+  }
+
+  //TODO: does not work...
+  //config.effects.push([new EffectConfig("FlickrImageEffect", 0, config.duration, 1, { searchTerm: '' })]);
+
+  return config;
 };
 
 var TimeDisplay = function TimeDisplay(clock) {
@@ -4636,12 +5147,13 @@ var Timeline = function Timeline(menu) {
   this.menu = menu;
   this.element = document.querySelector('.menu-timeline-container');
   this.trackList = [];
+  this.locked = false;
   this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
   this.effectConfigDialog = new EffectConfigDialog();
   this.timeticks = new Timeticks(menu.clock);
   this.timeDisplay = new TimeDisplay(menu.clock);
   this.pauseButton = new PauseButton(menu.clock);
-  this.randomplayButton = new RandomplayButton(menu.clock, menu);
+  this.randomplayButton = new RandomplayButton(this);
   this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
   this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
   this.timeticks.addScaleChangeListener(function () {
@@ -4767,6 +5279,22 @@ Timeline.prototype.dropNewEffect = function dropNewEffect (effect, clientX, clie
     }
   }
   return false;
+};
+Timeline.prototype.isLocked = function isLocked () {
+  return this.locked;
+};
+Timeline.prototype.setLocked = function setLocked (locked) {
+    if ( locked === void 0 ) locked = true;
+
+  if (this.locked !== locked) {
+    this.locked = locked;
+    var lockedClass = 'locked';
+    if (locked) {
+      this.element.classList.add(lockedClass);
+    } else {
+      this.element.classList.remove(lockedClass);
+    }
+  }
 };
 
 /**
@@ -5052,7 +5580,7 @@ var EffectListItem = function EffectListItem(effect, timeline) {
 
   this.effect = effect;
   this.timeline = timeline;
-  this.element = parseHtml(("\n      <li>" + (effect.getDisplayName()) + "</li>\n    "));
+  this.element = parseHtml(("\n      <li title=\"" + (effect.getDescription()) + "\">" + (effect.getDisplayName()) + "</li>\n    "));
   this.dragCopy = parseHtml(("\n      <div class=\"effect-list-item drag-drop-copy\">" + (effect.getDisplayName()) + "</div>\n    "));
     
   var dragCopy = this.dragCopy;
@@ -5163,6 +5691,7 @@ var MainMenu = function MainMenu(clock) {
       this$1.toggle.checked = false;
     }
     this$1.submit();
+    this$1.clock.setPaused(false);
   });
 
   for (var i = 0; i < ControlsList.length; i++) {
@@ -5176,6 +5705,9 @@ var MainMenu = function MainMenu(clock) {
   }
   this.effectList.appendChild(effectListElms);
 
+  this.defaultConfig = this.readConfig();
+
+  // now populate the initial config (NOT defaultConfig) with some effects
   var effectLen = 2500;
   var tracks = [];
   for (var i$2 = 0; i$2 < effectList.length; i$2++) {
@@ -5191,8 +5723,7 @@ var MainMenu = function MainMenu(clock) {
   }
   this.timeline.loadTimeline(tracks);
 
-  this.defaultConfig = this.readConfig();
-  this.submittedConfig = this.defaultConfig;
+  this.submittedConfig = this.readConfig();
 };
 
 MainMenu.prototype.applyConfig = function applyConfig (config) {
@@ -14772,53 +15303,6 @@ return wrapREGL;
 
 });
 
-var Shader = function Shader() {
-  this.attributes = '';
-  this.uniforms = '';
-  this.varyings = '';
-  this.globals = '';
-  this.functions = '';
-  this.mainBody = '';
-};
-
-Shader.prototype.compile = function compile () {
-  return ("\n      precision highp float;\n    \n      // Attributes\n      " + (this.attributes) + "\n\n      // Uniforms\n      " + (this.uniforms) + "\n\n      // Varyings\n      " + (this.varyings) + "\n\n      // Globals\n      " + (this.globals) + "\n\n      // Functions\n      " + (this.functions) + "\n\n      void main() {\n        " + (this.mainBody) + "\n      }\n    ");
-};
-
-var Uniforms = function Uniforms(id) {
-  this.uniforms = [];
-  this.id = id;
-};
-Uniforms.prototype.addUniform = function addUniform (name, type, value) {
-  var uniform = { name: name, type: type, value: value };
-  this.uniforms.push(uniform);
-
-  return this.getNameFor(uniform);
-};
-Uniforms.prototype.getNameFor = function getNameFor (uniform) {
-  if (this.id === undefined) {
-    return uniform.name;
-  } else {
-    return ((uniform.name) + "_" + (this.id));
-  }
-};
-Uniforms.prototype.compile = function compile (shader, uniforms) {
-    var this$1 = this;
-    if ( uniforms === void 0 ) uniforms = null;
-
-  var shaderStr = [];
-  for (var i = 0; i < this.uniforms.length; i++) {
-    var uniform = this$1.uniforms[i];
-    shaderStr.push(("uniform " + (uniform.type) + " " + (this$1.getNameFor(uniform)) + ";"));
-    if (uniforms !== null) {
-      // eslint-disable-next-line no-param-reassign
-      uniforms[this$1.getNameFor(uniform)] = uniform.value;
-    }
-  }
-  // eslint-disable-next-line no-param-reassign
-  shader.uniforms += shaderStr.join('\n') + '\n';
-};
-
 var CommandBuilder = function CommandBuilder () {};
 
 CommandBuilder.prototype.buildCommand = function buildCommand (props) {
@@ -14997,6 +15481,7 @@ var RendererClock = function RendererClock() {
   this.period = 1000;
   this.paused = false;
   this.wrapListeners = [];
+  this.pauseListeners = [];
 };
 RendererClock.prototype.frame = function frame () {
     var this$1 = this;
@@ -15014,7 +15499,7 @@ RendererClock.prototype.frame = function frame () {
     this.absTime = Date.now();
     this.delta = this.absTime - oldTime;
     this.time += this.delta;
-    while(this.time >= this.period) {
+    while (this.time >= this.period) {
       this$1.time -= this$1.period;
       var loop = function ( i ) {
         window.setTimeout(function () { return this$1.wrapListeners[i](); }, 0);
@@ -15047,13 +15532,20 @@ RendererClock.prototype.getAbsoluteTime = function getAbsoluteTime () {
   return this.absTime;
 };
 RendererClock.prototype.setPaused = function setPaused (paused) {
+    var this$1 = this;
     if ( paused === void 0 ) paused = true;
 
-  if (this.paused && !paused) {
-    this.delta = 0;
-    this.absTime = Date.now();
+  if (paused !== this.paused) {
+    if (!paused) {
+      // on unpause
+      this.delta = 0;
+      this.absTime = Date.now();
+    }
+    this.paused = paused;
+    for (var i = 0; i < this.pauseListeners.length; i++) {
+      this$1.pauseListeners[i](paused);
+    }
   }
-  this.paused = paused;
 };
 RendererClock.prototype.getPaused = function getPaused () {
   return this.paused;
@@ -15063,6 +15555,12 @@ RendererClock.prototype.addWrapListener = function addWrapListener (listener) {
 };
 RendererClock.prototype.removeWrapListener = function removeWrapListener (listener) {
   this.wrapListeners.splice(this.wrapListeners.indexOf(listener), 1);
+};
+RendererClock.prototype.addPauseListener = function addPauseListener (listener) {
+  this.pauseListeners.push(listener);
+};
+RendererClock.prototype.removePauseListener = function removePauseListener (listener) {
+  this.pauseListeners.splice(this.pauseListeners.indexOf(listener), 1);
 };
 
 var ParticleData = function ParticleData(imageData, regl, width, height) {
@@ -15143,6 +15641,126 @@ function domImgToCanvas(img) {
   return fullresCanvas;
 }
 
+var PaintResultCommand = (function (FullscreenRectCommand$$1) {
+  function PaintResultCommand(getResult) {
+    FullscreenRectCommand$$1.call(this);
+    this.frag = "\n      precision highp float;\n      uniform sampler2D resultTexture;\n      varying vec2 texcoord;\n      void main() {\n        vec3 color = texture2D(resultTexture, texcoord).rgb;\n        gl_FragColor = vec4(color, 1);\n      }\n    ";
+    this.uniforms = {
+      resultTexture: function () { return getResult().texture; },
+    };
+  }
+
+  if ( FullscreenRectCommand$$1 ) PaintResultCommand.__proto__ = FullscreenRectCommand$$1;
+  PaintResultCommand.prototype = Object.create( FullscreenRectCommand$$1 && FullscreenRectCommand$$1.prototype );
+  PaintResultCommand.prototype.constructor = PaintResultCommand;
+
+  return PaintResultCommand;
+}(FullscreenRectCommand));
+
+var AccumulationCommand = (function (FullscreenRectCommand$$1) {
+  function AccumulationCommand(getParticles, getHistory, getOutput, agents) {
+    FullscreenRectCommand$$1.call(this);
+    this.uniforms = {};
+    var frag = new Shader();
+    var stdUniforms = new Uniforms();
+    stdUniforms.addUniform('particleTexture', 'sampler2D', function () { return getParticles().texture; });
+    stdUniforms.addUniform('historyTexture', 'sampler2D', function () { return getHistory().texture; });
+    stdUniforms.addUniform('globalTime', 'int', function (ctx, props) { return props.clock.getTime(); });
+    stdUniforms.compile(frag, this.uniforms);
+    frag.varyings += 'varying vec2 texcoord;\n';
+    frag.mainBody = "\n      vec3 historyColor = texture2D(historyTexture, texcoord).rgb;\n      vec3 particleColor = texture2D(particleTexture, texcoord).rgb;\n      vec3 accumulationResult = vec3(0.0);\n      int activeAgents = 0;\n\n      " + (AccumulationCommand.fragmentCodeForAgents(agents, frag, this.uniforms)) + "\n\n      if (activeAgents > 0) {\n        accumulationResult /= float(activeAgents);\n      } else {\n        accumulationResult = particleColor;\n      }\n\n      gl_FragColor = vec4(accumulationResult, 1);\n    ";
+    this.frag = frag.compile();
+    this.framebuffer = function () { return getOutput().framebuffer; };
+  }
+
+  if ( FullscreenRectCommand$$1 ) AccumulationCommand.__proto__ = FullscreenRectCommand$$1;
+  AccumulationCommand.prototype = Object.create( FullscreenRectCommand$$1 && FullscreenRectCommand$$1.prototype );
+  AccumulationCommand.prototype.constructor = AccumulationCommand;
+  AccumulationCommand.fragmentCodeForAgents = function fragmentCodeForAgents (agents, shader, uniforms) {
+    var code = [];
+
+    for (var i = 0; i < agents.length; i++) {
+      var agent = agents[i];
+      var agentUniforms = new Uniforms(i);
+      code.push(("\n        if (" + (agent.timeBegin) + " <= globalTime && globalTime <= " + (agent.timeEnd) + ") {\n          activeAgents++;\n          " + (agent.getFragmentCode(agentUniforms)) + "\n        }\n      "));
+      agentUniforms.compile(shader, uniforms);
+    }
+    return code.join('\n');
+  };
+
+  return AccumulationCommand;
+}(FullscreenRectCommand));
+
+var RendererPipeline = function RendererPipeline(regl) {
+  var this$1 = this;
+
+  this.regl = regl;
+  this.mainCommand = null;
+  this.accumulationAgents = [];
+  this.particleBuffer = new Framebuffer(this.regl);
+  this.accuHistoryBuffer = new Framebuffer(this.regl);
+  this.resultBuffer = new Framebuffer(this.regl);
+  var getResult = function () { return this$1.resultBuffer; };
+  this.accumulationCommand = null;
+  this.paintResultCommand = this.regl(new PaintResultCommand(getResult));
+};
+RendererPipeline.prototype.addAccumulationAgent = function addAccumulationAgent (agent) {
+  this.accumulationAgents.push(agent);
+};
+RendererPipeline.prototype.compile = function compile (cmd) {
+    var this$1 = this;
+
+  this.mainCommand = cmd;
+  var getParticles = function () { return this$1.particleBuffer; };
+  var getHistory = function () { return this$1.accuHistoryBuffer; };
+  var getOut = function () { return this$1.resultBuffer; };
+  this.accumulationCommand = this.regl(
+    new AccumulationCommand(getParticles, getHistory, getOut, this.accumulationAgents)
+  );
+};
+RendererPipeline.prototype.reset = function reset (clearColor) {
+  this.accumulationAgents.length = 0;
+  this.mainCommand = null;
+  this.clearColor = clearColor;
+};
+RendererPipeline.prototype.resize = function resize (width, height) {
+  this.particleBuffer.resize(width, height);
+  this.accuHistoryBuffer.resize(width, height);
+  this.resultBuffer.resize(width, height);
+};
+RendererPipeline.prototype.run = function run (props) {
+    var this$1 = this;
+
+  if (!this.mainCommand) {
+    return;
+  }
+  if (this.accumulationAgents.length === 0) {
+    this.regl.clear({ color: this.clearColor });
+    this.mainCommand(props);
+  } else { // Accumulation is active
+    if (props.clock.getPaused()) {
+      this.paintResultCommand(props);
+    } else {
+      // Do NOT change the buffers AFTER paintResultCommand, because if we
+      // pause at some point, the other if() branch above will have the
+      // two buffers alrady swapped - which we don't want. resultBuffer
+      // should still be resultBuffer
+      var assign;
+        (assign = [this.resultBuffer, this.accuHistoryBuffer], this.accuHistoryBuffer = assign[0], this.resultBuffer = assign[1]);
+      this.particleBuffer.framebuffer.use(function () {
+        this$1.regl.clear({color: this$1.clearColor});
+        this$1.mainCommand(props);
+      });
+
+      this.accumulationCommand(props);
+      this.paintResultCommand(props);
+    }
+  }
+};
+RendererPipeline.prototype.isValid = function isValid () {
+  return this.mainCommand !== null;
+};
+
 /**
  * Encapsulates the parts of the render pipeline which are subject to
  * dynamic change, i.e. data that can be changed by effects.
@@ -15158,14 +15776,19 @@ function domImgToCanvas(img) {
  */
 var RendererState = function RendererState(regl) {
   this.regl = regl;
+  this.pipeline = new RendererPipeline(regl);
 
   // Properties
   this.particleData = -1;
   this.particleDataStore = [[null, null]];
   this.hooks = [];
+  this.width = 0;
+  this.height = 0;
 };
 RendererState.prototype.adaptToConfig = function adaptToConfig (config) {
     var this$1 = this;
+
+  this.pipeline.reset(config.backgroundColor);
 
   // Update default particle data
   var defaultImg = this.particleDataStore[0][0];
@@ -15223,7 +15846,7 @@ RendererState.prototype.getCurrentParticleData = function getCurrentParticleData
   return this.particleDataStore[this.particleData][1];
 };
 RendererState.prototype.isValid = function isValid () {
-  return this.particleData >= 0;
+  return this.particleData >= 0 && this.pipeline.isValid();
 };
 RendererState.prototype.setDefaultDomImage = function setDefaultDomImage (domImage) {
   this.particleDataStore[0][0] = domImgToCanvas(domImage);
@@ -15232,33 +15855,44 @@ RendererState.prototype.setDefaultDomImage = function setDefaultDomImage (domIma
 RendererState.prototype.addHook = function addHook (hook) {
   this.hooks.push(hook);
 };
+RendererState.prototype.resize = function resize (width, height) {
+  this.width = width;
+  this.height = height;
+  this.pipeline.resize(width, height);
+};
+RendererState.prototype.getWidth = function getWidth () {
+  return this.width;
+};
+RendererState.prototype.getHeight = function getHeight () {
+  return this.height;
+};
 
 var Renderer = function Renderer(canvas) {
   var this$1 = this;
 
-  this.canvas = canvas;
   this.regl = regl$1({ canvas: canvas });
   console.info(("max texture size: " + (this.regl.limits.maxTextureSize)));
   console.info(("point size dims: " + (this.regl.limits.pointSizeDims[0]) + " " + (this.regl.limits.pointSizeDims[1])));
   console.info(("max uniforms: " + (this.regl.limits.maxVertexUniforms) + " " + (this.regl.limits.maxFragmentUniforms)));
-  this.defaultParticleData = null;
   this.state = new RendererState(this.regl);
   this.config = null;
-  this.command = null;
   this.commandBuilder = new CommandBuilder();
   this.clock = new RendererClock();
   this.regl.frame(function () {
-    if (this$1.command === null || !this$1.state.isValid()) {
+    if (!this$1.state.isValid()) {
       return;
     }
     this$1.clock.frame();
-    this$1.regl.clear({ color: this$1.config.backgroundColor });
-    this$1.command({
+    this$1.state.pipeline.run({
       config: this$1.config,
       state:this$1.state,
       clock:this$1.clock
     });
   });
+};
+
+Renderer.prototype.resize = function resize (width, height) {
+  this.state.resize(width, height);
 };
 
 Renderer.prototype.getClock = function getClock () {
@@ -15268,7 +15902,6 @@ Renderer.prototype.getClock = function getClock () {
 Renderer.prototype.setConfig = function setConfig (config) {
     var this$1 = this;
 
-  this.command = null;
   this.config = config;
   // TODO: rebuild command only when necessary
   this.state.adaptToConfig(config);
@@ -15280,7 +15913,7 @@ Renderer.prototype.setConfig = function setConfig (config) {
   .then(function (command) {
     this$1.clock.reset();
     this$1.clock.setPeriod(this$1.config.duration);
-    this$1.command = this$1.regl(command);
+    this$1.state.pipeline.compile(this$1.regl(command));
   }, function (error) { return console.error(error); });
 };
 
@@ -15305,6 +15938,7 @@ var menu = new MainMenu(renderer.getClock());
 var adjustCanvasSize = function () {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  renderer.resize(window.innerWidth, window.innerHeight);
 };
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
