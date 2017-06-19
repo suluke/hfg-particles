@@ -86,6 +86,7 @@ $menu-apply-btn-height: 10%;
           white-space: nowrap;
           margin-top: $item-spacing;
           margin-left: $item-spacing;
+          padding: 0 3px;
         }
         @for $i from 1 through length($effect-colors) {
           & > li:nth-child(#{$i}) {
