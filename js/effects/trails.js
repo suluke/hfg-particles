@@ -3,6 +3,7 @@ import { parseHtml } from '../ui/util';
 import AccumulationEffect, { AccumulationAgent } from './accumulation';
 
 const EffectName = 'Trails';
+const EffectDescription = 'Enables an fading image echo';
 
 class TrailsConfigUI extends ConfigUI {
   constructor() {
@@ -46,6 +47,10 @@ export default class TrailsEffect extends AccumulationEffect {
 
   static getDisplayName() {
     return EffectName;
+  }
+
+  static getDescription() {
+    return EffectDescription;
   }
 
   static getConfigUI() {
