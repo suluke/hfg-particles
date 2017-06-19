@@ -502,6 +502,24 @@ class RandomplayButton {
     this.menu.submit();
   }
 
+  static trimTimeline(timeline) {
+    let earliest = Number.POSITIVE_INFINITY;
+    for (let t = 0; t < timeline.length; t++) {
+      const track = timeline[t];
+      for (let e = 0; e < track.length; e++) {
+        const effect = track[e];
+        earliest = Math.min(effect.timeBegin, earliest);
+      }
+    }
+    for (let t = 0; t < timeline.length; t++) {
+      const track = timeline[t];
+      for (let e = 0; e < track.length; e++) {
+        const effect = track[e];
+        effect.timeBegin -= earliest;
+      }
+    }
+  }
+
   static generateRandomTimeline(currentConfig) {
     const config = Object.assign({}, currentConfig);
 
@@ -526,6 +544,7 @@ class RandomplayButton {
 
       config.duration = Math.max(config.duration, timeBegin + duration);
     }
+    RandomplayButton.trimTimeline(config.effects);
 
     //TODO: does not work...
     //config.effects.push([new EffectConfig("FlickrImageEffect", 0, config.duration, 1, { searchTerm: '' })]);
