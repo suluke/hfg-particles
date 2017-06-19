@@ -1,12 +1,15 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
+const EffectName = 'Displace by hue';
+const EffectDescription = 'Particles move into different directions depending on their hue';
+
 class HueDisplaceConfigUI extends ConfigUI {
   constructor() {
     super();
     this.element = parseHtml(`
       <fieldset>
-        <legend>Displace by hue</legend>
+        <legend>${EffectName}</legend>
         <label>
           Distance:
           <input type="number" class="effect-hue-displace-distance" value="10" />
@@ -99,7 +102,11 @@ export default class HueDisplaceEffect extends Effect {
   }
 
   static getDisplayName() {
-    return 'Hue Displace';
+    return EffectName;
+  }
+
+  static getDescription() {
+    return EffectDescription;
   }
 
   static getConfigUI() {

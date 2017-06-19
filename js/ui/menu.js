@@ -231,7 +231,7 @@ class EffectListItem {
     this.effect = effect;
     this.timeline = timeline;
     this.element = parseHtml(`
-      <li>${effect.getDisplayName()}</li>
+      <li title="${effect.getDescription()}">${effect.getDisplayName()}</li>
     `);
     this.dragCopy = parseHtml(`
       <div class="effect-list-item drag-drop-copy">${effect.getDisplayName()}</div>
@@ -345,6 +345,7 @@ export default class MainMenu {
         this.toggle.checked = false;
       }
       this.submit();
+      this.clock.setPaused(false);
     });
 
     for (let i = 0; i < ControlsList.length; i++) {
@@ -358,6 +359,9 @@ export default class MainMenu {
     }
     this.effectList.appendChild(effectListElms);
 
+    this.defaultConfig = this.readConfig();
+
+    // now populate the initial config (NOT defaultConfig) with some effects
     const effectLen = 2500;
     const tracks = [];
     for (let i = 0; i < effects.length; i++) {
@@ -373,8 +377,7 @@ export default class MainMenu {
     }
     this.timeline.loadTimeline(tracks);
 
-    this.defaultConfig = this.readConfig();
-    this.submittedConfig = this.defaultConfig;
+    this.submittedConfig = this.readConfig();
   }
 
   applyConfig(config) {

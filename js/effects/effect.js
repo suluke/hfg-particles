@@ -31,6 +31,10 @@ export default class Effect {
   static getRandomConfig() {
     throw new Error('Method not implemented');
   }
+
+  static getDescription() {
+    throw new Error('Method not implemented');
+  }
 }
 
 /**

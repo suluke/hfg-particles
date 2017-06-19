@@ -3,6 +3,7 @@ import { parseHtml } from '../ui/util';
 import Flickr, { ApiKey } from '../polyfills/flickr';
 
 const EffectName = 'Flickr Image';
+const EffectDescription = 'Changes the underlying image to one loaded from Flickr\'s recent images feed';
 const Attribution = 'This product uses the Flickr API but is not endorsed or certified by Flickr.';
 
 class FlickrImageConfigUI extends ConfigUI {
@@ -42,135 +43,188 @@ class FlickrImageConfigUI extends ConfigUI {
   }
 }
 
-const flickr = new Flickr({ api_key: ApiKey });
+const prefetchCount = 5;
+class FlickrCacheEntry {
+  constructor() {
+    this.page = 1;
+    this.initialQueryTime = Math.floor(Date.now() / 1000);
+    this.loadsInProgress = 0;
+    this.loadedImgs = [];
+    this.requests = [];
+  }
+}
+
+class FlickrImageCache {
+  constructor() {
+    this.flickr = new Flickr({ api_key: ApiKey });
+    this.byQuery = {};
+  }
+
+  setProps(props) {
+    this.props = props;
+  }
+
+  runFlickrQuery(searchTerm) {
+    const entry = this.getEntryForSearchTerm(searchTerm);
+
+    const onResponse = (response) => {
+      // since page is 1-indexed, a real greater is necessary
+      if (entry.page > response.photos.pages) {
+        entry.page = 1;
+      }
+      return response;
+    };
+    // Two different flickr apis, depending on search string content
+    let query = null;
+    if (searchTerm === '') {
+      query = this.flickr
+      .photos
+      .getRecent({
+        per_page: prefetchCount,
+        page: entry.page,
+        max_upload_date: entry.initialQueryTime
+      }).then(onResponse);
+    } else {
+      query = this.flickr
+      .photos
+      .search({
+        text: searchTerm,
+        per_page: prefetchCount,
+        page: entry.page,
+        max_upload_date: entry.initialQueryTime
+      }).then(onResponse);
+    }
+    entry.loadsInProgress += prefetchCount;
+    entry.page = entry.page + 1;
+    return query;
+  }
+
+  processSearchQueryResponse(response, entry) {
+    const loadQueue = [];
+    for (let i = 0; i < response.photos.photo.length; i++) {
+      loadQueue.push(this.processPhoto(response.photos.photo[i], entry));
+    }
+    return loadQueue;
+  }
+
+  processPhoto(photo, entry) {
+    const props = this.props;
+    return this.flickr.photos.getSizes({
+      photo_id: photo.id
+    }).then((sizes) => {
+      const original = sizes.sizes.size.find((size) => {
+        return size.width >= props.config.xParticlesCount;
+      }) || sizes.sizes.size[sizes.sizes.size.length - 1];
+      const url = original.source;
+      const loader = document.createElement('img');
+      loader.crossOrigin = 'Anonymous';
+      loader.src = url;
+      loader.onload = () => {
+        entry.loadsInProgress = entry.loadsInProgress - 1;
+        if (entry.requests.length > 0) {
+          // resolve pending request directly
+          const request = entry.requests.shift();
+          request(props.state.createParticleDataFromDomImg(
+            loader, props.config.xParticlesCount, props.config.yParticlesCount
+          ));
+        } else {
+          entry.loadedImgs.push(loader);
+        }
+      };
+    });
+  }
+
+  getEntryForSearchTerm(searchTerm) {
+    if (!this.byQuery[searchTerm]) {
+      this.byQuery[searchTerm] = new FlickrCacheEntry();
+    }
+    return this.byQuery[searchTerm];
+  }
+
+  shouldFireNewQuery(entry) {
+    if (entry.loadsInProgress + entry.loadedImgs.length -
+        entry.requests.length < prefetchCount
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  getParticleDataForSearchTerm(searchTerm) {
+    const entry = this.getEntryForSearchTerm(searchTerm);
+    const props = this.props;
+    if (entry.loadedImgs.length === 0) {
+      return new Promise((res, rej) => {
+        entry.requests.push(res);
+        if (this.shouldFireNewQuery(entry)) {
+          this.runFlickrQuery(searchTerm, entry)
+          .then(response => this.processSearchQueryResponse(response, entry));
+        }
+      });
+    } else {
+      return Promise.resolve(props.state.createParticleDataFromDomImg(
+        entry.loadedImgs.shift(),
+        props.config.xParticlesCount, props.config.yParticlesCount
+      ));
+    }
+  }
+}
 
 export default class FlickrImageEffect extends Effect {
-  static registerAsync(instance, props, uniforms, vertexShader) {
-    const prefetchCount = 5;
-
-    // The logic for getting a continuous stream of images from flickr
-    let page = 1;
-    let loadsInProgress = 0;
-    const initialQueryTime = Math.floor(Date.now() / 1000);
-    const runFlickrQuery = (processResponse) => {
-      const onResponse = (response) => {
-        // since page is 1-indexed, a real greater is necessary
-        if (page > response.photos.pages) {
-          page = 1;
-        }
-        processResponse(response);
-      };
-      // Two different flickr apis, depending on search string content
-      let query = null;
-      if (instance.config.searchTerm === '') {
-        query = flickr
-        .photos
-        .getRecent({
-          per_page: prefetchCount,
-          page,
-          max_upload_date: initialQueryTime
-        }).then(onResponse);
-      } else {
-        query = flickr
-        .photos
-        .search({
-          text: instance.config.searchTerm,
-          per_page: prefetchCount,
-          page,
-          max_upload_date: initialQueryTime
-        }).then(onResponse);
-      }
-      loadsInProgress += prefetchCount;
-      page = page + 1;
-      return query;
-    };
-
-    // This method is called the first time we have a list of potential images
-    const onInitialFlickrResponse = (photos) => new Promise((finishRegister, rej) => {
-      const loadedImgs = [];
-      const particleDataQueue = [];
-      const loadQueue = [];
-
-      const processPhoto = (photo) => flickr.photos.getSizes({
-        photo_id: photo.id
-      }).then((sizes) => new Promise((res, rej) => {
-        const original = sizes.sizes.size.find((size) => {
-          return size.width >= props.config.xParticlesCount;
-        }) || sizes.sizes.size[sizes.sizes.size.length - 1];
-        const url = original.source;
-        const loader = document.createElement('img');
-        loader.crossOrigin = 'Anonymous';
-        loader.src = url;
-        loader.onload = () => {
-          loadedImgs.push(loader);
-          loadsInProgress = loadsInProgress - 1;
-          res();
-        };
-      }));
-      
-      // kick off loading process for each image
-      for (let i = 0; i < photos.photos.photo.length; i++) {
-        loadQueue.push(processPhoto(photos.photos.photo[i]));
-      }
-      // As soon as we have a fully-loaded image, use it!
-      Promise.race(loadQueue).then(() => {
-        let alive = true;
-        let prevWasChange = false;
-        let displayed = -1;
-        // Run this in a loop to check if we need to update the image
-        const checkTime = () => {
-          if (!alive) {
-            return;
-          }
-          // synchronize the contents of loadedImgs with particleDataQueue
-          while(particleDataQueue.length < loadedImgs.length) {
-            particleDataQueue.push(
-              props.state.createParticleDataFromDomImg(
-                loadedImgs[particleDataQueue.length],
-                props.config.xParticlesCount, props.config.yParticlesCount
-              )
-            );
-            // intentional break. Avoid too much work per RAF iteration
-            break;
-          }
-          const tDist = instance.timeBegin - props.clock.getTime();
-          if (tDist >= 0 && tDist <= props.clock.getDelta()) {
-            // free unneeded resources when we proceed to the next image
-            let freed = -1;
-            if (displayed !== -1 && particleDataQueue.length > 1) {
-              loadedImgs.shift();
-              freed = particleDataQueue.shift();
-            }
-            displayed = particleDataQueue[0];
-            props.state.setParticleData(displayed);
-            // do the free AFTER we setParticleData to a new one
-            if (freed !== -1) {
-              props.state.destroyParticleData(freed);
-              if (loadsInProgress < prefetchCount && loadedImgs.length < prefetchCount) {
-                runFlickrQuery((photos) => {
-                  for (let i = 0; i < photos.photos.photo.length; i++) {
-                    processPhoto(photos.photos.photo[i]);
-                  }
-                });
-              }
-            }
-          }
-          window.requestAnimationFrame(checkTime);
-        };
-        checkTime();
-        props.state.addHook(() => {
-          alive = false;
+  static registerAsync(instance, props) {
+    const cache = FlickrImageEffect.getCache(props);
+    return cache.getParticleDataForSearchTerm(instance.config.searchTerm)
+    .then((particleData) => {
+      const particleDataQueue = [particleData];
+      // We want to have some images pre-allocated to this effect
+      for (let i = 1; i < prefetchCount; i++) {
+        cache.getParticleDataForSearchTerm(instance.config.searchTerm)
+        .then((particleData) => {
+          particleDataQueue.push(particleData);
         });
-        
-        finishRegister();
+      }
+
+      let alive = true;
+      let displayed = -1;
+      // Run this in a loop to check if we need to update the image
+      const checkTime = () => {
+        if (!alive) {
+          return;
+        }
+        const tDist = props.clock.getTime() - instance.timeBegin;
+        if (tDist >= 0 && tDist <= props.clock.getDelta()) {
+          // free unneeded resources when we proceed to the next image
+          let freed = -1;
+          if (displayed !== -1 && particleDataQueue.length > 1) {
+            freed = particleDataQueue.shift();
+          }
+          displayed = particleDataQueue[0];
+          props.state.setParticleData(displayed);
+          // do the free AFTER we setParticleData to a new one
+          if (freed !== -1) {
+            props.state.destroyParticleData(freed);
+            // also look for a replacement
+            cache.getParticleDataForSearchTerm(instance.config.searchTerm)
+            .then((particleData) => {
+              particleDataQueue.push(particleData);
+            });
+          }
+        }
+        window.requestAnimationFrame(checkTime);
+      };
+      checkTime();
+      props.state.addHook(() => {
+        alive = false;
       });
     });
-
-    return runFlickrQuery(onInitialFlickrResponse);
   }
 
   static getDisplayName() {
     return EffectName;
+  }
+
+  static getDescription() {
+    return EffectDescription;
   }
 
   static getConfigUI() {
@@ -189,5 +243,14 @@ export default class FlickrImageEffect extends Effect {
 
   static getRandomConfig() {
     return this.getDefaultConfig();
+  }
+
+  static getCache(props) {
+    if (!this._cache) {
+      this._cache = new FlickrImageCache();
+    }
+    this._cache.setProps(props);
+
+    return this._cache;
   }
 }

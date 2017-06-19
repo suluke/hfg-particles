@@ -2,6 +2,7 @@ import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Change Image';
+const EffectDescription = 'Changes the particle data to a configurable image (file or url)';
 
 const States = {
   INVALID: 0,
@@ -140,6 +141,10 @@ export default class ChangeImageEffect extends Effect {
 
   static getDisplayName() {
     return EffectName;
+  }
+
+  static getDescription() {
+    return EffectDescription;
   }
 
   static getConfigUI() {
