@@ -170,6 +170,11 @@
                   overflow: hidden;
                   @include unselectable;
                 }
+                @for $i from 1 through length($effect-colors) {
+                  & > button.effect-color-#{$i} {
+                    background-color: lighten(nth($effect-colors, $i), 20%);
+                  }
+                }
               }
             }
           }

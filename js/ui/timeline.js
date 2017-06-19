@@ -1,7 +1,7 @@
 import EffectConfigDialog from './effect-config-dialog';
 import { parseHtml, clearChildNodes } from './util';
 import EffectConfig from '../effects/effect-config';
-import { effectList } from '../effects/index';
+import { effectList, getColorClassnameForEffect } from '../effects/index';
 
 /**
  *
@@ -21,7 +21,9 @@ class TimelineEntry {
     this.element = parseHtml(`
       <li>
         <div class="${beginHandleClass}"></div>
-        <button type="button">${this.effect.getDisplayName()}</button>
+        <button type="button" class="${getColorClassnameForEffect(this.effect)}">
+          ${this.effect.getDisplayName()}
+        </button>
         <div class="${endHandleClass}"></div>
       </li>
     `);
