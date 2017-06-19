@@ -165,4 +165,8 @@ export default class ChangeImageEffect extends Effect {
   static getRandomConfig() {
     return this.getDefaultConfig();
   }
+
+  static isEventOnly() {
+    return true;
+  }
 }

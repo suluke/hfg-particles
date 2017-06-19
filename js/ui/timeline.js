@@ -19,7 +19,7 @@ class TimelineEntry {
     const beginHandleClass = 'timeline-entry-begin-time-adjust';
     const endHandleClass = 'timeline-entry-end-time-adjust';
     this.element = parseHtml(`
-      <li>
+      <li class="${this.effect.isEventOnly() ? 'event' : ''}">
         <div class="${beginHandleClass}"></div>
         <button type="button" class="${getColorClassnameForEffect(this.effect)}">
           ${this.effect.getDisplayName()}
@@ -161,6 +161,10 @@ class TimelineEntry {
   }
 
   setupTimeAdjustHandles() {
+    if (this.effect.isEventOnly()) {
+      return;
+    }
+
     const beginHandle = this.element.querySelector('.timeline-entry-begin-time-adjust');
     TimelineEntry.setupAdjustHandle(beginHandle, (delta) => {
       let newBegin = Math.max(0, this.timeBegin + ((delta / this.timeline.pxPerSecond) * 1000));

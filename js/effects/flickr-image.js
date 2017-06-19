@@ -253,4 +253,8 @@ export default class FlickrImageEffect extends Effect {
 
     return this._cache;
   }
+
+  static isEventOnly() {
+    return true;
+  }
 }

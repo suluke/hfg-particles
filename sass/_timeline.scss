@@ -163,7 +163,6 @@
                   width: 100%;
                   height: 100%;
                   color: #000;
-                  background: #eee;
                   border: none;
                   text-align: left;
                   text-overflow: ellipsis;
@@ -173,6 +172,26 @@
                 @for $i from 1 through length($effect-colors) {
                   & > button.effect-color-#{$i} {
                     background-color: lighten(nth($effect-colors, $i), 20%);
+                  }
+                }
+                &.event {
+                  width: 100px !important;
+                  border-right: none;
+                  border-top: none;
+                  border-bottom: none;
+                  border-left: solid 2px #a00;
+                  .timeline-entry-begin-time-adjust,
+                  .timeline-entry-end-time-adjust {
+                    display: none;
+                  }
+                  & > button {
+                    border-bottom-right-radius: 50%;
+                    border-top-right-radius: 50%;
+                  }
+                  @for $i from 1 through length($effect-colors) {
+                    & > button.effect-color-#{$i} {
+                      background: linear-gradient(to right, lighten(nth($effect-colors, $i), 20%), transparent);
+                    }
                   }
                 }
               }

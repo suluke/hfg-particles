@@ -12,9 +12,15 @@ export default class EffectConfigDialog {
     this.element = parseHtml(`
       <div class="effect-config-dialog-backdrop">
         <div class="effect-config-dialog">
-          Begin: <input type="number" min="0" step="1" class="${startTimeInputClass}"/>ms<br/>
-          End: <input type="number" min="0" step="1" class="${endTimeInputClass}"/>ms<br/>
-          Repetitions: <input type="number" class="${repetitionsInputClass}"/><br/>
+          <label>
+            Begin: <input type="number" min="0" step="1" class="${startTimeInputClass}"/>ms
+          </label><br/>
+          <label>
+            End: <input type="number" min="0" step="1" class="${endTimeInputClass}"/>ms
+          </label><br/>
+          <label>
+            Repetitions: <input type="number" class="${repetitionsInputClass}"/>
+          </label><br/>
           <button type="button" class="${okBtnClass}">Ok</button>
           <button type="button" class="${cancelBtnClass}">Cancel</button>
           <button type="button" class="${deleteBtnClass}">Delete effect</button>
@@ -71,6 +77,13 @@ export default class EffectConfigDialog {
       this.startTimeInput.value = entry.timeBegin;
       this.endTimeInput.value = entry.timeEnd;
       this.repetitionsInput.value = entry.repetitions;
+      if (entry.effect.isEventOnly()) {
+        this.endTimeInput.parentNode.style.display = 'none';
+        this.repetitionsInput.parentNode.style.display = 'none';
+      } else {
+        this.endTimeInput.parentNode.style.display = 'inline';
+        this.repetitionsInput.parentNode.style.display = 'inline';
+      }
       this.ui = ui;
       this.dialog.prepend(ui.getElement());
       this.show();

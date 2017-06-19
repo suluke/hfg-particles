@@ -35,6 +35,10 @@ export default class Effect {
   static getDescription() {
     throw new Error('Method not implemented');
   }
+
+  static isEventOnly() {
+    return false;
+  }
 }
 
 /**
