@@ -514,13 +514,13 @@ class RandomplayButton {
       const timeBegin = Math.round(Math.random() * 10000);
       const duration = Math.round(Math.random() * 9000 + 1000);
 
-      config.effects[i] = [new EffectConfig(
+      config.effects.push([new EffectConfig(
         effectList[i].getId(),
         timeBegin,
         timeBegin + duration,
         1,
         effectList[i].getRandomConfig()
-      )];
+      )]);
 
       config.duration = Math.max(config.duration, timeBegin + duration);
     }
