@@ -5088,6 +5088,24 @@ RandomplayButton.prototype.fillRandomTimeline = function fillRandomTimeline () {
   this.menu.submit();
 };
 
+RandomplayButton.trimTimeline = function trimTimeline (timeline) {
+  var earliest = Number.POSITIVE_INFINITY;
+  for (var t = 0; t < timeline.length; t++) {
+    var track = timeline[t];
+    for (var e = 0; e < track.length; e++) {
+      var effect = track[e];
+      earliest = Math.min(effect.timeBegin, earliest);
+    }
+  }
+  for (var t$1 = 0; t$1 < timeline.length; t$1++) {
+    var track$1 = timeline[t$1];
+    for (var e$1 = 0; e$1 < track$1.length; e$1++) {
+      var effect$1 = track$1[e$1];
+      effect$1.timeBegin -= earliest;
+    }
+  }
+};
+
 RandomplayButton.generateRandomTimeline = function generateRandomTimeline (currentConfig) {
   var config = Object.assign({}, currentConfig);
 
@@ -5112,6 +5130,7 @@ RandomplayButton.generateRandomTimeline = function generateRandomTimeline (curre
 
     config.duration = Math.max(config.duration, timeBegin + duration);
   }
+  RandomplayButton.trimTimeline(config.effects);
 
   //TODO: does not work...
   //config.effects.push([new EffectConfig("FlickrImageEffect", 0, config.duration, 1, { searchTerm: '' })]);
