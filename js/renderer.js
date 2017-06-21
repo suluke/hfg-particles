@@ -270,26 +270,22 @@ export class RendererPipeline {
     if (!this.mainCommand) {
       return;
     }
-    if (this.accumulationAgents.length === 0) {
+    if (this.accumulationAgents.length === 0 || props.clock.getPaused()) {
       this.regl.clear({ color: this.clearColor });
       this.mainCommand(props);
     } else { // Accumulation is active
-      if (props.clock.getPaused()) {
-        this.paintResultCommand(props);
-      } else {
-        // Do NOT change the buffers AFTER paintResultCommand, because if we
-        // pause at some point, the other if() branch above will have the
-        // two buffers alrady swapped - which we don't want. resultBuffer
-        // should still be resultBuffer
-        [this.accuHistoryBuffer, this.resultBuffer] = [this.resultBuffer, this.accuHistoryBuffer];
-        this.particleBuffer.framebuffer.use(() => {
-          this.regl.clear({color: this.clearColor});
-          this.mainCommand(props);
-        });
+      // Do NOT change the buffers AFTER paintResultCommand, because if we
+      // pause at some point, the other if() branch above will have the
+      // two buffers alrady swapped - which we don't want. resultBuffer
+      // should still be resultBuffer
+      [this.accuHistoryBuffer, this.resultBuffer] = [this.resultBuffer, this.accuHistoryBuffer];
+      this.particleBuffer.framebuffer.use(() => {
+        this.regl.clear({color: this.clearColor});
+        this.mainCommand(props);
+      });
 
-        this.accumulationCommand(props);
-        this.paintResultCommand(props);
-      }
+      this.accumulationCommand(props);
+      this.paintResultCommand(props);
     }
   }
   isValid() {
