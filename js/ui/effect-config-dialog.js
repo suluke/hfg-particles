@@ -82,7 +82,7 @@ export default class EffectConfigDialog {
         this.repetitionsInput.parentNode.style.display = 'none';
       } else {
         this.endTimeInput.parentNode.style.display = 'inline';
-        this.repetitionsInput.parentNode.style.display = 'inline';
+        this.repetitionsInput.parentNode.style.display =  entry.effect.supportsRepetition() ? 'inline' : 'none';
       }
       this.ui = ui;
       this.dialog.prepend(ui.getElement());

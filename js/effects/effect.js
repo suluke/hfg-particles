@@ -36,6 +36,10 @@ export default class Effect {
     throw new Error('Method not implemented');
   }
 
+  static supportsRepetition() {
+    return true;
+  }
+
   static isEventOnly() {
     return false;
   }

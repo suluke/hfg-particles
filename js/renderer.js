@@ -220,10 +220,23 @@ class AccumulationCommand extends FullscreenRectCommand {
     for (let i = 0; i < agents.length; i++) {
       const agent = agents[i];
       const agentUniforms = new Uniforms(i);
+      const fadeWeightUniform = agentUniforms.addUniform('fadeWeight', 'float', (ctx, props) => {
+        const timeBegin = agent.instance.timeBegin;
+        const timeEnd = agent.instance.timeEnd;
+        const fadein = agent.instance.config.fadein;
+        const fadeout = agent.instance.config.fadeout;
+        const t = props.clock.getTime();
+        // t in [timeBegin, timeEnd] (guranteed by if below)
+        return t < (timeBegin + fadein) ? (t - timeBegin) / fadein :
+          t > (timeEnd - fadeout) ? 1 - (t - (timeEnd - fadeout)) / fadeout :
+          1;
+      });
       code.push(`
-        if (${agent.timeBegin} <= globalTime && globalTime <= ${agent.timeEnd}) {
+        if (${agent.instance.timeBegin} <= globalTime && globalTime <= ${agent.instance.timeEnd}) {
           activeAgents++;
+          vec3 accumulationEffectResult;
           ${agent.getFragmentCode(agentUniforms)}
+          accumulationResult += mix(particleColor, accumulationEffectResult, ${fadeWeightUniform});
         }
       `);
       agentUniforms.compile(shader, uniforms);

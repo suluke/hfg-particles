@@ -11,8 +11,26 @@ class TrailsConfigUI extends ConfigUI {
     this.element = parseHtml(`
       <fieldset>
         <legend>${EffectName}</legend>
+        <label>
+          Fade-in:
+          <input type="number" class="effect-trails-fadein" value="100" />ms
+        </label><br/>
+        <label>
+          Fade-out:
+          <input type="number" class="effect-trails-fadeout" value="500" />ms
+        </label>
       </fieldset>
     `);
+    const ui = this.element;
+    this.fadeinInput = ui.querySelector('.effect-trails-fadein');
+    this.fadeoutInput = ui.querySelector('.effect-trails-fadeout');
+
+    this.fadeinInput.addEventListener('change', () => {
+      this.notifyChange();
+    });
+    this.fadeoutInput.addEventListener('change', () => {
+      this.notifyChange();
+    });
   }
 
   getElement() {
@@ -21,10 +39,15 @@ class TrailsConfigUI extends ConfigUI {
 
   getConfig() {
     const config = {};
+    config.fadein = parseInt(this.fadeinInput.value, 10);
+    config.fadeout = parseInt(this.fadeoutInput.value, 10);
+
     return config;
   }
 
   applyConfig(config) {
+    this.fadeinInput.value = config.fadein;
+    this.fadeoutInput.value = config.fadeout;
   }
 }
 
@@ -34,8 +57,7 @@ class TrailsAgent extends AccumulationAgent {
   }
   getFragmentCode(uniforms) {
     return `
-      vec3 color = 0.7 * historyColor + 0.3 * particleColor;
-      accumulationResult += color;
+      accumulationEffectResult = mix(particleColor, historyColor, 0.7);
     `;
   }
 }
@@ -63,11 +85,12 @@ export default class TrailsEffect extends AccumulationEffect {
 
   static getDefaultConfig() {
     return {
+      fadein: 100,
+      fadeout: 500
     };
   }
 
   static getRandomConfig() {
-    return {
-    };
+    return getDefaultConfig();
   }
 }

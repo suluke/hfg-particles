@@ -11,8 +11,26 @@ class SmearConfigUI extends ConfigUI {
     this.element = parseHtml(`
       <fieldset>
         <legend>${EffectName}</legend>
+        <label>
+          Fade-in:
+          <input type="number" class="effect-smear-fadein" value="100" />ms
+        </label><br/>
+        <label>
+          Fade-out:
+          <input type="number" class="effect-smear-fadeout" value="500" />ms
+        </label>
       </fieldset>
     `);
+    const ui = this.element;
+    this.fadeinInput = ui.querySelector('.effect-smear-fadein');
+    this.fadeoutInput = ui.querySelector('.effect-smear-fadeout');
+
+    this.fadeinInput.addEventListener('change', () => {
+      this.notifyChange();
+    });
+    this.fadeoutInput.addEventListener('change', () => {
+      this.notifyChange();
+    });
   }
 
   getElement() {
@@ -21,10 +39,15 @@ class SmearConfigUI extends ConfigUI {
 
   getConfig() {
     const config = {};
+    config.fadein = parseInt(this.fadeinInput.value, 10);
+    config.fadeout = parseInt(this.fadeoutInput.value, 10);
+
     return config;
   }
 
   applyConfig(config) {
+    this.fadeinInput.value = config.fadein;
+    this.fadeoutInput.value = config.fadeout;
   }
 }
 
@@ -38,9 +61,8 @@ class SmearAgent extends AccumulationAgent {
     });
     return `
       vec2 smearDir = vec2(-texcoord.y + .5, texcoord.x - .5);
-      vec3 color = 0.8 * texture2D(historyTexture, texcoord + smearDir * ${invTextureSize} * 8.).rgb;
-      color += 0.2 * particleColor;
-      accumulationResult += color;
+      vec3 color = texture2D(historyTexture, texcoord + smearDir * ${invTextureSize} * 8.).rgb;
+      accumulationEffectResult = mix(particleColor, color, 0.8);
     `;
   }
 }
@@ -68,11 +90,12 @@ export default class SmearEffect extends AccumulationEffect {
 
   static getDefaultConfig() {
     return {
+      fadein: 100,
+      fadeout: 500
     };
   }
 
   static getRandomConfig() {
-    return {
-    };
+    return getDefaultConfig();
   }
 }
