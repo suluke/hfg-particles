@@ -2,12 +2,12 @@
  * Interface for effects
  */
 export default class Effect {
-  static register(/* instance, props, uniforms, vertexShader */) {
+  static register(/* instance, props, uniforms, vertexShader, fragmentShader */) {
     throw new Error('Method not implemented');
   }
 
-  static registerAsync(instance, props, uniforms, vertexShader) {
-    this.register(instance, props, uniforms, vertexShader);
+  static registerAsync(instance, props, uniforms, vertexShader, fragmentShader) {
+    this.register(instance, props, uniforms, vertexShader, fragmentShader);
     return Promise.resolve();
   }
 
