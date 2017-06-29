@@ -100,6 +100,6 @@ export default class SmoothTrailsEffect extends AccumulationEffect {
   }
 
   static getRandomConfig() {
-    return getDefaultConfig();
+    return this.getDefaultConfig();
   }
 }

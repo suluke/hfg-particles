@@ -91,6 +91,6 @@ export default class TrailsEffect extends AccumulationEffect {
   }
 
   static getRandomConfig() {
-    return getDefaultConfig();
+    return this.getDefaultConfig();
   }
 }

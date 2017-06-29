@@ -96,6 +96,6 @@ export default class SmearEffect extends AccumulationEffect {
   }
 
   static getRandomConfig() {
-    return getDefaultConfig();
+    return this.getDefaultConfig();
   }
 }
