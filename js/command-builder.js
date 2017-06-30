@@ -1,5 +1,5 @@
 import { effectsById } from './effects/index';
-import { Shader, Uniforms } from './regl-utils';
+import { Shader, Uniforms, Attributes } from './regl-utils';
 
 export default class CommandBuilder {
   buildCommand(props) {
@@ -77,6 +77,11 @@ export default class CommandBuilder {
   assembleCommand() {
     return new Promise((res, rej) => {
       const uniforms = {};
+      const attributes = {
+        texcoord: () => this.state.getCurrentParticleData().texcoordsBuffer,
+        rgb:      () => this.state.getCurrentParticleData().rgbBuffer,
+        hsv:      () => this.state.getCurrentParticleData().hsvBuffer
+      };
       const vert = CommandBuilder.prepareVertexShader();
       const frag = CommandBuilder.prepareFragmentShader();
       this.makeUniforms().compile(vert, uniforms);
@@ -86,11 +91,7 @@ export default class CommandBuilder {
         // TODO This cannot be changed ad-hoc. A new command would be necessary.
         // regl.elements (http://regl.party/api#elements) could be an alternative here
         count:      this.config.xParticlesCount * this.config.yParticlesCount,
-        attributes: {
-          texcoord: () => this.state.getCurrentParticleData().texcoordsBuffer,
-          rgb:      () => this.state.getCurrentParticleData().rgbBuffer,
-          hsv:      () => this.state.getCurrentParticleData().hsvBuffer
-        },
+        attributes,
         uniforms,
         depth: { enable: false }
       };
@@ -144,13 +145,15 @@ export default class CommandBuilder {
           return res();
         }
         const effectUniforms = new Uniforms(globalId);
+        const effectAttributes = new Attributes(globalId);
         const effectClass = effectConfig.getEffectClass();
         vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
-        effectClass.registerAsync(effectConfig, this.props, effectUniforms, vert, frag)
+        effectClass.registerAsync(effectConfig, this.props, effectUniforms, vert, frag, effectAttributes)
         .then(() => {
           vert.mainBody += '}';
 
           effectUniforms.compile(vert, uniforms);
+          effectAttributes.compile(vert, attributes);
           globalId += 1;
           registerEffects(res, rej);
         }, (err) => {
@@ -159,6 +162,7 @@ export default class CommandBuilder {
           vert.mainBody += '}';
 
           effectUniforms.compile(vert, uniforms);
+          effectAttributes.compile(vert, attributes);
           globalId += 1;
           registerEffects(res, rej);
         });

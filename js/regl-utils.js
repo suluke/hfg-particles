@@ -65,35 +65,61 @@ export class Shader {
   }
 }
 
-export class Uniforms {
-  constructor(id) {
-    this.uniforms = [];
+class ShaderData {
+  constructor(id, type) {
+    this.data = [];
     this.id = id;
+    this.type = type;
   }
-  addUniform(name, type, value) {
-    const uniform = { name, type, value };
-    this.uniforms.push(uniform);
+  add(name, type, value) {
+    const entry = { name, type, value };
+    this.data.push(entry);
 
-    return this.getNameFor(uniform);
+    return this.getNameFor(entry);
   }
-  getNameFor(uniform) {
+  getNameFor(entry) {
     if (this.id === undefined) {
-      return uniform.name;
+      return entry.name;
     } else {
-      return `${uniform.name}_${this.id}`;
+      return `${entry.name}_${this.id}`;
     }
   }
-  compile(shader, uniforms = null) {
+  getCompiled(shader, storage = null) {
     const shaderStr = [];
-    for (let i = 0; i < this.uniforms.length; i++) {
-      const uniform = this.uniforms[i];
-      shaderStr.push(`uniform ${uniform.type} ${this.getNameFor(uniform)};`);
-      if (uniforms !== null) {
+    for (let i = 0; i < this.data.length; i++) {
+      const entry = this.data[i];
+      shaderStr.push(`${this.type} ${entry.type} ${this.getNameFor(entry)};`);
+      if (storage !== null) {
         // eslint-disable-next-line no-param-reassign
-        uniforms[this.getNameFor(uniform)] = uniform.value;
+        storage[this.getNameFor(entry)] = entry.value;
       }
     }
+    return shaderStr.join('\n') + '\n';
+  }
+}
+
+export class Uniforms extends ShaderData {
+  constructor(id) {
+    super(id, 'uniform');
+  }
+  addUniform(name, type, value) {
+    return this.add(name, type, value);
+  }
+  compile(shader, uniforms = null) {
     // eslint-disable-next-line no-param-reassign
-    shader.uniforms += shaderStr.join('\n') + '\n';
+    shader.uniforms += this.getCompiled(shader, uniforms);
+  }
+}
+
+export class Attributes extends ShaderData {
+  constructor(id) {
+    super(id, 'attribute');
+  }
+  addAttribute(name, type, value) {
+    return this.add(name, type, value);
+  }
+  compile(shader, attributes = null) {
+    // eslint-disable-next-line no-param-reassign
+    shader.attributes += this.getCompiled(shader, attributes);
   }
 }

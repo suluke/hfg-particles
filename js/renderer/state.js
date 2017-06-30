@@ -101,6 +101,7 @@ export default class RendererState {
     // Properties
     this.particleData = -1;
     this.particleDataStore = [[null, null]];
+    this.buffers = [];
     this.hooks = [];
     this.width = 0;
     this.height = 0;
@@ -128,6 +129,11 @@ export default class RendererState {
     }
     this.particleDataStore.length = 1;
     this.particleData = 0;
+
+    for (let i = 0; i < this.buffers.length; i++) {
+      this.buffers[i].destroy();
+    }
+    this.buffers.length = 0;
     // run hooks
     for (let i = 0; i < this.hooks.length; i++) {
       this.hooks[i]();
@@ -162,6 +168,18 @@ export default class RendererState {
       return null;
     }
     return this.particleDataStore[this.particleData][1];
+  }
+  createBuffer(...args) {
+    const buf = this.regl.buffer(...args);
+    this.buffers.push(buf);
+    return { id: this.buffers.length - 1, buffer: buf };
+  }
+  destroyBuffer(id) {
+    if (id < 0 || id >= this.buffers.length) {
+      throw new Error('Illegal buffer id given for destruction');
+    }
+    this.buffers[id].destroy();
+    this.buffers.splice(id, 1);
   }
   isValid() {
     return this.particleData >= 0 && this.pipeline.isValid();
