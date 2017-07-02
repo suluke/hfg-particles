@@ -68,6 +68,9 @@ export default class RendererClock {
   getPaused() {
     return this.paused;
   }
+  isPaused() {
+    return this.paused;
+  }
   addWrapListener(listener) {
     this.wrapListeners.push(listener);
   }

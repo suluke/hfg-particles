@@ -342,13 +342,14 @@ class Timeticks {
   adjustPosition() {
     const cssRules = this.stylesheet.cssRules;
     const borderWidth = this.getTimelineBorderWidth();
+    const selectorPath = '.menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content';
     this.stylesheet.insertRule(`
-      .menu-timeline-container .menu-timeline-content tr > th:first-child + th {
+      ${selectorPath} tr > th:first-child + th {
         border-left-width: ${borderWidth}px;
       }`, cssRules.length
     );
     this.stylesheet.insertRule(`
-      .menu-timeline-container .menu-timeline-content tr > td:first-child + td {
+      ${selectorPath} tr > td:first-child + td {
         border-left-width: ${borderWidth}px;
       }`, cssRules.length
     );
@@ -576,7 +577,9 @@ class TimeDisplay {
     if (time < 0) {
       time = 0;
     }
-    this.element.innerHTML = Timeticks.msToStr(time);
+    if (!this.clock.isPaused()) {
+      this.element.innerHTML = Timeticks.msToStr(time);
+    }
   }
 }
 
