@@ -21,6 +21,15 @@ const imgDimWarn = new ImgDimWarn();
 const renderer = new Renderer(canvas);
 const menu = new MainMenu(renderer.getClock());
 
+if (window.localStorage) {
+  const configJson = window.localStorage.getItem('savedConfig');
+  if (configJson !== null) {
+    const config = JSON.parse(configJson);
+    menu.applyConfig(config);
+    menu.submit();
+  }
+}
+
 const adjustCanvasSize = () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -63,4 +72,7 @@ imgSelect.addChangeListener((url) => {
 
 menu.addChangeListener((config) => {
   renderer.setConfig(config);
+  if (window.localStorage) {
+    window.localStorage.setItem('savedConfig', JSON.stringify(config, null, 2));
+  }
 });
