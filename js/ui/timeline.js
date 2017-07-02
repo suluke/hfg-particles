@@ -65,6 +65,10 @@ class TimelineEntry {
         },
         (deleted) => {
           if (deleted) {
+            if (deleted !== true) {
+              // Another error occurred
+              throw deleted;
+            }
             this.remove();
           }
         }
