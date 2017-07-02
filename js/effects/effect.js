@@ -2,7 +2,7 @@
  * Interface for effects
  */
 export default class Effect {
-  static register(/* instance, props, uniforms, vertexShader, fragmentShader */) {
+  static register(/* instance, props, uniforms, vertexShader, fragmentShader, attributes */) {
     throw new Error('Method not implemented');
   }
 
