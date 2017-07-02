@@ -40,6 +40,10 @@
       background-color: $randomize-btn-active-color;
     }
   }
+
+  .menu-timeline-settings {
+    @include timeline-icon-btn($fa-var-cog);
+  }
   .menu-timeline-lockstate {
     @include icon($fa-var-unlock);
     @at-root .locked#{&} {
@@ -47,15 +51,17 @@
     }
   }
 
+  display: flex;
+  flex-direction: column;
+
   .menu-timeline-scrollable-container {
-    overflow-y: scroll;
+    overflow: scroll;
     display: block;
     width: 100%;
-    height: 100%;
+    flex-grow: 1;
     .menu-timeline-content {
       min-width: 100%;
       text-align: left;
-      overflow: scroll;
 
       tr {
         & > th:first-child,
