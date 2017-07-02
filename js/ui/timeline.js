@@ -1,7 +1,8 @@
 import EffectConfigDialog from './effect-config-dialog';
 import { parseHtml, clearChildNodes } from './util';
 import EffectConfig from '../effects/effect-config';
-import { effectList, getColorClassnameForEffect } from '../effects/index';
+import { getColorClassnameForEffect } from '../effects/index';
+import { RandomplayButton, TimelineConfigButton } from './random-play';
 
 /**
  *
@@ -493,106 +494,6 @@ class PauseButton {
   }
 }
 
-class RandomplayButton {
-  constructor(timeline) {
-    this.timeline = timeline;
-    this.menu = timeline.menu;
-    this.clock = this.menu.clock
-    this.onClockWrap = null;
-    this.element = document.getElementById('menu-timeline-randomplay');
-    this.didJustCreateNewTimeline = false;
-    this.element.addEventListener('click', () => {
-      if (this.onClockWrap === null) {
-        this.start();
-      } else {
-        this.stop();
-      }
-    });
-    this.menu.addChangeListener(() => {
-      if (this.didJustCreateNewTimeline) {
-        this.didJustCreateNewTimeline = false;
-      } else {
-        this.stop();
-      }
-    });
-  }
-  start() {
-    if (this.onClockWrap === null) {
-      this.element.checked = true;
-      this.onClockWrap = () => this.fillRandomTimeline();
-      this.clock.addWrapListener(this.onClockWrap);
-      this.fillRandomTimeline();
-      this.timeline.setLocked(true);
-      this.clock.setPaused(false);
-    }
-  }
-  stop() {
-    if (this.onClockWrap !== null) {
-      this.element.checked = false;
-      this.clock.removeWrapListener(this.onClockWrap);
-      this.onClockWrap = null;
-      this.timeline.setLocked(false);
-    }
-  }
-
-  fillRandomTimeline() {
-    const config = RandomplayButton.generateRandomTimeline(this.menu.submittedConfig);
-    this.didJustCreateNewTimeline = true;
-    this.menu.applyConfig(config);
-    this.menu.submit();
-  }
-
-  static trimTimeline(timeline) {
-    let earliest = Number.POSITIVE_INFINITY;
-    for (let t = 0; t < timeline.length; t++) {
-      const track = timeline[t];
-      for (let e = 0; e < track.length; e++) {
-        const effect = track[e];
-        earliest = Math.min(effect.timeBegin, earliest);
-      }
-    }
-    for (let t = 0; t < timeline.length; t++) {
-      const track = timeline[t];
-      for (let e = 0; e < track.length; e++) {
-        const effect = track[e];
-        effect.timeBegin -= earliest;
-      }
-    }
-  }
-
-  static generateRandomTimeline(currentConfig) {
-    const config = Object.assign({}, currentConfig);
-
-    config.effects = [];
-    config.duration = 0;
-
-    for (let i = 0; i < effectList.length; i++) {
-      if (effectList[i].getId() == "FlickrImageEffect") {
-        continue;
-      }
-
-      const timeBegin = Math.round(Math.random() * 10000);
-      const duration = Math.round(Math.random() * 9000 + 1000);
-
-      config.effects.push([new EffectConfig(
-        effectList[i].getId(),
-        timeBegin,
-        timeBegin + duration,
-        1,
-        effectList[i].getRandomConfig()
-      )]);
-
-      config.duration = Math.max(config.duration, timeBegin + duration);
-    }
-    RandomplayButton.trimTimeline(config.effects);
-
-    //TODO: does not work...
-    //config.effects.push([new EffectConfig("FlickrImageEffect", 0, config.duration, 1, { searchTerm: '' })]);
-
-    return config;
-  }
-}
-
 class TimeDisplay {
   constructor(menu) {
     this.element = document.querySelector('.menu-timeline-current-time');
@@ -633,6 +534,9 @@ export default class Timeline {
     this.timeDisplay = new TimeDisplay(menu);
     this.pauseButton = new PauseButton(menu.clock);
     this.randomplayButton = new RandomplayButton(this);
+    this.timelineConfigBtn = new TimelineConfigButton((config) => {
+      this.randomplayButton.setConfig(config);
+    });
     this.positionIndicator = new TimeIndicator(menu, this.timeticks);
     this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
     this.timeticks.addScaleChangeListener(() => {
