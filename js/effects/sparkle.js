@@ -76,48 +76,20 @@ export default class SparkleEffect extends Effect {
       return;
     }
 
-    // The next line is supposed to calculate the likelyhood by which
-    // particles have to start to sparkle if we want to have an average 
-    // of <ratio> of all particles sparkling within 100 frames
-    // FIXME the 100 frames are pretty arbitrary
-    const prob = Math.pow(1 - ratio, 1 / 100);
-    const shouldStart = () => {
-      if (props.clock.getTime() + duration > instance.timeEnd)
-        return false;
-      if (Math.random() < prob)
-        return false;
-      return true;
-    };
-
     // Shader values
     const particlesCount = props.config.xParticlesCount * props.config.yParticlesCount;
-    const progresses = new Float32Array(particlesCount);
-    const { id: bufId, buffer } = props.state.createBuffer({
-      usage: 'dynamic',
-      type: 'float',
-      length: particlesCount,
-      data: progresses
-    });
-    
-    const progress = attributes.add('progress', 'float', (ctx, props) => {
-      const time = props.clock.getTime();
-      if (instance.timeBegin <= time && time <= instance.timeEnd) {
-        for (let i = 0; i < progresses.length; i++) {
-          if (progresses[i] !== 0 || shouldStart()) {
-            if (progresses[i] > 1) {
-              progresses[i] = 0;
-              continue;
-            }
-            progresses[i] += props.clock.getDelta() / duration;
-          }
-        }
-        buffer({ data: progresses });
-      } else if (instance.timeEnd < time && time - props.clock.getDelta() <= instance.timeEnd) {
-        const progresses = new Float32Array(particlesCount);
-        buffer({ data: progresses });
-      }
-      return buffer;
-    });
+    const periodData = new Float32Array(particlesCount);
+    const offsetData = new Float32Array(particlesCount);
+    for(let i=0; i<particlesCount; ++i) {
+        periodData[i] = (1 + (Math.random() * 2 - 1) * .25) * duration / ratio;
+        offsetData[i] = Math.random() * periodData[i];
+    }
+
+    const { id: periodBufId, buffer: periodBuffer } = props.state.createBuffer(periodData);
+    const { id: offsetBufId, buffer: offsetBuffer } = props.state.createBuffer(offsetData);
+
+    const period = attributes.add('period', 'float', periodBuffer);
+    const offset = attributes.add('offset', 'float', offsetBuffer);
 
     let progressFun = `
       float dMin = float(${scaleMin});
@@ -141,10 +113,17 @@ export default class SparkleEffect extends Effect {
     // eslint-disable-next-line no-param-reassign
     vertexShader.mainBody += `
       {
-        float x = ${progress};
-        ${progressFun};
-        pointSize *= progressFun;
-        color *= progressFun;
+        float lastPeriodBegin = float(${instance.timeBegin}) + ceil(float(${instance.timeEnd - instance.timeBegin}) / ${period}) * ${period} - ${offset};
+        if(lastPeriodBegin > float(${instance.timeEnd})) lastPeriodBegin -= ${period};
+        float lastPeriodLength = float(${instance.timeEnd}) - lastPeriodBegin;
+        if(float(globalTime) > float(${instance.timeBegin}) + ${period} - ${offset}
+          && (lastPeriodLength >= float(${duration}) ? true : float(globalTime) < lastPeriodBegin)) {
+          float t = mod(float(globalTime) - float(${instance.timeBegin}) + ${offset}, ${period});
+          float x = max(1. - t * ${1/duration}, 0.);
+          ${progressFun}
+          pointSize *= progressFun;
+          color *= progressFun;
+        }
       }
     `;
   }
