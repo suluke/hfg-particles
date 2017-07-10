@@ -76,13 +76,40 @@ export default class SparkleEffect extends Effect {
       return;
     }
 
+    /* How does this work ?
+    ProgressFun does some fancy animation on the point size. It does so
+    by taking a x value which goes from 0 to 1 in duration time. This is
+    a sawtooth function. Since we want the effect to look random, we
+    employ a random period (which is based on the duration and the
+    ratio) and offset the function by a random value dependent on the
+    period. So it looks like this:
+     x
+    1      /|          /|
+          / |         / |
+         /  |        /  |
+        /   |       /   |
+       /    |      /    |
+    0 ----+----------------
+          0                t
+      |  d  |        duration
+      |     p     |  period
+      | o |          offset
+
+    Since the function differs for each particle, we need to make sure
+    that we always display the complete animation and not start
+    somewhere in the middle with x != 0 and always end with x == 1.
+    */
+
     // Shader values
     const particlesCount = props.config.xParticlesCount * props.config.yParticlesCount;
     const periodData = new Float32Array(particlesCount);
     const offsetData = new Float32Array(particlesCount);
-    for(let i=0; i<particlesCount; ++i) {
-        periodData[i] = (1 + (Math.random() * 2 - 1) * .25) * duration / ratio;
-        offsetData[i] = Math.random() * periodData[i];
+    for(let i = 0; i < particlesCount; i++) {
+      // The period is based on duration (clear).
+      // Divide by ratio to get a reduced effect with smaller ratios.
+      // Randomize the period by shifting it a bit in any direction.
+      periodData[i] = Math.max((1 + (Math.random() * 2 - 1) * .25) * duration / ratio, duration);
+      offsetData[i] = Math.random() * periodData[i];
     }
 
     const { id: periodBufId, buffer: periodBuffer } = props.state.createBuffer(periodData);
@@ -113,13 +140,15 @@ export default class SparkleEffect extends Effect {
     // eslint-disable-next-line no-param-reassign
     vertexShader.mainBody += `
       {
+        float firstPeriodBegin = float(${instance.timeBegin}) - ${offset};
+        if(firstPeriodBegin < float(${instance.timeBegin})) firstPeriodBegin += ${period};
         float lastPeriodBegin = float(${instance.timeBegin}) + ceil(float(${instance.timeEnd - instance.timeBegin}) / ${period}) * ${period} - ${offset};
         if(lastPeriodBegin > float(${instance.timeEnd})) lastPeriodBegin -= ${period};
         float lastPeriodLength = float(${instance.timeEnd}) - lastPeriodBegin;
-        if(float(globalTime) > float(${instance.timeBegin}) + ${period} - ${offset}
-          && (lastPeriodLength >= float(${duration}) ? true : float(globalTime) < lastPeriodBegin)) {
+        if(float(globalTime) >= firstPeriodBegin
+          && (lastPeriodLength >= float(${duration}) || float(globalTime) < lastPeriodBegin)) {
           float t = mod(float(globalTime) - float(${instance.timeBegin}) + ${offset}, ${period});
-          float x = max(1. - t * ${1/duration}, 0.);
+          float x = t > float(${duration}) ? 0. : t * ${1/duration};
           ${progressFun}
           pointSize *= progressFun;
           color *= progressFun;
