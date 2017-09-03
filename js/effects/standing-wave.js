@@ -71,7 +71,7 @@ export default class StandingWaveEffect extends Effect {
     if (maxAmplitude !== 0) {
       const time = uniforms.addUniform('time', 'float', (ctx, props) => fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()));
       const timeInterpolations = {
-        linear: `abs((${time} - 0.5) * 2.) * 2. - 1.`,
+        linear: `abs(abs(mod(mod(${time} * 4. + 2., 4.) + 1., 4.)) - 2.) - 1.`, // no idea how I came up with this
         sine: `sin(${time} * 2. * PI)`
       };
       const timeInterpolStr = timeInterpolations[timeInterpolation] || timeInterpolations['linear'];
