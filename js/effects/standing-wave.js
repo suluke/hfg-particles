@@ -112,9 +112,9 @@ export default class StandingWaveEffect extends Effect {
 
   static getRandomConfig() {
     return {
-      maxAmplitude: 0.05,
-      waveCount: 20,
-      timeInterpolation: 'linear'
+      maxAmplitude: Math.random() * 0.2,
+      waveCount: 1 + Math.random() * 30,
+      timeInterpolation: ['linear', 'sine'][Math.round(Math.random())]
     };
   }
 }
