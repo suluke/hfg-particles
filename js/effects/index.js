@@ -7,6 +7,8 @@ import FlickrImageEffect from './flickr-image';
 import TrailsEffect from './trails';
 import SmoothTrailsEffect from './smooth-trails';
 import SmearEffect from './smear';
+import StandingWaveEffect from './standing-wave';
+import DummyEffect from './dummy';
 
 const effectList = [
   HueDisplaceEffect,
@@ -17,7 +19,9 @@ const effectList = [
   FlickrImageEffect,
   TrailsEffect,
   SmoothTrailsEffect,
-  SmearEffect
+  SmearEffect,
+  StandingWaveEffect,
+  DummyEffect
 ];
 const byId = {};
 for (let i = 0; i < effectList.length; i++) {
