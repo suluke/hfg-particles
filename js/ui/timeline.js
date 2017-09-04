@@ -481,6 +481,11 @@ class PauseButton {
         this.element.classList.remove(onPauseClass);
       }
     });
+    window.document.addEventListener('keydown', (e) => {
+      if (e.key === ' ') {
+        clock.tooglePause();
+      }
+    });
   }
 }
 
