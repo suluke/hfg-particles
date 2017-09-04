@@ -19,18 +19,34 @@ class StandingWaveConfigUI extends ConfigUI {
           <input type="number" class="effect-standing-wave-wave-count" value="0.05" />
         </label><br/>
         <label>
+          Dimension:
+          <select class="effect-standing-wave-dimension" value="y">
+            <option value="y">Y</option>
+            <option value="x">X</option>
+          </select>
+        </label><br/>
+        <label>
           Time interpolator:
           <select class="effect-standing-wave-time-interpolation" value="sine">
             <option value="sine">Sine</option>
             <option value="linear">Linear</option>
           </select>
         </label><br/>
+        <label>
+          Wave function:
+          <select class="effect-standing-wave-function" value="sine">
+            <option value="sine">Sine</option>
+            <option value="triangle">Triangle</option>
+          </select>
+        </label>
       </fieldset>
     `);
     const ui = this.element;
     this.maxAmplitudeInput = ui.querySelector('input.effect-standing-wave-max-amplitude');
     this.waveCountInput = ui.querySelector('input.effect-standing-wave-wave-count');
     this.timeInterpolationInput = ui.querySelector('select.effect-standing-wave-time-interpolation');
+    this.functionInput = ui.querySelector('select.effect-standing-wave-function');
+    this.dimensionInput = ui.querySelector('select.effect-standing-wave-dimension');
 
     this.maxAmplitudeInput.addEventListener('change', () => {
       this.notifyChange();
@@ -39,6 +55,12 @@ class StandingWaveConfigUI extends ConfigUI {
       this.notifyChange();
     });
     this.timeInterpolationInput.addEventListener('change', () => {
+      this.notifyChange();
+    });
+    this.functionInput.addEventListener('change', () => {
+      this.notifyChange();
+    });
+    this.dimensionInput.addEventListener('change', () => {
       this.notifyChange();
     });
   }
@@ -52,6 +74,8 @@ class StandingWaveConfigUI extends ConfigUI {
     config.maxAmplitude = parseFloat(this.maxAmplitudeInput.value, 10);
     config.waveCount = parseFloat(this.waveCountInput.value, 10);
     config.timeInterpolation = this.timeInterpolationInput.value;
+    config.waveFunction = this.functionInput.value;
+    config.dimension = this.dimensionInput.value;
 
     return config;
   }
@@ -60,6 +84,8 @@ class StandingWaveConfigUI extends ConfigUI {
     this.maxAmplitudeInput.value = config.maxAmplitude;
     this.waveCountInput.value = config.waveCount;
     this.timeInterpolationInput.value = config.timeInterpolation;
+    this.functionInput.value = config.waveFunction;
+    this.dimensionInput.value = config.dimension;
   }
 }
 
@@ -68,20 +94,33 @@ export default class StandingWaveEffect extends Effect {
     const maxAmplitude = instance.config.maxAmplitude;
     const waveCount = instance.config.waveCount;
     const timeInterpolation = instance.config.timeInterpolation;
+    const waveFunction = instance.config.waveFunction;
+    const dimension = instance.config.dimension;
+    const otherDim = {x: 'y', y: 'x'}[dimension];
     if (maxAmplitude !== 0) {
       const time = uniforms.addUniform('time', 'float', (ctx, props) => fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()));
       const timeInterpolations = {
-        linear: `abs(abs(mod(mod(${time} * 4. + 2., 4.) + 1., 4.)) - 2.) - 1.`, // no idea how I came up with this
-        sine: `sin(${time} * 2. * PI)`
+        // 'linear' is a triangle function that interpolates the points (0,0),(0.25,1),(0.5,0),(0.75,-1),(1,0)
+        // i.e. |/\___
+        //      |  \/
+        linear: `abs(fract(t + 0.75) - 0.5) * 4. - 1.`,
+        sine: `sin(t * 2. * PI)`
       };
       const timeInterpolStr = timeInterpolations[timeInterpolation] || timeInterpolations['linear'];
+      const waveFunctions = {
+        linear: `abs(fract(x + 0.75) - 0.5) * 4. - 1.`,
+        sine: `sin(x * 2. * PI)`
+      };
+      const waveFuncStr = waveFunctions[waveFunction] || waveFunctions['linear'];
       // eslint-disable-next-line no-param-reassign
       vertexShader.mainBody += `
+        float t = ${time};
+        float x = initialPosition.${otherDim} * float(${waveCount});
         float timeAmp = ${timeInterpolStr};
-        float posAmp = sin(initialPosition.x * float(${waveCount}) * 2. * PI);
+        float posAmp = ${waveFuncStr};
         float amplitude = ${instance.config.maxAmplitude} * posAmp * timeAmp;
 
-        position.y += amplitude;
+        position.${dimension} += amplitude;
       `;
     }
   }
@@ -106,7 +145,9 @@ export default class StandingWaveEffect extends Effect {
     return {
       maxAmplitude: 0.05,
       waveCount: 20,
-      timeInterpolation: 'linear'
+      timeInterpolation: 'linear',
+      waveFunction: 'linear',
+      dimension: 'y'
     };
   }
 
@@ -114,7 +155,9 @@ export default class StandingWaveEffect extends Effect {
     return {
       maxAmplitude: Math.random() * 0.2,
       waveCount: 1 + Math.random() * 30,
-      timeInterpolation: ['linear', 'sine'][Math.round(Math.random())]
+      timeInterpolation: ['linear', 'sine'][Math.round(Math.random())],
+      waveFunction: ['linear', 'sine'][Math.round(Math.random())],
+      dimension: ['y', 'x'][Math.round(Math.random())]
     };
   }
 }
