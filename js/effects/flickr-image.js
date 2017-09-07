@@ -124,9 +124,7 @@ class FlickrImageCache {
         if (entry.requests.length > 0) {
           // resolve pending request directly
           const request = entry.requests.shift();
-          request(props.state.createParticleDataFromDomImg(
-            loader, props.config.xParticlesCount, props.config.yParticlesCount
-          ));
+          request(props.state.createParticleDataFromDomImg(loader));
         } else {
           entry.loadedImgs.push(loader);
         }
@@ -163,8 +161,7 @@ class FlickrImageCache {
       });
     } else {
       return Promise.resolve(props.state.createParticleDataFromDomImg(
-        entry.loadedImgs.shift(),
-        props.config.xParticlesCount, props.config.yParticlesCount
+        entry.loadedImgs.shift()
       ));
     }
   }

@@ -117,7 +117,7 @@ export default class ChangeImageEffect extends Effect {
       srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
       srcImage.src = instance.config.url;
       srcImage.onload = () => {
-        const particleData = props.state.createParticleDataFromDomImg(srcImage, props.config.xParticlesCount, props.config.yParticlesCount);
+        const particleData = props.state.createParticleDataFromDomImg(srcImage);
         let alive = true;
         let prevWasChange = false;
         const checkTime = () => {

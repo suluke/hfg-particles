@@ -99,6 +99,7 @@ export default class RendererState {
     this.pipeline = new RendererPipeline(regl);
 
     // Properties
+    this.config = null;
     this.particleData = -1;
     this.particleDataStore = [[null, null]];
     this.buffers = [];
@@ -107,6 +108,7 @@ export default class RendererState {
     this.height = 0;
   }
   adaptToConfig(config) {
+    this.config = config;
     this.pipeline.reset(config.backgroundColor);
 
     // Update default particle data
@@ -142,20 +144,20 @@ export default class RendererState {
   setParticleData(id) {
     this.particleData = id;
   }
-  createParticleData(imgData, width, height) {
+  createParticleData(imgData) {
     this.particleDataStore.push([
       imgData,
       new ParticleData(
         imgData,
         this.regl,
-        width,
-        height
+        this.config.xParticlesCount,
+        this.config.yParticlesCount
       )
     ]);
     return this.particleDataStore.length - 1;
   }
-  createParticleDataFromDomImg(domImg, width, height) {
-    return this.createParticleData(domImgToCanvas(domImg), width, height);
+  createParticleDataFromDomImg(domImg) {
+    return this.createParticleData(domImgToCanvas(domImg));
   }
   destroyParticleData(id) {
     if (this.particleDataStore[id][1]) {
