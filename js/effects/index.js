@@ -9,6 +9,7 @@ import SmoothTrailsEffect from './smooth-trails';
 import SmearEffect from './smear';
 import StandingWaveEffect from './standing-wave';
 import DummyEffect from './dummy';
+import SparkleEffect from './sparkle';
 
 const effectList = [
   HueDisplaceEffect,
@@ -21,7 +22,8 @@ const effectList = [
   SmoothTrailsEffect,
   SmearEffect,
   StandingWaveEffect,
-  DummyEffect
+  DummyEffect,
+  SparkleEffect
 ];
 const byId = {};
 for (let i = 0; i < effectList.length; i++) {

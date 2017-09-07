@@ -1,5 +1,5 @@
 import { effectsById } from './effects/index';
-import { Shader, Uniforms } from './regl-utils';
+import { Shader, Uniforms, Attributes } from './regl-utils';
 
 export default class CommandBuilder {
   buildCommand(props) {
@@ -65,29 +65,25 @@ export default class CommandBuilder {
     return vertexShader;
   }
 
-  assembleFragmentShader() {
+  static prepareFragmentShader() {
     const fragmentShader = new Shader();
     fragmentShader.varyings += 'varying vec3 color;\n';
     fragmentShader.mainBody += `
       float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);
     `;
-    const colorAssign = {
-      add:           'gl_FragColor = vec4(color * v, 1);\n',
-      'alpha blend': 'gl_FragColor = vec4(color, v);\n'
-    }[this.config.particleOverlap];
-    if (!colorAssign) {
-      throw new Error(`Unknown particle overlap mode: ${this.config.particleOverlap}`);
-    }
-    fragmentShader.mainBody += colorAssign;
-
-    return fragmentShader.compile();
+    return fragmentShader;
   }
 
   assembleCommand() {
     return new Promise((res, rej) => {
       const uniforms = {};
+      const attributes = {
+        texcoord: () => this.state.getCurrentParticleData().texcoordsBuffer,
+        rgb:      () => this.state.getCurrentParticleData().rgbBuffer,
+        hsv:      () => this.state.getCurrentParticleData().hsvBuffer
+      };
       const vert = CommandBuilder.prepareVertexShader();
-      const frag = this.assembleFragmentShader();
+      const frag = CommandBuilder.prepareFragmentShader();
       this.makeUniforms().compile(vert, uniforms);
 
       const result = {
@@ -95,13 +91,8 @@ export default class CommandBuilder {
         // TODO This cannot be changed ad-hoc. A new command would be necessary.
         // regl.elements (http://regl.party/api#elements) could be an alternative here
         count:      this.config.xParticlesCount * this.config.yParticlesCount,
-        attributes: {
-          texcoord: () => this.state.getCurrentParticleData().texcoordsBuffer,
-          rgb:      () => this.state.getCurrentParticleData().rgbBuffer,
-          hsv:      () => this.state.getCurrentParticleData().hsvBuffer
-        },
+        attributes,
         uniforms,
-        frag,
         depth: { enable: false }
       };
 
@@ -125,6 +116,7 @@ export default class CommandBuilder {
       vert.mainBody += `
         vec3 initialPosition = vec3(texcoord, 0);
         initialPosition.y *= invImageAspectRatio;
+        float pointSize = max(particleSize, 0.);
 
         vec3 position = initialPosition;
       `;
@@ -153,13 +145,15 @@ export default class CommandBuilder {
           return res();
         }
         const effectUniforms = new Uniforms(globalId);
+        const effectAttributes = new Attributes(globalId);
         const effectClass = effectConfig.getEffectClass();
         vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
-        effectClass.registerAsync(effectConfig, this.props, effectUniforms, vert)
+        effectClass.registerAsync(effectConfig, this.props, effectUniforms, vert, frag, effectAttributes)
         .then(() => {
           vert.mainBody += '}';
 
           effectUniforms.compile(vert, uniforms);
+          effectAttributes.compile(vert, attributes);
           globalId += 1;
           registerEffects(res, rej);
         }, (err) => {
@@ -168,6 +162,7 @@ export default class CommandBuilder {
           vert.mainBody += '}';
 
           effectUniforms.compile(vert, uniforms);
+          effectAttributes.compile(vert, attributes);
           globalId += 1;
           registerEffects(res, rej);
         });
@@ -175,11 +170,20 @@ export default class CommandBuilder {
       return new Promise(registerEffects).then(() => {
         vert.mainBody += `
           color = rgb;
-          gl_PointSize = max(particleSize, 0.);
+          gl_PointSize = pointSize;
           gl_Position = viewProjectionMatrix * vec4(position, 1.);
         `;
+        const colorAssign = {
+          add:           'gl_FragColor = vec4(color * v, 1);\n',
+          'alpha blend': 'gl_FragColor = vec4(color, v);\n'
+        }[this.config.particleOverlap];
+        if (!colorAssign) {
+          throw new Error(`Unknown particle overlap mode: ${this.config.particleOverlap}`);
+        }
+        frag.mainBody += colorAssign;
 
         result.vert = vert.compile();
+        result.frag = frag.compile();
 
         res(result);
       });
