@@ -318,15 +318,16 @@ export default class MainMenu {
   constructor(clock) {
     this.menu = document.getElementById('menu-container');
     this.clock = clock;
+    this.controls = [];
+    this.changeListeners = [];
+    this.defaultConfig = null; // defaults will be read later
+    this.submittedConfig = null;
+
     this.timeline = new Timeline(this);
     this.menuContent = this.menu.querySelector('.menu-content');
     this.effectList = this.menu.querySelector('.menu-effect-list');
     this.toggle = document.getElementById('toggle-menu-visible');
     this.applyBtn = document.getElementById('menu-btn-apply');
-    this.controls = [];
-    this.changeListeners = [];
-    this.defaultConfig = null; // defaults will be read later
-    this.submittedConfig = null;
 
     const menu = this.menu;
     const toggle = this.toggle;

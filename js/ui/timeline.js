@@ -491,27 +491,49 @@ class PauseButton {
 
 class RandomplayButton {
   constructor(timeline) {
+    this.timeline = timeline;
     this.menu = timeline.menu;
-    const clock = this.menu.clock;
+    this.clock = this.menu.clock
     this.onClockWrap = null;
     this.element = document.getElementById('menu-timeline-randomplay');
+    this.didJustCreateNewTimeline = false;
     this.element.addEventListener('click', () => {
-      if(this.onClockWrap === null) {
-        this.onClockWrap = () => this.fillRandomTimeline();
-        clock.addWrapListener(this.onClockWrap);
-        this.fillRandomTimeline();
-        timeline.setLocked(true);
-        clock.setPaused(false);
+      if (this.onClockWrap === null) {
+        this.start();
       } else {
-        clock.removeWrapListener(this.onClockWrap);
-        this.onClockWrap = null;
-        timeline.setLocked(false);
+        this.stop();
       }
     });
+    this.menu.addChangeListener(() => {
+      if (this.didJustCreateNewTimeline) {
+        this.didJustCreateNewTimeline = false;
+      } else {
+        this.stop();
+      }
+    });
+  }
+  start() {
+    if (this.onClockWrap === null) {
+      this.element.checked = true;
+      this.onClockWrap = () => this.fillRandomTimeline();
+      this.clock.addWrapListener(this.onClockWrap);
+      this.fillRandomTimeline();
+      this.timeline.setLocked(true);
+      this.clock.setPaused(false);
+    }
+  }
+  stop() {
+    if (this.onClockWrap !== null) {
+      this.element.checked = false;
+      this.clock.removeWrapListener(this.onClockWrap);
+      this.onClockWrap = null;
+      this.timeline.setLocked(false);
+    }
   }
 
   fillRandomTimeline() {
     const config = RandomplayButton.generateRandomTimeline(this.menu.submittedConfig);
+    this.didJustCreateNewTimeline = true;
     this.menu.applyConfig(config);
     this.menu.submit();
   }
