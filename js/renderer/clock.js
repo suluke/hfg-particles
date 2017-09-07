@@ -66,7 +66,7 @@ export default class RendererClock {
     }
   }
   tooglePause() {
-    this.paused = !this.paused;
+    this.setPaused(!this.paused);
   }
   getPaused() {
     return this.paused;
