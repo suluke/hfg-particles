@@ -38,25 +38,44 @@ const adjustCanvasSize = () => {
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
 
+let isInitialPageLoad = true;
 const srcImage = document.createElement('img');
 srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
 srcImage.src = 'tron.jpg';
 srcImage.onload = () => {
-  imgDimWarn.verify(srcImage)
-  .then(({ xParticlesCount, yParticlesCount }) => {
+  if (isInitialPageLoad) {
+    isInitialPageLoad = false;
     renderer.getState().setDefaultDomImage(srcImage);
-    const config = Object.assign({}, menu.submittedConfig, { xParticlesCount, yParticlesCount });
-    menu.applyConfig(config);
+    const particleCounts = {};
+    if (!menu.submittedConfig.xParticlesCount) {
+      particleCounts.xParticlesCount = srcImage.naturalWidth;
+    }
+    if (!menu.submittedConfig.yParticlesCount) {
+      particleCounts.yParticlesCount = srcImage.naturalHeight;
+    }
+    // This is hacky, but we want to get the default particle count from the default image,
+    // so what else can we do?
+    menu.defaultConfig = Object.assign(menu.defaultConfig, particleCounts);
+    menu.applyConfig(Object.assign(menu.submittedConfig, particleCounts));
     menu.submit();
-  }, () => {
-    /* User canceled loading image */
-    // If we don't clear, changeListeners may not fire if same image is selected again
-    imgSelect.clear();
-  })
-  .then(() => {
-    // do this both on cancel and on accept (= .finally())
     document.documentElement.classList.remove(imageLoadingClass);
-  });
+  } else {
+    imgDimWarn.verify(srcImage)
+    .then(({ xParticlesCount, yParticlesCount }) => {
+      renderer.getState().setDefaultDomImage(srcImage);
+      const config = Object.assign({}, menu.submittedConfig, { xParticlesCount, yParticlesCount });
+      menu.applyConfig(config);
+      menu.submit();
+    }, () => {
+      /* User canceled loading image */
+      // If we don't clear, changeListeners may not fire if same image is selected again
+      imgSelect.clear();
+    })
+    .then(() => {
+      // do this both on cancel and on accept (= .finally())
+      document.documentElement.classList.remove(imageLoadingClass);
+    });
+  }
 };
 srcImage.onerror = () => {
   document.documentElement.classList.remove(imageLoadingClass);

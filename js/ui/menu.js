@@ -325,7 +325,8 @@ export default class MainMenu {
     this.applyBtn = document.getElementById('menu-btn-apply');
     this.controls = [];
     this.changeListeners = [];
-    this.submittedConfig = null; // defaults will be read later
+    this.defaultConfig = null; // defaults will be read later
+    this.submittedConfig = null;
 
     const menu = this.menu;
     const toggle = this.toggle;

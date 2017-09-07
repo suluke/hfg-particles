@@ -30,8 +30,8 @@ export default class ImgDimWarn {
           ></label>
           <div>
             Scale image to size before loading: <br/>
-            width: <input type="number" class="${scaledLoadXInputClass}"/><br/>
-            height: <input type="number" class="${scaledLoadYInputClass}"/><br/>
+            width: <input type="number" min="1" step="1" class="${scaledLoadXInputClass}"/><br/>
+            height: <input type="number" min="1" step="1" class="${scaledLoadYInputClass}"/><br/>
             <button type="button" class="${scaledLoadBtnClass}">Load scaled image</button>
           </div>
         </div>
