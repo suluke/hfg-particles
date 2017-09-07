@@ -84,10 +84,50 @@ class ParticleCountControl extends Control {
 /**
  *
  */
-class ParticleScalingControl extends Control {
+class ImageToParticleScalingControl extends Control {
   constructor(menu) {
     super(menu);
-    this.elm = document.getElementById('menu-particle-scaling-control');
+    this.elm = document.getElementById('menu-img-particle-scaling-control');
+    this.scalingSelect = this.elm.querySelector('select.menu-img-particle-scaling-select');
+    this.cropXSelect = this.elm.querySelector('select.menu-img-particle-scaling-crop-x-select');
+    this.cropYSelect = this.elm.querySelector('select.menu-img-particle-scaling-crop-y-select');
+
+    this.scalingSelect.addEventListener('change', () => {
+      this.menu.notifyChange();
+    });
+    this.cropXSelect.addEventListener('change', () => {
+      this.menu.notifyChange();
+    });
+    this.cropYSelect.addEventListener('change', () => {
+      this.menu.notifyChange();
+    });
+  }
+
+  updateConfig(config) {
+    // eslint-disable-next-line no-param-reassign
+    config.imageScaling = this.scalingSelect.value;
+    // eslint-disable-next-line no-param-reassign
+    config.imageCropping = {
+      x: this.cropXSelect.value,
+      y: this.cropYSelect.value
+    }
+  }
+
+  applyConfig(config) {
+    this.scalingSelect.value = config.imageScaling || 'fit-image';
+    const cropping = config.imageCropping || {x: 'crop-both', y: 'crop-both'}
+    this.cropXSelect.value = cropping.x;
+    this.cropYSelect.value = cropping.y;
+  }
+}
+
+/**
+ *
+ */
+class ParticleSizeControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-particle-size-control');
     this.input = this.elm.querySelector('input[type="number"]');
 
     this.input.addEventListener('change', () => {
@@ -222,7 +262,8 @@ class ResetAppstateButton extends Control {
 }
 
 const ControlsList = [
-  BgColorPicker, ParticleCountControl, ParticleScalingControl, ParticleOverlapControl,
+  BgColorPicker, ParticleCountControl, ImageToParticleScalingControl,
+  ParticleSizeControl, ParticleOverlapControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 

@@ -55,7 +55,35 @@
                 <input type="number" min="1" step="1" id="menu-particles-y"/>
               </label>
             </fieldset>
-            <label id="menu-particle-scaling-control">
+            <fieldset id="menu-img-particle-scaling-control">
+              <legend>Image scaling</legend>
+              <label>
+                Image scaling:
+                <select class="menu-img-particle-scaling-select">
+                  <option value="fit-image" title="Black borders might be visible" selected>fit image</option>
+                  <option value="fit-width" title="Black borders might be visible at the top and bottom">fit width</option>
+                  <option value="fit-height" title="Black borders might be visible at the left or right edges">fit height</option>
+                  <option value="fit-viewport" title="The image's aspect ratio might be skewed">fit viewport</option>
+                </select>
+              </label><br/>
+              <label>
+                Horizontal image cropping:
+                <select class="menu-img-particle-scaling-crop-x-select">
+                  <option value="crop-both" title="Drop exceeding pixels on either side" selected>both sides</option>
+                  <option value="crop-left" title="Drop exceeding pixels on the leftern side">leftern side</option>
+                  <option value="crop-right" title="Drop exceeding pixels on the rightern side">rightern side</option>
+                </select>
+              </label><br/>
+              <label>
+                Vertical image cropping:
+                <select class="menu-img-particle-scaling-crop-y-select">
+                  <option value="crop-both" title="Drop exceeding pixels on either edge" selected>both edges</option>
+                  <option value="crop-top" title="Drop exceeding pixels at the top">top edge</option>
+                  <option value="crop-bottom" title="Drop exceeding pixels at the bottom">bottom edge</option>
+                </select>
+              </label>
+            </fieldset>
+            <label id="menu-particle-size-control">
               Particle size:
               <input type="number" value="100" />%
             </label><br/>
