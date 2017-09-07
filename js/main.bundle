@@ -46,15 +46,17 @@ srcImage.onload = () => {
   if (isInitialPageLoad) {
     isInitialPageLoad = false;
     renderer.getState().setDefaultDomImage(srcImage);
-    const particleCounts = {};
-    if (!menu.submittedConfig.xParticlesCount) {
-      particleCounts.xParticlesCount = srcImage.naturalWidth;
-    }
-    if (!menu.submittedConfig.yParticlesCount) {
-      particleCounts.yParticlesCount = srcImage.naturalHeight;
-    }
-    // This is hacky, but we want to get the default particle count from the default image,
-    // so what else can we do?
+    // particleCounts are either what has been loaded from localStorage
+    // or the dimensions of the default image
+    const particleCounts = {
+      xParticlesCount: menu.submittedConfig.xParticlesCount || srcImage.naturalWidth,
+      yParticlesCount: menu.submittedConfig.yParticlesCount || srcImage.naturalHeight
+    };
+    // We want to get the default particle count from the default image,
+    // but what the user specified before the page was reloaded should
+    // also be ok.
+    // Modifying the default config this late seems hacky, but what else
+    // can we do?
     menu.defaultConfig = Object.assign(menu.defaultConfig, particleCounts);
     menu.applyConfig(Object.assign(menu.submittedConfig, particleCounts));
     menu.submit();
