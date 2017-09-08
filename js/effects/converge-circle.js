@@ -51,7 +51,7 @@ export default class ConvergeCircleEffect extends Effect {
     vertexShader.mainBody += `
       {
         vec2 screenTarget = getDirectionVector(hsv[0] + ${time} * ${rotationSpeed}) * vec2(.8) * vec2(invScreenAspectRatio, 1.);
-        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;
+        vec2 target = (screenTarget.xy + vec2(1.)) / vec2(2.);
 
         vec2 d = target - initialPosition.xy;
         float d_len = length(d);

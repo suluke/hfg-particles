@@ -40,7 +40,7 @@ export default class ConvergePointEffect extends Effect {
     vertexShader.mainBody += `
       {
         vec2 screenTarget = vec2(0., 0.);
-        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;
+        vec2 target = (screenTarget + vec2(1.)) / vec2(2.);
 
         vec2 d = target - initialPosition.xy;
         float d_len = length(d);
@@ -56,8 +56,6 @@ export default class ConvergePointEffect extends Effect {
           result = d;
         } else {
           float t = ${time} - ${maxTravelTime};
-          //result = mix(d, vec2(0.), 1. - (1.-t) * (1.-t));
-          //result = mix(d, vec2(0.), t * t);
           result = mix(d, vec2(0.), -cos(t / ${maxTravelTime} * PI) * .5 + .5);
         }
 

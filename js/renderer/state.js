@@ -13,18 +13,17 @@ function domImgToCanvas(img) {
 }
 
 class ParticleData {
-  constructor(imageData, regl, width, height) {
+  constructor(imageData, regl, config) {
+    const w = config.xParticlesCount || imageData.width;
+    const h = config.yParticlesCount || imageData.height;
     this.destroyed = false;
     
     const scalingCanvas = document.createElement('canvas');
     const scalingContext = scalingCanvas.getContext('2d');
-    scalingCanvas.width = width;
-    scalingCanvas.height = height;
+    scalingCanvas.width = w;
+    scalingCanvas.height = h;
     scalingContext.drawImage(imageData, 0, 0, scalingCanvas.width, scalingCanvas.height);
     const scaledData = scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
-
-    const w = scaledData.width;
-    const h = scaledData.height;
 
     const particlePixels = scaledData.data;
 
@@ -65,7 +64,6 @@ class ParticleData {
     });
     this.width           = w;
     this.height          = h;
-    this.aspectRatio     = imageData.width / imageData.height;
     this.texcoordsBuffer = regl.buffer(texcoords);
     this.rgbBuffer       = regl.buffer(rgb);
     this.hsvBuffer       = regl.buffer(hsv);
@@ -121,8 +119,7 @@ export default class RendererState {
       this.particleDataStore[0][1] = new ParticleData(
         defaultImg,
         this.regl,
-        config.xParticlesCount || defaultImg.width,
-        config.yParticlesCount || defaultImg.height
+        config
       );
     }
     // release resources
@@ -150,8 +147,7 @@ export default class RendererState {
       new ParticleData(
         imgData,
         this.regl,
-        this.config.xParticlesCount,
-        this.config.yParticlesCount
+        this.config
       )
     ]);
     return this.particleDataStore.length - 1;
@@ -190,17 +186,23 @@ export default class RendererState {
     this.particleDataStore[0][0] = domImgToCanvas(domImage);
     this.particleData = 0;
   }
+  /// Hooks are run after the state has adapted to a new config object
   addHook(hook) {
     this.hooks.push(hook);
   }
+  /// Changes the viewport dimension
+  /// Not to be confused with the particle grid size. See
+  /// config.xParticlesCount and config.yParticlesCount for that
   resize(width, height) {
     this.width = width;
     this.height = height;
     this.pipeline.resize(width, height);
   }
+  /// @return viewport width
   getWidth() {
     return this.width;
   }
+  /// @return viewport height
   getHeight() {
     return this.height;
   }
