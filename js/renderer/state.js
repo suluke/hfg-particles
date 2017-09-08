@@ -12,18 +12,83 @@ function domImgToCanvas(img) {
   return fullresCanvas;
 }
 
+function mapImageToParticles(imageCanvas, config) {
+  const w = config.xParticlesCount;
+  const h = config.yParticlesCount;
+  if (w < 1 || h < 1) {
+    throw new Error('Illegal values for particle counts: x=' + w + ', y=' + h);
+  }
+  const dAspectRatio = w / h;
+  const sAspectRatio = imageCanvas.width / imageCanvas.height;
+  const scalingCanvas = document.createElement('canvas');
+  const scalingContext = scalingCanvas.getContext('2d');
+  let sx = 0;
+  let sy = 0;
+  let sWidth = imageCanvas.width;
+  let sHeight = imageCanvas.height;
+  let dx = 0;
+  let dy = 0;
+  let dWidth = w;
+  let dHeight = h;
+  switch (config.imageScaling) {
+    case 'crop-to-viewport': {
+      break;
+    }
+    case 'fit-image': {
+      break;
+    }
+    case 'fit-width': {
+      break;
+    }
+    case 'fit-height': {
+      break;
+    }
+    case 'scale-to-viewport': {
+      // Nothing to do. Default values are already the ones we need.
+      break;
+    }
+    default:
+      throw new Error('Illegal value for config.imageScaling: ' + config.imageScaling);
+  }
+  switch(config.imageCropping.x) {
+    case 'crop-both': {
+      break;
+    }
+    case 'crop-left': {
+      break;
+    }
+    case 'crop-right': {
+      break;
+    }
+    default:
+      throw new Error('Illegal value for config.imageCropping.x: ' + config.imageCropping.x);
+  }
+  switch(config.imageCropping.y) {
+    case 'crop-both': {
+      break;
+    }
+    case 'crop-top': {
+      break;
+    }
+    case 'crop-bottom': {
+      break;
+    }
+    default:
+      throw new Error('Illegal value for config.imageCropping.x: ' + config.imageCropping.x);
+  }
+  scalingCanvas.width = w;
+  scalingCanvas.height = h;
+  scalingContext.drawImage(imageCanvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+  return scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
+}
+
 class ParticleData {
   constructor(imageData, regl, config) {
     const w = config.xParticlesCount || imageData.width;
     const h = config.yParticlesCount || imageData.height;
     this.destroyed = false;
     
-    const scalingCanvas = document.createElement('canvas');
-    const scalingContext = scalingCanvas.getContext('2d');
-    scalingCanvas.width = w;
-    scalingCanvas.height = h;
-    scalingContext.drawImage(imageData, 0, 0, scalingCanvas.width, scalingCanvas.height);
-    const scaledData = scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
+    const scaledData = mapImageToParticles(imageData, config);
 
     const particlePixels = scaledData.data;
 
