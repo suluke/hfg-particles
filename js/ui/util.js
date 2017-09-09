@@ -49,3 +49,37 @@ export function clearChildNodes(node) {
     node.removeChild(node.firstChild);
   }
 }
+
+export function imageScalingMarkup(classPrefix) {
+  return `
+    <fieldset>
+      <legend>Image scaling</legend>
+      <label>
+        Image scaling:
+        <select class="${classPrefix}-scaling-select">
+          <option value="crop-to-viewport" title="Image might be cropped to fit the viewport" selected>crop to fit viewport</option>
+          <option value="fit-image" title="Black borders might be visible">fit image</option>
+          <option value="fit-width" title="Black borders might be visible at the top and bottom">fit width</option>
+          <option value="fit-height" title="Black borders might be visible at the left or right edges">fit height</option>
+          <option value="scale-to-viewport" title="The image's aspect ratio might be skewed">scale to fit viewport</option>
+        </select>
+      </label><br/>
+      <label>
+        Horizontal image cropping:
+        <select class="${classPrefix}-crop-x-select">
+          <option value="crop-both" title="Drop exceeding pixels on either side" selected>both sides</option>
+          <option value="crop-left" title="Drop exceeding pixels on the leftern side">leftern side</option>
+          <option value="crop-right" title="Drop exceeding pixels on the rightern side">rightern side</option>
+        </select>
+      </label><br/>
+      <label>
+        Vertical image cropping:
+        <select class="${classPrefix}-crop-y-select">
+          <option value="crop-both" title="Drop exceeding pixels on either edge" selected>both edges</option>
+          <option value="crop-top" title="Drop exceeding pixels at the top">top edge</option>
+          <option value="crop-bottom" title="Drop exceeding pixels at the bottom">bottom edge</option>
+        </select>
+      </label>
+    </fieldset>
+  `
+}

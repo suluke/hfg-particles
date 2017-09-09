@@ -1,5 +1,5 @@
 import Effect, { ConfigUI, fract } from './effect';
-import { parseHtml } from '../ui/util';
+import { parseHtml, imageScalingMarkup } from '../ui/util';
 
 const EffectName = 'Change Image';
 const EffectDescription = 'Changes the particle data to a configurable image (file or url)';
@@ -13,6 +13,7 @@ const States = {
 class ChangeImageConfigUI extends ConfigUI {
   constructor() {
     super();
+    const classPrefix = 'effect-change-image';
     this.element = parseHtml(`
       <fieldset class="effect-change-image-config">
         <legend>${EffectName}</legend>
@@ -31,10 +32,14 @@ class ChangeImageConfigUI extends ConfigUI {
           <input type="url"/>
         </label>
         <br/>
+        ${imageScalingMarkup(classPrefix)}
         <img class="effect-change-image-preview">
       </fieldset>
     `);
     const ui = this.element;
+    this.scalingSelect = ui.querySelector(`select.${classPrefix}-scaling-select`);
+    this.cropXSelect = ui.querySelector(`select.${classPrefix}-crop-x-select`);
+    this.cropYSelect = ui.querySelector(`select.${classPrefix}-crop-y-select`);
     this.radioButtons = ui.querySelectorAll('input[type="radio"][name="effect-change-image-source-type"]');
     this.fileInput = ui.querySelector('.effect-change-image-file-tab input[type="file"]');
     this.urlInput = ui.querySelector('.effect-change-image-url-tab input[type="url"]');
@@ -80,14 +85,23 @@ class ChangeImageConfigUI extends ConfigUI {
 
   getConfigAsync() {
     const sourceTy = [].find.call(this.radioButtons, (btn) => btn.checked).value;
+    const imageScaling = this.scalingSelect.value;
+    const imageCropping = {
+      x: this.cropXSelect.value,
+      y: this.cropYSelect.value
+    }
     if (this.state === States.VALID) {
       return Promise.resolve({
         sourceTy,
+        imageScaling,
+        imageCropping,
         url: this.previewImg.src
       });
     } else if (this.state === States.INVALID) {
       return Promise.resolve({
         sourceTy,
+        imageScaling,
+        imageCropping,
         url: null
       });
     }
@@ -107,6 +121,10 @@ class ChangeImageConfigUI extends ConfigUI {
     [].forEach.call(this.radioButtons, (btn) => {
       btn.checked = (btn.value === config.sourceTy);
     });
+    this.scalingSelect.value = config.imageScaling || 'crop-to-viewport';
+    const imageCropping = config.imageCropping || {x: 'crop-both', y: 'crop-both'};
+    this.cropXSelect.value = imageCropping.x;
+    this.cropYSelect.value = imageCropping.y;
   }
 }
 
@@ -117,7 +135,9 @@ export default class ChangeImageEffect extends Effect {
       srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
       srcImage.src = instance.config.url;
       srcImage.onload = () => {
-        const particleData = props.state.createParticleDataFromDomImg(srcImage);
+        const particleData = props.state.createParticleDataFromDomImg(
+          srcImage, instance.config.imageScaling, instance.config.imageCropping
+        );
         let alive = true;
         let prevWasChange = false;
         const checkTime = () => {

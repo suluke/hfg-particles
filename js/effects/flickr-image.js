@@ -1,5 +1,5 @@
 import Effect, { ConfigUI, fract } from './effect';
-import { parseHtml } from '../ui/util';
+import { parseHtml, imageScalingMarkup } from '../ui/util';
 import Flickr, { ApiKey } from '../polyfills/flickr';
 
 const EffectName = 'Flickr Image';

@@ -329,8 +329,8 @@ export default class RendererState {
     ));
     return this.particleDataStore.length - 1;
   }
-  createParticleDataFromDomImg(domImg) {
-    return this.createParticleData(domImgToCanvas(domImg));
+  createParticleDataFromDomImg(domImg, imageScaling, imageCropping) {
+    return this.createParticleData(domImgToCanvas(domImg), imageScaling, imageCropping);
   }
   getCurrentParticleData() {
     if (this.particleData < 0) {
