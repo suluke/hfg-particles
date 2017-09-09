@@ -34,15 +34,21 @@ function getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo) {
     dWidth: w,
     dHeight: h,
   };
-  r.dAspectRatio = (w / h) * (scalingInfo.viewport.width / scalingInfo.viewport.height);
+  // particles aspect ratio
+  r.dAspectRatio = (w / h);
+  // source image aspect ratio
   r.sAspectRatio = imageCanvas.width / imageCanvas.height;
+  // viewport aspect ratio
+  r.vAspectRatio = scalingInfo.viewport.width / scalingInfo.viewport.height;
+  // particle aspect ratio
+  r.pAspectRatio = r.vAspectRatio / r.dAspectRatio;
   return r;
 }
 
 function getCropImageToViewportParams(imageCanvas, scalingInfo) {
   const r = getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo);
-  if (r.dAspectRatio > r.sAspectRatio) { // source height will exceed dest height
-    r.sHeight = r.sWidth / r.dAspectRatio;
+  if (r.vAspectRatio > r.sAspectRatio) { // source height will exceed viewport height
+    r.sHeight = r.sWidth / r.vAspectRatio;
     if (scalingInfo.imageCropping.y === 'crop-both') {
       r.sy = (imageCanvas.height - r.sHeight) / 2;
     } else if (scalingInfo.imageCropping.y === 'crop-top') {
@@ -53,7 +59,7 @@ function getCropImageToViewportParams(imageCanvas, scalingInfo) {
       throw new Error('Illegal value for scalingInfo.imageCropping.y: ' + scalingInfo.imageCropping.x);
     }
   } else { // source width will exceed dest width
-    r.sWidth = r.sHeight * r.dAspectRatio;
+    r.sWidth = r.sHeight * r.vAspectRatio;
     if (scalingInfo.imageCropping.x === 'crop-both') {
       r.sx = (imageCanvas.width - r.sWidth) / 2;
     } else if (scalingInfo.imageCropping.x === 'crop-left') {
@@ -71,8 +77,8 @@ function getFitWidthParams(imageCanvas, scalingInfo) {
   const w = scalingInfo.particleCounts.x;
   const h = scalingInfo.particleCounts.y;
   const r = getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo);
-  if (r.dAspectRatio < r.sAspectRatio) { // the picture won't fill the particles. Some rows will remain black
-    r.dHeight = w / r.sAspectRatio;
+  if (r.vAspectRatio < r.sAspectRatio) { // the picture won't fill the particles. Some rows will remain black
+    r.dHeight = w / r.sAspectRatio * r.pAspectRatio;
     if (scalingInfo.imageCropping.y === 'crop-both') {
       r.dy = (h - r.dHeight) / 2;
     } else if (scalingInfo.imageCropping.y === 'crop-top') {
@@ -83,7 +89,7 @@ function getFitWidthParams(imageCanvas, scalingInfo) {
       throw new Error('Illegal value for scalingInfo.imageCropping.y: ' + scalingInfo.imageCropping.y);
     }
   } else { // pixels rows at the top and/or bottom will need to be discarded
-    r.sHeight = imageCanvas.width / r.dAspectRatio;
+    r.sHeight = imageCanvas.width / r.vAspectRatio;
     if (scalingInfo.imageCropping.y === 'crop-both') {
       r.sy = (imageCanvas.height - r.sHeight) / 2;
     } else if (scalingInfo.imageCropping.y === 'crop-top') {
@@ -101,8 +107,8 @@ function getFitHeightParams(imageCanvas, scalingInfo) {
   const w = scalingInfo.particleCounts.x;
   const h = scalingInfo.particleCounts.y;
   const r = getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo);
-  if (r.dAspectRatio < r.sAspectRatio) { // the picture won't fill the particles. Some columns will remain black
-    r.dWidth = h * r.sAspectRatio;
+  if (r.vAspectRatio > r.sAspectRatio) { // the picture won't fill the particles. Some columns will remain black
+    r.dWidth = h * r.sAspectRatio / r.pAspectRatio;
     if (scalingInfo.imageCropping.x === 'crop-both') {
       r.dx = (w - r.dWidth) / 2;
     } else if (scalingInfo.imageCropping.x === 'crop-left') {
@@ -113,7 +119,7 @@ function getFitHeightParams(imageCanvas, scalingInfo) {
       throw new Error('Illegal value for scalingInfo.imageCropping.x: ' + scalingInfo.imageCropping.x);
     }
   } else { // pixels columns to the left and/or right will need to be discarded
-    r.sWidth = imageCanvas.height * r.dAspectRatio;
+    r.sWidth = imageCanvas.height * r.vAspectRatio;
     if (scalingInfo.imageCropping.x === 'crop-both') {
       r.sx = (imageCanvas.width - r.sWidth) / 2;
     } else if (scalingInfo.imageCropping.x === 'crop-left') {
@@ -139,8 +145,8 @@ function mapImageToParticles(imageCanvas, scalingInfo) {
   if (scalingInfo.imageScaling === 'crop-to-viewport') {
     scalingParams = getCropImageToViewportParams(imageCanvas, scalingInfo);
   } else if (scalingInfo.imageScaling === 'fit-image') {
-    const dAspectRatio = (w / h) * (scalingInfo.viewport.width / scalingInfo.viewport.height);
-    if (imageCanvas.width / imageCanvas.height > dAspectRatio) {
+    const vAspectRatio = scalingInfo.viewport.width / scalingInfo.viewport.height;
+    if (imageCanvas.width / imageCanvas.height > vAspectRatio) {
       scalingParams = getFitWidthParams(imageCanvas, scalingInfo);
     } else {
       scalingParams = getFitHeightParams(imageCanvas, scalingInfo);
