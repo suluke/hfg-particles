@@ -1,0 +1,12 @@
+@import 'mixins/modal';
+@import 'mixins/hide';
+
+$dialog-prefix: load-default-img;
+
+.#{$dialog-prefix}-backdrop {
+  @include backdrop;
+
+  .#{$dialog-prefix}-popup {
+    @include modal;
+  }
+}

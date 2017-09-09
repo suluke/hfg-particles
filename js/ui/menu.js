@@ -82,42 +82,26 @@ class ParticleCountControl extends Control {
 }
 
 /**
- *
+ * This is an invisible menu item with the purpose of storing the default
+ * image scaling parameters selected by the user
  */
-class ImageToParticleScalingControl extends Control {
+class DefaultImageControl extends Control {
   constructor(menu) {
     super(menu);
-    this.elm = document.getElementById('menu-img-particle-scaling-control');
-    this.scalingSelect = this.elm.querySelector('select.menu-img-particle-scaling-select');
-    this.cropXSelect = this.elm.querySelector('select.menu-img-particle-scaling-crop-x-select');
-    this.cropYSelect = this.elm.querySelector('select.menu-img-particle-scaling-crop-y-select');
-
-    this.scalingSelect.addEventListener('change', () => {
-      this.menu.notifyChange();
-    });
-    this.cropXSelect.addEventListener('change', () => {
-      this.menu.notifyChange();
-    });
-    this.cropYSelect.addEventListener('change', () => {
-      this.menu.notifyChange();
-    });
+    this.defaultImageScaling = 'crop-to-viewport';
+    this.defaultImageCropping = {x: 'crop-both', y: 'crop-both'};
   }
 
   updateConfig(config) {
     // eslint-disable-next-line no-param-reassign
-    config.imageScaling = this.scalingSelect.value;
+    config.defaultImageScaling = this.defaultImageScaling;
     // eslint-disable-next-line no-param-reassign
-    config.imageCropping = {
-      x: this.cropXSelect.value,
-      y: this.cropYSelect.value
-    }
+    config.defaultImageCropping = this.defaultImageCropping;
   }
 
   applyConfig(config) {
-    this.scalingSelect.value = config.imageScaling || 'fit-image';
-    const cropping = config.imageCropping || {x: 'crop-both', y: 'crop-both'}
-    this.cropXSelect.value = cropping.x;
-    this.cropYSelect.value = cropping.y;
+    this.defaultImageScaling = config.defaultImageScaling || 'crop-to-viewport';
+    this.defaultImageCropping = config.defaultImageCropping || {x: 'crop-both', y: 'crop-both'};
   }
 }
 
@@ -262,7 +246,7 @@ class ResetAppstateButton extends Control {
 }
 
 const ControlsList = [
-  BgColorPicker, ParticleCountControl, ImageToParticleScalingControl,
+  BgColorPicker, ParticleCountControl, DefaultImageControl,
   ParticleSizeControl, ParticleOverlapControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];

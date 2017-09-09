@@ -158,7 +158,7 @@ function mapImageToParticles(imageCanvas, scalingInfo) {
   } else if (scalingInfo.imageScaling === 'scale-to-viewport') {
     scalingParams = getDefaultPixelParticleMappingParams();
   } else {
-    throw new Error('Illegal value for scalingInfo.imageScaling: ' + scalingInfo.imageScaling);
+    throw new Error('Illegal value for scalingInfo.imageScaling: "' + scalingInfo.imageScaling + '"');
   }
   scalingCanvas.width = w;
   scalingCanvas.height = h;
@@ -228,6 +228,22 @@ class ParticleData {
   }
 }
 
+class ParticleDataStoreEntry {
+  constructor(imageCanvas, imageScaling, imageCropping, particleData) {
+    this.imageCanvas = imageCanvas || null;
+    this.imageScaling = imageScaling;
+    this.imageCropping = imageCropping;
+    this.particleData = particleData || null;
+  }
+  destroy() {
+    if (this.particleData !== null) {
+      this.particleData.destroy();
+      this.particleData = null;
+    }
+    this.imageCanvas = null;
+  }
+}
+
 /**
  * Encapsulates the parts of the render pipeline which are subject to
  * dynamic change, i.e. data that can be changed by effects.
@@ -249,7 +265,7 @@ export default class RendererState {
     // Properties
     this.config = null;
     this.particleData = -1;
-    this.particleDataStore = [[null, null]];
+    this.particleDataStore = [new ParticleDataStoreEntry(null, '', {x: '', y: ''}, null)];
     this.buffers = [];
     this.hooks = [];
     this.width = 0;
@@ -260,26 +276,23 @@ export default class RendererState {
     this.pipeline.reset(config.backgroundColor);
 
     // Update default particle data
-    const defaultImg = this.particleDataStore[0][0];
+    const DPD = this.particleDataStore[0];
+    const defaultImg = DPD.imageCanvas;
     if (defaultImg !== null) {
-      const defaultParticleData = this.particleDataStore[0][1];
-      if (defaultParticleData !== null) {
-        defaultParticleData.destroy();
-      }
       const scalingInfo = new ScalingInfo(
         {x: config.xParticlesCount, y: config.yParticlesCount},
-        config.imageScaling, config.imageCropping,
+        DPD.imageScaling, DPD.imageCropping,
         {width: this.getWidth(), height: this.getHeight()}
       );
-      this.particleDataStore[0][1] = new ParticleData(
-        defaultImg,
-        this.regl,
-        scalingInfo
+      DPD.destroy();
+      this.particleDataStore[0] = new ParticleDataStoreEntry(
+        defaultImg, scalingInfo.imageScaling, scalingInfo.imageCropping,
+        new ParticleData(defaultImg, this.regl, scalingInfo)
       );
     }
     // release resources
     for (let i = 1; i < this.particleDataStore.length; i++) {
-      this.destroyParticleData(i);
+      this.particleDataStore[i].destroy();
     }
     this.particleDataStore.length = 1;
     this.particleData = 0;
@@ -296,36 +309,34 @@ export default class RendererState {
   setParticleData(id) {
     this.particleData = id;
   }
-  createParticleData(imgData) {
+  createParticleData(imgData, imageScaling, imageCropping) {
+    if (!imageScaling) {
+      console.warn('No imageScaling given. Falling back to default value');
+      imageScaling = 'crop-to-viewport'
+    }
+    if (!imageCropping) {
+      console.warn('No imageCropping given. Falling back to default value');
+      imageCropping = {x: 'crop-both', y: 'crop-both'};
+    }
     const scalingInfo = new ScalingInfo(
       {x: this.config.xParticlesCount, y: this.config.yParticlesCount},
-      this.config.imageScaling, this.config.imageCropping,
+      imageScaling, imageCropping,
       {width: this.getWidth(), height: this.getHeight()}
     );
-    this.particleDataStore.push([
-      imgData,
-      new ParticleData(
-        imgData,
-        this.regl,
-        scalingInfo
-      )
-    ]);
+    this.particleDataStore.push(new ParticleDataStoreEntry(
+      imgData, imageScaling, imageCropping,
+      new ParticleData(imgData, this.regl, scalingInfo)
+    ));
     return this.particleDataStore.length - 1;
   }
   createParticleDataFromDomImg(domImg) {
     return this.createParticleData(domImgToCanvas(domImg));
   }
-  destroyParticleData(id) {
-    if (this.particleDataStore[id][1]) {
-      this.particleDataStore[id][1].destroy();
-      this.particleDataStore[id] = [null, null];
-    }
-  }
   getCurrentParticleData() {
     if (this.particleData < 0) {
       return null;
     }
-    return this.particleDataStore[this.particleData][1];
+    return this.particleDataStore[this.particleData].particleData;
   }
   createBuffer(...args) {
     const buf = this.regl.buffer(...args);
@@ -342,8 +353,14 @@ export default class RendererState {
   isValid() {
     return this.particleData >= 0 && this.pipeline.isValid();
   }
-  setDefaultDomImage(domImage) {
-    this.particleDataStore[0][0] = domImgToCanvas(domImage);
+  /// Sets the image, but will not change the current default particle
+  /// data. Rebuilding the default particle data will only happen on
+  /// adaptToConfig
+  setDefaultDomImage(domImage, imageScaling, imageCropping) {
+    const DefaultEntry = this.particleDataStore[0];
+    DefaultEntry.imageCanvas = domImgToCanvas(domImage);
+    DefaultEntry.imageScaling = imageScaling;
+    DefaultEntry.imageCropping = imageCropping;
     this.particleData = 0;
   }
   /// Hooks are run after the state has adapted to a new config object
