@@ -108,7 +108,7 @@ export default class ParticleSpacingEffect extends Effect {
       sine: `(1. - cos(PI * min(${easeInProgress}, ${easeOutProgress}))) / 2.`,
       linear: `min(${easeInProgress}, ${easeOutProgress})`
     };
-    const easeFunc = easeFuncs.sine;
+    const easeFunc = easeFuncs[instance.config.easeFunc || 'sine'];
     vertexShader.mainBody += `
       vec2 offset;
       offset.x = initialPosition.x * float(${xSpread}) - (float(${xSpread}) - 1.) / 2.;
