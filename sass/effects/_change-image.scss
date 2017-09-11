@@ -1,5 +1,5 @@
 .effect-change-image-config {
-  label {
+  & > label {
     display: none;
   }
   input[type="radio"] {

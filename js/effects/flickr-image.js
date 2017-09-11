@@ -1,5 +1,5 @@
 import Effect, { ConfigUI, fract } from './effect';
-import { parseHtml } from '../ui/util';
+import { parseHtml, imageScalingMarkup } from '../ui/util';
 import Flickr, { ApiKey } from '../polyfills/flickr';
 
 const EffectName = 'Flickr Image';
@@ -9,17 +9,34 @@ const Attribution = 'This product uses the Flickr API but is not endorsed or cer
 class FlickrImageConfigUI extends ConfigUI {
   constructor() {
     super();
-    const searchInputClass = 'effect-flickr-img-search-term';
+    const classPrefix = 'effect-flickr-img';
+    const searchInputClass = `${classPrefix}-search-term`;
     this.element = parseHtml(`
-      <fieldset>
-        <legend>${EffectName}</legend>
-        <label>
-          Search term:
-          <input type="text" class="${searchInputClass}"/>
-        </label>
-      </fieldset>
+      <div>
+        ${Attribution}
+        <fieldset>
+          <legend>${EffectName}</legend>
+          <label>
+            Search term:
+            <input type="text" class="${searchInputClass}"/>
+          </label>
+          ${imageScalingMarkup(classPrefix)}
+        </fieldset>
+      </div>
     `);
     const ui = this.element;
+    this.scalingSelect = ui.querySelector(`select.${classPrefix}-scaling-select`);
+    this.scalingSelect.addEventListener('change', () => {
+      this.notifyChange();
+    });
+    this.cropXSelect = ui.querySelector(`select.${classPrefix}-crop-x-select`);
+    this.cropXSelect.addEventListener('change', () => {
+      this.notifyChange();
+    });
+    this.cropYSelect = ui.querySelector(`select.${classPrefix}-crop-y-select`);
+    this.cropYSelect.addEventListener('change', () => {
+      this.notifyChange();
+    });
     this.searchTermInput = this.element.querySelector(`.${searchInputClass}`);
     this.searchTermInput.addEventListener('change', () => {
       this.notifyChange();
@@ -34,36 +51,71 @@ class FlickrImageConfigUI extends ConfigUI {
     const config = {};
 
     config.searchTerm = this.searchTermInput.value;
+    config.imageScaling = this.scalingSelect.value;
+    config.imageCropping = {
+      x: this.cropXSelect.value,
+      y: this.cropYSelect.value
+    };
 
     return config;
   }
 
   applyConfig(config) {
     this.searchTermInput.value = config.searchTerm;
+    this.scalingSelect.value = config.imageScaling || 'crop-to-viewport';
+    const imageCropping = config.imageCropping || { x: 'crop-both', y: 'crop-both' };
+    this.cropXSelect.value = imageCropping.x;
+    this.cropYSelect.value = imageCropping.y;
   }
 }
 
+/// This constant is used both for defining how many images the
+/// FlickrImageCache will pre-load for a given search term as well as
+/// how many images a FlickrImageEffect will reserve for future use
 const prefetchCount = 5;
+
 class FlickrCacheEntry {
   constructor() {
+    /// The current position in the stream of photos that this entry
+    /// loads images for
     this.page = 1;
+    /// Needed to keep track of where the ever growing stream of images
+    /// started for us. We can't just assume that "page #1" will always
+    /// stay the same, or we risk loading the same image multiple times.
     this.initialQueryTime = Math.floor(Date.now() / 1000);
+    /// Pending queries need to be taken into account when deciding whether
+    /// or not new flickr api calls should be made
     this.loadsInProgress = 0;
+    /// This is the acutal image cache
     this.loadedImgs = [];
+    /// If a query cannot be answered right away by this cache entry, we
+    /// queue it in this array. So when a new image finishes loading, we
+    /// resolve the request at the front of this queue with it.
     this.requests = [];
   }
 }
 
+/**
+ * The FlickrImageCache manages the process of loading images from flickr.
+ * Therefore, it has to select "new" images from flickr and then download
+ * the best version available. For efficiency, FlickrImageCache also kicks
+ * off the loading process for multiple images at once, so that future
+ * queries for the same search term may be resolved faster.
+ */
 class FlickrImageCache {
   constructor() {
     this.flickr = new Flickr({ api_key: ApiKey });
+    /// a dictionary mapping search queries to FlickrCachEntries
     this.byQuery = {};
   }
 
+  /// Props will be used to select versions of images which best match
+  /// the particle grid dimensions (xParticlesCount/yParticlesCount)
   setProps(props) {
     this.props = props;
   }
 
+  /// @return a promise that resolves to flickr api return values
   runFlickrQuery(searchTerm) {
     const entry = this.getEntryForSearchTerm(searchTerm);
 
@@ -99,6 +151,14 @@ class FlickrImageCache {
     return query;
   }
 
+  /// For each photo in a flickr query response, request the image (i.e.
+  /// the versions available on flickr), select the best version for the
+  /// current rendering configuration and load the image from flickr.
+  ///
+  /// @return a list of promises each representing a loading process. I.e.
+  ///         when one of the promises resolves, either a pending request
+  ///         will have been resolved or a new image is pushed into the
+  ///         image cache.
   processSearchQueryResponse(response, entry) {
     const loadQueue = [];
     for (let i = 0; i < response.photos.photo.length; i++) {
@@ -107,14 +167,30 @@ class FlickrImageCache {
     return loadQueue;
   }
 
+  /// We want to exclude all cropped versions (= all versions cropped
+  /// to squares) and we don't want to load higher resoultions than
+  /// necessary
+  selectBestImageVersion(sizes) {
+    const best = sizes.sizes.size.find((size) => {
+      if (size.label.indexOf('Square') >= 0) {
+        return false;
+      }
+      return size.width >= this.props.config.xParticlesCount;
+    }) || sizes.sizes.size[sizes.sizes.size.length - 1];
+    return best;
+  }
+
+  /// Kicks of the loading process for a given flickr photo. I.e., request
+  /// the list of available image versions, select the most appropriate
+  /// version and load that. Finally, resolve a pending cache request
+  /// with it or push the result into the cache
+  ///
+  /// @return a promise representing the loading process for @p photo
   processPhoto(photo, entry) {
-    const props = this.props;
     return this.flickr.photos.getSizes({
       photo_id: photo.id
     }).then((sizes) => {
-      const original = sizes.sizes.size.find((size) => {
-        return size.width >= props.config.xParticlesCount;
-      }) || sizes.sizes.size[sizes.sizes.size.length - 1];
+      const original = this.selectBestImageVersion(sizes);
       const url = original.source;
       const loader = document.createElement('img');
       loader.crossOrigin = 'Anonymous';
@@ -124,9 +200,7 @@ class FlickrImageCache {
         if (entry.requests.length > 0) {
           // resolve pending request directly
           const request = entry.requests.shift();
-          request(props.state.createParticleDataFromDomImg(
-            loader, props.config.xParticlesCount, props.config.yParticlesCount
-          ));
+          request(loader);
         } else {
           entry.loadedImgs.push(loader);
         }
@@ -134,6 +208,8 @@ class FlickrImageCache {
     });
   }
 
+  /// Looks up and returns the FlickrCacheEntry corresponding to the given
+  /// @p searchTerm
   getEntryForSearchTerm(searchTerm) {
     if (!this.byQuery[searchTerm]) {
       this.byQuery[searchTerm] = new FlickrCacheEntry();
@@ -141,6 +217,10 @@ class FlickrImageCache {
     return this.byQuery[searchTerm];
   }
 
+  /// Decides whether the loading process of new images for a search term
+  /// (represented by the corresponding @p entry) should be kicked off,
+  /// depending of how many loaded images are still available and how
+  /// many images are still in-flight.
   shouldFireNewQuery(entry) {
     if (entry.loadsInProgress + entry.loadedImgs.length -
         entry.requests.length < prefetchCount
@@ -150,9 +230,14 @@ class FlickrImageCache {
     return false;
   }
 
-  getParticleDataForSearchTerm(searchTerm) {
+  /// This is FlickrImageCache's main api: Give this method a @p
+  /// searchTerm and it returns a promise that will eventually resolve to
+  /// a DOM Image matching the @p searchTerm.
+  ///
+  /// @return a Promise that will resolve to a DOM Image object matching
+  ///         the given @p searchTerm
+  getImageForSearchTerm(searchTerm) {
     const entry = this.getEntryForSearchTerm(searchTerm);
-    const props = this.props;
     if (entry.loadedImgs.length === 0) {
       return new Promise((res, rej) => {
         entry.requests.push(res);
@@ -162,10 +247,7 @@ class FlickrImageCache {
         }
       });
     } else {
-      return Promise.resolve(props.state.createParticleDataFromDomImg(
-        entry.loadedImgs.shift(),
-        props.config.xParticlesCount, props.config.yParticlesCount
-      ));
+      return Promise.resolve(entry.loadedImgs.shift());
     }
   }
 }
@@ -173,13 +255,20 @@ class FlickrImageCache {
 export default class FlickrImageEffect extends Effect {
   static registerAsync(instance, props) {
     const cache = FlickrImageEffect.getCache(props);
-    return cache.getParticleDataForSearchTerm(instance.config.searchTerm)
-    .then((particleData) => {
+    const img2pd = (image) => {
+      return props.state.createParticleDataFromDomImg(
+        image, instance.config.imageScaling, instance.config.imageCropping
+      );
+    };
+    return cache.getImageForSearchTerm(instance.config.searchTerm)
+    .then((image) => {
+      const particleData = img2pd(image);
       const particleDataQueue = [particleData];
       // We want to have some images pre-allocated to this effect
       for (let i = 1; i < prefetchCount; i++) {
-        cache.getParticleDataForSearchTerm(instance.config.searchTerm)
-        .then((particleData) => {
+        cache.getImageForSearchTerm(instance.config.searchTerm)
+        .then((image) => {
+          const particleData = img2pd(image);
           particleDataQueue.push(particleData);
         });
       }
@@ -204,8 +293,9 @@ export default class FlickrImageEffect extends Effect {
           if (freed !== -1) {
             props.state.destroyParticleData(freed);
             // also look for a replacement
-            cache.getParticleDataForSearchTerm(instance.config.searchTerm)
-            .then((particleData) => {
+            cache.getImageForSearchTerm(instance.config.searchTerm)
+            .then((image) => {
+              const particleData = img2pd(image);
               particleDataQueue.push(particleData);
             });
           }
@@ -237,7 +327,12 @@ export default class FlickrImageEffect extends Effect {
 
   static getDefaultConfig() {
     return {
-      searchTerm: ''
+      searchTerm: '',
+      imageScaling: 'crop-to-viewport',
+      imageCropping: {
+        x: 'crop-both',
+        y: 'crop-both'
+      }
     };
   }
 

@@ -82,12 +82,36 @@ class ParticleCountControl extends Control {
 }
 
 /**
- *
+ * This is an invisible menu item with the purpose of storing the default
+ * image scaling parameters selected by the user
  */
-class ParticleScalingControl extends Control {
+class DefaultImageControl extends Control {
   constructor(menu) {
     super(menu);
-    this.elm = document.getElementById('menu-particle-scaling-control');
+    this.defaultImageScaling = 'crop-to-viewport';
+    this.defaultImageCropping = {x: 'crop-both', y: 'crop-both'};
+  }
+
+  updateConfig(config) {
+    // eslint-disable-next-line no-param-reassign
+    config.defaultImageScaling = this.defaultImageScaling;
+    // eslint-disable-next-line no-param-reassign
+    config.defaultImageCropping = this.defaultImageCropping;
+  }
+
+  applyConfig(config) {
+    this.defaultImageScaling = config.defaultImageScaling || 'crop-to-viewport';
+    this.defaultImageCropping = config.defaultImageCropping || {x: 'crop-both', y: 'crop-both'};
+  }
+}
+
+/**
+ *
+ */
+class ParticleSizeControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-particle-size-control');
     this.input = this.elm.querySelector('input[type="number"]');
 
     this.input.addEventListener('change', () => {
@@ -222,7 +246,8 @@ class ResetAppstateButton extends Control {
 }
 
 const ControlsList = [
-  BgColorPicker, ParticleCountControl, ParticleScalingControl, ParticleOverlapControl,
+  BgColorPicker, ParticleCountControl, DefaultImageControl,
+  ParticleSizeControl, ParticleOverlapControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 

@@ -11,34 +11,9 @@ export default class CommandBuilder {
     return this.assembleCommand();
   }
 
-  makeUniforms() {
+  createDefaultUniforms() {
     const uniforms = new Uniforms();
-    uniforms.addUniform('invImageAspectRatio', 'float', () => 1 / this.state.getCurrentParticleData().aspectRatio);
     uniforms.addUniform('invScreenAspectRatio', 'float', (ctx) => ctx.viewportHeight / ctx.viewportWidth);
-    uniforms.addUniform('viewProjectionMatrix', 'mat4', (ctx) => {
-      const aspect = ctx.viewportWidth / ctx.viewportHeight;
-      const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.state.getCurrentParticleData().aspectRatio));
-
-      return [
-        2, 0, 0, 0,
-        0, 2 * aspect, 0, 0,
-        0, 0, 1, 0,
-        -1, (underscan * 2) - 1, 0, 1
-      ];
-    });
-    uniforms.addUniform('invViewProjectionMatrix', 'mat4', (ctx) => {
-      const aspect = ctx.viewportWidth / ctx.viewportHeight;
-      const underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                            (this.state.getCurrentParticleData().aspectRatio));
-
-      return [
-        0.5, 0, 0, 0,
-        0, 0.5 / aspect, 0, 0,
-        0, 0, 1, 0,
-        0.5, (-0.5 * ((underscan * 2) - 1)) / aspect, 0, 1
-      ];
-    });
     uniforms.addUniform('particleSize', 'float', (ctx) => (ctx.viewportWidth / this.state.getCurrentParticleData().width) * 2 * this.config.particleScaling);
     uniforms.addUniform('globalTime', 'int', (ctx, props) => props.clock.getTime());
     return uniforms;
@@ -84,7 +59,7 @@ export default class CommandBuilder {
       };
       const vert = CommandBuilder.prepareVertexShader();
       const frag = CommandBuilder.prepareFragmentShader();
-      this.makeUniforms().compile(vert, uniforms);
+      this.createDefaultUniforms().compile(vert, uniforms);
 
       const result = {
         primitive:  'points',
@@ -115,7 +90,6 @@ export default class CommandBuilder {
 
       vert.mainBody += `
         vec3 initialPosition = vec3(texcoord, 0);
-        initialPosition.y *= invImageAspectRatio;
         float pointSize = max(particleSize, 0.);
 
         vec3 position = initialPosition;
@@ -171,7 +145,7 @@ export default class CommandBuilder {
         vert.mainBody += `
           color = rgb;
           gl_PointSize = pointSize;
-          gl_Position = viewProjectionMatrix * vec4(position, 1.);
+          gl_Position = vec4(vec2(2.) * position.xy - vec2(1.), 0., 1.);
         `;
         const colorAssign = {
           add:           'gl_FragColor = vec4(color * v, 1);\n',

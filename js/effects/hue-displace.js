@@ -92,11 +92,9 @@ export default class HueDisplaceEffect extends Effect {
       const scaleByVal = uniforms.addUniform('hueDisplaceScaleByValue', 'float', instance.config.scaleByValue);
       // eslint-disable-next-line no-param-reassign
       vertexShader.mainBody += `
-        {
-          float angle = hsv[0] + ${directionOffset};
-          float offset = (-cos(${time}) + 1.) / 2.;
-          position.xy += offset * getDirectionVector(angle) * ${distance} * (1. - ${scaleByVal} * (1. - hsv[2]));
-        }
+        float angle = hsv[0] + ${directionOffset};
+        float offset = (-cos(${time}) + 1.) / 2.;
+        position.xy += offset * getDirectionVector(angle) * ${distance} * (1. - ${scaleByVal} * (1. - hsv[2]));
       `;
     }
   }

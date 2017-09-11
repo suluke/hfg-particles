@@ -2,7 +2,7 @@ import './polyfills/classlist';
 import FullscreenButton from './ui/btn-fullscreen';
 import ImgSelect from './ui/image-select';
 import InactivityMonitor from './ui/inactivity-monitor';
-import ImgDimWarn from './ui/img-dimension-warning';
+import LoadImgDialog from './ui/load-default-img-dialog';
 import MainMenu from './ui/menu';
 import Renderer from './renderer';
 import Config from './config';
@@ -17,7 +17,7 @@ const canvas = document.getElementById('main-canvas');
 const fullscreen = new FullscreenButton();
 const imgSelect = new ImgSelect();
 const inactivityMonitor = new InactivityMonitor();
-const imgDimWarn = new ImgDimWarn();
+const imgLoadDialog = new LoadImgDialog();
 const renderer = new Renderer(canvas);
 const menu = new MainMenu(renderer.getClock());
 
@@ -38,14 +38,18 @@ const adjustCanvasSize = () => {
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
 
+const earlyConfig = menu.submittedConfig;
 let isInitialPageLoad = true;
 const srcImage = document.createElement('img');
 srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
-srcImage.src = 'tron.jpg';
+srcImage.src = earlyConfig.defaultImage || 'tron.jpg';
 srcImage.onload = () => {
   if (isInitialPageLoad) {
     isInitialPageLoad = false;
-    renderer.getState().setDefaultDomImage(srcImage);
+    renderer.getState().setDefaultDomImage(
+      srcImage, earlyConfig.defaultImageScaling,
+      earlyConfig.defaultImageCropping
+    );
     // particleCounts are either what has been loaded from localStorage
     // or the dimensions of the default image
     const particleCounts = {
@@ -62,11 +66,14 @@ srcImage.onload = () => {
     menu.submit();
     document.documentElement.classList.remove(imageLoadingClass);
   } else {
-    imgDimWarn.verify(srcImage)
-    .then(({ xParticlesCount, yParticlesCount }) => {
-      renderer.getState().setDefaultDomImage(srcImage);
-      const config = Object.assign({}, menu.submittedConfig, { xParticlesCount, yParticlesCount });
-      menu.applyConfig(config);
+    imgLoadDialog.load(srcImage)
+    .then(({ imageScaling, imageCropping }) => {
+      renderer.getState().setDefaultDomImage(srcImage, imageScaling, imageCropping);
+      menu.applyConfig(Object.assign({}, menu.submittedConfig, {
+        defaultImageScaling: imageScaling, defaultImageCropping: imageCropping
+      }));
+      // Trigger state.adaptToConfig (rebuilds default particle data) and
+      // unpause the renderer clock
       menu.submit();
     }, () => {
       /* User canceled loading image */

@@ -12,19 +12,168 @@ function domImgToCanvas(img) {
   return fullresCanvas;
 }
 
+class ScalingInfo {
+  constructor(particleCounts, imageScaling, imageCropping, viewport) {
+    this.particleCounts = particleCounts; // {x, y}
+    this.imageScaling = imageScaling;
+    this.imageCropping = imageCropping; // {x, y}
+    this.viewport = viewport; // {width, height}
+  }
+}
+
+function getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo) {
+  const w = scalingInfo.particleCounts.x;
+  const h = scalingInfo.particleCounts.y;
+  const r = {
+    sx: 0,
+    sy: 0,
+    sWidth: imageCanvas.width,
+    sHeight: imageCanvas.height,
+    dx: 0,
+    dy: 0,
+    dWidth: w,
+    dHeight: h,
+  };
+  // particles aspect ratio
+  r.dAspectRatio = (w / h);
+  // source image aspect ratio
+  r.sAspectRatio = imageCanvas.width / imageCanvas.height;
+  // viewport aspect ratio
+  r.vAspectRatio = scalingInfo.viewport.width / scalingInfo.viewport.height;
+  // particle aspect ratio
+  r.pAspectRatio = r.vAspectRatio / r.dAspectRatio;
+  return r;
+}
+
+function getCropImageToViewportParams(imageCanvas, scalingInfo) {
+  const r = getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo);
+  if (r.vAspectRatio > r.sAspectRatio) { // source height will exceed viewport height
+    r.sHeight = r.sWidth / r.vAspectRatio;
+    if (scalingInfo.imageCropping.y === 'crop-both') {
+      r.sy = (imageCanvas.height - r.sHeight) / 2;
+    } else if (scalingInfo.imageCropping.y === 'crop-top') {
+      r.sy = imageCanvas.height - r.sHeight;
+    } else if (scalingInfo.imageCropping.y === 'crop-bottom') {
+      r.sy = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.y: ' + scalingInfo.imageCropping.x);
+    }
+  } else { // source width will exceed dest width
+    r.sWidth = r.sHeight * r.vAspectRatio;
+    if (scalingInfo.imageCropping.x === 'crop-both') {
+      r.sx = (imageCanvas.width - r.sWidth) / 2;
+    } else if (scalingInfo.imageCropping.x === 'crop-left') {
+      r.sx = imageCanvas.width - r.sWidth;
+    } else if (scalingInfo.imageCropping.x === 'crop-right') {
+      r.sx = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.x: ' + scalingInfo.imageCropping.x);
+    }
+  }
+  return r;
+}
+
+function getFitWidthParams(imageCanvas, scalingInfo) {
+  const w = scalingInfo.particleCounts.x;
+  const h = scalingInfo.particleCounts.y;
+  const r = getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo);
+  if (r.vAspectRatio < r.sAspectRatio) { // the picture won't fill the particles. Some rows will remain black
+    r.dHeight = w / r.sAspectRatio * r.pAspectRatio;
+    if (scalingInfo.imageCropping.y === 'crop-both') {
+      r.dy = (h - r.dHeight) / 2;
+    } else if (scalingInfo.imageCropping.y === 'crop-top') {
+      r.dy = h - r.dHeight;
+    } else if (scalingInfo.imageCropping.y === 'crop-bottom') {
+      r.dy = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.y: ' + scalingInfo.imageCropping.y);
+    }
+  } else { // pixels rows at the top and/or bottom will need to be discarded
+    r.sHeight = imageCanvas.width / r.vAspectRatio;
+    if (scalingInfo.imageCropping.y === 'crop-both') {
+      r.sy = (imageCanvas.height - r.sHeight) / 2;
+    } else if (scalingInfo.imageCropping.y === 'crop-top') {
+      r.sy = imageCanvas.height  - r.sHeight;
+    } else if (scalingInfo.imageCropping.y === 'crop-bottom') {
+      r.sy = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.y: ' + scalingInfo.imageCropping.y);
+    }
+  }
+  return r;
+}
+
+function getFitHeightParams(imageCanvas, scalingInfo) {
+  const w = scalingInfo.particleCounts.x;
+  const h = scalingInfo.particleCounts.y;
+  const r = getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo);
+  if (r.vAspectRatio > r.sAspectRatio) { // the picture won't fill the particles. Some columns will remain black
+    r.dWidth = h * r.sAspectRatio / r.pAspectRatio;
+    if (scalingInfo.imageCropping.x === 'crop-both') {
+      r.dx = (w - r.dWidth) / 2;
+    } else if (scalingInfo.imageCropping.x === 'crop-left') {
+      r.dx = w - r.dWidth;
+    } else if (scalingInfo.imageCropping.x === 'crop-right') {
+      r.dx = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.x: ' + scalingInfo.imageCropping.x);
+    }
+  } else { // pixels columns to the left and/or right will need to be discarded
+    r.sWidth = imageCanvas.height * r.vAspectRatio;
+    if (scalingInfo.imageCropping.x === 'crop-both') {
+      r.sx = (imageCanvas.width - r.sWidth) / 2;
+    } else if (scalingInfo.imageCropping.x === 'crop-left') {
+      r.sx = imageCanvas.width - r.sWidth;
+    } else if (scalingInfo.imageCropping.x === 'crop-right') {
+      r.sx = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.x: ' + scalingInfo.imageCropping.x);
+    }
+  }
+  return r;
+}
+
+function mapImageToParticles(imageCanvas, scalingInfo) {
+  const w = scalingInfo.particleCounts.x;
+  const h = scalingInfo.particleCounts.y;
+  if (w < 1 || h < 1) {
+    throw new Error('Illegal values for particle counts: x=' + w + ', y=' + h);
+  }
+  const scalingCanvas = document.createElement('canvas');
+  const scalingContext = scalingCanvas.getContext('2d');
+  let scalingParams = null;
+  if (scalingInfo.imageScaling === 'crop-to-viewport') {
+    scalingParams = getCropImageToViewportParams(imageCanvas, scalingInfo);
+  } else if (scalingInfo.imageScaling === 'fit-image') {
+    const vAspectRatio = scalingInfo.viewport.width / scalingInfo.viewport.height;
+    if (imageCanvas.width / imageCanvas.height > vAspectRatio) {
+      scalingParams = getFitWidthParams(imageCanvas, scalingInfo);
+    } else {
+      scalingParams = getFitHeightParams(imageCanvas, scalingInfo);
+    }
+  } else if (scalingInfo.imageScaling === 'fit-width') {
+    scalingParams = getFitWidthParams(imageCanvas, scalingInfo);
+  } else if (scalingInfo.imageScaling === 'fit-height') {
+    scalingParams = getFitHeightParams(imageCanvas, scalingInfo);
+  } else if (scalingInfo.imageScaling === 'scale-to-viewport') {
+    scalingParams = getDefaultPixelParticleMappingParams();
+  } else {
+    throw new Error('Illegal value for scalingInfo.imageScaling: "' + scalingInfo.imageScaling + '"');
+  }
+  scalingCanvas.width = w;
+  scalingCanvas.height = h;
+  const P = scalingParams;
+  scalingContext.drawImage(imageCanvas, P.sx, P.sy, P.sWidth, P.sHeight, P.dx, P.dy, P.dWidth, P.dHeight);
+  return scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
+}
+
 class ParticleData {
-  constructor(imageData, regl, width, height) {
+  constructor(imageData, regl, scalingInfo) {
+    const w = scalingInfo.particleCounts.x || imageData.width;
+    const h = scalingInfo.particleCounts.y || imageData.height;
     this.destroyed = false;
     
-    const scalingCanvas = document.createElement('canvas');
-    const scalingContext = scalingCanvas.getContext('2d');
-    scalingCanvas.width = width;
-    scalingCanvas.height = height;
-    scalingContext.drawImage(imageData, 0, 0, scalingCanvas.width, scalingCanvas.height);
-    const scaledData = scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
-
-    const w = scaledData.width;
-    const h = scaledData.height;
+    const scaledData = mapImageToParticles(imageData, scalingInfo);
 
     const particlePixels = scaledData.data;
 
@@ -65,7 +214,6 @@ class ParticleData {
     });
     this.width           = w;
     this.height          = h;
-    this.aspectRatio     = imageData.width / imageData.height;
     this.texcoordsBuffer = regl.buffer(texcoords);
     this.rgbBuffer       = regl.buffer(rgb);
     this.hsvBuffer       = regl.buffer(hsv);
@@ -77,6 +225,22 @@ class ParticleData {
       this.hsvBuffer.destroy();
       this.destroyed = true;
     }
+  }
+}
+
+class ParticleDataStoreEntry {
+  constructor(imageCanvas, imageScaling, imageCropping, particleData) {
+    this.imageCanvas = imageCanvas || null;
+    this.imageScaling = imageScaling;
+    this.imageCropping = imageCropping;
+    this.particleData = particleData || null;
+  }
+  destroy() {
+    if (this.particleData !== null) {
+      this.particleData.destroy();
+      this.particleData = null;
+    }
+    this.imageCanvas = null;
   }
 }
 
@@ -99,33 +263,36 @@ export default class RendererState {
     this.pipeline = new RendererPipeline(regl);
 
     // Properties
+    this.config = null;
     this.particleData = -1;
-    this.particleDataStore = [[null, null]];
+    this.particleDataStore = [new ParticleDataStoreEntry(null, '', {x: '', y: ''}, null)];
     this.buffers = [];
     this.hooks = [];
     this.width = 0;
     this.height = 0;
   }
   adaptToConfig(config) {
+    this.config = config;
     this.pipeline.reset(config.backgroundColor);
 
     // Update default particle data
-    const defaultImg = this.particleDataStore[0][0];
+    const DPD = this.particleDataStore[0];
+    const defaultImg = DPD.imageCanvas;
     if (defaultImg !== null) {
-      const defaultParticleData = this.particleDataStore[0][1];
-      if (defaultParticleData !== null) {
-        defaultParticleData.destroy();
-      }
-      this.particleDataStore[0][1] = new ParticleData(
-        defaultImg,
-        this.regl,
-        config.xParticlesCount || defaultImg.width,
-        config.yParticlesCount || defaultImg.height
+      const scalingInfo = new ScalingInfo(
+        {x: config.xParticlesCount, y: config.yParticlesCount},
+        DPD.imageScaling, DPD.imageCropping,
+        {width: this.getWidth(), height: this.getHeight()}
+      );
+      DPD.destroy();
+      this.particleDataStore[0] = new ParticleDataStoreEntry(
+        defaultImg, scalingInfo.imageScaling, scalingInfo.imageCropping,
+        new ParticleData(defaultImg, this.regl, scalingInfo)
       );
     }
     // release resources
     for (let i = 1; i < this.particleDataStore.length; i++) {
-      this.destroyParticleData(i);
+      this.particleDataStore[i].destroy();
     }
     this.particleDataStore.length = 1;
     this.particleData = 0;
@@ -142,32 +309,37 @@ export default class RendererState {
   setParticleData(id) {
     this.particleData = id;
   }
-  createParticleData(imgData, width, height) {
-    this.particleDataStore.push([
-      imgData,
-      new ParticleData(
-        imgData,
-        this.regl,
-        width,
-        height
-      )
-    ]);
+  createParticleData(imgData, imageScaling, imageCropping) {
+    if (!imageScaling) {
+      console.warn('No imageScaling given. Falling back to default value');
+      imageScaling = 'crop-to-viewport'
+    }
+    if (!imageCropping) {
+      console.warn('No imageCropping given. Falling back to default value');
+      imageCropping = {x: 'crop-both', y: 'crop-both'};
+    }
+    const scalingInfo = new ScalingInfo(
+      {x: this.config.xParticlesCount, y: this.config.yParticlesCount},
+      imageScaling, imageCropping,
+      {width: this.getWidth(), height: this.getHeight()}
+    );
+    this.particleDataStore.push(new ParticleDataStoreEntry(
+      imgData, imageScaling, imageCropping,
+      new ParticleData(imgData, this.regl, scalingInfo)
+    ));
     return this.particleDataStore.length - 1;
   }
-  createParticleDataFromDomImg(domImg, width, height) {
-    return this.createParticleData(domImgToCanvas(domImg), width, height);
+  createParticleDataFromDomImg(domImg, imageScaling, imageCropping) {
+    return this.createParticleData(domImgToCanvas(domImg), imageScaling, imageCropping);
   }
   destroyParticleData(id) {
-    if (this.particleDataStore[id][1]) {
-      this.particleDataStore[id][1].destroy();
-      this.particleDataStore[id] = [null, null];
-    }
+    this.particleDataStore[id].destroy();
   }
   getCurrentParticleData() {
     if (this.particleData < 0) {
       return null;
     }
-    return this.particleDataStore[this.particleData][1];
+    return this.particleDataStore[this.particleData].particleData;
   }
   createBuffer(...args) {
     const buf = this.regl.buffer(...args);
@@ -184,21 +356,33 @@ export default class RendererState {
   isValid() {
     return this.particleData >= 0 && this.pipeline.isValid();
   }
-  setDefaultDomImage(domImage) {
-    this.particleDataStore[0][0] = domImgToCanvas(domImage);
+  /// Sets the image, but will not change the current default particle
+  /// data. Rebuilding the default particle data will only happen on
+  /// adaptToConfig
+  setDefaultDomImage(domImage, imageScaling, imageCropping) {
+    const DefaultEntry = this.particleDataStore[0];
+    DefaultEntry.imageCanvas = domImgToCanvas(domImage);
+    DefaultEntry.imageScaling = imageScaling;
+    DefaultEntry.imageCropping = imageCropping;
     this.particleData = 0;
   }
+  /// Hooks are run after the state has adapted to a new config object
   addHook(hook) {
     this.hooks.push(hook);
   }
+  /// Changes the viewport dimension
+  /// Not to be confused with the particle grid size. See
+  /// config.xParticlesCount and config.yParticlesCount for that
   resize(width, height) {
     this.width = width;
     this.height = height;
     this.pipeline.resize(width, height);
   }
+  /// @return viewport width
   getWidth() {
     return this.width;
   }
+  /// @return viewport height
   getHeight() {
     return this.height;
   }
