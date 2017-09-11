@@ -16,7 +16,7 @@ class StandingWaveConfigUI extends ConfigUI {
         </label><br/>
         <label>
           Wave count:
-          <input type="number" class="effect-standing-wave-wave-count" value="0.05" />
+          <input type="number" min="1" step="1" class="effect-standing-wave-wave-count" value="20" />
         </label><br/>
         <label>
           Dimension:
@@ -91,11 +91,11 @@ class StandingWaveConfigUI extends ConfigUI {
 
 export default class StandingWaveEffect extends Effect {
   static register(instance, props, uniforms, vertexShader) {
-    const maxAmplitude = instance.config.maxAmplitude;
-    const waveCount = instance.config.waveCount;
-    const timeInterpolation = instance.config.timeInterpolation;
-    const waveFunction = instance.config.waveFunction;
-    const dimension = instance.config.dimension;
+    const maxAmplitude = instance.config.maxAmplitude || 0.05;
+    const waveCount = instance.config.waveCount || 20;
+    const timeInterpolation = instance.config.timeInterpolation || 'sine';
+    const waveFunction = instance.config.waveFunction || 'sine';
+    const dimension = instance.config.dimension || 'x';
     const otherDim = {x: 'y', y: 'x'}[dimension];
     if (maxAmplitude !== 0) {
       const time = uniforms.addUniform('time', 'float', (ctx, props) => fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()));
