@@ -12,6 +12,7 @@ import SparkleEffect from './sparkle';
 import ParticleSpacingEffect from './particle-spacing';
 import ParticleDisplaceEffect from './particle-displace';
 import ParticleSizeByHueEffect from './particle-size-by-hue';
+import ResetDefaultImageEffect from './reset-default-image';
 
 // should be last
 import DummyEffect from './dummy';
@@ -31,6 +32,7 @@ const effectList = [
   ParticleSpacingEffect,
   ParticleDisplaceEffect,
   ParticleSizeByHueEffect,
+  ResetDefaultImageEffect,
 
   // Should be last
   DummyEffect
