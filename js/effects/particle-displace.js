@@ -1,24 +1,29 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
-const EffectName = 'Particle spacing';
-const EffectDescription = 'Adds or removes space between particles';
+const EffectName = 'Displace Particles';
+const EffectDescription = 'Displaces all particles into a certain direction by the same distance';
 
-class ParticleSpacingConfigUI extends ConfigUI {
+class ParticleDisplaceConfigUI extends ConfigUI {
   constructor() {
     super();
-    const classPrefix = 'effect-particle-spacing';
+    const classPrefix = 'effect-particle-displace';
     this.element = parseHtml(`
       <fieldset>
         <legend>${EffectName}</legend>
         <label>
-          X spacing factor
-          <input type="number" class="${classPrefix}-xspread" value="1" />
+          Displace distance:
+          <input type="number" min="0" class="${classPrefix}-distance" value="1" />
         </label><br/>
         <label>
-          Y spacing factor
-          <input type="number" class="${classPrefix}-yspread" value="1" />
-        </label><br/>
+          Displace direction:
+          <input type="number" class="${classPrefix}-direction" value="0" />
+        </label>
+        <select class="${classPrefix}-direction-unit">
+          <option value="degrees" selected>deg</option>
+          <option value="radians">rad</option>
+        </select>
+        <br/>
         <label>
           Ease in time:
           <input type="number" min="0" step="1" class="${classPrefix}-ease-in" value="1000" />
@@ -40,16 +45,20 @@ class ParticleSpacingConfigUI extends ConfigUI {
       </fieldset>
     `);
     const ui = this.element;
-    this.xSpreadInput = ui.querySelector(`input.${classPrefix}-xspread`);
-    this.ySpreadInput = ui.querySelector(`input.${classPrefix}-yspread`);
+    this.distanceInput = ui.querySelector(`input.${classPrefix}-distance`);
+    this.directionInput = ui.querySelector(`input.${classPrefix}-direction`);
+    this.directionUnitInput = ui.querySelector(`select.${classPrefix}-direction-unit`);
     this.easeInInput = ui.querySelector(`input.${classPrefix}-ease-in`);
     this.easeOutInput = ui.querySelector(`input.${classPrefix}-ease-out`);
     this.easeFuncInput = ui.querySelector(`select.${classPrefix}-ease-func`);
 
-    this.xSpreadInput.addEventListener('change', () => {
+    this.distanceInput.addEventListener('change', () => {
       this.notifyChange();
     });
-    this.ySpreadInput.addEventListener('change', () => {
+    this.directionInput.addEventListener('change', () => {
+      this.notifyChange();
+    });
+    this.directionUnitInput.addEventListener('change', () => {
       this.notifyChange();
     });
     this.easeInInput.addEventListener('change', () => {
@@ -69,8 +78,9 @@ class ParticleSpacingConfigUI extends ConfigUI {
 
   getConfig() {
     return {
-      xSpread: parseFloat(this.xSpreadInput.value, 10),
-      ySpread: parseFloat(this.ySpreadInput.value, 10),
+      direction: parseFloat(this.directionInput.value),
+      directionUnit: this.directionUnitInput.value,
+      distance: parseFloat(this.distanceInput.value),
       easeInTime: parseInt(this.easeInInput.value, 10),
       easeOutTime: parseInt(this.easeOutInput.value, 10),
       easeFunc: this.easeFuncInput.value
@@ -78,21 +88,25 @@ class ParticleSpacingConfigUI extends ConfigUI {
   }
 
   applyConfig(config) {
-    this.xSpreadInput.value = config.xSpread || 1;
-    this.ySpreadInput.value = config.ySpread || 1;
+    this.directionInput.value = config.direction || 0;
+    this.directionUnitInput.value = config.directionUnit || 'degrees';
+    this.distanceInput.value = config.distance || 0;
     this.easeInInput.value = config.easeInTime || 1000;
     this.easeOutInput.value = config.easeOutTime || 1000;
     this.easeFuncInput.value = config.easeFunc || 'sine';
   }
 }
 
-export default class ParticleSpacingEffect extends Effect {
+export default class ParticleDisplaceEffect extends Effect {
   static register(instance, props, uniforms, vertexShader) {
-    const xSpread = instance.config.xSpread || 1;
-    const ySpread = instance.config.ySpread || 1;
+    let angle = instance.config.direction || 0;
+    if (instance.config.directionUnit !== 'radians') {
+      angle = angle / 360 * 2 * Math.PI;
+    }
+    angle = (angle + 2 * Math.PI) % (2 * Math.PI);
+    const distance = instance.config.distance || 0;
     const easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
     const easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
-
     // starts at 0, goes down to 1
     const easeInProgress = uniforms.addUniform('easeInProgress', 'float', (ctx, props) => {
       const time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
@@ -111,9 +125,9 @@ export default class ParticleSpacingEffect extends Effect {
     const easeFunc = easeFuncs[instance.config.easeFunc || 'sine'];
     vertexShader.mainBody += `
       vec2 offset;
-      offset.x = initialPosition.x * float(${xSpread}) - (float(${xSpread}) - 1.) / 2.;
-      offset.y = initialPosition.y * float(${ySpread}) - (float(${ySpread}) - 1.) / 2.;
-      offset -= initialPosition.xy;
+      offset.y = cos(float(${angle}));
+      offset.x = sqrt(1. - pow(offset.y, 2.)) * (-2. * floor(float(${angle}) / PI) + 1.);
+      offset *= float(${distance});
       float ease = ${easeFunc};
       offset *= ease;
       position.xy += offset;
@@ -130,7 +144,7 @@ export default class ParticleSpacingEffect extends Effect {
 
   static getConfigUI() {
     if (!this._configUI) {
-      this._configUI = new ParticleSpacingConfigUI();
+      this._configUI = new ParticleDisplaceConfigUI();
     }
 
     return this._configUI;
@@ -138,8 +152,9 @@ export default class ParticleSpacingEffect extends Effect {
 
   static getDefaultConfig() {
     return {
-      xSpread: 2,
-      ySpread: 2,
+      direction: 0,
+      directionUnit: 'degrees',
+      distance: 0,
       easeInTime: 1000,
       easeOutTime: 1000,
       easeFunc: 'sine'
@@ -148,8 +163,9 @@ export default class ParticleSpacingEffect extends Effect {
 
   static getRandomConfig() {
     return {
-      xSpread: Math.random() > 0.5 ? 0.5 : 1.5,
-      ySpread: Math.random() > 0.5 ? 0.5 : 1.5,
+      direction: Math.random() * 360,
+      directionUnit: 'degrees',
+      distance: Math.random() * 2,
       easeInTime: 1000,
       easeOutTime: 1000,
       easeFunc: ['sine', 'linear', 'none'][Math.floor(Math.random() * 3)]

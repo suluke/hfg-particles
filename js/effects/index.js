@@ -9,7 +9,8 @@ import SmoothTrailsEffect from './smooth-trails';
 import SmearEffect from './smear';
 import StandingWaveEffect from './standing-wave';
 import SparkleEffect from './sparkle';
-import ParticleSpacing from './particle-spacing';
+import ParticleSpacingEffect from './particle-spacing';
+import ParticleDisplaceEffect from './particle-displace';
 
 // should be last
 import DummyEffect from './dummy';
@@ -26,7 +27,8 @@ const effectList = [
   SmearEffect,
   StandingWaveEffect,
   SparkleEffect,
-  ParticleSpacing,
+  ParticleSpacingEffect,
+  ParticleDisplaceEffect,
 
   // Should be last
   DummyEffect
