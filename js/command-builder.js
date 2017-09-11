@@ -150,11 +150,17 @@ export default class CommandBuilder {
         const particleOverlap =  this.config.particleOverlap || 'add';
         const shapeColor = {
           circle: 'color * vec3(1. - ceil(dist - 1.))',
-          square: 'color'
+          square: 'color',
+          // PI/3 = 60 degrees = inner angle of equilateral triangle
+          triangle: 'gl_PointCoord.y < 0.933 && gl_PointCoord.y >= 0.067 + abs(pos.x/2.) * tan(PI/3.) ? color : vec3(0.)'
         }[particleShape];
         const fadingFactor = {
-          none:       {circle: '1.', square: '1.'},
-          'fade-out': {circle: '(cos(PI * dist) + 1.) / 2.', square: '1. - max(abs(pos.x), abs(pos.y))'}
+          none:       {circle: '1.', square: '1.', triangle: '1.'},
+          'fade-out': {
+            circle: '(cos(PI * dist) + 1.) / 2.',
+            square: '1. - max(abs(pos.x), abs(pos.y))',
+            triangle: '1. - length(vec2(.5, .289) - gl_PointCoord)'
+          }
         }[particleFading][particleShape];
         const colorAssign = {
           add:           'gl_FragColor = vec4(shapeColor * fadingFactor, 1);\n',
