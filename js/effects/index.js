@@ -8,8 +8,11 @@ import TrailsEffect from './trails';
 import SmoothTrailsEffect from './smooth-trails';
 import SmearEffect from './smear';
 import StandingWaveEffect from './standing-wave';
-import DummyEffect from './dummy';
 import SparkleEffect from './sparkle';
+import ParticleSpacing from './particle-spacing';
+
+// should be last
+import DummyEffect from './dummy';
 
 const effectList = [
   HueDisplaceEffect,
@@ -22,8 +25,11 @@ const effectList = [
   SmoothTrailsEffect,
   SmearEffect,
   StandingWaveEffect,
-  DummyEffect,
-  SparkleEffect
+  SparkleEffect,
+  ParticleSpacing,
+
+  // Should be last
+  DummyEffect
 ];
 const byId = {};
 for (let i = 0; i < effectList.length; i++) {

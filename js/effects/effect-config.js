@@ -15,6 +15,8 @@ export default class EffectConfig {
     }
     return clazz;
   }
+  /// @return the amout of time in milliseconds in which the effect
+  ///         should perform one single repetition
   getPeriod() {
     return (this.timeEnd - this.timeBegin) / this.repetitions;
   }
