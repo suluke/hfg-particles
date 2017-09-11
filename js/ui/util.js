@@ -1,20 +1,21 @@
 export function parseHtml(html) {
   // eslint-disable-next-line no-param-reassign
   html = html.trim();
-  /* code taken from jQuery */
+  /* code adapted from jQuery */
+  const wrapper = (depth, open, close) => ({ depth, open, close });
   const wrapMap = {
-    option: [1, "<select multiple='multiple'>", '</select>'],
-    legend: [1, '<fieldset>', '</fieldset>'],
-    area:   [1, '<map>', '</map>'],
-    param:  [1, '<object>', '</object>'],
-    thead:  [1, '<table>', '</table>'],
-    tr:     [2, '<table><tbody>', '</tbody></table>'],
-    col:    [2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'],
-    td:     [3, '<table><tbody><tr>', '</tr></tbody></table>'],
+    option: wrapper(1, "<select multiple='multiple'>", '</select>'),
+    legend: wrapper(1, '<fieldset>', '</fieldset>'),
+    area:   wrapper(1, '<map>', '</map>'),
+    param:  wrapper(1, '<object>', '</object>'),
+    thead:  wrapper(1, '<table>', '</table>'),
+    tr:     wrapper(2, '<table><tbody>', '</tbody></table>'),
+    col:    wrapper(2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'),
+    td:     wrapper(3, '<table><tbody><tr>', '</tr></tbody></table>'),
 
     // IE6-8 can't serialize link, script, style, or any html5 (NoScope) tags,
     // unless wrapped in a div with non-breaking characters in front of it.
-    _default: [1, '<div>', '</div>']
+    _default: wrapper(1, '<div>', '</div>')
   };
   wrapMap.optgroup = wrapMap.option;
   wrapMap.tbody = wrapMap.thead;
@@ -26,13 +27,20 @@ export function parseHtml(html) {
   const match = /<\s*(\w+).*?>/g.exec(html);
   if (match != null) {
     const tag = match[1];
-    const map = wrapMap[tag] || wrapMap._default;
+    const wrap = wrapMap[tag] || wrapMap._default;
     // eslint-disable-next-line no-param-reassign
-    html = `${map[1]}${html}${map[2]}`;
+    html = `${wrap.open}${html}${wrap.close}`;
     element.innerHTML = html;
     // Descend through wrappers to the right content
-    const depth = map[0] + 1;
+    const depth = wrap.depth + 1;
     for (let d = 0; d < depth; d++) {
+      if (element.firstChild !== element.lastChild) {
+        throw new Error(
+          'util.parseHtml requires one single top level element.' +
+          'NOTE: This error might also occur if your tag structure ' +
+          'is nested illegaly.'
+        );
+      }
       element = element.lastChild;
     }
   } else {

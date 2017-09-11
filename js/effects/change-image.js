@@ -38,8 +38,17 @@ class ChangeImageConfigUI extends ConfigUI {
     `);
     const ui = this.element;
     this.scalingSelect = ui.querySelector(`select.${classPrefix}-scaling-select`);
+    this.scalingSelect.addEventListener('change', () => {
+      this.notifyChange();
+    });
     this.cropXSelect = ui.querySelector(`select.${classPrefix}-crop-x-select`);
+    this.cropXSelect.addEventListener('change', () => {
+      this.notifyChange();
+    });
     this.cropYSelect = ui.querySelector(`select.${classPrefix}-crop-y-select`);
+    this.cropYSelect.addEventListener('change', () => {
+      this.notifyChange();
+    });
     this.radioButtons = ui.querySelectorAll('input[type="radio"][name="effect-change-image-source-type"]');
     this.fileInput = ui.querySelector('.effect-change-image-file-tab input[type="file"]');
     this.urlInput = ui.querySelector('.effect-change-image-url-tab input[type="url"]');
@@ -178,7 +187,12 @@ export default class ChangeImageEffect extends Effect {
   static getDefaultConfig() {
     return {
       sourceTy: 'file',
-      url: '#'
+      url: '#',
+      imageScaling: 'crop-to-viewport',
+      imageCropping: {
+        x: 'crop-both',
+        y: 'crop-both'
+      }
     };
   }
 

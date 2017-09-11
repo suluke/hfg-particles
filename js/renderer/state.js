@@ -332,6 +332,9 @@ export default class RendererState {
   createParticleDataFromDomImg(domImg, imageScaling, imageCropping) {
     return this.createParticleData(domImgToCanvas(domImg), imageScaling, imageCropping);
   }
+  destroyParticleData(id) {
+    this.particleDataStore[id].destroy();
+  }
   getCurrentParticleData() {
     if (this.particleData < 0) {
       return null;
