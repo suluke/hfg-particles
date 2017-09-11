@@ -141,11 +141,11 @@ export default class SparkleEffect extends Effect {
     vertexShader.mainBody += `
       {
         float firstPeriodBegin = float(${instance.timeBegin}) - ${offset};
-        if(firstPeriodBegin < float(${instance.timeBegin})) firstPeriodBegin += ${period};
+        if (firstPeriodBegin < float(${instance.timeBegin})) firstPeriodBegin += ${period};
         float lastPeriodBegin = float(${instance.timeBegin}) + ceil(float(${instance.timeEnd - instance.timeBegin}) / ${period}) * ${period} - ${offset};
-        if(lastPeriodBegin > float(${instance.timeEnd})) lastPeriodBegin -= ${period};
+        if (lastPeriodBegin > float(${instance.timeEnd})) lastPeriodBegin -= ${period};
         float lastPeriodLength = float(${instance.timeEnd}) - lastPeriodBegin;
-        if(float(globalTime) >= firstPeriodBegin
+        if (float(globalTime) >= firstPeriodBegin
           && (lastPeriodLength >= float(${duration}) || float(globalTime) < lastPeriodBegin)) {
           float t = mod(float(globalTime) - float(${instance.timeBegin}) + ${offset}, ${period});
           float x = t > float(${duration}) ? 0. : t * ${1/duration};

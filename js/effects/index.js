@@ -11,6 +11,7 @@ import StandingWaveEffect from './standing-wave';
 import SparkleEffect from './sparkle';
 import ParticleSpacingEffect from './particle-spacing';
 import ParticleDisplaceEffect from './particle-displace';
+import ParticleSizeByHueEffect from './particle-size-by-hue';
 
 // should be last
 import DummyEffect from './dummy';
@@ -29,6 +30,7 @@ const effectList = [
   SparkleEffect,
   ParticleSpacingEffect,
   ParticleDisplaceEffect,
+  ParticleSizeByHueEffect,
 
   // Should be last
   DummyEffect
