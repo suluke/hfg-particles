@@ -148,11 +148,11 @@ export default class CommandBuilder {
         const particleShape = this.config.particleShape || 'circle';
         const particleFading = this.config.particleFading || 'fade-out';
         const particleOverlap =  this.config.particleOverlap || 'add';
-        const shapeColor = {
-          circle: 'color * vec3(1. - ceil(dist - 1.))',
-          square: 'color',
+        const insideShape = {
+          circle: 'ceil(1. - dist)',
+          square: '1.',
           // PI/3 = 60 degrees = inner angle of equilateral triangle
-          triangle: 'gl_PointCoord.y < 0.933 && gl_PointCoord.y >= 0.067 + abs(pos.x/2.) * tan(PI/3.) ? color : vec3(0.)'
+          triangle: 'gl_PointCoord.y < 0.933 && gl_PointCoord.y >= 0.067 + abs(pos.x/2.) * tan(PI/3.) ? 1. : 0.'
         }[particleShape];
         const fadingFactor = {
           none:       {circle: '1.', square: '1.', triangle: '1.'},
@@ -163,14 +163,14 @@ export default class CommandBuilder {
           }
         }[particleFading][particleShape];
         const colorAssign = {
-          add:           'gl_FragColor = vec4(shapeColor * fadingFactor, 1);\n',
-          'alpha blend': 'gl_FragColor = vec4(shapeColor, fadingFactor);\n'
-        }[this.config.particleOverlap];
+          add:           'gl_FragColor = vec4(color * fadingFactor, 1);\n',
+          'alpha blend': 'gl_FragColor = vec4(color, fadingFactor);\n'
+        }[particleOverlap];
         frag.mainBody += `
           vec2 pos = gl_PointCoord * vec2(2.) - vec2(1.);
           float dist = length(pos);
-          vec3 shapeColor = ${shapeColor};
-          float fadingFactor = ${fadingFactor};
+          float insideShape = ${insideShape};
+          float fadingFactor = (${fadingFactor}) * insideShape;
           ${colorAssign}
         `;
 
