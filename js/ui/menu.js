@@ -132,6 +132,54 @@ class ParticleSizeControl extends Control {
 /**
  *
  */
+class ParticleShapeControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-particle-shape-control');
+    this.select = this.elm.querySelector('select');
+
+    this.select.addEventListener('change', () => {
+      this.menu.notifyChange();
+    });
+  }
+
+  updateConfig(config) {
+    // eslint-disable-next-line no-param-reassign
+    config.particleShape = this.select.value || 'circle';
+  }
+
+  applyConfig(config) {
+    this.select.value = config.particleShape;
+  }
+}
+
+/**
+ *
+ */
+class ParticleEdgeFadeControl extends Control {
+  constructor(menu) {
+    super(menu);
+    this.elm = document.getElementById('menu-particle-edge-fade-control');
+    this.select = this.elm.querySelector('select');
+
+    this.select.addEventListener('change', () => {
+      this.menu.notifyChange();
+    });
+  }
+
+  updateConfig(config) {
+    // eslint-disable-next-line no-param-reassign
+    config.particleFading = this.select.value;
+  }
+
+  applyConfig(config) {
+    this.select.value = config.particleFading || 'fade out';
+  }
+}
+
+/**
+ *
+ */
 class ParticleOverlapControl extends Control {
   constructor(menu) {
     super(menu);
@@ -247,7 +295,7 @@ class ResetAppstateButton extends Control {
 
 const ControlsList = [
   BgColorPicker, ParticleCountControl, DefaultImageControl,
-  ParticleSizeControl, ParticleOverlapControl,
+  ParticleSizeControl, ParticleShapeControl, ParticleEdgeFadeControl, ParticleOverlapControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 

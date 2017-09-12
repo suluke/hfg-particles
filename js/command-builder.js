@@ -14,7 +14,7 @@ export default class CommandBuilder {
   createDefaultUniforms() {
     const uniforms = new Uniforms();
     uniforms.addUniform('invScreenAspectRatio', 'float', (ctx) => ctx.viewportHeight / ctx.viewportWidth);
-    uniforms.addUniform('particleSize', 'float', (ctx) => (ctx.viewportWidth / this.state.getCurrentParticleData().width) * 2 * this.config.particleScaling);
+    uniforms.addUniform('particleSize', 'float', (ctx) => (ctx.viewportWidth / this.state.getCurrentParticleData().width) * this.config.particleScaling);
     uniforms.addUniform('globalTime', 'int', (ctx, props) => props.clock.getTime());
     return uniforms;
   }
@@ -43,9 +43,7 @@ export default class CommandBuilder {
   static prepareFragmentShader() {
     const fragmentShader = new Shader();
     fragmentShader.varyings += 'varying vec3 color;\n';
-    fragmentShader.mainBody += `
-      float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);
-    `;
+    fragmentShader.globals += 'const float PI = 3.14159265;\n';
     return fragmentShader;
   }
 
@@ -147,14 +145,34 @@ export default class CommandBuilder {
           gl_PointSize = pointSize;
           gl_Position = vec4(vec2(2.) * position.xy - vec2(1.), 0., 1.);
         `;
+        const particleShape = this.config.particleShape || 'circle';
+        const particleFading = this.config.particleFading || 'fade-out';
+        const particleOverlap =  this.config.particleOverlap || 'add';
+        const insideShape = {
+          circle: 'ceil(1. - dist)',
+          square: '1.',
+          // PI/3 = 60 degrees = inner angle of equilateral triangle
+          triangle: 'gl_PointCoord.y < 0.933 && gl_PointCoord.y >= 0.067 + abs(pos.x/2.) * tan(PI/3.) ? 1. : 0.'
+        }[particleShape];
+        const fadingFactor = {
+          none:       {circle: '1.', square: '1.', triangle: '1.'},
+          'fade-out': {
+            circle: '(cos(PI * dist) + 1.) / 2.',
+            square: '1. - max(abs(pos.x), abs(pos.y))',
+            triangle: '1. - length(vec2(.5, .289) - gl_PointCoord)'
+          }
+        }[particleFading][particleShape];
         const colorAssign = {
-          add:           'gl_FragColor = vec4(color * v, 1);\n',
-          'alpha blend': 'gl_FragColor = vec4(color, v);\n'
-        }[this.config.particleOverlap];
-        if (!colorAssign) {
-          throw new Error(`Unknown particle overlap mode: ${this.config.particleOverlap}`);
-        }
-        frag.mainBody += colorAssign;
+          add:           'gl_FragColor = vec4(color * fadingFactor, 1);\n',
+          'alpha blend': 'gl_FragColor = vec4(color, fadingFactor);\n'
+        }[particleOverlap];
+        frag.mainBody += `
+          vec2 pos = gl_PointCoord * vec2(2.) - vec2(1.);
+          float dist = length(pos);
+          float insideShape = ${insideShape};
+          float fadingFactor = (${fadingFactor}) * insideShape;
+          ${colorAssign}
+        `;
 
         result.vert = vert.compile();
         result.frag = frag.compile();
