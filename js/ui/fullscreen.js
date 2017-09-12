@@ -1,15 +1,18 @@
-const isFullscreen = () => document.fullscreen || document.mozFullScreen ||
+function isFullscreen() {
+  return document.fullscreen || document.mozFullScreen ||
     document.webkitIsFullScreen || document.msFullscreenElement;
-const updateFullscreenClass = () => {
+}
+
+function updateFullscreenClass() {
   const fullscreenClass = 'fullscreen';
   if (isFullscreen()) {
     document.documentElement.classList.add(fullscreenClass);
   } else {
     document.documentElement.classList.remove(fullscreenClass);
   }
-};
+}
 
-const toggleFullScreen = () => {
+function toggleFullScreen() {
   if ((document.fullScreenElement && document.fullScreenElement !== null) ||
    (!document.mozFullScreen && !document.webkitIsFullScreen)) {
     if (document.documentElement.requestFullScreen) {
@@ -26,9 +29,9 @@ const toggleFullScreen = () => {
   } else if (document.webkitCancelFullScreen) {
     document.webkitCancelFullScreen();
   }
-};
+}
 
-export default class FullscreenButton {
+export class FullscreenButton {
   constructor() {
     [].forEach.call(document.getElementsByClassName('btn-fullscreen'), (elm) => {
       elm.addEventListener('click', toggleFullScreen);
@@ -39,5 +42,36 @@ export default class FullscreenButton {
     document.addEventListener('webkitfullscreenchange', updateFullscreenClass, false);
     document.addEventListener('msfullscreenchange', updateFullscreenClass, false);
     updateFullscreenClass();
+  }
+}
+
+export class DoubleClickFullscreen {
+  constructor() {
+    this.element = document.querySelector('.img-paste-box');
+    this.clicks = 0;
+    this.resetTimeout = false;
+    this.element.addEventListener('click', () => {
+      this.clicks = this.clicks + 1;
+      if (this.clicks > 1) {
+        this.reset();
+        toggleFullScreen();
+      } else {
+        this.startResetTimeout();
+      }
+    });
+  }
+  startResetTimeout() {
+    const DBL_CLICK_TIME = 400;
+    if (this.resetTimeout) {
+      window.clearTimeout(this.resetTimeout);
+    }
+    this.resetTimeout = window.setTimeout(() => this.reset(), DBL_CLICK_TIME);
+  }
+  reset() {
+    this.clicks = 0;
+    if (this.resetTimeout) {
+      window.clearTimeout(this.resetTimeout);
+      this.resetTimeout = false;
+    }
   }
 }

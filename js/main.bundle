@@ -1,5 +1,5 @@
 import './polyfills/classlist';
-import FullscreenButton from './ui/btn-fullscreen';
+import { FullscreenButton, DoubleClickFullscreen } from './ui/fullscreen';
 import ImgSelect from './ui/image-select';
 import InactivityMonitor from './ui/inactivity-monitor';
 import LoadImgDialog from './ui/load-default-img-dialog';
@@ -14,7 +14,8 @@ const imageLoadingClass = 'loading-image';
 const canvas = document.getElementById('main-canvas');
 
 // set up ui components
-const fullscreen = new FullscreenButton();
+const fullscreenBtn = new FullscreenButton();
+const fullscreenListener = new DoubleClickFullscreen();
 const imgSelect = new ImgSelect();
 const inactivityMonitor = new InactivityMonitor();
 const imgLoadDialog = new LoadImgDialog();
