@@ -43,7 +43,7 @@ const earlyConfig = menu.submittedConfig;
 let isInitialPageLoad = true;
 const srcImage = document.createElement('img');
 srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
-srcImage.src = earlyConfig.defaultImage || 'tron.jpg';
+srcImage.src = earlyConfig.defaultImage || 'default.jpg';
 srcImage.onload = () => {
   if (isInitialPageLoad) {
     isInitialPageLoad = false;
@@ -52,10 +52,12 @@ srcImage.onload = () => {
       earlyConfig.defaultImageCropping
     );
     // particleCounts are either what has been loaded from localStorage
-    // or the dimensions of the default image
+    // or the dimensions of the default image (adapted to the user's
+    // screen aspect ratio)
+    const screenAR = window.innerWidth / window.innerHeight;
     const particleCounts = {
       xParticlesCount: menu.submittedConfig.xParticlesCount || srcImage.naturalWidth,
-      yParticlesCount: menu.submittedConfig.yParticlesCount || srcImage.naturalHeight
+      yParticlesCount: menu.submittedConfig.yParticlesCount || Math.round(srcImage.naturalHeight / screenAR)
     };
     // We want to get the default particle count from the default image,
     // but what the user specified before the page was reloaded should
