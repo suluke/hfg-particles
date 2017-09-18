@@ -85,7 +85,7 @@ export default class WebcamEffect extends Effect {
     .then((videoTrack) => {
       // Now this is where the magic happens
       const capture = new ImageCapture(videoTrack);
-      const retried = false;
+      let retried = false;
       const grabLoop = (imageOrTimestamp) => {
         if (isActive() && imageOrTimestamp && (typeof imageOrTimestamp) !== 'number') {
           const image = imageOrTimestamp;
