@@ -39,13 +39,14 @@ fs.mkdirp(StaticPath)
         }),
         buble(),
         resolve({
-          jsnext: true,
           main: true,
           extensions: [ '.js', '.json' ]
         }),
         commonjs({
           extensions: [ '.js', '.json' ],
-          ignore: ['flickr-sdk/build/flickr-sdk']
+          namedExports: {
+            'node_modules/image-capture/lib/imagecapture.js': [ 'ImageCapture' ]
+          }
         }),
       ]
     }

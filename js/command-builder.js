@@ -130,6 +130,7 @@ export default class CommandBuilder {
           registerEffects(res, rej);
         }, (err) => {
           // TODO
+          console.error(`An error occurred in ${effectConfig.id}`);
           console.error(err);
           vert.mainBody += '}';
 

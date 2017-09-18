@@ -1,5 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
+import { ImageCapture } from 'image-capture/lib/imagecapture';
 
 const EffectName = 'Webcam';
 const EffectDescription = 'Make use of the user\'s webcam as the particles\' color values';
@@ -44,9 +45,14 @@ export default class WebcamEffect extends Effect {
     // Shutdown hook
     props.state.addHook(() => {
       stop();
-      const allTracks = stream.getTracks();
-      for (let i = 0; i < allTracks.length; i++) {
-        allTracks[i].stop();
+      // FIXME understand and document when this can happen.
+      // E.g. when the getUserMedia() request is ignored in icognito
+      // mode
+      if (stream !== null) {
+        const allTracks = stream.getTracks();
+        for (let i = 0; i < allTracks.length; i++) {
+          allTracks[i].stop();
+        }
       }
     });
 
@@ -74,13 +80,14 @@ export default class WebcamEffect extends Effect {
       // According to MDN, this shouldn't ever reject.
       // TODO maybe add an assertion for that
       return videoTrack.applyConstraints(constraints)
-        .then(() => Promise.resolve(videoTrack), Promise.reject);
-    }, Promise.reject)
+        .then(() => Promise.resolve(videoTrack), (err) => Promise.reject(err));
+    }, (err) => Promise.reject(err))
     .then((videoTrack) => {
       // Now this is where the magic happens
       const capture = new ImageCapture(videoTrack);
+      const retried = false;
       const grabLoop = (imageOrTimestamp) => {
-        if (isActive() && (typeof imageOrTimestamp) !== 'number') {
+        if (isActive() && imageOrTimestamp && (typeof imageOrTimestamp) !== 'number') {
           const image = imageOrTimestamp;
           const w = image.width;
           const h = image.height;
@@ -99,7 +106,18 @@ export default class WebcamEffect extends Effect {
           // FIXME if we don't grab frames, Chrome will soon make the
           // track invalid, causing the next grabFrame to throw an error
           if (true || isActive()) {
-            capture.grabFrame().then(grabLoop, (err) => { stop() });
+            capture.grabFrame()
+            .then(grabLoop, (err) => {
+              // FIXME Firefox needs some time to get ready for grabbing
+              // frames, so let's try this one more time if the first
+              // one didn't succeed
+              if (!retried) {
+                retried = true;
+                window.setTimeout(() => grabLoop(0), 200);
+              } else {
+                return Promise.reject(err);
+              }
+            });
           } else {
             window.requestAnimationFrame(grabLoop);
           }
@@ -107,7 +125,7 @@ export default class WebcamEffect extends Effect {
       };
       // start grabbing images!
       window.requestAnimationFrame(grabLoop);
-    }, Promise.reject);
+    }, (err) => Promise.reject(err));
   }
 
   static getDisplayName() {
