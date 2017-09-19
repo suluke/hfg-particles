@@ -1,10 +1,16 @@
-@mixin icon($fa-icon) {
+@mixin icon($fa-icon, $after: false) {
   /* the default mixins set font-size, which interferes when changing icons depenging on state */
   /* @include fa-icon; // in _mixins.scss */
   /* @extend .#{$fa-css-prefix}; // in _core.scss*/
   font-family: FontAwesome;
-  &:before {
-    content: $fa-icon;
+  @if not $after {
+    &:before {
+      content: $fa-icon;
+    }
+  } @else {
+    &:after {
+      content: $fa-icon;
+    }
   }
 }
 @mixin icon-button($fa-icon) {
