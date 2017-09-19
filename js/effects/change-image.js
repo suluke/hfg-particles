@@ -153,7 +153,8 @@ export default class ChangeImageEffect extends Effect {
           if (!alive) {
             return;
           }
-          if (instance.timeBegin - props.clock.getTime() <= props.clock.getDelta()) {
+          const tDist = props.clock.getTime() - instance.timeBegin;
+          if (0 <= tDist && tDist <= props.clock.getDelta()) {
             props.state.setParticleData(particleData);
           }
           window.requestAnimationFrame(checkTime);
