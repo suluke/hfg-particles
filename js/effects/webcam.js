@@ -8,13 +8,35 @@ const EffectDescription = 'Make use of the user\'s webcam as the particles\' col
 class WebcamConfigUI extends ConfigUI {
   constructor() {
     super();
+    const classPrefix = 'effect-webcam';
     this.element = parseHtml(`
       <fieldset>
         <legend>${EffectName}</legend>
-        Nothing to be configured :)
+        Especially in Firefox, it is sometimes necessary to wait some time
+        before webcam images can be retrieved. It may also be helpful to
+        retry connecting to the webcam several times.
+        <br />
+        <label>
+          Max number of retries:
+          <input type="number" min="0" max="10" step="1" value="3" class="${classPrefix}-retries" />
+        </label>
+        <br/>
+        <label>
+          Delay between retries:
+          <input type="number" min="0" max="10000" step="1" value="400" class="${classPrefix}-retry-timeout" />ms
+        </label>
       </fieldset>
     `);
     const ui = this.element;
+    this.maxRetriesInput = ui.querySelector(`.${classPrefix}-retries`);
+    this.retryTimeoutInput = ui.querySelector(`.${classPrefix}-retry-timeout`);
+
+    this.maxRetriesInput.addEventListener('change', () => {
+      this.notifyChange();
+    });
+    this.retryTimeoutInput.addEventListener('change', () => {
+      this.notifyChange();
+    });
   }
 
   getElement() {
@@ -22,10 +44,15 @@ class WebcamConfigUI extends ConfigUI {
   }
 
   getConfig() {
-    return {};
+    return {
+      maxRetries: parseInt(this.maxRetriesInput.value, 10),
+      retryTimeout: parseInt(this.retryTimeoutInput.value, 10)
+    };
   }
 
   applyConfig(config) {
+    this.maxRetriesInput.value = config.maxRetries || 0;
+    this.retryTimeoutInput.value = config.retryTimeout || 400;
   }
 }
 
@@ -85,7 +112,7 @@ export default class WebcamEffect extends Effect {
     .then((videoTrack) => {
       // Now this is where the magic happens
       const capture = new ImageCapture(videoTrack);
-      let retried = false;
+      let retries = 0;
       const grabLoop = (imageOrTimestamp) => {
         if (isActive() && imageOrTimestamp && (typeof imageOrTimestamp) !== 'number') {
           const image = imageOrTimestamp;
@@ -111,11 +138,12 @@ export default class WebcamEffect extends Effect {
               // FIXME Firefox needs some time to get ready for grabbing
               // frames, so let's try this one more time if the first
               // one didn't succeed
-              if (!retried) {
-                retried = true;
-                window.setTimeout(() => grabLoop(0), 200);
+              if (retries < instance.config.maxRetries) {
+                retries = retries + 1;
+                window.setTimeout(() => grabLoop(0), instance.config.retryTimeout);
               } else {
-                return Promise.reject(err);
+                // Throw the error from outside any promises
+                window.setTimeout(() => { throw err; }, 0);
               }
             });
           } else {
