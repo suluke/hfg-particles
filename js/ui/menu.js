@@ -11,7 +11,7 @@ import { effectList as effects } from '../effects/index';
  * This is rather for documenting the common interface than
  * offering concrete functionality for reuse.
  */
-class Control {
+export class Control {
   constructor(menu) {
     this.menu = menu;
   }
@@ -293,9 +293,11 @@ class ResetAppstateButton extends Control {
   applyConfig(/* config */) {}
 }
 
+import PresetSelect from './menu-preset-select';
 const ControlsList = [
   BgColorPicker, ParticleCountControl, DefaultImageControl,
   ParticleSizeControl, ParticleShapeControl, ParticleEdgeFadeControl, ParticleOverlapControl,
+  PresetSelect,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
