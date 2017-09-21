@@ -23,14 +23,42 @@ const imgLoadDialog = new LoadImgDialog();
 const renderer = new Renderer(canvas);
 const menu = new MainMenu(renderer.getClock());
 
-if (window.localStorage) {
-  const configJson = window.localStorage.getItem('savedConfig');
-  if (configJson !== null) {
-    const config = JSON.parse(configJson);
-    menu.applyConfig(config);
-    menu.submit();
+function tryLoadFromLocalStorage() {
+  if (window.localStorage) {
+    const configJson = window.localStorage.getItem('savedConfig');
+    if (configJson !== null) {
+      const config = JSON.parse(configJson);
+      menu.applyConfig(config);
+      menu.submit();
+      return true;
+    }
   }
+  return false;
 }
+function tryLoadFromHash() {
+  if (window.location.hash) {
+    const hash = window.location.hash.substring(1);
+    let hashDict = hash.split('&')
+    .reduce((acc, item) => {
+      var parts = item.split('=');
+      acc[parts[0]] = parts[1];
+      return acc;
+    }, {});
+    if (hashDict.preset !== undefined && allPresets[hashDict.preset]) {
+      const preset = allPresets[hashDict.preset];
+      menu.applyConfig(preset.config);
+      menu.submit();
+      window.location.hash = '';
+      return true;
+    }
+  }
+  return false;
+}
+// Try loading the timeline from different places
+if (!tryLoadFromHash()) {
+  tryLoadFromLocalStorage();
+}
+window.addEventListener("hashchange", tryLoadFromHash);
 
 const adjustCanvasSize = () => {
   canvas.width = window.innerWidth;
