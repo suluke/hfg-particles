@@ -5878,7 +5878,7 @@ var WebcamConfigUI = (function (ConfigUI$$1) {
 
     ConfigUI$$1.call(this);
     var classPrefix = 'effect-webcam';
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$15 + "</legend>\n        Especially in Firefox, it is sometimes necessary to wait some time\n        before webcam images can be retrieved. It may also be helpful to\n        retry connecting to the webcam several times.\n        <br />\n        <label>\n          Max number of retries:\n          <input type=\"number\" min=\"0\" max=\"10\" step=\"1\" value=\"3\" class=\"" + classPrefix + "-retries\" />\n        </label>\n        <br/>\n        <label>\n          Delay between retries:\n          <input type=\"number\" min=\"0\" max=\"10000\" step=\"1\" value=\"400\" class=\"" + classPrefix + "-retry-timeout\" />ms\n        </label>\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$15 + "</legend>\n        Especially in Firefox, it is sometimes necessary to wait some time\n        before webcam images can be retrieved. It may also be helpful to\n        retry connecting to the webcam several times.\n        <br />\n        <label>\n          Max number of retries:\n          <input type=\"number\" min=\"0\" max=\"10\" step=\"1\" value=\"3\" class=\"" + classPrefix + "-retries\" />\n        </label>\n        <br/>\n        <label>\n          Delay between retries:\n          <input type=\"number\" min=\"0\" max=\"10000\" step=\"1\" value=\"1000\" class=\"" + classPrefix + "-retry-timeout\" />ms\n        </label>\n      </fieldset>\n    "));
     var ui = this.element;
     this.maxRetriesInput = ui.querySelector(("." + classPrefix + "-retries"));
     this.retryTimeoutInput = ui.querySelector(("." + classPrefix + "-retry-timeout"));
@@ -5907,8 +5907,8 @@ var WebcamConfigUI = (function (ConfigUI$$1) {
   };
 
   WebcamConfigUI.prototype.applyConfig = function applyConfig (config) {
-    this.maxRetriesInput.value = config.maxRetries || 0;
-    this.retryTimeoutInput.value = config.retryTimeout || 400;
+    this.maxRetriesInput.value = config.maxRetries || 3;
+    this.retryTimeoutInput.value = config.retryTimeout || 1000;
   };
 
   return WebcamConfigUI;
@@ -5976,12 +5976,10 @@ var WebcamEffect = (function (Effect$$1) {
         .then(function () { return Promise.resolve(videoTrack); }, function (err) { return Promise.reject(err); });
     }, function (err) { return Promise.reject(err); })
     .then(function (videoTrack) {
-      // Now this is where the magic happens
       var capture = new imagecapture_1(videoTrack);
-      var retries = 0;
-      var grabLoop = function (imageOrTimestamp) {
-        if (isActive() && imageOrTimestamp && (typeof imageOrTimestamp) !== 'number') {
-          var image = imageOrTimestamp;
+      // This is where the magic happens
+      var processFrame = function (image) {
+        if (isActive()) {
           var w = image.width;
           var h = image.height;
           // FIXME the camera resolution shouldn't change all that often
@@ -5995,30 +5993,53 @@ var WebcamEffect = (function (Effect$$1) {
           var pd = props.state.createParticleData(canvas, 'fit-image', {x: 'crop-both', y: 'crop-both'});
           props.state.setParticleData(pd);
         }
+      };
+      // When we are sure grabbing images works (which happens further
+      // below) we call this function to grab frames repeatedly in a loop
+      var grabLoop = function () {
         if (!stopped) {
           // FIXME if we don't grab frames, Chrome will soon make the
           // track invalid, causing the next grabFrame to throw an error
-          if (true || isActive()) {
-            capture.grabFrame()
-            .then(grabLoop, function (err) {
-              // FIXME Firefox needs some time to get ready for grabbing
-              // frames, so let's try this one more time if the first
-              // one didn't succeed
-              if (retries < instance.config.maxRetries) {
-                retries = retries + 1;
-                window.setTimeout(function () { return grabLoop(0); }, instance.config.retryTimeout);
-              } else {
-                // Throw the error from outside any promises
-                window.setTimeout(function () { throw err; }, 0);
-              }
-            });
-          } else {
+          // Otherwise, we could test here if we are active and do a
+          // no-op instead of grabFrame
+          capture.grabFrame()
+          .then(function (frame) {
+            processFrame(frame);
+            // Queue this into the next animation frame so we don't
+            // explode the call stack with recursive calls
             window.requestAnimationFrame(grabLoop);
-          }
+          }, function (err) {
+            // Throw this error into the global scope
+            window.setTimeout(function () { throw new Error('Cannot grab images from the camera'); }, 0);
+          });
         }
       };
-      // start grabbing images!
-      window.requestAnimationFrame(grabLoop);
+      
+      // As it turns out, having the video alone is not a guarantee that
+      // we can actually grab images (at least on FF). So let's make sure
+      // it works at least one time
+      return new Promise(function (res, rej) {
+        var retries = 0;
+        var testGrab = function (err) {
+          capture.grabFrame()
+          .then(function (frame) {
+            // Success, resolve and start grabbing!
+            processFrame(frame);
+            grabLoop();
+            res();
+          }, function (err) {
+            // Aw, no image :( Maybe try again?
+            if (retries < instance.config.maxRetries) {
+              retries = retries + 1;
+              window.setTimeout(testGrab, instance.config.retryTimeout);
+            } else {
+              // We finally have to give up :/
+              rej(new Error('Cannot grab images from camera'));
+            }
+          });
+        };
+        testGrab();
+      });
     }, function (err) { return Promise.reject(err); });
   };
 
@@ -6039,11 +6060,14 @@ var WebcamEffect = (function (Effect$$1) {
   };
 
   WebcamEffect.getDefaultConfig = function getDefaultConfig () {
-    return {};
+    return {
+      maxRetries: 3,
+      retryTimeout: 1000
+    };
   };
 
   WebcamEffect.getRandomConfig = function getRandomConfig () {
-    return {};
+    return WebcamEffect.getDefaultConfig();
   };
 
   return WebcamEffect;
@@ -6991,7 +7015,7 @@ var particleScaling = 1;
 var particleShape = "circle";
 var particleFading = "none";
 var particleOverlap = "alpha blend";
-var effects = [[{"id":"HueDisplaceEffect","timeBegin":8592,"timeEnd":10613,"repetitions":1,"config":{"distance":0.7319085067626532,"scaleByValue":0.4112831056504884,"randomDirectionOffset":false,"rotate":0.6353214673534142}}],[{"id":"ConvergePointEffect","timeBegin":2189,"timeEnd":6844,"repetitions":1,"config":{}}],[{"id":"ConvergeCircleEffect","timeBegin":9297,"timeEnd":13311,"repetitions":1,"config":{"rotationSpeed":0.32695472212132115}}],[{"id":"WaveEffect","timeBegin":0,"timeEnd":2015,"repetitions":1,"config":{"multiplier":0.3148697308748081,"amplitude":0.11115075915060912}}],[{"id":"TrailsEffect","timeBegin":7827,"timeEnd":14610,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmoothTrailsEffect","timeBegin":2845,"timeEnd":5692,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmearEffect","timeBegin":5041,"timeEnd":13056,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"StandingWaveEffect","timeBegin":9065,"timeEnd":13188,"repetitions":1,"config":{"maxAmplitude":0.11655939598142143,"waveCount":12.072390651463863,"timeInterpolation":"linear","waveFunction":"sine","dimension":"x"}}],[{"id":"SparkleEffect","timeBegin":4482,"timeEnd":10731,"repetitions":1,"config":{"scaleMin":0.685,"scaleMax":2.563,"ratio":0.275,"duration":1485}}],[{"id":"ParticleSpacingEffect","timeBegin":5162,"timeEnd":13696,"repetitions":1,"config":{"xSpread":0.5,"ySpread":1.5,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"sine"}}],[{"id":"ParticleDisplaceEffect","timeBegin":3543,"timeEnd":6774,"repetitions":1,"config":{"direction":224.4457831353151,"directionUnit":"degrees","distance":0.023417750859263453,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"none"}}],[{"id":"ParticleSizeByHueEffect","timeBegin":1877,"timeEnd":11750,"repetitions":1,"config":{"scaling":2.582142277304504,"hueRotation":4.761756559852353,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"linear"}}],[{"id":"WebcamEffect","timeBegin":0,"timeEnd":14610,"repetitions":1,"config":{"maxRetries":0,"retryTimeout":400}}],[]];
+var effects = [[{"id":"HueDisplaceEffect","timeBegin":8592,"timeEnd":10613,"repetitions":1,"config":{"distance":0.7319085067626532,"scaleByValue":0.4112831056504884,"randomDirectionOffset":false,"rotate":0.6353214673534142}}],[{"id":"ConvergePointEffect","timeBegin":2189,"timeEnd":6844,"repetitions":1,"config":{}}],[{"id":"ConvergeCircleEffect","timeBegin":9297,"timeEnd":13311,"repetitions":1,"config":{"rotationSpeed":0.32695472212132115}}],[{"id":"WaveEffect","timeBegin":0,"timeEnd":2015,"repetitions":1,"config":{"multiplier":0.3148697308748081,"amplitude":0.11115075915060912}}],[{"id":"TrailsEffect","timeBegin":7827,"timeEnd":14610,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmoothTrailsEffect","timeBegin":2845,"timeEnd":5692,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmearEffect","timeBegin":5041,"timeEnd":13056,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"StandingWaveEffect","timeBegin":9065,"timeEnd":13188,"repetitions":1,"config":{"maxAmplitude":0.11655939598142143,"waveCount":12.072390651463863,"timeInterpolation":"linear","waveFunction":"sine","dimension":"x"}}],[{"id":"SparkleEffect","timeBegin":4482,"timeEnd":10731,"repetitions":1,"config":{"scaleMin":0.685,"scaleMax":2.563,"ratio":0.275,"duration":1485}}],[{"id":"ParticleSpacingEffect","timeBegin":5162,"timeEnd":13696,"repetitions":1,"config":{"xSpread":0.5,"ySpread":1.5,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"sine"}}],[{"id":"ParticleDisplaceEffect","timeBegin":3543,"timeEnd":6774,"repetitions":1,"config":{"direction":224.4457831353151,"directionUnit":"degrees","distance":0.023417750859263453,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"none"}}],[{"id":"ParticleSizeByHueEffect","timeBegin":1877,"timeEnd":11750,"repetitions":1,"config":{"scaling":2.582142277304504,"hueRotation":4.761756559852353,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"linear"}}],[{"id":"WebcamEffect","timeBegin":0,"timeEnd":14610,"repetitions":1,"config":{"maxRetries":3,"retryTimeout":1000}}],[]];
 var duration = 14610;
 var Preset1 = {
 	schemaVersion: schemaVersion,
@@ -7018,7 +7042,7 @@ var particleScaling$1 = 1;
 var particleShape$1 = "circle";
 var particleFading$1 = "none";
 var particleOverlap$1 = "alpha blend";
-var effects$1 = [[{"id":"WebcamEffect","timeBegin":0,"timeEnd":2152,"repetitions":1,"config":{}}],[{"id":"StandingWaveEffect","timeBegin":0,"timeEnd":2143,"repetitions":1,"config":{"maxAmplitude":0.05,"waveCount":20,"timeInterpolation":"linear","waveFunction":"sine","dimension":"y"}}],[]];
+var effects$1 = [[{"id":"WebcamEffect","timeBegin":0,"timeEnd":2152,"repetitions":1,"config":{"maxRetries":3,"retryTimeout":1000}}],[{"id":"StandingWaveEffect","timeBegin":0,"timeEnd":2143,"repetitions":1,"config":{"maxAmplitude":0.05,"waveCount":20,"timeInterpolation":"linear","waveFunction":"sine","dimension":"y"}}],[]];
 var duration$1 = 2152;
 var Preset2 = {
 	schemaVersion: schemaVersion$1,
