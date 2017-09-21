@@ -67,18 +67,21 @@
   }
 }());
 
-var isFullscreen = function () { return document.fullscreen || document.mozFullScreen ||
-    document.webkitIsFullScreen || document.msFullscreenElement; };
-var updateFullscreenClass = function () {
+function isFullscreen() {
+  return document.fullscreen || document.mozFullScreen ||
+    document.webkitIsFullScreen || document.msFullscreenElement;
+}
+
+function updateFullscreenClass() {
   var fullscreenClass = 'fullscreen';
   if (isFullscreen()) {
     document.documentElement.classList.add(fullscreenClass);
   } else {
     document.documentElement.classList.remove(fullscreenClass);
   }
-};
+}
 
-var toggleFullScreen = function () {
+function toggleFullScreen() {
   if ((document.fullScreenElement && document.fullScreenElement !== null) ||
    (!document.mozFullScreen && !document.webkitIsFullScreen)) {
     if (document.documentElement.requestFullScreen) {
@@ -95,7 +98,7 @@ var toggleFullScreen = function () {
   } else if (document.webkitCancelFullScreen) {
     document.webkitCancelFullScreen();
   }
-};
+}
 
 var FullscreenButton = function FullscreenButton() {
   [].forEach.call(document.getElementsByClassName('btn-fullscreen'), function (elm) {
@@ -107,6 +110,39 @@ var FullscreenButton = function FullscreenButton() {
   document.addEventListener('webkitfullscreenchange', updateFullscreenClass, false);
   document.addEventListener('msfullscreenchange', updateFullscreenClass, false);
   updateFullscreenClass();
+};
+
+var DoubleClickFullscreen = function DoubleClickFullscreen() {
+  var this$1 = this;
+
+  this.element = document.querySelector('.img-paste-box');
+  this.clicks = 0;
+  this.resetTimeout = false;
+  this.element.addEventListener('click', function () {
+    this$1.clicks = this$1.clicks + 1;
+    if (this$1.clicks > 1) {
+      this$1.reset();
+      toggleFullScreen();
+    } else {
+      this$1.startResetTimeout();
+    }
+  });
+};
+DoubleClickFullscreen.prototype.startResetTimeout = function startResetTimeout () {
+    var this$1 = this;
+
+  var DBL_CLICK_TIME = 400;
+  if (this.resetTimeout) {
+    window.clearTimeout(this.resetTimeout);
+  }
+  this.resetTimeout = window.setTimeout(function () { return this$1.reset(); }, DBL_CLICK_TIME);
+};
+DoubleClickFullscreen.prototype.reset = function reset () {
+  this.clicks = 0;
+  if (this.resetTimeout) {
+    window.clearTimeout(this.resetTimeout);
+    this.resetTimeout = false;
+  }
 };
 
 if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
@@ -266,25 +302,28 @@ var InactivityMonitor = function InactivityMonitor() {
   // DOM Events
   document.addEventListener('mousemove', onActivity);
   document.addEventListener('keypress', onActivity);
+  // Touch devices don't have (or at least make us of) mouses or keys
+  document.addEventListener('click', onActivity);
 };
 
 function parseHtml(html) {
   // eslint-disable-next-line no-param-reassign
   html = html.trim();
-  /* code taken from jQuery */
+  /* code adapted from jQuery */
+  var wrapper = function (depth, open, close) { return ({ depth: depth, open: open, close: close }); };
   var wrapMap = {
-    option: [1, "<select multiple='multiple'>", '</select>'],
-    legend: [1, '<fieldset>', '</fieldset>'],
-    area:   [1, '<map>', '</map>'],
-    param:  [1, '<object>', '</object>'],
-    thead:  [1, '<table>', '</table>'],
-    tr:     [2, '<table><tbody>', '</tbody></table>'],
-    col:    [2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'],
-    td:     [3, '<table><tbody><tr>', '</tr></tbody></table>'],
+    option: wrapper(1, "<select multiple='multiple'>", '</select>'),
+    legend: wrapper(1, '<fieldset>', '</fieldset>'),
+    area:   wrapper(1, '<map>', '</map>'),
+    param:  wrapper(1, '<object>', '</object>'),
+    thead:  wrapper(1, '<table>', '</table>'),
+    tr:     wrapper(2, '<table><tbody>', '</tbody></table>'),
+    col:    wrapper(2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'),
+    td:     wrapper(3, '<table><tbody><tr>', '</tr></tbody></table>'),
 
     // IE6-8 can't serialize link, script, style, or any html5 (NoScope) tags,
     // unless wrapped in a div with non-breaking characters in front of it.
-    _default: [1, '<div>', '</div>']
+    _default: wrapper(1, '<div>', '</div>')
   };
   wrapMap.optgroup = wrapMap.option;
   wrapMap.tbody = wrapMap.thead;
@@ -296,13 +335,20 @@ function parseHtml(html) {
   var match = /<\s*(\w+).*?>/g.exec(html);
   if (match != null) {
     var tag = match[1];
-    var map = wrapMap[tag] || wrapMap._default;
+    var wrap = wrapMap[tag] || wrapMap._default;
     // eslint-disable-next-line no-param-reassign
-    html = "" + (map[1]) + html + (map[2]);
+    html = "" + (wrap.open) + html + (wrap.close);
     element.innerHTML = html;
     // Descend through wrappers to the right content
-    var depth = map[0] + 1;
+    var depth = wrap.depth + 1;
     for (var d = 0; d < depth; d++) {
+      if (element.firstChild !== element.lastChild) {
+        throw new Error(
+          'util.parseHtml requires one single top level element.' +
+          'NOTE: This error might also occur if your tag structure ' +
+          'is nested illegaly.'
+        );
+      }
       element = element.lastChild;
     }
   } else {
@@ -320,68 +366,56 @@ function clearChildNodes(node) {
   }
 }
 
-var ImgDimWarn = function ImgDimWarn() {
+function imageScalingMarkup(classPrefix) {
+  return ("\n    <fieldset>\n      <legend>Image scaling</legend>\n      <label>\n        Image scaling:\n        <select class=\"" + classPrefix + "-scaling-select\">\n          <option value=\"crop-to-viewport\" title=\"Image might be cropped to fit the viewport\" selected>crop to fit viewport</option>\n          <option value=\"fit-image\" title=\"Black borders might be visible\">fit image</option>\n          <option value=\"fit-width\" title=\"Black borders might be visible at the top and bottom\">fit width</option>\n          <option value=\"fit-height\" title=\"Black borders might be visible at the left or right edges\">fit height</option>\n          <option value=\"scale-to-viewport\" title=\"The image's aspect ratio might be skewed\">scale to fit viewport</option>\n        </select>\n      </label><br/>\n      <label>\n        Horizontal image cropping:\n        <select class=\"" + classPrefix + "-crop-x-select\">\n          <option value=\"crop-both\" title=\"Drop exceeding pixels on either side\" selected>both sides</option>\n          <option value=\"crop-left\" title=\"Drop exceeding pixels on the leftern side\">leftern side</option>\n          <option value=\"crop-right\" title=\"Drop exceeding pixels on the rightern side\">rightern side</option>\n        </select>\n      </label><br/>\n      <label>\n        Vertical image cropping:\n        <select class=\"" + classPrefix + "-crop-y-select\">\n          <option value=\"crop-both\" title=\"Drop exceeding pixels on either edge\" selected>both edges</option>\n          <option value=\"crop-top\" title=\"Drop exceeding pixels at the top\">top edge</option>\n          <option value=\"crop-bottom\" title=\"Drop exceeding pixels at the bottom\">bottom edge</option>\n        </select>\n      </label>\n    </fieldset>\n  ")
+}
+
+var LoadImgDialog = function LoadImgDialog() {
   var this$1 = this;
 
-  var ignoreWarnBtnClass = 'btn-img-dim-warn-ignore';
-  var cancelLoadBtnClass = 'btn-img-dim-warn-cancel';
-  var scaledLoadBtnClass = 'btn-img-dim-warn-scale';
-  var scaledLoadXInputClass = 'img-dim-x';
-  var scaledLoadYInputClass = 'img-dim-y';
+  var classPrefix = 'load-default-img';
+  var loadBtnClass = "btn-" + classPrefix + "-load";
+  var cancelLoadBtnClass = "btn-" + classPrefix + "-cancel";
 
   // Object properties
   this.parentNode = document.getElementById('modal-container');
   this.resolve = null;
   this.reject = null;
-  this.dialogElm = parseHtml(("\n      <div class=\"img-dim-warn-backdrop\">\n        <div class=\"img-dim-warn-popup\">\n          The image you selected is very large. Loading it may cause the\n          site to become very slow/unresponsive. <br/>\n          Do you still want to proceed?<br/>\n          <button type=\"button\" class=\"" + ignoreWarnBtnClass + "\">Yes, load big image</button>\n          <button type=\"button\" class=\"" + cancelLoadBtnClass + "\">Cancel</button>\n          <input type=\"checkbox\"\n            name=\"toggle-advanced-load-options\"\n            id=\"toggle-advanced-load-options\"\n            class=\"toggle-advanced-load-options\"/>\n          <label for=\"toggle-advanced-load-options\"\n            class=\"btn-toggle-advanced-load-options\"\n            title=\"Toggle advanced options\"\n          ></label>\n          <div>\n            Scale image to size before loading: <br/>\n            width: <input type=\"number\" class=\"" + scaledLoadXInputClass + "\"/><br/>\n            height: <input type=\"number\" class=\"" + scaledLoadYInputClass + "\"/><br/>\n            <button type=\"button\" class=\"" + scaledLoadBtnClass + "\">Load scaled image</button>\n          </div>\n        </div>\n      </div>\n    "));
+  this.elm = parseHtml(("\n      <div class=\"" + classPrefix + "-backdrop\">\n        <div class=\"" + classPrefix + "-popup\">\n          " + (imageScalingMarkup(classPrefix)) + "\n          <button type=\"button\" class=\"" + loadBtnClass + "\">Load</button>\n          <button type=\"button\" class=\"" + cancelLoadBtnClass + "\">Cancel</button>\n        </div>\n      </div>\n    "));
 
-  var loadBtn = this.dialogElm.querySelector(("." + ignoreWarnBtnClass));
+  this.scalingSelect = this.elm.querySelector(("select." + classPrefix + "-scaling-select"));
+  this.cropXSelect = this.elm.querySelector(("select." + classPrefix + "-crop-x-select"));
+  this.cropYSelect = this.elm.querySelector(("select." + classPrefix + "-crop-y-select"));
+
+  var loadBtn = this.elm.querySelector(("." + loadBtnClass));
   loadBtn.addEventListener('click', function () {
     this$1.hide();
     this$1.resolve({
-      xParticlesCount: parseInt(this$1.xParticlesInput.value, 10),
-      yParticlesCount: parseInt(this$1.yParticlesInput.value, 10)
+      imageScaling: this$1.scalingSelect.value,
+      imageCropping: {
+        x: this$1.cropXSelect.value,
+        y: this$1.cropYSelect.value
+      }
     });
   });
-  var cancelBtn = this.dialogElm.querySelector(("." + cancelLoadBtnClass));
+  var cancelBtn = this.elm.querySelector(("." + cancelLoadBtnClass));
   cancelBtn.addEventListener('click', function () {
     this$1.hide();
     this$1.reject();
   });
-  var loadScaledBtn = this.dialogElm.querySelector(("." + scaledLoadBtnClass));
-  loadScaledBtn.addEventListener('click', function () {
-    this$1.hide();
-    this$1.resolve({
-      xParticlesCount: parseInt(this$1.xParticlesInput.value, 10),
-      yParticlesCount: parseInt(this$1.yParticlesInput.value, 10)
-    });
-  });
-  this.xParticlesInput = this.dialogElm.querySelector(("." + scaledLoadXInputClass));
-  this.yParticlesInput = this.dialogElm.querySelector(("." + scaledLoadYInputClass));
 };
-ImgDimWarn.prototype.verify = function verify (img) {
+LoadImgDialog.prototype.load = function load (img) {
     var this$1 = this;
 
-  var tooManyPixels = 1024 * 768; // TODO Magic number
-
   return new Promise(function (res, rej) {
-    if (img.naturalWidth * img.naturalHeight >= tooManyPixels) {
-      this$1.resolve = res;
-      this$1.reject = rej;
-      this$1.xParticlesInput.value = "" + (img.naturalWidth);
-      this$1.yParticlesInput.value = "" + (img.naturalHeight);
+    this$1.resolve = res;
+    this$1.reject = rej;
 
-      this$1.parentNode.appendChild(this$1.dialogElm);
-    } else {
-      res({
-        xParticlesCount: img.naturalWidth,
-        yParticlesCount: img.naturalHeight
-      });
-    }
+    this$1.parentNode.appendChild(this$1.elm);
   });
 };
-ImgDimWarn.prototype.hide = function hide () {
-  this.parentNode.removeChild(this.dialogElm);
+LoadImgDialog.prototype.hide = function hide () {
+  this.parentNode.removeChild(this.elm);
 };
 
 /* MIT license */
@@ -1257,8 +1291,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-06-19T07:45:42.011Z',
-  git_rev:               'caea34e',
+  timestamp:             '2017-09-21T12:19:50.086Z',
+  git_rev:               '0df0e82',
   export_schema_version: 0
 };
 
@@ -1272,7 +1306,7 @@ var EffectConfigDialog = function EffectConfigDialog() {
   var endTimeInputClass = 'effect-config-dialog-endtime';
   var repetitionsInputClass = 'effect-config-dialog-repetitions';
   this.parentNode = document.getElementById('modal-container');
-  this.element = parseHtml(("\n      <div class=\"effect-config-dialog-backdrop\">\n        <div class=\"effect-config-dialog\">\n          Begin: <input type=\"number\" min=\"0\" step=\"1\" class=\"" + startTimeInputClass + "\"/>ms<br/>\n          End: <input type=\"number\" min=\"0\" step=\"1\" class=\"" + endTimeInputClass + "\"/>ms<br/>\n          Repetitions: <input type=\"number\" class=\"" + repetitionsInputClass + "\"/><br/>\n          <button type=\"button\" class=\"" + okBtnClass + "\">Ok</button>\n          <button type=\"button\" class=\"" + cancelBtnClass + "\">Cancel</button>\n          <button type=\"button\" class=\"" + deleteBtnClass + "\">Delete effect</button>\n        </div>\n      </div>\n    "));
+  this.element = parseHtml(("\n      <div class=\"effect-config-dialog-backdrop\">\n        <div class=\"effect-config-dialog\">\n          <label>\n            Begin: <input type=\"number\" min=\"0\" step=\"1\" class=\"" + startTimeInputClass + "\"/>ms\n          </label><br/>\n          <label>\n            End: <input type=\"number\" min=\"0\" step=\"1\" class=\"" + endTimeInputClass + "\"/>ms\n          </label><br/>\n          <label>\n            Repetitions: <input type=\"number\" class=\"" + repetitionsInputClass + "\"/>\n          </label><br/>\n          <button type=\"button\" class=\"" + okBtnClass + "\">Ok</button>\n          <button type=\"button\" class=\"" + cancelBtnClass + "\">Cancel</button>\n          <button type=\"button\" class=\"" + deleteBtnClass + "\">Delete effect</button>\n        </div>\n      </div>\n    "));
   this.okBtn = this.element.querySelector(("." + okBtnClass));
   this.cancelBtn = this.element.querySelector(("." + cancelBtnClass));
   this.deleteBtn = this.element.querySelector(("." + deleteBtnClass));
@@ -1325,6 +1359,13 @@ EffectConfigDialog.prototype.promptUser = function promptUser (entry) {
     this$1.startTimeInput.value = entry.timeBegin;
     this$1.endTimeInput.value = entry.timeEnd;
     this$1.repetitionsInput.value = entry.repetitions;
+    if (entry.effect.isEventOnly()) {
+      this$1.endTimeInput.parentNode.style.display = 'none';
+      this$1.repetitionsInput.parentNode.style.display = 'none';
+    } else {
+      this$1.endTimeInput.parentNode.style.display = 'inline';
+      this$1.repetitionsInput.parentNode.style.display =entry.effect.supportsRepetition() ? 'inline' : 'none';
+    }
     this$1.ui = ui;
     this$1.dialog.prepend(ui.getElement());
     this$1.show();
@@ -1336,12 +1377,12 @@ EffectConfigDialog.prototype.promptUser = function promptUser (entry) {
  */
 var Effect = function Effect () {};
 
-Effect.register = function register (/* instance, props, uniforms, vertexShader */) {
+Effect.register = function register (/* instance, props, uniforms, vertexShader, fragmentShader, attributes */) {
   throw new Error('Method not implemented');
 };
 
-Effect.registerAsync = function registerAsync (instance, props, uniforms, vertexShader) {
-  this.register(instance, props, uniforms, vertexShader);
+Effect.registerAsync = function registerAsync (instance, props, uniforms, vertexShader, fragmentShader, attributes) {
+  this.register(instance, props, uniforms, vertexShader, fragmentShader, attributes);
   return Promise.resolve();
 };
 
@@ -1368,6 +1409,14 @@ Effect.getRandomConfig = function getRandomConfig () {
 
 Effect.getDescription = function getDescription () {
   throw new Error('Method not implemented');
+};
+
+Effect.supportsRepetition = function supportsRepetition () {
+  return true;
+};
+
+Effect.isEventOnly = function isEventOnly () {
+  return false;
 };
 
 /**
@@ -1490,7 +1539,7 @@ var HueDisplaceEffect = (function (Effect$$1) {
       });
       var scaleByVal = uniforms.addUniform('hueDisplaceScaleByValue', 'float', instance.config.scaleByValue);
       // eslint-disable-next-line no-param-reassign
-      vertexShader.mainBody += "\n        {\n          float angle = hsv[0] + " + directionOffset + ";\n          float offset = (-cos(" + time + ") + 1.) / 2.;\n          position.xy += offset * getDirectionVector(angle) * " + distance + " * (1. - " + scaleByVal + " * (1. - hsv[2]));\n        }\n      ";
+      vertexShader.mainBody += "\n        float angle = hsv[0] + " + directionOffset + ";\n        float offset = (-cos(" + time + ") + 1.) / 2.;\n        position.xy += offset * getDirectionVector(angle) * " + distance + " * (1. - " + scaleByVal + " * (1. - hsv[2]));\n      ";
     }
   };
 
@@ -1577,7 +1626,7 @@ var ConvergePointEffect = (function (Effect$$1) {
     var maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', instance.getPeriod() / 2);
 
     // eslint-disable-next-line no-param-reassign
-    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = vec2(0., 0.);\n        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n\n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        vec2 result;\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          result = .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          result = d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          //result = mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n          //result = mix(d, vec2(0.), t * t);\n          result = mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n\n        position.xy += result;\n      }\n    ";
+    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = vec2(0., 0.);\n        vec2 target = (screenTarget + vec2(1.)) / vec2(2.);\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n\n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        vec2 result;\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          result = .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          result = d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          result = mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n\n        position.xy += result;\n      }\n    ";
   };
 
   ConvergePointEffect.getDisplayName = function getDisplayName () {
@@ -1664,7 +1713,7 @@ var ConvergeCircleEffect = (function (Effect$$1) {
     var maxTravelTime = uniforms.addUniform('convergeMaxTravelTime', 'float', instance.getPeriod() / 2);
 
     // eslint-disable-next-line no-param-reassign
-    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = getDirectionVector(hsv[0] + " + time + " * " + rotationSpeed + ") * vec2(.8) * vec2(invScreenAspectRatio, 1.);\n        vec2 target = (invViewProjectionMatrix * vec4(screenTarget, 0, 1)).xy;\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n        \n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        vec2 result;\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          result = .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          result = d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          //result = mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n          //result = mix(d, vec2(0.), t * t);\n          result = mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n\n        position.xy += result;\n      }\n    ";
+    vertexShader.mainBody += "\n      {\n        vec2 screenTarget = getDirectionVector(hsv[0] + " + time + " * " + rotationSpeed + ") * vec2(.8) * vec2(invScreenAspectRatio, 1.);\n        vec2 target = (screenTarget.xy + vec2(1.)) / vec2(2.);\n\n        vec2 d = target - initialPosition.xy;\n        float d_len = length(d);\n        \n        float stop_t = sqrt(2. * d_len / " + speed + ");\n\n        vec2 result;\n\n        if(" + time + " < stop_t) {\n          float t = min(" + time + ", stop_t);\n          result = .5 * d / d_len * " + speed + " * t * t;\n        } else if(" + time + " < " + maxTravelTime + ") {\n          result = d;\n        } else {\n          float t = " + time + " - " + maxTravelTime + ";\n          //result = mix(d, vec2(0.), 1. - (1.-t) * (1.-t));\n          //result = mix(d, vec2(0.), t * t);\n          result = mix(d, vec2(0.), -cos(t / " + maxTravelTime + " * PI) * .5 + .5);\n        }\n\n        position.xy += result;\n      }\n    ";
   };
 
   ConvergeCircleEffect.getDisplayName = function getDisplayName () {
@@ -1821,8 +1870,21 @@ var ChangeImageConfigUI = (function (ConfigUI$$1) {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset class=\"effect-change-image-config\">\n        <legend>" + EffectName$4 + "</legend>\n        <input type=\"radio\" name=\"effect-change-image-source-type\" value=\"file\" checked>\n          Upload own image\n        </input>\n        <input type=\"radio\" name=\"effect-change-image-source-type\" value=\"url\">\n          Load image from URL\n        </input>\n        <br/>\n        <label class=\"effect-change-image-file-tab\">\n          <input type=\"file\" accept=\"image/*\"/>\n        </label>\n        <label class=\"effect-change-image-url-tab\">\n          Enter image url\n          <input type=\"url\"/>\n        </label>\n        <br/>\n        <img class=\"effect-change-image-preview\">\n      </fieldset>\n    "));
+    var classPrefix = 'effect-change-image';
+    this.element = parseHtml(("\n      <fieldset class=\"effect-change-image-config\">\n        <legend>" + EffectName$4 + "</legend>\n        <input type=\"radio\" name=\"effect-change-image-source-type\" value=\"file\" checked>\n          Upload own image\n        </input>\n        <input type=\"radio\" name=\"effect-change-image-source-type\" value=\"url\">\n          Load image from URL\n        </input>\n        <br/>\n        <label class=\"effect-change-image-file-tab\">\n          <input type=\"file\" accept=\"image/*\"/>\n        </label>\n        <label class=\"effect-change-image-url-tab\">\n          Enter image url\n          <input type=\"url\"/>\n        </label>\n        <br/>\n        " + (imageScalingMarkup(classPrefix)) + "\n        <img class=\"effect-change-image-preview\">\n      </fieldset>\n    "));
     var ui = this.element;
+    this.scalingSelect = ui.querySelector(("select." + classPrefix + "-scaling-select"));
+    this.scalingSelect.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.cropXSelect = ui.querySelector(("select." + classPrefix + "-crop-x-select"));
+    this.cropXSelect.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.cropYSelect = ui.querySelector(("select." + classPrefix + "-crop-y-select"));
+    this.cropYSelect.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
     this.radioButtons = ui.querySelectorAll('input[type="radio"][name="effect-change-image-source-type"]');
     this.fileInput = ui.querySelector('.effect-change-image-file-tab input[type="file"]');
     this.urlInput = ui.querySelector('.effect-change-image-url-tab input[type="url"]');
@@ -1874,14 +1936,23 @@ var ChangeImageConfigUI = (function (ConfigUI$$1) {
     var this$1 = this;
 
     var sourceTy = [].find.call(this.radioButtons, function (btn) { return btn.checked; }).value;
+    var imageScaling = this.scalingSelect.value;
+    var imageCropping = {
+      x: this.cropXSelect.value,
+      y: this.cropYSelect.value
+    };
     if (this.state === States.VALID) {
       return Promise.resolve({
         sourceTy: sourceTy,
+        imageScaling: imageScaling,
+        imageCropping: imageCropping,
         url: this.previewImg.src
       });
     } else if (this.state === States.INVALID) {
       return Promise.resolve({
         sourceTy: sourceTy,
+        imageScaling: imageScaling,
+        imageCropping: imageCropping,
         url: null
       });
     }
@@ -1901,6 +1972,10 @@ var ChangeImageConfigUI = (function (ConfigUI$$1) {
     [].forEach.call(this.radioButtons, function (btn) {
       btn.checked = (btn.value === config.sourceTy);
     });
+    this.scalingSelect.value = config.imageScaling || 'crop-to-viewport';
+    var imageCropping = config.imageCropping || {x: 'crop-both', y: 'crop-both'};
+    this.cropXSelect.value = imageCropping.x;
+    this.cropYSelect.value = imageCropping.y;
   };
 
   return ChangeImageConfigUI;
@@ -1921,14 +1996,17 @@ var ChangeImageEffect = (function (Effect$$1) {
       srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
       srcImage.src = instance.config.url;
       srcImage.onload = function () {
-        var particleData = props.state.createParticleDataFromDomImg(srcImage, props.config.xParticlesCount, props.config.yParticlesCount);
+        var particleData = props.state.createParticleDataFromDomImg(
+          srcImage, instance.config.imageScaling, instance.config.imageCropping
+        );
         var alive = true;
         var prevWasChange = false;
         var checkTime = function () {
           if (!alive) {
             return;
           }
-          if (instance.timeBegin - props.clock.getTime() <= props.clock.getDelta()) {
+          var tDist = props.clock.getTime() - instance.timeBegin;
+          if (0 <= tDist && tDist <= props.clock.getDelta()) {
             props.state.setParticleData(particleData);
           }
           window.requestAnimationFrame(checkTime);
@@ -1962,12 +2040,21 @@ var ChangeImageEffect = (function (Effect$$1) {
   ChangeImageEffect.getDefaultConfig = function getDefaultConfig () {
     return {
       sourceTy: 'file',
-      url: '#'
+      url: '#',
+      imageScaling: 'crop-to-viewport',
+      imageCropping: {
+        x: 'crop-both',
+        y: 'crop-both'
+      }
     };
   };
 
   ChangeImageEffect.getRandomConfig = function getRandomConfig () {
     return this.getDefaultConfig();
+  };
+
+  ChangeImageEffect.isEventOnly = function isEventOnly () {
+    return true;
   };
 
   return ChangeImageEffect;
@@ -3913,14 +4000,29 @@ FlickrP.prototype = recursivePromisify(Flickr.prototype);
 
 var EffectName$5 = 'Flickr Image';
 var EffectDescription$5 = 'Changes the underlying image to one loaded from Flickr\'s recent images feed';
+var Attribution = 'This product uses the Flickr API but is not endorsed or certified by Flickr.';
+
 var FlickrImageConfigUI = (function (ConfigUI$$1) {
   function FlickrImageConfigUI() {
     var this$1 = this;
 
     ConfigUI$$1.call(this);
-    var searchInputClass = 'effect-flickr-img-search-term';
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$5 + "</legend>\n        <label>\n          Search term:\n          <input type=\"text\" class=\"" + searchInputClass + "\"/>\n        </label>\n      </fieldset>\n    "));
+    var classPrefix = 'effect-flickr-img';
+    var searchInputClass = classPrefix + "-search-term";
+    this.element = parseHtml(("\n      <div>\n        " + Attribution + "\n        <fieldset>\n          <legend>" + EffectName$5 + "</legend>\n          <label>\n            Search term:\n            <input type=\"text\" class=\"" + searchInputClass + "\"/>\n          </label>\n          " + (imageScalingMarkup(classPrefix)) + "\n        </fieldset>\n      </div>\n    "));
     var ui = this.element;
+    this.scalingSelect = ui.querySelector(("select." + classPrefix + "-scaling-select"));
+    this.scalingSelect.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.cropXSelect = ui.querySelector(("select." + classPrefix + "-crop-x-select"));
+    this.cropXSelect.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.cropYSelect = ui.querySelector(("select." + classPrefix + "-crop-y-select"));
+    this.cropYSelect.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
     this.searchTermInput = this.element.querySelector(("." + searchInputClass));
     this.searchTermInput.addEventListener('change', function () {
       this$1.notifyChange();
@@ -3939,35 +4041,70 @@ var FlickrImageConfigUI = (function (ConfigUI$$1) {
     var config = {};
 
     config.searchTerm = this.searchTermInput.value;
+    config.imageScaling = this.scalingSelect.value;
+    config.imageCropping = {
+      x: this.cropXSelect.value,
+      y: this.cropYSelect.value
+    };
 
     return config;
   };
 
   FlickrImageConfigUI.prototype.applyConfig = function applyConfig (config) {
     this.searchTermInput.value = config.searchTerm;
+    this.scalingSelect.value = config.imageScaling || 'crop-to-viewport';
+    var imageCropping = config.imageCropping || { x: 'crop-both', y: 'crop-both' };
+    this.cropXSelect.value = imageCropping.x;
+    this.cropYSelect.value = imageCropping.y;
   };
 
   return FlickrImageConfigUI;
 }(ConfigUI));
 
+/// This constant is used both for defining how many images the
+/// FlickrImageCache will pre-load for a given search term as well as
+/// how many images a FlickrImageEffect will reserve for future use
 var prefetchCount = 5;
+
 var FlickrCacheEntry = function FlickrCacheEntry() {
+  /// The current position in the stream of photos that this entry
+  /// loads images for
   this.page = 1;
+  /// Needed to keep track of where the ever growing stream of images
+  /// started for us. We can't just assume that "page #1" will always
+  /// stay the same, or we risk loading the same image multiple times.
   this.initialQueryTime = Math.floor(Date.now() / 1000);
+  /// Pending queries need to be taken into account when deciding whether
+  /// or not new flickr api calls should be made
   this.loadsInProgress = 0;
+  /// This is the acutal image cache
   this.loadedImgs = [];
+  /// If a query cannot be answered right away by this cache entry, we
+  /// queue it in this array. So when a new image finishes loading, we
+  /// resolve the request at the front of this queue with it.
   this.requests = [];
 };
 
+/**
+ * The FlickrImageCache manages the process of loading images from flickr.
+ * Therefore, it has to select "new" images from flickr and then download
+ * the best version available. For efficiency, FlickrImageCache also kicks
+ * off the loading process for multiple images at once, so that future
+ * queries for the same search term may be resolved faster.
+ */
 var FlickrImageCache = function FlickrImageCache() {
   this.flickr = new FlickrP({ api_key: ApiKey });
+  /// a dictionary mapping search queries to FlickrCachEntries
   this.byQuery = {};
 };
 
+/// Props will be used to select versions of images which best match
+/// the particle grid dimensions (xParticlesCount/yParticlesCount)
 FlickrImageCache.prototype.setProps = function setProps (props) {
   this.props = props;
 };
 
+/// @return a promise that resolves to flickr api return values
 FlickrImageCache.prototype.runFlickrQuery = function runFlickrQuery (searchTerm) {
   var entry = this.getEntryForSearchTerm(searchTerm);
 
@@ -4003,6 +4140,14 @@ FlickrImageCache.prototype.runFlickrQuery = function runFlickrQuery (searchTerm)
   return query;
 };
 
+/// For each photo in a flickr query response, request the image (i.e.
+/// the versions available on flickr), select the best version for the
+/// current rendering configuration and load the image from flickr.
+///
+/// @return a list of promises each representing a loading process. I.e.
+///       when one of the promises resolves, either a pending request
+///       will have been resolved or a new image is pushed into the
+///       image cache.
 FlickrImageCache.prototype.processSearchQueryResponse = function processSearchQueryResponse (response, entry) {
     var this$1 = this;
 
@@ -4013,14 +4158,34 @@ FlickrImageCache.prototype.processSearchQueryResponse = function processSearchQu
   return loadQueue;
 };
 
+/// We want to exclude all cropped versions (= all versions cropped
+/// to squares) and we don't want to load higher resoultions than
+/// necessary
+FlickrImageCache.prototype.selectBestImageVersion = function selectBestImageVersion (sizes) {
+    var this$1 = this;
+
+  var best = sizes.sizes.size.find(function (size) {
+    if (size.label.indexOf('Square') >= 0) {
+      return false;
+    }
+    return size.width >= this$1.props.config.xParticlesCount;
+  }) || sizes.sizes.size[sizes.sizes.size.length - 1];
+  return best;
+};
+
+/// Kicks of the loading process for a given flickr photo. I.e., request
+/// the list of available image versions, select the most appropriate
+/// version and load that. Finally, resolve a pending cache request
+/// with it or push the result into the cache
+///
+/// @return a promise representing the loading process for @p photo
 FlickrImageCache.prototype.processPhoto = function processPhoto (photo, entry) {
-  var props = this.props;
+    var this$1 = this;
+
   return this.flickr.photos.getSizes({
     photo_id: photo.id
   }).then(function (sizes) {
-    var original = sizes.sizes.size.find(function (size) {
-      return size.width >= props.config.xParticlesCount;
-    }) || sizes.sizes.size[sizes.sizes.size.length - 1];
+    var original = this$1.selectBestImageVersion(sizes);
     var url = original.source;
     var loader = document.createElement('img');
     loader.crossOrigin = 'Anonymous';
@@ -4030,9 +4195,7 @@ FlickrImageCache.prototype.processPhoto = function processPhoto (photo, entry) {
       if (entry.requests.length > 0) {
         // resolve pending request directly
         var request = entry.requests.shift();
-        request(props.state.createParticleDataFromDomImg(
-          loader, props.config.xParticlesCount, props.config.yParticlesCount
-        ));
+        request(loader);
       } else {
         entry.loadedImgs.push(loader);
       }
@@ -4040,6 +4203,8 @@ FlickrImageCache.prototype.processPhoto = function processPhoto (photo, entry) {
   });
 };
 
+/// Looks up and returns the FlickrCacheEntry corresponding to the given
+/// @p searchTerm
 FlickrImageCache.prototype.getEntryForSearchTerm = function getEntryForSearchTerm (searchTerm) {
   if (!this.byQuery[searchTerm]) {
     this.byQuery[searchTerm] = new FlickrCacheEntry();
@@ -4047,6 +4212,10 @@ FlickrImageCache.prototype.getEntryForSearchTerm = function getEntryForSearchTer
   return this.byQuery[searchTerm];
 };
 
+/// Decides whether the loading process of new images for a search term
+/// (represented by the corresponding @p entry) should be kicked off,
+/// depending of how many loaded images are still available and how
+/// many images are still in-flight.
 FlickrImageCache.prototype.shouldFireNewQuery = function shouldFireNewQuery (entry) {
   if (entry.loadsInProgress + entry.loadedImgs.length -
       entry.requests.length < prefetchCount
@@ -4056,11 +4225,16 @@ FlickrImageCache.prototype.shouldFireNewQuery = function shouldFireNewQuery (ent
   return false;
 };
 
-FlickrImageCache.prototype.getParticleDataForSearchTerm = function getParticleDataForSearchTerm (searchTerm) {
+/// This is FlickrImageCache's main api: Give this method a @p
+/// searchTerm and it returns a promise that will eventually resolve to
+/// a DOM Image matching the @p searchTerm.
+///
+/// @return a Promise that will resolve to a DOM Image object matching
+///       the given @p searchTerm
+FlickrImageCache.prototype.getImageForSearchTerm = function getImageForSearchTerm (searchTerm) {
     var this$1 = this;
 
   var entry = this.getEntryForSearchTerm(searchTerm);
-  var props = this.props;
   if (entry.loadedImgs.length === 0) {
     return new Promise(function (res, rej) {
       entry.requests.push(res);
@@ -4070,10 +4244,7 @@ FlickrImageCache.prototype.getParticleDataForSearchTerm = function getParticleDa
       }
     });
   } else {
-    return Promise.resolve(props.state.createParticleDataFromDomImg(
-      entry.loadedImgs.shift(),
-      props.config.xParticlesCount, props.config.yParticlesCount
-    ));
+    return Promise.resolve(entry.loadedImgs.shift());
   }
 };
 
@@ -4088,13 +4259,20 @@ var FlickrImageEffect = (function (Effect$$1) {
 
   FlickrImageEffect.registerAsync = function registerAsync (instance, props) {
     var cache = FlickrImageEffect.getCache(props);
-    return cache.getParticleDataForSearchTerm(instance.config.searchTerm)
-    .then(function (particleData) {
+    var img2pd = function (image) {
+      return props.state.createParticleDataFromDomImg(
+        image, instance.config.imageScaling, instance.config.imageCropping
+      );
+    };
+    return cache.getImageForSearchTerm(instance.config.searchTerm)
+    .then(function (image) {
+      var particleData = img2pd(image);
       var particleDataQueue = [particleData];
       // We want to have some images pre-allocated to this effect
       for (var i = 1; i < prefetchCount; i++) {
-        cache.getParticleDataForSearchTerm(instance.config.searchTerm)
-        .then(function (particleData) {
+        cache.getImageForSearchTerm(instance.config.searchTerm)
+        .then(function (image) {
+          var particleData = img2pd(image);
           particleDataQueue.push(particleData);
         });
       }
@@ -4119,8 +4297,9 @@ var FlickrImageEffect = (function (Effect$$1) {
           if (freed !== -1) {
             props.state.destroyParticleData(freed);
             // also look for a replacement
-            cache.getParticleDataForSearchTerm(instance.config.searchTerm)
-            .then(function (particleData) {
+            cache.getImageForSearchTerm(instance.config.searchTerm)
+            .then(function (image) {
+              var particleData = img2pd(image);
               particleDataQueue.push(particleData);
             });
           }
@@ -4152,7 +4331,12 @@ var FlickrImageEffect = (function (Effect$$1) {
 
   FlickrImageEffect.getDefaultConfig = function getDefaultConfig () {
     return {
-      searchTerm: ''
+      searchTerm: '',
+      imageScaling: 'crop-to-viewport',
+      imageCropping: {
+        x: 'crop-both',
+        y: 'crop-both'
+      }
     };
   };
 
@@ -4167,6 +4351,10 @@ var FlickrImageEffect = (function (Effect$$1) {
     this._cache.setProps(props);
 
     return this._cache;
+  };
+
+  FlickrImageEffect.isEventOnly = function isEventOnly () {
+    return true;
   };
 
   return FlickrImageEffect;
@@ -4204,43 +4392,84 @@ Shader.prototype.compile = function compile () {
   return ("\n      precision highp float;\n\n      // Attributes\n      " + (this.attributes) + "\n\n      // Uniforms\n      " + (this.uniforms) + "\n\n      // Varyings\n      " + (this.varyings) + "\n\n      // Globals\n      " + (this.globals) + "\n\n      // Functions\n      " + (this.functions) + "\n\n      void main() {\n        " + (this.mainBody) + "\n      }\n    ");
 };
 
-var Uniforms = function Uniforms(id) {
-  this.uniforms = [];
+var ShaderData = function ShaderData(id, type) {
+  this.data = [];
   this.id = id;
+  this.type = type;
 };
-Uniforms.prototype.addUniform = function addUniform (name, type, value) {
-  var uniform = { name: name, type: type, value: value };
-  this.uniforms.push(uniform);
+ShaderData.prototype.add = function add (name, type, value) {
+  var entry = { name: name, type: type, value: value };
+  this.data.push(entry);
 
-  return this.getNameFor(uniform);
+  return this.getNameFor(entry);
 };
-Uniforms.prototype.getNameFor = function getNameFor (uniform) {
+ShaderData.prototype.getNameFor = function getNameFor (entry) {
   if (this.id === undefined) {
-    return uniform.name;
+    return entry.name;
   } else {
-    return ((uniform.name) + "_" + (this.id));
+    return ((entry.name) + "_" + (this.id));
   }
 };
-Uniforms.prototype.compile = function compile (shader, uniforms) {
+ShaderData.prototype.getCompiled = function getCompiled (shader, storage) {
     var this$1 = this;
-    if ( uniforms === void 0 ) uniforms = null;
+    if ( storage === void 0 ) storage = null;
 
   var shaderStr = [];
-  for (var i = 0; i < this.uniforms.length; i++) {
-    var uniform = this$1.uniforms[i];
-    shaderStr.push(("uniform " + (uniform.type) + " " + (this$1.getNameFor(uniform)) + ";"));
-    if (uniforms !== null) {
+  for (var i = 0; i < this.data.length; i++) {
+    var entry = this$1.data[i];
+    shaderStr.push(((this$1.type) + " " + (entry.type) + " " + (this$1.getNameFor(entry)) + ";"));
+    if (storage !== null) {
       // eslint-disable-next-line no-param-reassign
-      uniforms[this$1.getNameFor(uniform)] = uniform.value;
+      storage[this$1.getNameFor(entry)] = entry.value;
     }
   }
-  // eslint-disable-next-line no-param-reassign
-  shader.uniforms += shaderStr.join('\n') + '\n';
+  return shaderStr.join('\n') + '\n';
 };
 
+var Uniforms = (function (ShaderData) {
+  function Uniforms(id) {
+    ShaderData.call(this, id, 'uniform');
+  }
+
+  if ( ShaderData ) Uniforms.__proto__ = ShaderData;
+  Uniforms.prototype = Object.create( ShaderData && ShaderData.prototype );
+  Uniforms.prototype.constructor = Uniforms;
+  Uniforms.prototype.addUniform = function addUniform (name, type, value) {
+    return this.add(name, type, value);
+  };
+  Uniforms.prototype.compile = function compile (shader, uniforms) {
+    if ( uniforms === void 0 ) uniforms = null;
+
+    // eslint-disable-next-line no-param-reassign
+    shader.uniforms += this.getCompiled(shader, uniforms);
+  };
+
+  return Uniforms;
+}(ShaderData));
+
+var Attributes = (function (ShaderData) {
+  function Attributes(id) {
+    ShaderData.call(this, id, 'attribute');
+  }
+
+  if ( ShaderData ) Attributes.__proto__ = ShaderData;
+  Attributes.prototype = Object.create( ShaderData && ShaderData.prototype );
+  Attributes.prototype.constructor = Attributes;
+  Attributes.prototype.addAttribute = function addAttribute (name, type, value) {
+    return this.add(name, type, value);
+  };
+  Attributes.prototype.compile = function compile (shader, attributes) {
+    if ( attributes === void 0 ) attributes = null;
+
+    // eslint-disable-next-line no-param-reassign
+    shader.attributes += this.getCompiled(shader, attributes);
+  };
+
+  return Attributes;
+}(ShaderData));
+
 var AccumulationAgent = function AccumulationAgent(instance) {
-  this.timeBegin = instance.timeBegin;
-  this.timeEnd = instance.timeEnd;
+  this.instance = instance;
 };
 AccumulationAgent.prototype.getFragmentCode = function getFragmentCode () {
   throw new Error('Not implemented');
@@ -4265,6 +4494,10 @@ var AccumulationEffect = (function (Effect$$1) {
     props.state.pipeline.addAccumulationAgent(agent);
   };
 
+  AccumulationEffect.supportsRepetition = function supportsRepetition () {
+    return false;
+  };
+
   return AccumulationEffect;
 }(Effect));
 
@@ -4273,8 +4506,20 @@ var EffectDescription$6 = 'Enables an fading image echo';
 
 var TrailsConfigUI = (function (ConfigUI$$1) {
   function TrailsConfigUI() {
+    var this$1 = this;
+
     ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$6 + "</legend>\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$6 + "</legend>\n        <label>\n          Fade-in:\n          <input type=\"number\" class=\"effect-trails-fadein\" value=\"100\" />ms\n        </label><br/>\n        <label>\n          Fade-out:\n          <input type=\"number\" class=\"effect-trails-fadeout\" value=\"500\" />ms\n        </label>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.fadeinInput = ui.querySelector('.effect-trails-fadein');
+    this.fadeoutInput = ui.querySelector('.effect-trails-fadeout');
+
+    this.fadeinInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.fadeoutInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
   }
 
   if ( ConfigUI$$1 ) TrailsConfigUI.__proto__ = ConfigUI$$1;
@@ -4287,10 +4532,15 @@ var TrailsConfigUI = (function (ConfigUI$$1) {
 
   TrailsConfigUI.prototype.getConfig = function getConfig () {
     var config = {};
+    config.fadein = parseInt(this.fadeinInput.value, 10);
+    config.fadeout = parseInt(this.fadeoutInput.value, 10);
+
     return config;
   };
 
   TrailsConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.fadeinInput.value = config.fadein;
+    this.fadeoutInput.value = config.fadeout;
   };
 
   return TrailsConfigUI;
@@ -4305,7 +4555,7 @@ var TrailsAgent = (function (AccumulationAgent$$1) {
   TrailsAgent.prototype = Object.create( AccumulationAgent$$1 && AccumulationAgent$$1.prototype );
   TrailsAgent.prototype.constructor = TrailsAgent;
   TrailsAgent.prototype.getFragmentCode = function getFragmentCode (uniforms) {
-    return "\n      vec3 color = 0.7 * historyColor + 0.3 * particleColor;\n      accumulationResult += color;\n    ";
+    return "\n      accumulationEffectResult = mix(particleColor, historyColor, 0.7);\n    ";
   };
 
   return TrailsAgent;
@@ -4342,12 +4592,13 @@ var TrailsEffect = (function (AccumulationEffect$$1) {
 
   TrailsEffect.getDefaultConfig = function getDefaultConfig () {
     return {
+      fadein: 100,
+      fadeout: 500
     };
   };
 
   TrailsEffect.getRandomConfig = function getRandomConfig () {
-    return {
-    };
+    return this.getDefaultConfig();
   };
 
   return TrailsEffect;
@@ -4358,8 +4609,20 @@ var EffectDescription$7 = 'Enables an smoother fading image echo';
 
 var SmoothTrailsConfigUI = (function (ConfigUI$$1) {
   function SmoothTrailsConfigUI() {
+    var this$1 = this;
+
     ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$7 + "</legend>\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$7 + "</legend>\n        <label>\n          Fade-in:\n          <input type=\"number\" class=\"effect-smooth-trails-fadein\" value=\"100\" />ms\n        </label><br/>\n        <label>\n          Fade-out:\n          <input type=\"number\" class=\"effect-smooth-trails-fadeout\" value=\"500\" />ms\n        </label>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.fadeinInput = ui.querySelector('.effect-smooth-trails-fadein');
+    this.fadeoutInput = ui.querySelector('.effect-smooth-trails-fadeout');
+
+    this.fadeinInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.fadeoutInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
   }
 
   if ( ConfigUI$$1 ) SmoothTrailsConfigUI.__proto__ = ConfigUI$$1;
@@ -4372,10 +4635,15 @@ var SmoothTrailsConfigUI = (function (ConfigUI$$1) {
 
   SmoothTrailsConfigUI.prototype.getConfig = function getConfig () {
     var config = {};
+    config.fadein = parseInt(this.fadeinInput.value, 10);
+    config.fadeout = parseInt(this.fadeoutInput.value, 10);
+
     return config;
   };
 
   SmoothTrailsConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.fadeinInput.value = config.fadein;
+    this.fadeoutInput.value = config.fadeout;
   };
 
   return SmoothTrailsConfigUI;
@@ -4394,7 +4662,7 @@ var SmoothTrailsAgent = (function (AccumulationAgent$$1) {
     var kernelSize = uniforms.addUniform('kernelSize', 'vec2', function (ctx, props) {
       return [4 / props.state.getWidth(), 4 / props.state.getHeight()];
     });
-    return ("\n      vec3 color = /* texture2D(historyTexture, vec2(texcoord.x, texcoord.y)).rgb * .2 + */\n        texture2D(historyTexture, vec2(texcoord.x + " + kernelSize + ".x, texcoord.y)).rgb * .25 +\n        texture2D(historyTexture, vec2(texcoord.x - " + kernelSize + ".x, texcoord.y)).rgb * .25 +\n        texture2D(historyTexture, vec2(texcoord.x, texcoord.y + " + kernelSize + ".y)).rgb * .25 +\n        texture2D(historyTexture, vec2(texcoord.x, texcoord.y - " + kernelSize + ".y)).rgb * .25;\n      color *= 0.8;\n      color += 0.2 * particleColor;\n      accumulationResult += color;\n    ");
+    return ("\n      vec3 color = /* texture2D(historyTexture, vec2(texcoord.x, texcoord.y)).rgb * .2 + */\n        texture2D(historyTexture, vec2(texcoord.x + " + kernelSize + ".x, texcoord.y)).rgb * .25 +\n        texture2D(historyTexture, vec2(texcoord.x - " + kernelSize + ".x, texcoord.y)).rgb * .25 +\n        texture2D(historyTexture, vec2(texcoord.x, texcoord.y + " + kernelSize + ".y)).rgb * .25 +\n        texture2D(historyTexture, vec2(texcoord.x, texcoord.y - " + kernelSize + ".y)).rgb * .25;\n      accumulationEffectResult = mix(particleColor, color, 0.8);\n    ");
   };
 
   return SmoothTrailsAgent;
@@ -4431,12 +4699,13 @@ var SmoothTrailsEffect = (function (AccumulationEffect$$1) {
 
   SmoothTrailsEffect.getDefaultConfig = function getDefaultConfig () {
     return {
+      fadein: 100,
+      fadeout: 500
     };
   };
 
   SmoothTrailsEffect.getRandomConfig = function getRandomConfig () {
-    return {
-    };
+    return this.getDefaultConfig();
   };
 
   return SmoothTrailsEffect;
@@ -4447,8 +4716,20 @@ var EffectDescription$8 = 'Smears the image in a circular way';
 
 var SmearConfigUI = (function (ConfigUI$$1) {
   function SmearConfigUI() {
+    var this$1 = this;
+
     ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$8 + "</legend>\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$8 + "</legend>\n        <label>\n          Fade-in:\n          <input type=\"number\" class=\"effect-smear-fadein\" value=\"100\" />ms\n        </label><br/>\n        <label>\n          Fade-out:\n          <input type=\"number\" class=\"effect-smear-fadeout\" value=\"500\" />ms\n        </label>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.fadeinInput = ui.querySelector('.effect-smear-fadein');
+    this.fadeoutInput = ui.querySelector('.effect-smear-fadeout');
+
+    this.fadeinInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.fadeoutInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
   }
 
   if ( ConfigUI$$1 ) SmearConfigUI.__proto__ = ConfigUI$$1;
@@ -4461,10 +4742,15 @@ var SmearConfigUI = (function (ConfigUI$$1) {
 
   SmearConfigUI.prototype.getConfig = function getConfig () {
     var config = {};
+    config.fadein = parseInt(this.fadeinInput.value, 10);
+    config.fadeout = parseInt(this.fadeoutInput.value, 10);
+
     return config;
   };
 
   SmearConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.fadeinInput.value = config.fadein;
+    this.fadeoutInput.value = config.fadeout;
   };
 
   return SmearConfigUI;
@@ -4482,7 +4768,7 @@ var SmearAgent = (function (AccumulationAgent$$1) {
     var invTextureSize = uniforms.addUniform('invTextureSize', 'vec2', function (ctx, props) {
       return [1 / props.state.getWidth(), 1 / props.state.getHeight()];
     });
-    return ("\n      vec2 smearDir = vec2(-texcoord.y + .5, texcoord.x - .5);\n      vec3 color = 0.8 * texture2D(historyTexture, texcoord + smearDir * " + invTextureSize + " * 8.).rgb;\n      color += 0.2 * particleColor;\n      accumulationResult += color;\n    ");
+    return ("\n      vec2 smearDir = vec2(-texcoord.y + .5, texcoord.x - .5);\n      vec3 color = texture2D(historyTexture, texcoord + smearDir * " + invTextureSize + " * 8.).rgb;\n      accumulationEffectResult = mix(particleColor, color, 0.8);\n    ");
   };
 
   return SmearAgent;
@@ -4519,17 +4805,1318 @@ var SmearEffect = (function (AccumulationEffect$$1) {
 
   SmearEffect.getDefaultConfig = function getDefaultConfig () {
     return {
+      fadein: 100,
+      fadeout: 500
     };
   };
 
   SmearEffect.getRandomConfig = function getRandomConfig () {
-    return {
-    };
+    return this.getDefaultConfig();
   };
 
   return SmearEffect;
 }(AccumulationEffect));
 
+var EffectName$9 = 'Standing Wave';
+var EffectDescription$9 = 'A standing wave oscillates';
+
+var StandingWaveConfigUI = (function (ConfigUI$$1) {
+  function StandingWaveConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$9 + "</legend>\n        <label>\n          Max Amplitude:\n          <input type=\"number\" class=\"effect-standing-wave-max-amplitude\" value=\"0.05\" />\n        </label><br/>\n        <label>\n          Wave count:\n          <input type=\"number\" min=\"1\" step=\"1\" class=\"effect-standing-wave-wave-count\" value=\"20\" />\n        </label><br/>\n        <label>\n          Dimension:\n          <select class=\"effect-standing-wave-dimension\" value=\"y\">\n            <option value=\"y\">Y</option>\n            <option value=\"x\">X</option>\n          </select>\n        </label><br/>\n        <label>\n          Time interpolator:\n          <select class=\"effect-standing-wave-time-interpolation\" value=\"sine\">\n            <option value=\"sine\">Sine</option>\n            <option value=\"linear\">Linear</option>\n          </select>\n        </label><br/>\n        <label>\n          Wave function:\n          <select class=\"effect-standing-wave-function\" value=\"sine\">\n            <option value=\"sine\">Sine</option>\n            <option value=\"linear\">Triangle</option>\n          </select>\n        </label>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.maxAmplitudeInput = ui.querySelector('input.effect-standing-wave-max-amplitude');
+    this.waveCountInput = ui.querySelector('input.effect-standing-wave-wave-count');
+    this.timeInterpolationInput = ui.querySelector('select.effect-standing-wave-time-interpolation');
+    this.functionInput = ui.querySelector('select.effect-standing-wave-function');
+    this.dimensionInput = ui.querySelector('select.effect-standing-wave-dimension');
+
+    this.maxAmplitudeInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.waveCountInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.timeInterpolationInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.functionInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.dimensionInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+  }
+
+  if ( ConfigUI$$1 ) StandingWaveConfigUI.__proto__ = ConfigUI$$1;
+  StandingWaveConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  StandingWaveConfigUI.prototype.constructor = StandingWaveConfigUI;
+
+  StandingWaveConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  StandingWaveConfigUI.prototype.getConfig = function getConfig () {
+    var config = {};
+    config.maxAmplitude = parseFloat(this.maxAmplitudeInput.value, 10);
+    config.waveCount = parseFloat(this.waveCountInput.value, 10);
+    config.timeInterpolation = this.timeInterpolationInput.value;
+    config.waveFunction = this.functionInput.value;
+    config.dimension = this.dimensionInput.value;
+
+    return config;
+  };
+
+  StandingWaveConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.maxAmplitudeInput.value = config.maxAmplitude;
+    this.waveCountInput.value = config.waveCount;
+    this.timeInterpolationInput.value = config.timeInterpolation;
+    this.functionInput.value = config.waveFunction;
+    this.dimensionInput.value = config.dimension;
+  };
+
+  return StandingWaveConfigUI;
+}(ConfigUI));
+
+var StandingWaveEffect = (function (Effect$$1) {
+  function StandingWaveEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) StandingWaveEffect.__proto__ = Effect$$1;
+  StandingWaveEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  StandingWaveEffect.prototype.constructor = StandingWaveEffect;
+
+  StandingWaveEffect.register = function register (instance, props, uniforms, vertexShader) {
+    var maxAmplitude = instance.config.maxAmplitude || 0.05;
+    var waveCount = instance.config.waveCount || 20;
+    var timeInterpolation = instance.config.timeInterpolation || 'sine';
+    var waveFunction = instance.config.waveFunction || 'sine';
+    var dimension = instance.config.dimension || 'x';
+    var otherDim = {x: 'y', y: 'x'}[dimension];
+    if (maxAmplitude !== 0) {
+      var time = uniforms.addUniform('time', 'float', function (ctx, props) { return fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()); });
+      var timeInterpolations = {
+        // 'linear' is a triangle function that interpolates the points (0,0),(0.25,1),(0.5,0),(0.75,-1),(1,0)
+        // i.e. |/\___
+        //      |  \/
+        linear: "abs(fract(t + 0.75) - 0.5) * 4. - 1.",
+        sine: "sin(t * 2. * PI)"
+      };
+      var timeInterpolStr = timeInterpolations[timeInterpolation] || timeInterpolations['linear'];
+      var waveFunctions = {
+        linear: "abs(fract(x + 0.75) - 0.5) * 4. - 1.",
+        sine: "sin(x * 2. * PI)"
+      };
+      var waveFuncStr = waveFunctions[waveFunction] || waveFunctions['linear'];
+      // eslint-disable-next-line no-param-reassign
+      vertexShader.mainBody += "\n        float t = " + time + ";\n        float x = initialPosition." + otherDim + " * float(" + waveCount + ");\n        float timeAmp = " + timeInterpolStr + ";\n        float posAmp = " + waveFuncStr + ";\n        float amplitude = " + (instance.config.maxAmplitude) + " * posAmp * timeAmp;\n\n        position." + dimension + " += amplitude;\n      ";
+    }
+  };
+
+  StandingWaveEffect.getDisplayName = function getDisplayName () {
+    return EffectName$9;
+  };
+
+  StandingWaveEffect.getDescription = function getDescription () {
+    return EffectDescription$9;
+  };
+
+  StandingWaveEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new StandingWaveConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  StandingWaveEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+      maxAmplitude: 0.05,
+      waveCount: 20,
+      timeInterpolation: 'linear',
+      waveFunction: 'linear',
+      dimension: 'y'
+    };
+  };
+
+  StandingWaveEffect.getRandomConfig = function getRandomConfig () {
+    return {
+      maxAmplitude: Math.random() * 0.2,
+      waveCount: 1 + Math.random() * 30,
+      timeInterpolation: ['linear', 'sine'][Math.round(Math.random())],
+      waveFunction: ['linear', 'sine'][Math.round(Math.random())],
+      dimension: ['y', 'x'][Math.round(Math.random())]
+    };
+  };
+
+  return StandingWaveEffect;
+}(Effect));
+
+var EffectName$10 = 'Sparkle';
+var EffectDescription$10 = 'Particle size and brightness increase randomly';
+
+var SparkleConfigUI = (function (ConfigUI$$1) {
+  function SparkleConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$10 + "</legend>\n        <label>\n          min scale: <input type=\"number\" min=\"0\" max=\"100\" step=\"1\" class=\"effect-sparkle-minscale\">%\n        </label><br/>\n        <label>\n          max scale: <input type=\"number\" min=\"100\" step=\"1\" class=\"effect-sparkle-maxscale\">%\n        </label><br/>\n        <label>\n          sparkle ratio: <input type=\"number\" min=\"0\" step=\"1\" class=\"effect-sparkle-ratio\">%\n        </label><br/>\n        <label>\n          sparkle duration: <input type=\"number\" min=\"0\" step=\"1\" class=\"effect-sparkle-duration\">ms\n        </label>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.minScaleInput = ui.querySelector('.effect-sparkle-minscale');
+    this.maxScaleInput = ui.querySelector('.effect-sparkle-maxscale');
+    this.ratioInput = ui.querySelector('.effect-sparkle-ratio');
+    this.durationInput = ui.querySelector('.effect-sparkle-duration');
+
+    this.minScaleInput.addEventListener('input', function () {
+      this$1.notifyChange();
+    });
+    this.maxScaleInput.addEventListener('input', function () {
+      this$1.notifyChange();
+    });
+    this.ratioInput.addEventListener('input', function () {
+      this$1.notifyChange();
+    });
+    this.durationInput.addEventListener('input', function () {
+      this$1.notifyChange();
+    });
+  }
+
+  if ( ConfigUI$$1 ) SparkleConfigUI.__proto__ = ConfigUI$$1;
+  SparkleConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  SparkleConfigUI.prototype.constructor = SparkleConfigUI;
+
+  SparkleConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  SparkleConfigUI.prototype.getConfig = function getConfig () {
+    var config = {};
+
+    config.scaleMin = parseInt(this.minScaleInput.value, 10) / 100;
+    config.scaleMax = parseInt(this.maxScaleInput.value, 10) / 100;
+    config.ratio = parseInt(this.ratioInput.value, 10) / 100;
+    config.duration = parseInt(this.durationInput.value);
+
+    return config;
+  };
+
+  SparkleConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.minScaleInput.value = Math.round(config.scaleMin * 100);
+    this.maxScaleInput.value = Math.round(config.scaleMax * 100);
+    this.ratioInput.value = Math.round(config.ratio * 100);
+    this.durationInput.value = config.duration;
+  };
+
+  return SparkleConfigUI;
+}(ConfigUI));
+
+var SparkleEffect = (function (Effect$$1) {
+  function SparkleEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) SparkleEffect.__proto__ = Effect$$1;
+  SparkleEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  SparkleEffect.prototype.constructor = SparkleEffect;
+
+  SparkleEffect.register = function register (instance, props, uniforms, vertexShader, frag, attributes) {
+    // Params
+    var ref = instance.config;
+    var scaleMin = ref.scaleMin;
+    var scaleMax = ref.scaleMax;
+    var ratio = ref.ratio;
+    var duration = ref.duration;
+
+    if (scaleMin >= 1 && scaleMax <= 1) {
+      return;
+    }
+
+    /* How does this work ?
+    ProgressFun does some fancy animation on the point size. It does so
+    by taking a x value which goes from 0 to 1 in duration time. This is
+    a sawtooth function. Since we want the effect to look random, we
+    employ a random period (which is based on the duration and the
+    ratio) and offset the function by a random value dependent on the
+    period. So it looks like this:
+     x
+    1      /|          /|
+          / |         / |
+         /  |        /  |
+        /   |       /   |
+       /    |      /    |
+    0 ----+----------------
+          0                t
+      |  d  |        duration
+      |     p     |  period
+      | o |          offset
+
+    Since the function differs for each particle, we need to make sure
+    that we always display the complete animation and not start
+    somewhere in the middle with x != 0 and always end with x == 1.
+    */
+
+    // Shader values
+    var particlesCount = props.config.xParticlesCount * props.config.yParticlesCount;
+    var periodData = new Float32Array(particlesCount);
+    var offsetData = new Float32Array(particlesCount);
+    for(var i = 0; i < particlesCount; i++) {
+      // The period is based on duration (clear).
+      // Divide by ratio to get a reduced effect with smaller ratios.
+      // Randomize the period by shifting it a bit in any direction.
+      periodData[i] = Math.max((1 + (Math.random() * 2 - 1) * .25) * duration / ratio, duration);
+      offsetData[i] = Math.random() * periodData[i];
+    }
+
+    var ref$1 = props.state.createBuffer(periodData);
+    var periodBufId = ref$1.id;
+    var periodBuffer = ref$1.buffer;
+    var ref$2 = props.state.createBuffer(offsetData);
+    var offsetBufId = ref$2.id;
+    var offsetBuffer = ref$2.buffer;
+
+    var period = attributes.add('period', 'float', periodBuffer);
+    var offset = attributes.add('offset', 'float', offsetBuffer);
+
+    var progressFun = "\n      float dMin = float(" + scaleMin + ");\n      float dMax = float(" + scaleMax + ");\n      float a = (2. * dMax - 6. * dMin + 4.);\n      float b = 4. * dMin - 0.25 * a - 4.;\n      float progressFun = 1. - sin(2. * PI * x) * (a * pow(x, 2.) + b * x + 1.);\n    ";
+    if (scaleMin >= 1) {
+      progressFun = "\n        float dMax = float(" + scaleMax + ") - 1.;\n        float progressFun = 1. + (1. - cos(2. * PI * x)) * dMax / 2.;\n      ";
+    } else if (scaleMax <= 1) {
+      progressFun = "\n        float dMin = 1. - float(" + scaleMin + ");\n        float progressFun = 1. + cos(2. * PI * x) * dMin / 2.;\n      ";
+    } 
+
+    // eslint-disable-next-line no-param-reassign
+    vertexShader.mainBody += "\n      {\n        float firstPeriodBegin = float(" + (instance.timeBegin) + ") - " + offset + ";\n        if (firstPeriodBegin < float(" + (instance.timeBegin) + ")) firstPeriodBegin += " + period + ";\n        float lastPeriodBegin = float(" + (instance.timeBegin) + ") + ceil(float(" + (instance.timeEnd - instance.timeBegin) + ") / " + period + ") * " + period + " - " + offset + ";\n        if (lastPeriodBegin > float(" + (instance.timeEnd) + ")) lastPeriodBegin -= " + period + ";\n        float lastPeriodLength = float(" + (instance.timeEnd) + ") - lastPeriodBegin;\n        if (float(globalTime) >= firstPeriodBegin\n          && (lastPeriodLength >= float(" + duration + ") || float(globalTime) < lastPeriodBegin)) {\n          float t = mod(float(globalTime) - float(" + (instance.timeBegin) + ") + " + offset + ", " + period + ");\n          float x = t > float(" + duration + ") ? 0. : t * " + (1/duration) + ";\n          " + progressFun + "\n          pointSize *= progressFun;\n          color *= progressFun;\n        }\n      }\n    ";
+  };
+
+  SparkleEffect.getDisplayName = function getDisplayName () {
+    return EffectName$10;
+  };
+
+  SparkleEffect.getDescription = function getDescription () {
+    return EffectDescription$10;
+  };
+
+  SparkleEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new SparkleConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  SparkleEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+      scaleMin: 0.5,
+      scaleMax: 2,
+      ratio: 0.7,
+      duration: 700
+    };
+  };
+
+  SparkleEffect.getRandomConfig = function getRandomConfig () {
+    return {
+      scaleMin: parseFloat(Math.random().toFixed(3)),
+      scaleMax: parseFloat(Math.max(1, Math.random() * 15).toFixed(3)),
+      ratio: parseFloat(Math.random().toFixed(3)),
+      duration: Math.max(500, Math.round(Math.random() * 5000))
+    };
+  };
+
+  return SparkleEffect;
+}(Effect));
+
+var EffectName$11 = 'Particle spacing';
+var EffectDescription$11 = 'Adds or removes space between particles';
+
+var ParticleSpacingConfigUI = (function (ConfigUI$$1) {
+  function ParticleSpacingConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    var classPrefix = 'effect-particle-spacing';
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$11 + "</legend>\n        <label>\n          X spacing factor\n          <input type=\"number\" class=\"" + classPrefix + "-xspread\" value=\"1\" />\n        </label><br/>\n        <label>\n          Y spacing factor\n          <input type=\"number\" class=\"" + classPrefix + "-yspread\" value=\"1\" />\n        </label><br/>\n        <label>\n          Ease in time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-in\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease out time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-out\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease function:\n          <select class=\"" + classPrefix + "-ease-func\" value=\"sine\">\n            <option value=\"sine\" selected>Sine</option>\n            <option value=\"linear\">Linear</option>\n            <option value=\"none\">None</option>\n          </select>\n        </label>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.xSpreadInput = ui.querySelector(("input." + classPrefix + "-xspread"));
+    this.ySpreadInput = ui.querySelector(("input." + classPrefix + "-yspread"));
+    this.easeInInput = ui.querySelector(("input." + classPrefix + "-ease-in"));
+    this.easeOutInput = ui.querySelector(("input." + classPrefix + "-ease-out"));
+    this.easeFuncInput = ui.querySelector(("select." + classPrefix + "-ease-func"));
+
+    this.xSpreadInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.ySpreadInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.easeInInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.easeOutInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.easeFuncInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+  }
+
+  if ( ConfigUI$$1 ) ParticleSpacingConfigUI.__proto__ = ConfigUI$$1;
+  ParticleSpacingConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  ParticleSpacingConfigUI.prototype.constructor = ParticleSpacingConfigUI;
+
+  ParticleSpacingConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  ParticleSpacingConfigUI.prototype.getConfig = function getConfig () {
+    return {
+      xSpread: parseFloat(this.xSpreadInput.value, 10),
+      ySpread: parseFloat(this.ySpreadInput.value, 10),
+      easeInTime: parseInt(this.easeInInput.value, 10),
+      easeOutTime: parseInt(this.easeOutInput.value, 10),
+      easeFunc: this.easeFuncInput.value
+    };
+  };
+
+  ParticleSpacingConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.xSpreadInput.value = config.xSpread || 1;
+    this.ySpreadInput.value = config.ySpread || 1;
+    this.easeInInput.value = config.easeInTime || 1000;
+    this.easeOutInput.value = config.easeOutTime || 1000;
+    this.easeFuncInput.value = config.easeFunc || 'sine';
+  };
+
+  return ParticleSpacingConfigUI;
+}(ConfigUI));
+
+var ParticleSpacingEffect = (function (Effect$$1) {
+  function ParticleSpacingEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) ParticleSpacingEffect.__proto__ = Effect$$1;
+  ParticleSpacingEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ParticleSpacingEffect.prototype.constructor = ParticleSpacingEffect;
+
+  ParticleSpacingEffect.register = function register (instance, props, uniforms, vertexShader) {
+    var xSpread = instance.config.xSpread || 1;
+    var ySpread = instance.config.ySpread || 1;
+    var easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
+    var easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
+
+    // starts at 0, goes down to 1
+    var easeInProgress = uniforms.addUniform('easeInProgress', 'float', function (ctx, props) {
+      var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+      return Math.min(1, time / (easeInTime / instance.getPeriod()));
+    });
+    // starts at 1, goes down to 0
+    var easeOutProgress = uniforms.addUniform('easeOutProgress', 'float', function (ctx, props) {
+      var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+      return Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
+    });
+    var easeFuncs = {
+      none: '1.',
+      sine: ("(1. - cos(PI * min(" + easeInProgress + ", " + easeOutProgress + "))) / 2."),
+      linear: ("min(" + easeInProgress + ", " + easeOutProgress + ")")
+    };
+    var easeFunc = easeFuncs[instance.config.easeFunc || 'sine'];
+    vertexShader.mainBody += "\n      vec2 offset;\n      offset.x = initialPosition.x * float(" + xSpread + ") - (float(" + xSpread + ") - 1.) / 2.;\n      offset.y = initialPosition.y * float(" + ySpread + ") - (float(" + ySpread + ") - 1.) / 2.;\n      offset -= initialPosition.xy;\n      float ease = " + easeFunc + ";\n      offset *= ease;\n      position.xy += offset;\n    ";
+  };
+
+  ParticleSpacingEffect.getDisplayName = function getDisplayName () {
+    return EffectName$11;
+  };
+
+  ParticleSpacingEffect.getDescription = function getDescription () {
+    return EffectDescription$11;
+  };
+
+  ParticleSpacingEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new ParticleSpacingConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  ParticleSpacingEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+      xSpread: 2,
+      ySpread: 2,
+      easeInTime: 1000,
+      easeOutTime: 1000,
+      easeFunc: 'sine'
+    };
+  };
+
+  ParticleSpacingEffect.getRandomConfig = function getRandomConfig () {
+    return {
+      xSpread: Math.random() > 0.5 ? 0.5 : 1.5,
+      ySpread: Math.random() > 0.5 ? 0.5 : 1.5,
+      easeInTime: 1000,
+      easeOutTime: 1000,
+      easeFunc: ['sine', 'linear', 'none'][Math.floor(Math.random() * 3)]
+    };
+  };
+
+  return ParticleSpacingEffect;
+}(Effect));
+
+var EffectName$12 = 'Displace Particles';
+var EffectDescription$12 = 'Displaces all particles into a certain direction by the same distance';
+
+var ParticleDisplaceConfigUI = (function (ConfigUI$$1) {
+  function ParticleDisplaceConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    var classPrefix = 'effect-particle-displace';
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$12 + "</legend>\n        <label>\n          Displace distance:\n          <input type=\"number\" min=\"0\" class=\"" + classPrefix + "-distance\" value=\"1\" />\n        </label><br/>\n        <label>\n          Displace direction:\n          <input type=\"number\" class=\"" + classPrefix + "-direction\" value=\"0\" />\n        </label>\n        <select class=\"" + classPrefix + "-direction-unit\">\n          <option value=\"degrees\" selected>deg</option>\n          <option value=\"radians\">rad</option>\n        </select>\n        <br/>\n        <label>\n          Ease in time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-in\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease out time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-out\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease function:\n          <select class=\"" + classPrefix + "-ease-func\" value=\"sine\">\n            <option value=\"sine\" selected>Sine</option>\n            <option value=\"linear\">Linear</option>\n            <option value=\"none\">None</option>\n          </select>\n        </label>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.distanceInput = ui.querySelector(("input." + classPrefix + "-distance"));
+    this.directionInput = ui.querySelector(("input." + classPrefix + "-direction"));
+    this.directionUnitInput = ui.querySelector(("select." + classPrefix + "-direction-unit"));
+    this.easeInInput = ui.querySelector(("input." + classPrefix + "-ease-in"));
+    this.easeOutInput = ui.querySelector(("input." + classPrefix + "-ease-out"));
+    this.easeFuncInput = ui.querySelector(("select." + classPrefix + "-ease-func"));
+
+    this.distanceInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.directionInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.directionUnitInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.easeInInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.easeOutInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.easeFuncInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+  }
+
+  if ( ConfigUI$$1 ) ParticleDisplaceConfigUI.__proto__ = ConfigUI$$1;
+  ParticleDisplaceConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  ParticleDisplaceConfigUI.prototype.constructor = ParticleDisplaceConfigUI;
+
+  ParticleDisplaceConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  ParticleDisplaceConfigUI.prototype.getConfig = function getConfig () {
+    return {
+      direction: parseFloat(this.directionInput.value),
+      directionUnit: this.directionUnitInput.value,
+      distance: parseFloat(this.distanceInput.value),
+      easeInTime: parseInt(this.easeInInput.value, 10),
+      easeOutTime: parseInt(this.easeOutInput.value, 10),
+      easeFunc: this.easeFuncInput.value
+    };
+  };
+
+  ParticleDisplaceConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.directionInput.value = config.direction || 0;
+    this.directionUnitInput.value = config.directionUnit || 'degrees';
+    this.distanceInput.value = config.distance || 0;
+    this.easeInInput.value = config.easeInTime || 1000;
+    this.easeOutInput.value = config.easeOutTime || 1000;
+    this.easeFuncInput.value = config.easeFunc || 'sine';
+  };
+
+  return ParticleDisplaceConfigUI;
+}(ConfigUI));
+
+var ParticleDisplaceEffect = (function (Effect$$1) {
+  function ParticleDisplaceEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) ParticleDisplaceEffect.__proto__ = Effect$$1;
+  ParticleDisplaceEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ParticleDisplaceEffect.prototype.constructor = ParticleDisplaceEffect;
+
+  ParticleDisplaceEffect.register = function register (instance, props, uniforms, vertexShader) {
+    var angle = instance.config.direction || 0;
+    if (instance.config.directionUnit !== 'radians') {
+      angle = angle / 360 * 2 * Math.PI;
+    }
+    angle = (angle + 2 * Math.PI) % (2 * Math.PI);
+    var distance = instance.config.distance || 0;
+    var easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
+    var easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
+    // starts at 0, goes down to 1
+    var easeInProgress = uniforms.addUniform('easeInProgress', 'float', function (ctx, props) {
+      var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+      return Math.min(1, time / (easeInTime / instance.getPeriod()));
+    });
+    // starts at 1, goes down to 0
+    var easeOutProgress = uniforms.addUniform('easeOutProgress', 'float', function (ctx, props) {
+      var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+      return Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
+    });
+    var easeFuncs = {
+      none: '1.',
+      sine: ("(1. - cos(PI * min(" + easeInProgress + ", " + easeOutProgress + "))) / 2."),
+      linear: ("min(" + easeInProgress + ", " + easeOutProgress + ")")
+    };
+    var easeFunc = easeFuncs[instance.config.easeFunc || 'sine'];
+    vertexShader.mainBody += "\n      vec2 offset;\n      offset.y = cos(float(" + angle + "));\n      offset.x = sqrt(1. - pow(offset.y, 2.)) * (-2. * floor(float(" + angle + ") / PI) + 1.);\n      offset *= float(" + distance + ");\n      float ease = " + easeFunc + ";\n      offset *= ease;\n      position.xy += offset;\n    ";
+  };
+
+  ParticleDisplaceEffect.getDisplayName = function getDisplayName () {
+    return EffectName$12;
+  };
+
+  ParticleDisplaceEffect.getDescription = function getDescription () {
+    return EffectDescription$12;
+  };
+
+  ParticleDisplaceEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new ParticleDisplaceConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  ParticleDisplaceEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+      direction: 0,
+      directionUnit: 'degrees',
+      distance: 0,
+      easeInTime: 1000,
+      easeOutTime: 1000,
+      easeFunc: 'sine'
+    };
+  };
+
+  ParticleDisplaceEffect.getRandomConfig = function getRandomConfig () {
+    return {
+      direction: Math.random() * 360,
+      directionUnit: 'degrees',
+      distance: Math.random() * 2,
+      easeInTime: 1000,
+      easeOutTime: 1000,
+      easeFunc: ['sine', 'linear', 'none'][Math.floor(Math.random() * 3)]
+    };
+  };
+
+  return ParticleDisplaceEffect;
+}(Effect));
+
+var EffectName$13 = 'Particle size by hue';
+var EffectDescription$13 = 'Particles will have different sizes depending on their color';
+
+var ParticleSizeByHueConfigUI = (function (ConfigUI$$1) {
+  function ParticleSizeByHueConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    var classPrefix = 'effect-particle-size-by-hue';
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$13 + "</legend>\n        <label>\n          Scaling factor:\n          <input type=\"number\" min=\"0\" class=\"" + classPrefix + "-scaling\" value=\"1\" />\n        </label><br/>\n        <label>\n          Hue rotation:\n          <input type=\"number\" min=\"0\" max=\"100\" step=\"1\" class=\"" + classPrefix + "-rotation\" value=\"0\" />%\n        </label><br/>\n        <label>\n          Ease in time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-in\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease out time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-out\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease function:\n          <select class=\"" + classPrefix + "-ease-func\" value=\"sine\">\n            <option value=\"sine\" selected>Sine</option>\n            <option value=\"linear\">Linear</option>\n            <option value=\"none\">None</option>\n          </select>\n        </label>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.scalingInput = ui.querySelector(("input." + classPrefix + "-scaling"));
+    this.hueRotationInput = ui.querySelector(("input." + classPrefix + "-rotation"));
+    this.easeInInput = ui.querySelector(("input." + classPrefix + "-ease-in"));
+    this.easeOutInput = ui.querySelector(("input." + classPrefix + "-ease-out"));
+    this.easeFuncInput = ui.querySelector(("select." + classPrefix + "-ease-func"));
+
+    this.scalingInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.hueRotationInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.easeInInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.easeOutInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.easeFuncInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+  }
+
+  if ( ConfigUI$$1 ) ParticleSizeByHueConfigUI.__proto__ = ConfigUI$$1;
+  ParticleSizeByHueConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  ParticleSizeByHueConfigUI.prototype.constructor = ParticleSizeByHueConfigUI;
+
+  ParticleSizeByHueConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  ParticleSizeByHueConfigUI.prototype.getConfig = function getConfig () {
+    return {
+      scaling: parseFloat(this.scalingInput.value),
+      hueRotation: parseInt(this.hueRotationInput.value) / 100 * 2 * Math.PI,
+      easeInTime: parseInt(this.easeInInput.value, 10),
+      easeOutTime: parseInt(this.easeOutInput.value, 10),
+      easeFunc: this.easeFuncInput.value
+    };
+  };
+
+  ParticleSizeByHueConfigUI.prototype.applyConfig = function applyConfig (config) {
+    console.log(config);
+    this.scalingInput.value = config.scaling;
+    this.hueRotationInput.value = Math.round(config.hueRotation / 2 / Math.PI * 100);
+    this.easeInInput.value = config.easeInTime || 1000;
+    this.easeOutInput.value = config.easeOutTime || 1000;
+    this.easeFuncInput.value = config.easeFunc || 'sine';
+  };
+
+  return ParticleSizeByHueConfigUI;
+}(ConfigUI));
+
+var ParticleSizeByHueEffect = (function (Effect$$1) {
+  function ParticleSizeByHueEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) ParticleSizeByHueEffect.__proto__ = Effect$$1;
+  ParticleSizeByHueEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ParticleSizeByHueEffect.prototype.constructor = ParticleSizeByHueEffect;
+
+  ParticleSizeByHueEffect.register = function register (instance, props, uniforms, vertexShader) {
+    var scaling = instance.config.scaling || 1;
+    var hueRotation = instance.config.hueRotation || 0;
+    var easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
+    var easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
+    // starts at 0, goes down to 1
+    var easeInProgress = uniforms.addUniform('easeInProgress', 'float', function (ctx, props) {
+      var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+      return Math.min(1, time / (easeInTime / instance.getPeriod()));
+    });
+    // starts at 1, goes down to 0
+    var easeOutProgress = uniforms.addUniform('easeOutProgress', 'float', function (ctx, props) {
+      var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+      return Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
+    });
+    var easeFuncs = {
+      none: '1.',
+      sine: ("(1. - cos(PI * min(" + easeInProgress + ", " + easeOutProgress + "))) / 2."),
+      linear: ("min(" + easeInProgress + ", " + easeOutProgress + ")")
+    };
+    var easeFunc = easeFuncs[instance.config.easeFunc || 'sine'];
+    vertexShader.mainBody += "\n      // Generate a number between 0 and 1 depending on position on hue wheel\n      float huePosition = fract((hsv[0] + float(" + hueRotation + ")) / (2. * PI));\n      // A scaling value of 0.5 means a decrease by 50%\n      float increase = (float(" + scaling + ") - 1.) * huePosition;\n      float sizeDiff = increase * pointSize;\n      float ease = " + easeFunc + ";\n      pointSize += sizeDiff * ease;\n    ";
+  };
+
+  ParticleSizeByHueEffect.getDisplayName = function getDisplayName () {
+    return EffectName$13;
+  };
+
+  ParticleSizeByHueEffect.getDescription = function getDescription () {
+    return EffectDescription$13;
+  };
+
+  ParticleSizeByHueEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new ParticleSizeByHueConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  ParticleSizeByHueEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+      scaling: 1,
+      hueRotation: 0,
+      easeInTime: 1000,
+      easeOutTime: 1000,
+      easeFunc: 'sine'
+    };
+  };
+
+  ParticleSizeByHueEffect.getRandomConfig = function getRandomConfig () {
+    return {
+      scaling: Math.random() * 3,
+      hueRotation: Math.random() * 2 * Math.PI,
+      easeInTime: 1000,
+      easeOutTime: 1000,
+      easeFunc: ['sine', 'linear', 'none'][Math.floor(Math.random() * 3)]
+    };
+  };
+
+  return ParticleSizeByHueEffect;
+}(Effect));
+
+var EffectName$14 = 'Reset Default Image';
+var EffectDescription$14 = 'This effect changes the currently active image ' +
+                          'back to the default image (i.e. what came from ' +
+                          'the server or was uploaded by the user)';
+
+var ResetDefaultImageConfigUI = (function (ConfigUI$$1) {
+  function ResetDefaultImageConfigUI() {
+    ConfigUI$$1.call(this);
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$14 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
+    var ui = this.element;
+  }
+
+  if ( ConfigUI$$1 ) ResetDefaultImageConfigUI.__proto__ = ConfigUI$$1;
+  ResetDefaultImageConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  ResetDefaultImageConfigUI.prototype.constructor = ResetDefaultImageConfigUI;
+
+  ResetDefaultImageConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  ResetDefaultImageConfigUI.prototype.getConfig = function getConfig () {
+    return {};
+  };
+
+  ResetDefaultImageConfigUI.prototype.applyConfig = function applyConfig (config) {
+  };
+
+  return ResetDefaultImageConfigUI;
+}(ConfigUI));
+
+var ResetDefaultImageEffect = (function (Effect$$1) {
+  function ResetDefaultImageEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) ResetDefaultImageEffect.__proto__ = Effect$$1;
+  ResetDefaultImageEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ResetDefaultImageEffect.prototype.constructor = ResetDefaultImageEffect;
+
+  ResetDefaultImageEffect.register = function register (instance, props, uniforms, vertexShader) {
+    var alive = true;
+    var prevWasChange = false;
+    var checkTime = function () {
+      if (!alive) {
+        return;
+      }
+      var tDist = props.clock.getTime() - instance.timeBegin;
+      if (0 <= tDist && tDist <= props.clock.getDelta()) {
+        props.state.setParticleData(0);
+      }
+      window.requestAnimationFrame(checkTime);
+    };
+    checkTime();
+    props.state.addHook(function () {
+      alive = false;
+    });
+  };
+
+  ResetDefaultImageEffect.getDisplayName = function getDisplayName () {
+    return EffectName$14;
+  };
+
+  ResetDefaultImageEffect.getDescription = function getDescription () {
+    return EffectDescription$14;
+  };
+
+  ResetDefaultImageEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new ResetDefaultImageConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  ResetDefaultImageEffect.getDefaultConfig = function getDefaultConfig () {
+    return {};
+  };
+
+  ResetDefaultImageEffect.getRandomConfig = function getRandomConfig () {
+    return {};
+  };
+
+  ResetDefaultImageEffect.isEventOnly = function isEventOnly () {
+    return true;
+  };
+
+  return ResetDefaultImageEffect;
+}(Effect));
+
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+
+
+
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var imagecapture = createCommonjsModule(function (module, exports) {
+(function (global, factory) {
+  if (typeof undefined === "function" && undefined.amd) {
+    undefined(['exports'], factory);
+  } else {
+    factory(exports);
+  }
+})(commonjsGlobal, function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var _createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) { descriptor.writable = true; }
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) { defineProperties(Constructor.prototype, protoProps); }
+      if (staticProps) { defineProperties(Constructor, staticProps); }
+      return Constructor;
+    };
+  }();
+
+  /**
+   * MediaStream ImageCapture polyfill
+   *
+   * @license
+   * Copyright 2017 Google Inc.
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   *
+   *      http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+   */
+
+  var ImageCapture = exports.ImageCapture = window.ImageCapture;
+
+  if (typeof ImageCapture === 'undefined') {
+    exports.ImageCapture = ImageCapture = function () {
+
+      /**
+       * TODO https://www.w3.org/TR/image-capture/#constructors
+       *
+       * @param {MediaStreamTrack} videoStreamTrack - A MediaStreamTrack of the 'video' kind
+       */
+      function ImageCapture(videoStreamTrack) {
+        _classCallCheck(this, ImageCapture);
+
+        if (videoStreamTrack.kind !== 'video') { throw new DOMException('NotSupportedError'); }
+
+        this._videoStreamTrack = videoStreamTrack;
+        if (!('readyState' in this._videoStreamTrack)) {
+          // Polyfill for Firefox
+          this._videoStreamTrack.readyState = 'live';
+        }
+
+        // MediaStream constructor not available until Chrome 55 - https://www.chromestatus.com/feature/5912172546752512
+        this._previewStream = new MediaStream([videoStreamTrack]);
+        this.videoElement = document.createElement('video');
+        this.videoElement.src = URL.createObjectURL(this._previewStream);
+        this.videoElement.muted = true;
+        this.videoElement.play(); // required by Firefox
+
+        this.canvasElement = document.createElement('canvas');
+        // TODO Firefox has https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas
+        this.canvas2dContext = this.canvasElement.getContext('2d');
+      }
+
+      /**
+       * https://w3c.github.io/mediacapture-image/index.html#dom-imagecapture-videostreamtrack
+       * @return {MediaStreamTrack} The MediaStreamTrack passed into the constructor
+       */
+
+
+      _createClass(ImageCapture, [{
+        key: 'getPhotoCapabilities',
+
+
+        /**
+         * Implements https://www.w3.org/TR/image-capture/#dom-imagecapture-getphotocapabilities
+         * @return {Promise<PhotoCapabilities>} Fulfilled promise with [PhotoCapabilities](https://www.w3.org/TR/image-capture/#idl-def-photocapabilities) object on success, rejected promise on failure
+         */
+        value: function getPhotoCapabilities() {
+          return new Promise(function executorGPC(resolve, reject) {
+            // TODO see https://github.com/w3c/mediacapture-image/issues/97
+            var MediaSettingsRange = {
+              current: 0, min: 0, max: 0
+            };
+            resolve({
+              exposureCompensation: MediaSettingsRange,
+              exposureMode: 'none',
+              fillLightMode: 'none',
+              focusMode: 'none',
+              imageHeight: MediaSettingsRange,
+              imageWidth: MediaSettingsRange,
+              iso: MediaSettingsRange,
+              redEyeReduction: false,
+              whiteBalanceMode: 'none',
+              zoom: MediaSettingsRange
+            });
+            reject(new DOMException('OperationError'));
+          });
+        }
+
+        /**
+         * Implements https://www.w3.org/TR/image-capture/#dom-imagecapture-setoptions
+         * @param {Object} photoSettings - Photo settings dictionary, https://www.w3.org/TR/image-capture/#idl-def-photosettings
+         * @return {Promise<void>} Fulfilled promise on success, rejected promise on failure
+         */
+
+      }, {
+        key: 'setOptions',
+        value: function setOptions() {
+          var photoSettings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+          return new Promise(function executorSO(resolve, reject) {
+            // TODO
+          });
+        }
+
+        /**
+         * TODO
+         * Implements https://www.w3.org/TR/image-capture/#dom-imagecapture-takephoto
+         * @return {Promise<Blob>} Fulfilled promise with [Blob](https://www.w3.org/TR/FileAPI/#blob) argument on success; rejected promise on failure
+         */
+
+      }, {
+        key: 'takePhoto',
+        value: function takePhoto() {
+          var self = this;
+          return new Promise(function executorTP(resolve, reject) {
+            // `If the readyState of the MediaStreamTrack provided in the constructor is not live,
+            // return a promise rejected with a new DOMException whose name is "InvalidStateError".`
+            if (self._videoStreamTrack.readyState === 'live') {
+              // -- however, checking for `live` alone doesn't guarantee the video is ready
+              if (self.videoElement.videoWidth) {
+                try {
+                  self.canvasElement.width = self.videoElement.videoWidth;
+                  self.canvasElement.height = self.videoElement.videoHeight;
+                  self.canvas2dContext.drawImage(self.videoElement, 0, 0);
+                  self.canvasElement.toBlob(function (blob) {
+                    resolve(blob);
+                  });
+                } catch (error) {
+                  reject(new DOMException('UnknownError'));
+                }
+              } else {
+                reject(new DOMException('UnknownError'));
+              }
+            } else {
+              reject(new DOMException('InvalidStateError'));
+            }
+          });
+        }
+
+        /**
+         * Implements https://www.w3.org/TR/image-capture/#dom-imagecapture-grabframe
+         * @return {Promise<ImageBitmap>} Fulfilled promise with [ImageBitmap](https://www.w3.org/TR/html51/webappapis.html#webappapis-images) argument on success; rejected promise on failure
+         */
+
+      }, {
+        key: 'grabFrame',
+        value: function grabFrame() {
+          var self = this;
+          return new Promise(function executorGF(resolve, reject) {
+            if (self._videoStreamTrack.readyState === 'live') {
+              if (self.videoElement.videoWidth) {
+                try {
+                  // videoWidth is available after videoElement.onloadedmetadata fires
+                  self.canvasElement.width = self.videoElement.videoWidth;
+                  self.canvasElement.height = self.videoElement.videoHeight;
+                  // The video has an image after videoElement.oncanplay triggers
+                  self.canvas2dContext.drawImage(self.videoElement, 0, 0);
+                  // TODO polyfill https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapFactories/createImageBitmap for IE
+                  resolve(window.createImageBitmap(self.canvasElement));
+                } catch (error) {
+                  reject(new DOMException('UnknownError'));
+                }
+              } else {
+                reject(new DOMException('UnknownError'));
+              }
+            } else {
+              reject(new DOMException('InvalidStateError'));
+            }
+          });
+        }
+      }, {
+        key: 'videoStreamTrack',
+        get: function get() {
+          return this._videoStreamTrack;
+        }
+      }]);
+
+      return ImageCapture;
+    }();
+  }
+});
+});
+
+var imagecapture_1 = imagecapture.ImageCapture;
+
+var EffectName$15 = 'Webcam';
+var EffectDescription$15 = 'Make use of the user\'s webcam as the particles\' color values';
+
+var WebcamConfigUI = (function (ConfigUI$$1) {
+  function WebcamConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    var classPrefix = 'effect-webcam';
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$15 + "</legend>\n        Especially in Firefox, it is sometimes necessary to wait some time\n        before webcam images can be retrieved. It may also be helpful to\n        retry connecting to the webcam several times.\n        <br />\n        <label>\n          Max number of retries:\n          <input type=\"number\" min=\"0\" max=\"10\" step=\"1\" value=\"3\" class=\"" + classPrefix + "-retries\" />\n        </label>\n        <br/>\n        <label>\n          Delay between retries:\n          <input type=\"number\" min=\"0\" max=\"10000\" step=\"1\" value=\"400\" class=\"" + classPrefix + "-retry-timeout\" />ms\n        </label>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.maxRetriesInput = ui.querySelector(("." + classPrefix + "-retries"));
+    this.retryTimeoutInput = ui.querySelector(("." + classPrefix + "-retry-timeout"));
+
+    this.maxRetriesInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.retryTimeoutInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+  }
+
+  if ( ConfigUI$$1 ) WebcamConfigUI.__proto__ = ConfigUI$$1;
+  WebcamConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  WebcamConfigUI.prototype.constructor = WebcamConfigUI;
+
+  WebcamConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  WebcamConfigUI.prototype.getConfig = function getConfig () {
+    return {
+      maxRetries: parseInt(this.maxRetriesInput.value, 10),
+      retryTimeout: parseInt(this.retryTimeoutInput.value, 10)
+    };
+  };
+
+  WebcamConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.maxRetriesInput.value = config.maxRetries || 0;
+    this.retryTimeoutInput.value = config.retryTimeout || 400;
+  };
+
+  return WebcamConfigUI;
+}(ConfigUI));
+
+var WebcamEffect = (function (Effect$$1) {
+  function WebcamEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) WebcamEffect.__proto__ = Effect$$1;
+  WebcamEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  WebcamEffect.prototype.constructor = WebcamEffect;
+
+  WebcamEffect.registerAsync = function registerAsync (instance, props) {
+    // State variables
+    var canvas = document.createElement('canvas');
+    var stream = null;
+    var stopped = false;
+    var stop = function () { stopped = true; };
+    var isActive = function () {
+      var clock = props.clock;
+      var time = clock.getTime();
+      return !clock.isPaused() && instance.timeBegin <= time && time <= instance.timeEnd;
+    };
+
+    // Shutdown hook
+    props.state.addHook(function () {
+      stop();
+      // FIXME understand and document when this can happen.
+      // E.g. when the getUserMedia() request is ignored in icognito
+      // mode
+      if (stream !== null) {
+        var allTracks = stream.getTracks();
+        for (var i = 0; i < allTracks.length; i++) {
+          allTracks[i].stop();
+        }
+      }
+    });
+
+    var mediaConstraints = {
+      audio: false,
+      video: true // we want video
+    };
+    // Let's ask the browser if we can haz video
+    return navigator.mediaDevices.getUserMedia(mediaConstraints)
+    .then(function (theStream) {
+      stream = theStream;
+      var videoTracks = stream.getVideoTracks();
+      if (videoTracks.length === 0) {
+        return Promise.reject('No video tracks in user media');
+      }
+      // We got a video feed!
+      // Let's try to adapt it to our needs a little bit more
+      var videoTrack = videoTracks[0];
+      var constraints = {
+        width: props.state.getWidth(),
+        height: props.state.getHeight(),
+        aspectRatio: props.state.getWidth() / props.state.getHeight(),
+        facingMode: 'user'
+      };
+      // According to MDN, this shouldn't ever reject.
+      // TODO maybe add an assertion for that
+      return videoTrack.applyConstraints(constraints)
+        .then(function () { return Promise.resolve(videoTrack); }, function (err) { return Promise.reject(err); });
+    }, function (err) { return Promise.reject(err); })
+    .then(function (videoTrack) {
+      // Now this is where the magic happens
+      var capture = new imagecapture_1(videoTrack);
+      var retries = 0;
+      var grabLoop = function (imageOrTimestamp) {
+        if (isActive() && imageOrTimestamp && (typeof imageOrTimestamp) !== 'number') {
+          var image = imageOrTimestamp;
+          var w = image.width;
+          var h = image.height;
+          // FIXME the camera resolution shouldn't change all that often
+          //       Maybe we can do this only once. Or we keep relying on
+          //       the browser to optimize.
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          ctx.scale(-1, -1);
+          ctx.drawImage(image, 0, 0, -w, -h);
+          var pd = props.state.createParticleData(canvas, 'fit-image', {x: 'crop-both', y: 'crop-both'});
+          props.state.setParticleData(pd);
+        }
+        if (!stopped) {
+          // FIXME if we don't grab frames, Chrome will soon make the
+          // track invalid, causing the next grabFrame to throw an error
+          if (true || isActive()) {
+            capture.grabFrame()
+            .then(grabLoop, function (err) {
+              // FIXME Firefox needs some time to get ready for grabbing
+              // frames, so let's try this one more time if the first
+              // one didn't succeed
+              if (retries < instance.config.maxRetries) {
+                retries = retries + 1;
+                window.setTimeout(function () { return grabLoop(0); }, instance.config.retryTimeout);
+              } else {
+                // Throw the error from outside any promises
+                window.setTimeout(function () { throw err; }, 0);
+              }
+            });
+          } else {
+            window.requestAnimationFrame(grabLoop);
+          }
+        }
+      };
+      // start grabbing images!
+      window.requestAnimationFrame(grabLoop);
+    }, function (err) { return Promise.reject(err); });
+  };
+
+  WebcamEffect.getDisplayName = function getDisplayName () {
+    return EffectName$15;
+  };
+
+  WebcamEffect.getDescription = function getDescription () {
+    return EffectDescription$15;
+  };
+
+  WebcamEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new WebcamConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  WebcamEffect.getDefaultConfig = function getDefaultConfig () {
+    return {};
+  };
+
+  WebcamEffect.getRandomConfig = function getRandomConfig () {
+    return {};
+  };
+
+  return WebcamEffect;
+}(Effect));
+
+var EffectName$16 = 'Dummy';
+var EffectDescription$16 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
+
+var DummyConfigUI = (function (ConfigUI$$1) {
+  function DummyConfigUI() {
+    ConfigUI$$1.call(this);
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$16 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
+    var ui = this.element;
+  }
+
+  if ( ConfigUI$$1 ) DummyConfigUI.__proto__ = ConfigUI$$1;
+  DummyConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  DummyConfigUI.prototype.constructor = DummyConfigUI;
+
+  DummyConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  DummyConfigUI.prototype.getConfig = function getConfig () {
+    return {};
+  };
+
+  DummyConfigUI.prototype.applyConfig = function applyConfig (config) {
+  };
+
+  return DummyConfigUI;
+}(ConfigUI));
+
+var DummyEffect = (function (Effect$$1) {
+  function DummyEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) DummyEffect.__proto__ = Effect$$1;
+  DummyEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  DummyEffect.prototype.constructor = DummyEffect;
+
+  DummyEffect.register = function register (instance, props, uniforms, vertexShader) {
+  };
+
+  DummyEffect.getDisplayName = function getDisplayName () {
+    return EffectName$16;
+  };
+
+  DummyEffect.getDescription = function getDescription () {
+    return EffectDescription$16;
+  };
+
+  DummyEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new DummyConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  DummyEffect.getDefaultConfig = function getDefaultConfig () {
+    return {};
+  };
+
+  DummyEffect.getRandomConfig = function getRandomConfig () {
+    return {};
+  };
+
+  return DummyEffect;
+}(Effect));
+
+// should be last
 var effectList = [
   HueDisplaceEffect,
   ConvergePointEffect,
@@ -4539,7 +6126,17 @@ var effectList = [
   FlickrImageEffect,
   TrailsEffect,
   SmoothTrailsEffect,
-  SmearEffect
+  SmearEffect,
+  StandingWaveEffect,
+  SparkleEffect,
+  ParticleSpacingEffect,
+  ParticleDisplaceEffect,
+  ParticleSizeByHueEffect,
+  ResetDefaultImageEffect,
+  WebcamEffect,
+
+  // Should be last
+  DummyEffect
 ];
 var byId = {};
 for (var i = 0; i < effectList.length; i++) {
@@ -4598,6 +6195,8 @@ EffectConfig.prototype.getEffectClass = function getEffectClass () {
   }
   return clazz;
 };
+/// @return the amout of time in milliseconds in which the effect
+///       should perform one single repetition
 EffectConfig.prototype.getPeriod = function getPeriod () {
   return (this.timeEnd - this.timeBegin) / this.repetitions;
 };
@@ -4625,7 +6224,7 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
 
   var beginHandleClass = 'timeline-entry-begin-time-adjust';
   var endHandleClass = 'timeline-entry-end-time-adjust';
-  this.element = parseHtml(("\n      <li>\n        <div class=\"" + beginHandleClass + "\"></div>\n        <button type=\"button\" class=\"" + (getColorClassnameForEffect(this.effect)) + "\">\n          " + (this.effect.getDisplayName()) + "\n        </button>\n        <div class=\"" + endHandleClass + "\"></div>\n      </li>\n    "));
+  this.element = parseHtml(("\n      <li class=\"" + (this.effect.isEventOnly() ? 'event' : '') + "\">\n        <div class=\"" + beginHandleClass + "\"></div>\n        <button type=\"button\" class=\"" + (getColorClassnameForEffect(this.effect)) + "\">\n          " + (this.effect.getDisplayName()) + "\n        </button>\n        <div class=\"" + endHandleClass + "\"></div>\n      </li>\n    "));
   this.setupTimeAdjustHandles();
   this.setupDragAndDrop();
   // Prevent a previous text selection from interfering with our custom
@@ -4664,6 +6263,10 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
       },
       function (deleted) {
         if (deleted) {
+          if (deleted !== true) {
+            // Another error occurred
+            throw deleted;
+          }
           this$1.remove();
         }
       }
@@ -4763,6 +6366,10 @@ TimelineEntry.setupAdjustHandle = function setupAdjustHandle (elm, onAdjustCallb
 
 TimelineEntry.prototype.setupTimeAdjustHandles = function setupTimeAdjustHandles () {
     var this$1 = this;
+
+  if (this.effect.isEventOnly()) {
+    return;
+  }
 
   var beginHandle = this.element.querySelector('.timeline-entry-begin-time-adjust');
   TimelineEntry.setupAdjustHandle(beginHandle, function (delta) {
@@ -4930,9 +6537,10 @@ Timeticks.prototype.getTimelineBorderWidth = function getTimelineBorderWidth () 
 Timeticks.prototype.adjustPosition = function adjustPosition () {
   var cssRules = this.stylesheet.cssRules;
   var borderWidth = this.getTimelineBorderWidth();
-  this.stylesheet.insertRule(("\n      .menu-timeline-container .menu-timeline-content tr > th:first-child + th {\n        border-left-width: " + borderWidth + "px;\n      }"), cssRules.length
+  var selectorPath = '.menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content';
+  this.stylesheet.insertRule(("\n      " + selectorPath + " tr > th:first-child + th {\n        border-left-width: " + borderWidth + "px;\n      }"), cssRules.length
   );
-  this.stylesheet.insertRule(("\n      .menu-timeline-container .menu-timeline-content tr > td:first-child + td {\n        border-left-width: " + borderWidth + "px;\n      }"), cssRules.length
+  this.stylesheet.insertRule(("\n      " + selectorPath + " tr > td:first-child + td {\n        border-left-width: " + borderWidth + "px;\n      }"), cssRules.length
   );
   this.stylesheet.insertRule("\n      .menu-timeline-timetick {\n        transform: translateX(-50%);\n      }\n    ", cssRules.length);
 };
@@ -5058,32 +6666,61 @@ var PauseButton = function PauseButton(clock) {
       this$1.element.classList.remove(onPauseClass);
     }
   });
+  window.document.addEventListener('keydown', function (e) {
+    if (e.key === ' ') {
+      clock.tooglePause();
+    }
+  });
 };
 
 var RandomplayButton = function RandomplayButton(timeline) {
   var this$1 = this;
 
+  this.timeline = timeline;
   this.menu = timeline.menu;
-  var clock = this.menu.clock;
+  this.clock = this.menu.clock;
   this.onClockWrap = null;
   this.element = document.getElementById('menu-timeline-randomplay');
+  this.didJustCreateNewTimeline = false;
   this.element.addEventListener('click', function () {
-    if(this$1.onClockWrap === null) {
-      this$1.onClockWrap = function () { return this$1.fillRandomTimeline(); };
-      clock.addWrapListener(this$1.onClockWrap);
-      this$1.fillRandomTimeline();
-      timeline.setLocked(true);
-      clock.setPaused(false);
+    if (this$1.onClockWrap === null) {
+      this$1.start();
     } else {
-      clock.removeWrapListener(this$1.onClockWrap);
-      this$1.onClockWrap = null;
-      timeline.setLocked(false);
+      this$1.stop();
     }
   });
+  this.menu.addChangeListener(function () {
+    if (this$1.didJustCreateNewTimeline) {
+      this$1.didJustCreateNewTimeline = false;
+    } else {
+      this$1.stop();
+    }
+  });
+};
+RandomplayButton.prototype.start = function start () {
+    var this$1 = this;
+
+  if (this.onClockWrap === null) {
+    this.element.checked = true;
+    this.onClockWrap = function () { return this$1.fillRandomTimeline(); };
+    this.clock.addWrapListener(this.onClockWrap);
+    this.fillRandomTimeline();
+    this.timeline.setLocked(true);
+    this.clock.setPaused(false);
+  }
+};
+RandomplayButton.prototype.stop = function stop () {
+  if (this.onClockWrap !== null) {
+    this.element.checked = false;
+    this.clock.removeWrapListener(this.onClockWrap);
+    this.onClockWrap = null;
+    this.timeline.setLocked(false);
+  }
 };
 
 RandomplayButton.prototype.fillRandomTimeline = function fillRandomTimeline () {
   var config = RandomplayButton.generateRandomTimeline(this.menu.submittedConfig);
+  this.didJustCreateNewTimeline = true;
   this.menu.applyConfig(config);
   this.menu.submit();
 };
@@ -5154,7 +6791,9 @@ TimeDisplay.prototype.update = function update () {
   if (time < 0) {
     time = 0;
   }
-  this.element.innerHTML = Timeticks.msToStr(time);
+  if (!this.clock.isPaused()) {
+    this.element.innerHTML = Timeticks.msToStr(time);
+  }
 };
 
 /**
@@ -5316,6 +6955,160 @@ Timeline.prototype.setLocked = function setLocked (locked) {
   }
 };
 
+function create() {
+  return {
+    "schemaVersion": 0,
+    "backgroundColor": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "xParticlesCount": 200,
+    "yParticlesCount": 125,
+    "defaultImageScaling": "crop-to-viewport",
+    "defaultImageCropping": {
+      "x": "crop-both",
+      "y": "crop-both"
+    },
+    "particleScaling": 1,
+    "particleShape": "circle",
+    "particleFading": "none",
+    "particleOverlap": "alpha blend",
+    "effects": [
+    ],
+    "duration": 10000
+  };
+}
+
+var schemaVersion = 0;
+var backgroundColor = [0,0,0,1];
+var xParticlesCount = 200;
+var yParticlesCount = 125;
+var defaultImageScaling = "crop-to-viewport";
+var defaultImageCropping = {"x":"crop-both","y":"crop-both"};
+var particleScaling = 1;
+var particleShape = "circle";
+var particleFading = "none";
+var particleOverlap = "alpha blend";
+var effects = [[{"id":"HueDisplaceEffect","timeBegin":8592,"timeEnd":10613,"repetitions":1,"config":{"distance":0.7319085067626532,"scaleByValue":0.4112831056504884,"randomDirectionOffset":false,"rotate":0.6353214673534142}}],[{"id":"ConvergePointEffect","timeBegin":2189,"timeEnd":6844,"repetitions":1,"config":{}}],[{"id":"ConvergeCircleEffect","timeBegin":9297,"timeEnd":13311,"repetitions":1,"config":{"rotationSpeed":0.32695472212132115}}],[{"id":"WaveEffect","timeBegin":0,"timeEnd":2015,"repetitions":1,"config":{"multiplier":0.3148697308748081,"amplitude":0.11115075915060912}}],[{"id":"TrailsEffect","timeBegin":7827,"timeEnd":14610,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmoothTrailsEffect","timeBegin":2845,"timeEnd":5692,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmearEffect","timeBegin":5041,"timeEnd":13056,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"StandingWaveEffect","timeBegin":9065,"timeEnd":13188,"repetitions":1,"config":{"maxAmplitude":0.11655939598142143,"waveCount":12.072390651463863,"timeInterpolation":"linear","waveFunction":"sine","dimension":"x"}}],[{"id":"SparkleEffect","timeBegin":4482,"timeEnd":10731,"repetitions":1,"config":{"scaleMin":0.685,"scaleMax":2.563,"ratio":0.275,"duration":1485}}],[{"id":"ParticleSpacingEffect","timeBegin":5162,"timeEnd":13696,"repetitions":1,"config":{"xSpread":0.5,"ySpread":1.5,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"sine"}}],[{"id":"ParticleDisplaceEffect","timeBegin":3543,"timeEnd":6774,"repetitions":1,"config":{"direction":224.4457831353151,"directionUnit":"degrees","distance":0.023417750859263453,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"none"}}],[{"id":"ParticleSizeByHueEffect","timeBegin":1877,"timeEnd":11750,"repetitions":1,"config":{"scaling":2.582142277304504,"hueRotation":4.761756559852353,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"linear"}}],[{"id":"WebcamEffect","timeBegin":0,"timeEnd":14610,"repetitions":1,"config":{"maxRetries":0,"retryTimeout":400}}],[]];
+var duration = 14610;
+var Preset1 = {
+	schemaVersion: schemaVersion,
+	backgroundColor: backgroundColor,
+	xParticlesCount: xParticlesCount,
+	yParticlesCount: yParticlesCount,
+	defaultImageScaling: defaultImageScaling,
+	defaultImageCropping: defaultImageCropping,
+	particleScaling: particleScaling,
+	particleShape: particleShape,
+	particleFading: particleFading,
+	particleOverlap: particleOverlap,
+	effects: effects,
+	duration: duration
+};
+
+var schemaVersion$1 = 0;
+var backgroundColor$1 = [0,0,0,1];
+var xParticlesCount$1 = 200;
+var yParticlesCount$1 = 125;
+var defaultImageScaling$1 = "crop-to-viewport";
+var defaultImageCropping$1 = {"x":"crop-both","y":"crop-both"};
+var particleScaling$1 = 1;
+var particleShape$1 = "circle";
+var particleFading$1 = "none";
+var particleOverlap$1 = "alpha blend";
+var effects$1 = [[{"id":"WebcamEffect","timeBegin":0,"timeEnd":2152,"repetitions":1,"config":{}}],[{"id":"StandingWaveEffect","timeBegin":0,"timeEnd":2143,"repetitions":1,"config":{"maxAmplitude":0.05,"waveCount":20,"timeInterpolation":"linear","waveFunction":"sine","dimension":"y"}}],[]];
+var duration$1 = 2152;
+var Preset2 = {
+	schemaVersion: schemaVersion$1,
+	backgroundColor: backgroundColor$1,
+	xParticlesCount: xParticlesCount$1,
+	yParticlesCount: yParticlesCount$1,
+	defaultImageScaling: defaultImageScaling$1,
+	defaultImageCropping: defaultImageCropping$1,
+	particleScaling: particleScaling$1,
+	particleShape: particleShape$1,
+	particleFading: particleFading$1,
+	particleOverlap: particleOverlap$1,
+	effects: effects$1,
+	duration: duration$1
+};
+
+var LISTED_PRESETS_ID_BEGIN = 1000; // better safe than sorry
+
+/// This class encapsulates all data that describes a preset
+var Preset = function Preset(name, config, id) {
+  this.name = name;
+  this.config = config;
+  this.id = id;
+};
+
+/// Shorthand for preset construction
+function preset(name, config, id) {
+  if ( id === void 0 ) id = -1;
+
+  return new Preset(name, config, id);
+}
+var filePresets = [
+  // Import built-in presets here
+  preset('Webcam + Effects', Preset1),
+  preset('Webcam + Standing wave', Preset2) ];
+
+// Create the exported listedPresets dict
+var listedPresets = {};
+for (var i$1 = 0; i$1 < filePresets.length; i$1++) {
+  var preset$1 = filePresets[i$1];
+  preset$1.id = LISTED_PRESETS_ID_BEGIN + i$1;
+  listedPresets[preset$1.id] = preset$1;
+}
+
+/// Helper function to create a preset only for one single effect
+function makePresetFromEffect(effect) {
+  var config = create();
+  var timeline = config.effects;
+  var track = [];
+  timeline.push(track);
+  track.push(new EffectConfig(effect.getId(), 0, 10000, 1, effect.getDefaultConfig()));
+  return config;
+}
+
+// Create exported allPresets dict
+var allPresets = Object.assign({}, listedPresets);
+for (var i$1$1 = 0; i$1$1 < effectList.length; i$1$1++) {
+  var effect = effectList[i$1$1];
+  allPresets[i$1$1] = preset(effect.getId(), makePresetFromEffect(effect), i$1$1);
+}
+
+var MenuPresetSelectControl = function MenuPresetSelectControl(menu) {
+  this.menu = menu;
+  this.elm = document.querySelector('.menu-select-preset-control');
+  var select = this.elm.querySelector('select');
+  var IDs = Object.keys(listedPresets);
+  var options = document.createDocumentFragment();
+  for (var i = 0; i < IDs.length; i++) {
+    var preset = listedPresets[IDs[i]];
+    var option = document.createElement('option');
+    option.value = preset.id;
+    option.innerHTML = preset.name;
+    options.appendChild(option);
+  }
+  select.appendChild(options);
+  select.addEventListener('change', function (e) {
+    menu.applyConfig(listedPresets[select.value].config);
+    menu.notifyChange();
+  });
+  menu.addChangeListener(function () {
+    select.value = '';
+  });
+};
+// eslint-disable-next-line class-methods-use-this
+MenuPresetSelectControl.prototype.updateConfig = function updateConfig (config) {
+};
+// eslint-disable-next-line class-methods-use-this
+MenuPresetSelectControl.prototype.applyConfig = function applyConfig (config) {
+};
+
 /**
  * Base class of all controls participating in the main menu
  * This is rather for documenting the common interface than
@@ -5410,14 +7203,44 @@ var ParticleCountControl = (function (Control) {
 }(Control));
 
 /**
+ * This is an invisible menu item with the purpose of storing the default
+ * image scaling parameters selected by the user
+ */
+var DefaultImageControl = (function (Control) {
+  function DefaultImageControl(menu) {
+    Control.call(this, menu);
+    this.defaultImageScaling = 'crop-to-viewport';
+    this.defaultImageCropping = {x: 'crop-both', y: 'crop-both'};
+  }
+
+  if ( Control ) DefaultImageControl.__proto__ = Control;
+  DefaultImageControl.prototype = Object.create( Control && Control.prototype );
+  DefaultImageControl.prototype.constructor = DefaultImageControl;
+
+  DefaultImageControl.prototype.updateConfig = function updateConfig (config) {
+    // eslint-disable-next-line no-param-reassign
+    config.defaultImageScaling = this.defaultImageScaling;
+    // eslint-disable-next-line no-param-reassign
+    config.defaultImageCropping = this.defaultImageCropping;
+  };
+
+  DefaultImageControl.prototype.applyConfig = function applyConfig (config) {
+    this.defaultImageScaling = config.defaultImageScaling || 'crop-to-viewport';
+    this.defaultImageCropping = config.defaultImageCropping || {x: 'crop-both', y: 'crop-both'};
+  };
+
+  return DefaultImageControl;
+}(Control));
+
+/**
  *
  */
-var ParticleScalingControl = (function (Control) {
-  function ParticleScalingControl(menu) {
+var ParticleSizeControl = (function (Control) {
+  function ParticleSizeControl(menu) {
     var this$1 = this;
 
     Control.call(this, menu);
-    this.elm = document.getElementById('menu-particle-scaling-control');
+    this.elm = document.getElementById('menu-particle-size-control');
     this.input = this.elm.querySelector('input[type="number"]');
 
     this.input.addEventListener('change', function () {
@@ -5425,20 +7248,84 @@ var ParticleScalingControl = (function (Control) {
     });
   }
 
-  if ( Control ) ParticleScalingControl.__proto__ = Control;
-  ParticleScalingControl.prototype = Object.create( Control && Control.prototype );
-  ParticleScalingControl.prototype.constructor = ParticleScalingControl;
+  if ( Control ) ParticleSizeControl.__proto__ = Control;
+  ParticleSizeControl.prototype = Object.create( Control && Control.prototype );
+  ParticleSizeControl.prototype.constructor = ParticleSizeControl;
 
-  ParticleScalingControl.prototype.updateConfig = function updateConfig (config) {
+  ParticleSizeControl.prototype.updateConfig = function updateConfig (config) {
     // eslint-disable-next-line no-param-reassign
     config.particleScaling = parseInt(this.input.value, 10) / 100;
   };
 
-  ParticleScalingControl.prototype.applyConfig = function applyConfig (config) {
+  ParticleSizeControl.prototype.applyConfig = function applyConfig (config) {
     this.input.value = config.particleScaling * 100;
   };
 
-  return ParticleScalingControl;
+  return ParticleSizeControl;
+}(Control));
+
+/**
+ *
+ */
+var ParticleShapeControl = (function (Control) {
+  function ParticleShapeControl(menu) {
+    var this$1 = this;
+
+    Control.call(this, menu);
+    this.elm = document.getElementById('menu-particle-shape-control');
+    this.select = this.elm.querySelector('select');
+
+    this.select.addEventListener('change', function () {
+      this$1.menu.notifyChange();
+    });
+  }
+
+  if ( Control ) ParticleShapeControl.__proto__ = Control;
+  ParticleShapeControl.prototype = Object.create( Control && Control.prototype );
+  ParticleShapeControl.prototype.constructor = ParticleShapeControl;
+
+  ParticleShapeControl.prototype.updateConfig = function updateConfig (config) {
+    // eslint-disable-next-line no-param-reassign
+    config.particleShape = this.select.value || 'circle';
+  };
+
+  ParticleShapeControl.prototype.applyConfig = function applyConfig (config) {
+    this.select.value = config.particleShape;
+  };
+
+  return ParticleShapeControl;
+}(Control));
+
+/**
+ *
+ */
+var ParticleEdgeFadeControl = (function (Control) {
+  function ParticleEdgeFadeControl(menu) {
+    var this$1 = this;
+
+    Control.call(this, menu);
+    this.elm = document.getElementById('menu-particle-edge-fade-control');
+    this.select = this.elm.querySelector('select');
+
+    this.select.addEventListener('change', function () {
+      this$1.menu.notifyChange();
+    });
+  }
+
+  if ( Control ) ParticleEdgeFadeControl.__proto__ = Control;
+  ParticleEdgeFadeControl.prototype = Object.create( Control && Control.prototype );
+  ParticleEdgeFadeControl.prototype.constructor = ParticleEdgeFadeControl;
+
+  ParticleEdgeFadeControl.prototype.updateConfig = function updateConfig (config) {
+    // eslint-disable-next-line no-param-reassign
+    config.particleFading = this.select.value;
+  };
+
+  ParticleEdgeFadeControl.prototype.applyConfig = function applyConfig (config) {
+    this.select.value = config.particleFading || 'fade out';
+  };
+
+  return ParticleEdgeFadeControl;
 }(Control));
 
 /**
@@ -5590,7 +7477,9 @@ var ResetAppstateButton = (function (Control) {
 }(Control));
 
 var ControlsList = [
-  BgColorPicker, ParticleCountControl, ParticleScalingControl, ParticleOverlapControl,
+  BgColorPicker, ParticleCountControl, DefaultImageControl,
+  ParticleSizeControl, ParticleShapeControl, ParticleEdgeFadeControl, ParticleOverlapControl,
+  MenuPresetSelectControl,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
 ];
 
@@ -5683,14 +7572,16 @@ var MainMenu = function MainMenu(clock) {
 
   this.menu = document.getElementById('menu-container');
   this.clock = clock;
+  this.controls = [];
+  this.changeListeners = [];
+  this.defaultConfig = null; // defaults will be read later
+  this.submittedConfig = null;
+
   this.timeline = new Timeline(this);
   this.menuContent = this.menu.querySelector('.menu-content');
   this.effectList = this.menu.querySelector('.menu-effect-list');
   this.toggle = document.getElementById('toggle-menu-visible');
   this.applyBtn = document.getElementById('menu-btn-apply');
-  this.controls = [];
-  this.changeListeners = [];
-  this.submittedConfig = null; // defaults will be read later
 
   var menu = this.menu;
   var toggle = this.toggle;
@@ -5797,16 +7688,6 @@ MainMenu.prototype.isCoverFullWidth = function isCoverFullWidth () {
 MainMenu.prototype.notifyChange = function notifyChange () {
   this.applyBtn.disabled = false;
 };
-
-var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-
-
-
-
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
 
 var regl$1 = createCommonjsModule(function (module, exports) {
 (function (global, factory) {
@@ -15333,37 +17214,12 @@ CommandBuilder.prototype.buildCommand = function buildCommand (props) {
   return this.assembleCommand();
 };
 
-CommandBuilder.prototype.makeUniforms = function makeUniforms () {
+CommandBuilder.prototype.createDefaultUniforms = function createDefaultUniforms () {
     var this$1 = this;
 
   var uniforms = new Uniforms();
-  uniforms.addUniform('invImageAspectRatio', 'float', function () { return 1 / this$1.state.getCurrentParticleData().aspectRatio; });
   uniforms.addUniform('invScreenAspectRatio', 'float', function (ctx) { return ctx.viewportHeight / ctx.viewportWidth; });
-  uniforms.addUniform('viewProjectionMatrix', 'mat4', function (ctx) {
-    var aspect = ctx.viewportWidth / ctx.viewportHeight;
-    var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                          (this$1.state.getCurrentParticleData().aspectRatio));
-
-    return [
-      2, 0, 0, 0,
-      0, 2 * aspect, 0, 0,
-      0, 0, 1, 0,
-      -1, (underscan * 2) - 1, 0, 1
-    ];
-  });
-  uniforms.addUniform('invViewProjectionMatrix', 'mat4', function (ctx) {
-    var aspect = ctx.viewportWidth / ctx.viewportHeight;
-    var underscan = 1 - ((ctx.viewportWidth / ctx.viewportHeight) /
-                          (this$1.state.getCurrentParticleData().aspectRatio));
-
-    return [
-      0.5, 0, 0, 0,
-      0, 0.5 / aspect, 0, 0,
-      0, 0, 1, 0,
-      0.5, (-0.5 * ((underscan * 2) - 1)) / aspect, 0, 1
-    ];
-  });
-  uniforms.addUniform('particleSize', 'float', function (ctx) { return (ctx.viewportWidth / this$1.state.getCurrentParticleData().width) * 2 * this$1.config.particleScaling; });
+  uniforms.addUniform('particleSize', 'float', function (ctx) { return (ctx.viewportWidth / this$1.state.getCurrentParticleData().width) * this$1.config.particleScaling; });
   uniforms.addUniform('globalTime', 'int', function (ctx, props) { return props.clock.getTime(); });
   return uniforms;
 };
@@ -15381,20 +17237,11 @@ CommandBuilder.prepareVertexShader = function prepareVertexShader (uniforms) {
   return vertexShader;
 };
 
-CommandBuilder.prototype.assembleFragmentShader = function assembleFragmentShader () {
+CommandBuilder.prepareFragmentShader = function prepareFragmentShader () {
   var fragmentShader = new Shader();
   fragmentShader.varyings += 'varying vec3 color;\n';
-  fragmentShader.mainBody += "\n      float v = pow(max(1. - 2. * length(gl_PointCoord - vec2(.5)), 0.), 1.5);\n    ";
-  var colorAssign = {
-    add:         'gl_FragColor = vec4(color * v, 1);\n',
-    'alpha blend': 'gl_FragColor = vec4(color, v);\n'
-  }[this.config.particleOverlap];
-  if (!colorAssign) {
-    throw new Error(("Unknown particle overlap mode: " + (this.config.particleOverlap)));
-  }
-  fragmentShader.mainBody += colorAssign;
-
-  return fragmentShader.compile();
+  fragmentShader.globals += 'const float PI = 3.14159265;\n';
+  return fragmentShader;
 };
 
 CommandBuilder.prototype.assembleCommand = function assembleCommand () {
@@ -15402,22 +17249,22 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
 
   return new Promise(function (res, rej) {
     var uniforms = {};
+    var attributes = {
+      texcoord: function () { return this$1.state.getCurrentParticleData().texcoordsBuffer; },
+      rgb:    function () { return this$1.state.getCurrentParticleData().rgbBuffer; },
+      hsv:    function () { return this$1.state.getCurrentParticleData().hsvBuffer; }
+    };
     var vert = CommandBuilder.prepareVertexShader();
-    var frag = this$1.assembleFragmentShader();
-    this$1.makeUniforms().compile(vert, uniforms);
+    var frag = CommandBuilder.prepareFragmentShader();
+    this$1.createDefaultUniforms().compile(vert, uniforms);
 
     var result = {
       primitive:'points',
       // TODO This cannot be changed ad-hoc. A new command would be necessary.
       // regl.elements (http://regl.party/api#elements) could be an alternative here
       count:    this$1.config.xParticlesCount * this$1.config.yParticlesCount,
-      attributes: {
-        texcoord: function () { return this$1.state.getCurrentParticleData().texcoordsBuffer; },
-        rgb:    function () { return this$1.state.getCurrentParticleData().rgbBuffer; },
-        hsv:    function () { return this$1.state.getCurrentParticleData().hsvBuffer; }
-      },
+      attributes: attributes,
       uniforms: uniforms,
-      frag: frag,
       depth: { enable: false }
     };
 
@@ -15438,7 +17285,7 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
         throw new Error(("Unknown particle overlap mode: " + (this$1.config.particleOverlap)));
     }
 
-    vert.mainBody += "\n        vec3 initialPosition = vec3(texcoord, 0);\n        initialPosition.y *= invImageAspectRatio;\n\n        vec3 position = initialPosition;\n      ";
+    vert.mainBody += "\n        vec3 initialPosition = vec3(texcoord, 0);\n        float pointSize = max(particleSize, 0.);\n\n        vec3 position = initialPosition;\n      ";
     var nextEffect = (function () {
       var i = 0;
       var j = 0;
@@ -15464,29 +17311,56 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
         return res();
       }
       var effectUniforms = new Uniforms(globalId);
+      var effectAttributes = new Attributes(globalId);
       var effectClass = effectConfig.getEffectClass();
       vert.mainBody += "if (" + (effectConfig.timeBegin) + " <= globalTime && globalTime <= " + (effectConfig.timeEnd) + ") {";
-      effectClass.registerAsync(effectConfig, this$1.props, effectUniforms, vert)
+      effectClass.registerAsync(effectConfig, this$1.props, effectUniforms, vert, frag, effectAttributes)
       .then(function () {
         vert.mainBody += '}';
 
         effectUniforms.compile(vert, uniforms);
+        effectAttributes.compile(vert, attributes);
         globalId += 1;
         registerEffects(res, rej);
       }, function (err) {
         // TODO
+        console.error(("An error occurred in " + (effectConfig.id)));
         console.error(err);
         vert.mainBody += '}';
 
         effectUniforms.compile(vert, uniforms);
+        effectAttributes.compile(vert, attributes);
         globalId += 1;
         registerEffects(res, rej);
       });
     };
     return new Promise(registerEffects).then(function () {
-      vert.mainBody += "\n          color = rgb;\n          gl_PointSize = max(particleSize, 0.);\n          gl_Position = viewProjectionMatrix * vec4(position, 1.);\n        ";
+      vert.mainBody += "\n          color = rgb;\n          gl_PointSize = pointSize;\n          gl_Position = vec4(vec2(2.) * position.xy - vec2(1.), 0., 1.);\n        ";
+      var particleShape = this$1.config.particleShape || 'circle';
+      var particleFading = this$1.config.particleFading || 'fade-out';
+      var particleOverlap =this$1.config.particleOverlap || 'add';
+      var insideShape = {
+        circle: 'ceil(1. - dist)',
+        square: '1.',
+        // PI/3 = 60 degrees = inner angle of equilateral triangle
+        triangle: 'gl_PointCoord.y < 0.933 && gl_PointCoord.y >= 0.067 + abs(pos.x/2.) * tan(PI/3.) ? 1. : 0.'
+      }[particleShape];
+      var fadingFactor = {
+        none:     {circle: '1.', square: '1.', triangle: '1.'},
+        'fade-out': {
+          circle: '(cos(PI * dist) + 1.) / 2.',
+          square: '1. - max(abs(pos.x), abs(pos.y))',
+          triangle: '1. - length(vec2(.5, .289) - gl_PointCoord)'
+        }
+      }[particleFading][particleShape];
+      var colorAssign = {
+        add:         'gl_FragColor = vec4(color * fadingFactor, 1);\n',
+        'alpha blend': 'gl_FragColor = vec4(color, fadingFactor);\n'
+      }[particleOverlap];
+      frag.mainBody += "\n          vec2 pos = gl_PointCoord * vec2(2.) - vec2(1.);\n          float dist = length(pos);\n          float insideShape = " + insideShape + ";\n          float fadingFactor = (" + fadingFactor + ") * insideShape;\n          " + colorAssign + "\n        ";
 
       result.vert = vert.compile();
+      result.frag = frag.compile();
 
       res(result);
     });
@@ -15566,7 +17440,13 @@ RendererClock.prototype.setPaused = function setPaused (paused) {
     }
   }
 };
+RendererClock.prototype.tooglePause = function tooglePause () {
+  this.setPaused(!this.paused);
+};
 RendererClock.prototype.getPaused = function getPaused () {
+  return this.paused;
+};
+RendererClock.prototype.isPaused = function isPaused () {
   return this.paused;
 };
 RendererClock.prototype.addWrapListener = function addWrapListener (listener) {
@@ -15581,84 +17461,6 @@ RendererClock.prototype.addPauseListener = function addPauseListener (listener) 
 RendererClock.prototype.removePauseListener = function removePauseListener (listener) {
   this.pauseListeners.splice(this.pauseListeners.indexOf(listener), 1);
 };
-
-var ParticleData = function ParticleData(imageData, regl, width, height) {
-  this.destroyed = false;
-    
-  var scalingCanvas = document.createElement('canvas');
-  var scalingContext = scalingCanvas.getContext('2d');
-  scalingCanvas.width = width;
-  scalingCanvas.height = height;
-  scalingContext.drawImage(imageData, 0, 0, scalingCanvas.width, scalingCanvas.height);
-  var scaledData = scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
-
-  var w = scaledData.width;
-  var h = scaledData.height;
-
-  var particlePixels = scaledData.data;
-
-  var pixelIndices = Array.from(Array(w * h).keys());
-
-  var texcoords = pixelIndices.map(function (i) { return [((i % w) + 0.5) / w, (Math.floor(i / w) + 0.5) / h]; });
-
-  var rgb = pixelIndices.map(function (i) {
-    var pixel = particlePixels.slice(i * 4, (i * 4) + 4);
-
-    return [pixel[0] / 255, pixel[1] / 255, pixel[2] / 255];
-  });
-
-  var hsv = pixelIndices.map(function (i) {
-    var pixel = rgb[i];
-
-    var cMax = Math.max(pixel[0], pixel[1], pixel[2]);
-    var cMin = Math.min(pixel[0], pixel[1], pixel[2]);
-    var d = cMax - cMin;
-
-    if (d < 0.00001 || cMax < 0.00001) {
-      return [0, 0, cMax];
-    }
-
-    var _h;
-    if (cMax === pixel[0]) {
-      _h = (pixel[1] - pixel[2]) / d;
-      if (_h < 0) {
-        _h += 6;
-      }
-    } else if (cMax === pixel[1]) {
-      _h = ((pixel[2] - pixel[0]) / d) + 2;
-    } else {
-      _h = ((pixel[0] - pixel[1]) / d) + 4;
-    }
-
-    return [_h * 60 * (Math.PI / 180), d / cMax, cMax];
-  });
-  this.width         = w;
-  this.height        = h;
-  this.aspectRatio   = imageData.width / imageData.height;
-  this.texcoordsBuffer = regl.buffer(texcoords);
-  this.rgbBuffer     = regl.buffer(rgb);
-  this.hsvBuffer     = regl.buffer(hsv);
-};
-ParticleData.prototype.destroy = function destroy () {
-  if (!this.destroyed) {
-    this.texcoordsBuffer.destroy();
-    this.rgbBuffer.destroy();
-    this.hsvBuffer.destroy();
-    this.destroyed = true;
-  }
-};
-
-function domImgToCanvas(img) {
-  var fullresCanvas = document.createElement('canvas');
-  var fullresContext = fullresCanvas.getContext('2d');
-  fullresCanvas.width = img.naturalWidth;
-  fullresCanvas.height = img.naturalHeight;
-  // flipped y-axis
-  fullresContext.translate(0, img.naturalHeight);
-  fullresContext.scale(1, -1);
-  fullresContext.drawImage(img, 0, 0);
-  return fullresCanvas;
-}
 
 var PaintResultCommand = (function (FullscreenRectCommand$$1) {
   function PaintResultCommand(getResult) {
@@ -15698,12 +17500,25 @@ var AccumulationCommand = (function (FullscreenRectCommand$$1) {
   AccumulationCommand.fragmentCodeForAgents = function fragmentCodeForAgents (agents, shader, uniforms) {
     var code = [];
 
-    for (var i = 0; i < agents.length; i++) {
+    var loop = function ( i ) {
       var agent = agents[i];
       var agentUniforms = new Uniforms(i);
-      code.push(("\n        if (" + (agent.timeBegin) + " <= globalTime && globalTime <= " + (agent.timeEnd) + ") {\n          activeAgents++;\n          " + (agent.getFragmentCode(agentUniforms)) + "\n        }\n      "));
+      var fadeWeightUniform = agentUniforms.addUniform('fadeWeight', 'float', function (ctx, props) {
+        var timeBegin = agent.instance.timeBegin;
+        var timeEnd = agent.instance.timeEnd;
+        var fadein = agent.instance.config.fadein;
+        var fadeout = agent.instance.config.fadeout;
+        var t = props.clock.getTime();
+        // t in [timeBegin, timeEnd] (guranteed by if below)
+        return t < (timeBegin + fadein) ? (t - timeBegin) / fadein :
+          t > (timeEnd - fadeout) ? 1 - (t - (timeEnd - fadeout)) / fadeout :
+          1;
+      });
+      code.push(("\n        if (" + (agent.instance.timeBegin) + " <= globalTime && globalTime <= " + (agent.instance.timeEnd) + ") {\n          activeAgents++;\n          vec3 accumulationEffectResult;\n          " + (agent.getFragmentCode(agentUniforms)) + "\n          accumulationResult += mix(particleColor, accumulationEffectResult, " + fadeWeightUniform + ");\n        }\n      "));
       agentUniforms.compile(shader, uniforms);
-    }
+    };
+
+    for (var i = 0; i < agents.length; i++) loop( i );
     return code.join('\n');
   };
 
@@ -15753,31 +17568,265 @@ RendererPipeline.prototype.run = function run (props) {
   if (!this.mainCommand) {
     return;
   }
-  if (this.accumulationAgents.length === 0) {
+  if (this.accumulationAgents.length === 0 || props.clock.getPaused()) {
     this.regl.clear({ color: this.clearColor });
     this.mainCommand(props);
   } else { // Accumulation is active
-    if (props.clock.getPaused()) {
-      this.paintResultCommand(props);
-    } else {
-      // Do NOT change the buffers AFTER paintResultCommand, because if we
-      // pause at some point, the other if() branch above will have the
-      // two buffers alrady swapped - which we don't want. resultBuffer
-      // should still be resultBuffer
-      var assign;
-        (assign = [this.resultBuffer, this.accuHistoryBuffer], this.accuHistoryBuffer = assign[0], this.resultBuffer = assign[1]);
-      this.particleBuffer.framebuffer.use(function () {
-        this$1.regl.clear({color: this$1.clearColor});
-        this$1.mainCommand(props);
-      });
+    // Do NOT change the buffers AFTER paintResultCommand, because if we
+    // pause at some point, the other if() branch above will have the
+    // two buffers alrady swapped - which we don't want. resultBuffer
+    // should still be resultBuffer
+    var assign;
+      (assign = [this.resultBuffer, this.accuHistoryBuffer], this.accuHistoryBuffer = assign[0], this.resultBuffer = assign[1]);
+    this.particleBuffer.framebuffer.use(function () {
+      this$1.regl.clear({color: this$1.clearColor});
+      this$1.mainCommand(props);
+    });
 
-      this.accumulationCommand(props);
-      this.paintResultCommand(props);
-    }
+    this.accumulationCommand(props);
+    this.paintResultCommand(props);
   }
 };
 RendererPipeline.prototype.isValid = function isValid () {
   return this.mainCommand !== null;
+};
+
+function domImgToCanvas(img) {
+  var fullresCanvas = document.createElement('canvas');
+  var fullresContext = fullresCanvas.getContext('2d');
+  fullresCanvas.width = img.naturalWidth;
+  fullresCanvas.height = img.naturalHeight;
+  // flipped y-axis
+  fullresContext.translate(0, img.naturalHeight);
+  fullresContext.scale(1, -1);
+  fullresContext.drawImage(img, 0, 0);
+  return fullresCanvas;
+}
+
+var ScalingInfo = function ScalingInfo(particleCounts, imageScaling, imageCropping, viewport) {
+  this.particleCounts = particleCounts; // {x, y}
+  this.imageScaling = imageScaling;
+  this.imageCropping = imageCropping; // {x, y}
+  this.viewport = viewport; // {width, height}
+};
+
+function getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo) {
+  var w = scalingInfo.particleCounts.x;
+  var h = scalingInfo.particleCounts.y;
+  var r = {
+    sx: 0,
+    sy: 0,
+    sWidth: imageCanvas.width,
+    sHeight: imageCanvas.height,
+    dx: 0,
+    dy: 0,
+    dWidth: w,
+    dHeight: h,
+  };
+  // particles aspect ratio
+  r.dAspectRatio = (w / h);
+  // source image aspect ratio
+  r.sAspectRatio = imageCanvas.width / imageCanvas.height;
+  // viewport aspect ratio
+  r.vAspectRatio = scalingInfo.viewport.width / scalingInfo.viewport.height;
+  // particle aspect ratio
+  r.pAspectRatio = r.vAspectRatio / r.dAspectRatio;
+  return r;
+}
+
+function getCropImageToViewportParams(imageCanvas, scalingInfo) {
+  var r = getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo);
+  if (r.vAspectRatio > r.sAspectRatio) { // source height will exceed viewport height
+    r.sHeight = r.sWidth / r.vAspectRatio;
+    if (scalingInfo.imageCropping.y === 'crop-both') {
+      r.sy = (imageCanvas.height - r.sHeight) / 2;
+    } else if (scalingInfo.imageCropping.y === 'crop-top') {
+      r.sy = imageCanvas.height - r.sHeight;
+    } else if (scalingInfo.imageCropping.y === 'crop-bottom') {
+      r.sy = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.y: ' + scalingInfo.imageCropping.x);
+    }
+  } else { // source width will exceed dest width
+    r.sWidth = r.sHeight * r.vAspectRatio;
+    if (scalingInfo.imageCropping.x === 'crop-both') {
+      r.sx = (imageCanvas.width - r.sWidth) / 2;
+    } else if (scalingInfo.imageCropping.x === 'crop-left') {
+      r.sx = imageCanvas.width - r.sWidth;
+    } else if (scalingInfo.imageCropping.x === 'crop-right') {
+      r.sx = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.x: ' + scalingInfo.imageCropping.x);
+    }
+  }
+  return r;
+}
+
+function getFitWidthParams(imageCanvas, scalingInfo) {
+  var w = scalingInfo.particleCounts.x;
+  var h = scalingInfo.particleCounts.y;
+  var r = getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo);
+  if (r.vAspectRatio < r.sAspectRatio) { // the picture won't fill the particles. Some rows will remain black
+    r.dHeight = w / r.sAspectRatio * r.pAspectRatio;
+    if (scalingInfo.imageCropping.y === 'crop-both') {
+      r.dy = (h - r.dHeight) / 2;
+    } else if (scalingInfo.imageCropping.y === 'crop-top') {
+      r.dy = h - r.dHeight;
+    } else if (scalingInfo.imageCropping.y === 'crop-bottom') {
+      r.dy = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.y: ' + scalingInfo.imageCropping.y);
+    }
+  } else { // pixels rows at the top and/or bottom will need to be discarded
+    r.sHeight = imageCanvas.width / r.vAspectRatio;
+    if (scalingInfo.imageCropping.y === 'crop-both') {
+      r.sy = (imageCanvas.height - r.sHeight) / 2;
+    } else if (scalingInfo.imageCropping.y === 'crop-top') {
+      r.sy = imageCanvas.height  - r.sHeight;
+    } else if (scalingInfo.imageCropping.y === 'crop-bottom') {
+      r.sy = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.y: ' + scalingInfo.imageCropping.y);
+    }
+  }
+  return r;
+}
+
+function getFitHeightParams(imageCanvas, scalingInfo) {
+  var w = scalingInfo.particleCounts.x;
+  var h = scalingInfo.particleCounts.y;
+  var r = getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo);
+  if (r.vAspectRatio > r.sAspectRatio) { // the picture won't fill the particles. Some columns will remain black
+    r.dWidth = h * r.sAspectRatio / r.pAspectRatio;
+    if (scalingInfo.imageCropping.x === 'crop-both') {
+      r.dx = (w - r.dWidth) / 2;
+    } else if (scalingInfo.imageCropping.x === 'crop-left') {
+      r.dx = w - r.dWidth;
+    } else if (scalingInfo.imageCropping.x === 'crop-right') {
+      r.dx = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.x: ' + scalingInfo.imageCropping.x);
+    }
+  } else { // pixels columns to the left and/or right will need to be discarded
+    r.sWidth = imageCanvas.height * r.vAspectRatio;
+    if (scalingInfo.imageCropping.x === 'crop-both') {
+      r.sx = (imageCanvas.width - r.sWidth) / 2;
+    } else if (scalingInfo.imageCropping.x === 'crop-left') {
+      r.sx = imageCanvas.width - r.sWidth;
+    } else if (scalingInfo.imageCropping.x === 'crop-right') {
+      r.sx = 0;
+    } else {
+      throw new Error('Illegal value for scalingInfo.imageCropping.x: ' + scalingInfo.imageCropping.x);
+    }
+  }
+  return r;
+}
+
+function mapImageToParticles(imageCanvas, scalingInfo) {
+  var w = scalingInfo.particleCounts.x;
+  var h = scalingInfo.particleCounts.y;
+  if (w < 1 || h < 1) {
+    throw new Error('Illegal values for particle counts: x=' + w + ', y=' + h);
+  }
+  var scalingCanvas = document.createElement('canvas');
+  var scalingContext = scalingCanvas.getContext('2d');
+  var scalingParams = null;
+  if (scalingInfo.imageScaling === 'crop-to-viewport') {
+    scalingParams = getCropImageToViewportParams(imageCanvas, scalingInfo);
+  } else if (scalingInfo.imageScaling === 'fit-image') {
+    var vAspectRatio = scalingInfo.viewport.width / scalingInfo.viewport.height;
+    if (imageCanvas.width / imageCanvas.height > vAspectRatio) {
+      scalingParams = getFitWidthParams(imageCanvas, scalingInfo);
+    } else {
+      scalingParams = getFitHeightParams(imageCanvas, scalingInfo);
+    }
+  } else if (scalingInfo.imageScaling === 'fit-width') {
+    scalingParams = getFitWidthParams(imageCanvas, scalingInfo);
+  } else if (scalingInfo.imageScaling === 'fit-height') {
+    scalingParams = getFitHeightParams(imageCanvas, scalingInfo);
+  } else if (scalingInfo.imageScaling === 'scale-to-viewport') {
+    scalingParams = getDefaultPixelParticleMappingParams();
+  } else {
+    throw new Error('Illegal value for scalingInfo.imageScaling: "' + scalingInfo.imageScaling + '"');
+  }
+  scalingCanvas.width = w;
+  scalingCanvas.height = h;
+  var P = scalingParams;
+  scalingContext.drawImage(imageCanvas, P.sx, P.sy, P.sWidth, P.sHeight, P.dx, P.dy, P.dWidth, P.dHeight);
+  return scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
+}
+
+var ParticleData = function ParticleData(imageData, regl, scalingInfo) {
+  var w = scalingInfo.particleCounts.x || imageData.width;
+  var h = scalingInfo.particleCounts.y || imageData.height;
+  this.destroyed = false;
+    
+  var scaledData = mapImageToParticles(imageData, scalingInfo);
+
+  var particlePixels = scaledData.data;
+
+  var pixelIndices = Array.from(Array(w * h).keys());
+
+  var texcoords = pixelIndices.map(function (i) { return [((i % w) + 0.5) / w, (Math.floor(i / w) + 0.5) / h]; });
+
+  var rgb = pixelIndices.map(function (i) {
+    var pixel = particlePixels.slice(i * 4, (i * 4) + 4);
+
+    return [pixel[0] / 255, pixel[1] / 255, pixel[2] / 255];
+  });
+
+  var hsv = pixelIndices.map(function (i) {
+    var pixel = rgb[i];
+
+    var cMax = Math.max(pixel[0], pixel[1], pixel[2]);
+    var cMin = Math.min(pixel[0], pixel[1], pixel[2]);
+    var d = cMax - cMin;
+
+    if (d < 0.00001 || cMax < 0.00001) {
+      return [0, 0, cMax];
+    }
+
+    var _h;
+    if (cMax === pixel[0]) {
+      _h = (pixel[1] - pixel[2]) / d;
+      if (_h < 0) {
+        _h += 6;
+      }
+    } else if (cMax === pixel[1]) {
+      _h = ((pixel[2] - pixel[0]) / d) + 2;
+    } else {
+      _h = ((pixel[0] - pixel[1]) / d) + 4;
+    }
+
+    return [_h * 60 * (Math.PI / 180), d / cMax, cMax];
+  });
+  this.width         = w;
+  this.height        = h;
+  this.texcoordsBuffer = regl.buffer(texcoords);
+  this.rgbBuffer     = regl.buffer(rgb);
+  this.hsvBuffer     = regl.buffer(hsv);
+};
+ParticleData.prototype.destroy = function destroy () {
+  if (!this.destroyed) {
+    this.texcoordsBuffer.destroy();
+    this.rgbBuffer.destroy();
+    this.hsvBuffer.destroy();
+    this.destroyed = true;
+  }
+};
+
+var ParticleDataStoreEntry = function ParticleDataStoreEntry(imageCanvas, imageScaling, imageCropping, particleData) {
+  this.imageCanvas = imageCanvas || null;
+  this.imageScaling = imageScaling;
+  this.imageCropping = imageCropping;
+  this.particleData = particleData || null;
+};
+ParticleDataStoreEntry.prototype.destroy = function destroy () {
+  if (this.particleData !== null) {
+    this.particleData.destroy();
+    this.particleData = null;
+  }
+  this.imageCanvas = null;
 };
 
 /**
@@ -15798,8 +17847,10 @@ var RendererState = function RendererState(regl) {
   this.pipeline = new RendererPipeline(regl);
 
   // Properties
+  this.config = null;
   this.particleData = -1;
-  this.particleDataStore = [[null, null]];
+  this.particleDataStore = [new ParticleDataStoreEntry(null, '', {x: '', y: ''}, null)];
+  this.buffers = [];
   this.hooks = [];
   this.width = 0;
   this.height = 0;
@@ -15807,81 +17858,121 @@ var RendererState = function RendererState(regl) {
 RendererState.prototype.adaptToConfig = function adaptToConfig (config) {
     var this$1 = this;
 
+  this.config = config;
   this.pipeline.reset(config.backgroundColor);
 
   // Update default particle data
-  var defaultImg = this.particleDataStore[0][0];
+  var DPD = this.particleDataStore[0];
+  var defaultImg = DPD.imageCanvas;
   if (defaultImg !== null) {
-    var defaultParticleData = this.particleDataStore[0][1];
-    if (defaultParticleData !== null) {
-      defaultParticleData.destroy();
-    }
-    this.particleDataStore[0][1] = new ParticleData(
-      defaultImg,
-      this.regl,
-      config.xParticlesCount || defaultImg.width,
-      config.yParticlesCount || defaultImg.height
+    var scalingInfo = new ScalingInfo(
+      {x: config.xParticlesCount, y: config.yParticlesCount},
+      DPD.imageScaling, DPD.imageCropping,
+      {width: this.getWidth(), height: this.getHeight()}
+    );
+    DPD.destroy();
+    this.particleDataStore[0] = new ParticleDataStoreEntry(
+      defaultImg, scalingInfo.imageScaling, scalingInfo.imageCropping,
+      new ParticleData(defaultImg, this.regl, scalingInfo)
     );
   }
   // release resources
   for (var i = 1; i < this.particleDataStore.length; i++) {
-    this$1.destroyParticleData(i);
+    this$1.particleDataStore[i].destroy();
   }
   this.particleDataStore.length = 1;
   this.particleData = 0;
+
+  for (var i$1 = 0; i$1 < this.buffers.length; i$1++) {
+    this$1.buffers[i$1].destroy();
+  }
+  this.buffers.length = 0;
   // run hooks
-  for (var i$1 = 0; i$1 < this.hooks.length; i$1++) {
-    this$1.hooks[i$1]();
+  for (var i$2 = 0; i$2 < this.hooks.length; i$2++) {
+    this$1.hooks[i$2]();
   }
 };
 RendererState.prototype.setParticleData = function setParticleData (id) {
   this.particleData = id;
 };
-RendererState.prototype.createParticleData = function createParticleData (imgData, width, height) {
-  this.particleDataStore.push([
-    imgData,
-    new ParticleData(
-      imgData,
-      this.regl,
-      width,
-      height
-    )
-  ]);
+RendererState.prototype.createParticleData = function createParticleData (imgData, imageScaling, imageCropping) {
+  if (!imageScaling) {
+    console.warn('No imageScaling given. Falling back to default value');
+    imageScaling = 'crop-to-viewport';
+  }
+  if (!imageCropping) {
+    console.warn('No imageCropping given. Falling back to default value');
+    imageCropping = {x: 'crop-both', y: 'crop-both'};
+  }
+  var scalingInfo = new ScalingInfo(
+    {x: this.config.xParticlesCount, y: this.config.yParticlesCount},
+    imageScaling, imageCropping,
+    {width: this.getWidth(), height: this.getHeight()}
+  );
+  this.particleDataStore.push(new ParticleDataStoreEntry(
+    imgData, imageScaling, imageCropping,
+    new ParticleData(imgData, this.regl, scalingInfo)
+  ));
   return this.particleDataStore.length - 1;
 };
-RendererState.prototype.createParticleDataFromDomImg = function createParticleDataFromDomImg (domImg, width, height) {
-  return this.createParticleData(domImgToCanvas(domImg), width, height);
+RendererState.prototype.createParticleDataFromDomImg = function createParticleDataFromDomImg (domImg, imageScaling, imageCropping) {
+  return this.createParticleData(domImgToCanvas(domImg), imageScaling, imageCropping);
 };
 RendererState.prototype.destroyParticleData = function destroyParticleData (id) {
-  if (this.particleDataStore[id][1]) {
-    this.particleDataStore[id][1].destroy();
-    this.particleDataStore[id] = [null, null];
-  }
+  this.particleDataStore[id].destroy();
 };
 RendererState.prototype.getCurrentParticleData = function getCurrentParticleData () {
   if (this.particleData < 0) {
     return null;
   }
-  return this.particleDataStore[this.particleData][1];
+  return this.particleDataStore[this.particleData].particleData;
+};
+RendererState.prototype.createBuffer = function createBuffer () {
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ];
+
+  var buf = (ref = this.regl).buffer.apply(ref, args);
+  this.buffers.push(buf);
+  return { id: this.buffers.length - 1, buffer: buf };
+    var ref;
+};
+RendererState.prototype.destroyBuffer = function destroyBuffer (id) {
+  if (id < 0 || id >= this.buffers.length) {
+    throw new Error('Illegal buffer id given for destruction');
+  }
+  this.buffers[id].destroy();
+  this.buffers.splice(id, 1);
 };
 RendererState.prototype.isValid = function isValid () {
   return this.particleData >= 0 && this.pipeline.isValid();
 };
-RendererState.prototype.setDefaultDomImage = function setDefaultDomImage (domImage) {
-  this.particleDataStore[0][0] = domImgToCanvas(domImage);
+/// Sets the image, but will not change the current default particle
+/// data. Rebuilding the default particle data will only happen on
+/// adaptToConfig
+RendererState.prototype.setDefaultDomImage = function setDefaultDomImage (domImage, imageScaling, imageCropping) {
+  var DefaultEntry = this.particleDataStore[0];
+  DefaultEntry.imageCanvas = domImgToCanvas(domImage);
+  DefaultEntry.imageScaling = imageScaling;
+  DefaultEntry.imageCropping = imageCropping;
   this.particleData = 0;
 };
+/// Hooks are run after the state has adapted to a new config object
 RendererState.prototype.addHook = function addHook (hook) {
   this.hooks.push(hook);
 };
+/// Changes the viewport dimension
+/// Not to be confused with the particle grid size. See
+/// config.xParticlesCount and config.yParticlesCount for that
 RendererState.prototype.resize = function resize (width, height) {
   this.width = width;
   this.height = height;
   this.pipeline.resize(width, height);
 };
+/// @return viewport width
 RendererState.prototype.getWidth = function getWidth () {
   return this.width;
 };
+/// @return viewport height
 RendererState.prototype.getHeight = function getHeight () {
   return this.height;
 };
@@ -15947,12 +18038,50 @@ var imageLoadingClass = 'loading-image';
 var canvas = document.getElementById('main-canvas');
 
 // set up ui components
-var fullscreen = new FullscreenButton();
+var fullscreenBtn = new FullscreenButton();
+var fullscreenListener = new DoubleClickFullscreen();
 var imgSelect = new ImgSelect();
 var inactivityMonitor = new InactivityMonitor();
-var imgDimWarn = new ImgDimWarn();
+var imgLoadDialog = new LoadImgDialog();
 var renderer = new Renderer(canvas);
 var menu = new MainMenu(renderer.getClock());
+
+function tryLoadFromLocalStorage() {
+  if (window.localStorage) {
+    var configJson = window.localStorage.getItem('savedConfig');
+    if (configJson !== null) {
+      var config = JSON.parse(configJson);
+      menu.applyConfig(config);
+      menu.submit();
+      return true;
+    }
+  }
+  return false;
+}
+function tryLoadFromHash() {
+  if (window.location.hash) {
+    var hash = window.location.hash.substring(1);
+    var hashDict = hash.split('&')
+    .reduce(function (acc, item) {
+      var parts = item.split('=');
+      acc[parts[0]] = parts[1];
+      return acc;
+    }, {});
+    if (hashDict.preset !== undefined && allPresets[hashDict.preset]) {
+      var preset = allPresets[hashDict.preset];
+      menu.applyConfig(preset.config);
+      menu.submit();
+      window.location.hash = '';
+      return true;
+    }
+  }
+  return false;
+}
+// Try loading the timeline from different places
+if (!tryLoadFromHash()) {
+  tryLoadFromLocalStorage();
+}
+window.addEventListener("hashchange", tryLoadFromHash);
 
 var adjustCanvasSize = function () {
   canvas.width = window.innerWidth;
@@ -15962,28 +18091,58 @@ var adjustCanvasSize = function () {
 window.addEventListener('resize', adjustCanvasSize);
 adjustCanvasSize();
 
+var earlyConfig = menu.submittedConfig;
+var isInitialPageLoad = true;
 var srcImage = document.createElement('img');
 srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
-srcImage.src = 'tron.jpg';
+srcImage.src = earlyConfig.defaultImage || 'default.jpg';
 srcImage.onload = function () {
-  imgDimWarn.verify(srcImage)
-  .then(function (ref) {
-    var xParticlesCount = ref.xParticlesCount;
-    var yParticlesCount = ref.yParticlesCount;
-
-    renderer.getState().setDefaultDomImage(srcImage);
-    var config = Object.assign({}, menu.submittedConfig, { xParticlesCount: xParticlesCount, yParticlesCount: yParticlesCount });
-    menu.applyConfig(config);
+  if (isInitialPageLoad) {
+    isInitialPageLoad = false;
+    renderer.getState().setDefaultDomImage(
+      srcImage, earlyConfig.defaultImageScaling,
+      earlyConfig.defaultImageCropping
+    );
+    // particleCounts are either what has been loaded from localStorage
+    // or the dimensions of the default image (adapted to the user's
+    // screen aspect ratio)
+    var screenAR = window.innerWidth / window.innerHeight;
+    var particleCounts = {
+      xParticlesCount: menu.submittedConfig.xParticlesCount || srcImage.naturalWidth,
+      yParticlesCount: menu.submittedConfig.yParticlesCount || Math.round(srcImage.naturalHeight / screenAR)
+    };
+    // We want to get the default particle count from the default image,
+    // but what the user specified before the page was reloaded should
+    // also be ok.
+    // Modifying the default config this late seems hacky, but what else
+    // can we do?
+    menu.defaultConfig = Object.assign(menu.defaultConfig, particleCounts);
+    menu.applyConfig(Object.assign(menu.submittedConfig, particleCounts));
     menu.submit();
-  }, function () {
-    /* User canceled loading image */
-    // If we don't clear, changeListeners may not fire if same image is selected again
-    imgSelect.clear();
-  })
-  .then(function () {
-    // do this both on cancel and on accept (= .finally())
     document.documentElement.classList.remove(imageLoadingClass);
-  });
+  } else {
+    imgLoadDialog.load(srcImage)
+    .then(function (ref) {
+      var imageScaling = ref.imageScaling;
+      var imageCropping = ref.imageCropping;
+
+      renderer.getState().setDefaultDomImage(srcImage, imageScaling, imageCropping);
+      menu.applyConfig(Object.assign({}, menu.submittedConfig, {
+        defaultImageScaling: imageScaling, defaultImageCropping: imageCropping
+      }));
+      // Trigger state.adaptToConfig (rebuilds default particle data) and
+      // unpause the renderer clock
+      menu.submit();
+    }, function () {
+      /* User canceled loading image */
+      // If we don't clear, changeListeners may not fire if same image is selected again
+      imgSelect.clear();
+    })
+    .then(function () {
+      // do this both on cancel and on accept (= .finally())
+      document.documentElement.classList.remove(imageLoadingClass);
+    });
+  }
 };
 srcImage.onerror = function () {
   document.documentElement.classList.remove(imageLoadingClass);
@@ -15999,6 +18158,9 @@ imgSelect.addChangeListener(function (url) {
 
 menu.addChangeListener(function (config) {
   renderer.setConfig(config);
+  if (window.localStorage) {
+    window.localStorage.setItem('savedConfig', JSON.stringify(config, null, 2));
+  }
 });
 
 }());

@@ -48,33 +48,45 @@
               <legend>Number of particles</legend>
               <label>
                 Horizontal (x):
-                <input type="number" id="menu-particles-x" value="256"/>
+                <input type="number" min="1" step="1" id="menu-particles-x"/>
               </label><br/>
               <label>
                 Vertical (y):
-                <input type="number" id="menu-particles-y" value="144"/>
+                <input type="number" min="1" step="1" id="menu-particles-y"/>
               </label>
             </fieldset>
-            <label id="menu-particle-scaling-control">
+            <label id="menu-particle-size-control">
               Particle size:
               <input type="number" value="100" />%
+            </label><br/>
+            <label id="menu-particle-shape-control">
+              Particle shape:
+              <select>
+                <option value="circle" selected>circle</option>
+                <option value="square">square</option>
+                <option value="triangle">triangle</option>
+              </select>
+            </label><br/>
+            <label id="menu-particle-edge-fade-control">
+              Particle edge fading:
+              <select>
+                <option value="none" selected>none</option>
+                <option value="fade-out">fade out</option>
+              </select>
             </label><br/>
             <label id="menu-particle-overlap-control">
               Particle overlap:
               <select>
-                <option value="add" selected>glow</option>
-                <option value="alpha blend">blend</option>
+                <option value="add">glow</option>
+                <option value="alpha blend" selected>blend</option>
               </select>
             </label>
           </fieldset>
-          <ul class="menu-effect-list">
-            
-          </ul>
           <!--
           TODO no idea why the wrapper div is necessary. Without it, there
           is a lot of unnecessary space before and after the buttons
           -->
-          <div>
+          <div class="menu-state-ctrl-buttons">
             <label id="menu-btn-importstate" class="menu-btn-importstate">
               Load
               <input type="file" accept=".json,application/json"/>
@@ -82,10 +94,26 @@
             <button type="button" id="menu-btn-exportstate" class="menu-btn-exportstate">Save</button>
             <button type="button" id="menu-btn-resetstate" class="menu-btn-resetstate">Reset</button>
           </div>
+          <label class="menu-select-preset-control">
+            <select>
+              <option value="" disabled selected>Load a preset configuration</option>
+            </select>
+          </label><br />
+          <ul class="menu-effect-list">
+            <!-- Effects will be listed here -->
+          </ul>
           <div class="menu-weblinks-container">
             Weblinks:
             <ul>
-              <li><a href="https://github.com/suluke/hfg-particles/tree/master/manual/MANUAL.md">Manual</a></li>
+              <li><a href="https://github.com/suluke/hfg-particles/tree/master/manual/MANUAL.md">
+                <span class="fa fa-book" /> Manual
+              </a></li>
+              <li><a href="https://github.com/suluke/hfg-particles">
+                <span class="fa fa-github" /> Source Code (Github, MIT License)
+              </a></li>
+              <li><a href="https://commons.wikimedia.org/wiki/File:Edgar_Germain_Hilaire_Degas_071.jpg">
+                <span class="fa fa-image" /> Default image by Edgar Degas (Wikimedia Commons)
+              </a></li>
             </ul>
           </div>
         </div>
@@ -96,17 +124,18 @@
         >Apply</button>
       </div>
       <div class="menu-timeline-container">
+        <div>
+          <button class="menu-timeline-zoom-in" type="button" title="zoom in"></button>
+          <button class="menu-timeline-zoom-out" type="button" title="zoom out"></button>
+          <button class="menu-timeline-pause" type="button" title="pause"></button>
+          <input type="checkbox" id="menu-timeline-randomplay" title="random play" />
+          <label for="menu-timeline-randomplay"></label>
+          <span class="menu-timeline-lockstate"></span>
+        </div>
         <div class="menu-timeline-scrollable-container">
           <table class="menu-timeline-content">
             <thead class="menu-timeline-header">
               <th class="menu-timeline-topleft-cell">
-                <button class="menu-timeline-zoom-in" type="button" title="zoom in"></button>
-                <button class="menu-timeline-zoom-out" type="button" title="zoom out"></button>
-                <button class="menu-timeline-pause" type="button" title="pause"></button>
-                <input type="checkbox" id="menu-timeline-randomplay" title="random play" />
-                <label for="menu-timeline-randomplay"></label>
-                <span class="menu-timeline-lockstate"></span>
-                <br/>
                 <span class="menu-timeline-current-time">00:00:00</span>
               </th>
               <th class="menu-timeline-timeticks">

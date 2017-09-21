@@ -2403,7 +2403,7 @@
   z-index: 100;
   position: absolute; }
 
-.img-dim-warn-backdrop {
+.load-default-img-backdrop {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -2411,7 +2411,7 @@
   top: 0;
   background-color: rgba(0, 0, 0, 0.7);
   z-index: 40; }
-  .img-dim-warn-backdrop .img-dim-warn-popup {
+  .load-default-img-backdrop .load-default-img-popup {
     text-align: center;
     overflow: scroll;
     background-color: rgba(255, 255, 255, 0.9);
@@ -2423,7 +2423,7 @@
     height: 100%;
     padding: 20px 0; }
     @media (min-width: 961px) {
-      .img-dim-warn-backdrop .img-dim-warn-popup {
+      .load-default-img-backdrop .load-default-img-popup {
         /* tablet, landscape iPad, lo-res laptops ands desktops */
         position: absolute;
         top: 50%;
@@ -2435,7 +2435,7 @@
         transform: translate(-50%, -50%);
         padding: 20px; } }
     @media (min-width: 1025px) {
-      .img-dim-warn-backdrop .img-dim-warn-popup {
+      .load-default-img-backdrop .load-default-img-popup {
         /* big landscape tablets, laptops, and desktops */
         position: absolute;
         top: 50%;
@@ -2447,7 +2447,7 @@
         transform: translate(-50%, -50%);
         padding: 20px; } }
     @media (min-width: 1281px) {
-      .img-dim-warn-backdrop .img-dim-warn-popup {
+      .load-default-img-backdrop .load-default-img-popup {
         /* hi-res laptops and desktops */
         position: absolute;
         top: 50%;
@@ -2458,27 +2458,6 @@
         -ms-transform: translate(-50%, -50%);
         transform: translate(-50%, -50%);
         padding: 20px; } }
-  .img-dim-warn-backdrop .toggle-advanced-load-options {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0.1px;
-    height: 0.1px;
-    opacity: 0;
-    z-index: -1;
-    overflow: hidden;
-    clip: rect(1px, 1px, 1px, 1px); }
-    .img-dim-warn-backdrop .toggle-advanced-load-options + label + div {
-      display: none; }
-    .img-dim-warn-backdrop .toggle-advanced-load-options:checked + label + div {
-      display: block; }
-  .img-dim-warn-backdrop .btn-toggle-advanced-load-options {
-    /* the default mixins set font-size, which interferes when changing icons depenging on state */
-    /* @include fa-icon; // in _mixins.scss */
-    /* @extend .fa; // in _core.scss*/
-    font-family: FontAwesome; }
-    .img-dim-warn-backdrop .btn-toggle-advanced-load-options:before {
-      content: ""; }
 
 .menu-container {
   display: inline-block;
@@ -2541,16 +2520,116 @@
        * hidden by apply button if a scroll bar
        * becomes visible */
       /**
-       * Effects list
+       * Load/Store/Reset Buttons
        */
       /**
-       * Load/Store/Reset Buttons
+       * Effects list
        */ }
       .menu-container .menu-content .menu-content-inner:after {
         content: "";
         display: block;
         height: 10%;
         min-height: 20px; }
+      .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons {
+        display: flex;
+        justify-content: center; }
+        .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-importstate {
+          /* the default mixins set font-size, which interferes when changing icons depenging on state */
+          /* @include fa-icon; // in _mixins.scss */
+          /* @extend .fa; // in _core.scss*/
+          font-family: FontAwesome;
+          cursor: pointer;
+          background-color: #eee;
+          border-color: #555;
+          border-style: solid;
+          border-width: 1px;
+          border-radius: 5px;
+          color: #000;
+          text-align: center;
+          box-sizing: content-box;
+          /* Use :after for vCenter - in case an icon is used (uses :before) */
+          font-size: 1em;
+          padding: 5px;
+          margin: 5px; }
+          .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-importstate:before {
+            content: ""; }
+          .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-importstate:after {
+            content: "";
+            display: inline-block;
+            height: 100%;
+            vertical-align: middle;
+            width: 0; }
+          .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-importstate:focus, .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-importstate:hover, .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-importstate.pressed {
+            background-color: #fff; }
+          .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-importstate > input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            z-index: -1;
+            overflow: hidden;
+            clip: rect(1px, 1px, 1px, 1px); }
+        .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-exportstate {
+          /* the default mixins set font-size, which interferes when changing icons depenging on state */
+          /* @include fa-icon; // in _mixins.scss */
+          /* @extend .fa; // in _core.scss*/
+          font-family: FontAwesome;
+          cursor: pointer;
+          background-color: #eee;
+          border-color: #555;
+          border-style: solid;
+          border-width: 1px;
+          border-radius: 5px;
+          color: #000;
+          text-align: center;
+          box-sizing: content-box;
+          /* Use :after for vCenter - in case an icon is used (uses :before) */
+          font-size: 1em;
+          padding: 5px;
+          margin: 5px; }
+          .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-exportstate:before {
+            content: ""; }
+          .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-exportstate:after {
+            content: "";
+            display: inline-block;
+            height: 100%;
+            vertical-align: middle;
+            width: 0; }
+          .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-exportstate:focus, .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-exportstate:hover, .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-exportstate.pressed {
+            background-color: #fff; }
+        .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-resetstate {
+          /* the default mixins set font-size, which interferes when changing icons depenging on state */
+          /* @include fa-icon; // in _mixins.scss */
+          /* @extend .fa; // in _core.scss*/
+          font-family: FontAwesome;
+          cursor: pointer;
+          background-color: #eee;
+          border-color: #555;
+          border-style: solid;
+          border-width: 1px;
+          border-radius: 5px;
+          color: #000;
+          text-align: center;
+          box-sizing: content-box;
+          /* Use :after for vCenter - in case an icon is used (uses :before) */
+          font-size: 1em;
+          padding: 5px;
+          margin: 5px; }
+          .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-resetstate:before {
+            content: ""; }
+          .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-resetstate:after {
+            content: "";
+            display: inline-block;
+            height: 100%;
+            vertical-align: middle;
+            width: 0; }
+          .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-resetstate:focus, .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-resetstate:hover, .menu-container .menu-content .menu-content-inner .menu-state-ctrl-buttons .menu-btn-resetstate.pressed {
+            background-color: #fff; }
+      .menu-container .menu-content .menu-content-inner .menu-select-preset-control {
+        display: block;
+        text-align: center; }
       .menu-container .menu-content .menu-content-inner .menu-effect-list {
         display: flex;
         padding: 0;
@@ -2659,82 +2738,6 @@
             height: 100%;
             vertical-align: middle;
             width: 0; }
-      .menu-container .menu-content .menu-content-inner .menu-btn-importstate {
-        cursor: pointer;
-        background-color: #eee;
-        border-color: #555;
-        border-style: solid;
-        border-width: 1px;
-        border-radius: 5px;
-        color: #000;
-        text-align: center;
-        box-sizing: content-box;
-        /* Use :after for vCenter - in case an icon is used (uses :before) */
-        font-size: 1em;
-        padding: 5px;
-        margin: 5px; }
-        .menu-container .menu-content .menu-content-inner .menu-btn-importstate:after {
-          content: "";
-          display: inline-block;
-          height: 100%;
-          vertical-align: middle;
-          width: 0; }
-        .menu-container .menu-content .menu-content-inner .menu-btn-importstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-importstate:hover, .menu-container .menu-content .menu-content-inner .menu-btn-importstate.pressed {
-          background-color: #fff; }
-        .menu-container .menu-content .menu-content-inner .menu-btn-importstate > input[type="file"] {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 0.1px;
-          height: 0.1px;
-          opacity: 0;
-          z-index: -1;
-          overflow: hidden;
-          clip: rect(1px, 1px, 1px, 1px); }
-      .menu-container .menu-content .menu-content-inner .menu-btn-exportstate {
-        cursor: pointer;
-        background-color: #eee;
-        border-color: #555;
-        border-style: solid;
-        border-width: 1px;
-        border-radius: 5px;
-        color: #000;
-        text-align: center;
-        box-sizing: content-box;
-        /* Use :after for vCenter - in case an icon is used (uses :before) */
-        font-size: 1em;
-        padding: 5px;
-        margin: 5px; }
-        .menu-container .menu-content .menu-content-inner .menu-btn-exportstate:after {
-          content: "";
-          display: inline-block;
-          height: 100%;
-          vertical-align: middle;
-          width: 0; }
-        .menu-container .menu-content .menu-content-inner .menu-btn-exportstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-exportstate:hover, .menu-container .menu-content .menu-content-inner .menu-btn-exportstate.pressed {
-          background-color: #fff; }
-      .menu-container .menu-content .menu-content-inner .menu-btn-resetstate {
-        cursor: pointer;
-        background-color: #eee;
-        border-color: #555;
-        border-style: solid;
-        border-width: 1px;
-        border-radius: 5px;
-        color: #000;
-        text-align: center;
-        box-sizing: content-box;
-        /* Use :after for vCenter - in case an icon is used (uses :before) */
-        font-size: 1em;
-        padding: 5px;
-        margin: 5px; }
-        .menu-container .menu-content .menu-content-inner .menu-btn-resetstate:after {
-          content: "";
-          display: inline-block;
-          height: 100%;
-          vertical-align: middle;
-          width: 0; }
-        .menu-container .menu-content .menu-content-inner .menu-btn-resetstate:focus, .menu-container .menu-content .menu-content-inner .menu-btn-resetstate:hover, .menu-container .menu-content .menu-content-inner .menu-btn-resetstate.pressed {
-          background-color: #fff; }
   .menu-container .menu-timeline-container {
     position: absolute;
     background-color: rgba(255, 255, 255, 0.9); }
@@ -2776,16 +2779,206 @@
 
 .menu-timeline-container {
   overflow: hidden;
-  /* hide the position indicator */ }
+  /* hide the position indicator */
+  padding-top: 2px;
+  display: flex;
+  flex-direction: column; }
+  .menu-timeline-container .menu-timeline-zoom-in {
+    cursor: pointer;
+    background-color: #eee;
+    border-color: #555;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    color: #000;
+    text-align: center;
+    box-sizing: content-box;
+    /* Use :after for vCenter - in case an icon is used (uses :before) */
+    /* the default mixins set font-size, which interferes when changing icons depenging on state */
+    /* @include fa-icon; // in _mixins.scss */
+    /* @extend .fa; // in _core.scss*/
+    font-family: FontAwesome;
+    display: inline-block;
+    padding: 2px;
+    margin-right: 1px;
+    font-size: 1em;
+    width: 17px;
+    height: 17px; }
+    .menu-timeline-container .menu-timeline-zoom-in:after {
+      content: "";
+      display: inline-block;
+      height: 100%;
+      vertical-align: middle;
+      width: 0; }
+    .menu-timeline-container .menu-timeline-zoom-in:focus, .menu-timeline-container .menu-timeline-zoom-in:hover, .menu-timeline-container .menu-timeline-zoom-in.pressed {
+      background-color: #fff; }
+    .menu-timeline-container .menu-timeline-zoom-in:before {
+      content: ""; }
+  .menu-timeline-container .menu-timeline-zoom-out {
+    cursor: pointer;
+    background-color: #eee;
+    border-color: #555;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    color: #000;
+    text-align: center;
+    box-sizing: content-box;
+    /* Use :after for vCenter - in case an icon is used (uses :before) */
+    /* the default mixins set font-size, which interferes when changing icons depenging on state */
+    /* @include fa-icon; // in _mixins.scss */
+    /* @extend .fa; // in _core.scss*/
+    font-family: FontAwesome;
+    display: inline-block;
+    padding: 2px;
+    margin-right: 1px;
+    font-size: 1em;
+    width: 17px;
+    height: 17px; }
+    .menu-timeline-container .menu-timeline-zoom-out:after {
+      content: "";
+      display: inline-block;
+      height: 100%;
+      vertical-align: middle;
+      width: 0; }
+    .menu-timeline-container .menu-timeline-zoom-out:focus, .menu-timeline-container .menu-timeline-zoom-out:hover, .menu-timeline-container .menu-timeline-zoom-out.pressed {
+      background-color: #fff; }
+    .menu-timeline-container .menu-timeline-zoom-out:before {
+      content: ""; }
+  .menu-timeline-container .menu-timeline-pause {
+    cursor: pointer;
+    background-color: #eee;
+    border-color: #555;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    color: #000;
+    text-align: center;
+    box-sizing: content-box;
+    /* Use :after for vCenter - in case an icon is used (uses :before) */
+    /* the default mixins set font-size, which interferes when changing icons depenging on state */
+    /* @include fa-icon; // in _mixins.scss */
+    /* @extend .fa; // in _core.scss*/
+    font-family: FontAwesome;
+    display: inline-block;
+    padding: 2px;
+    margin-right: 1px;
+    font-size: 1em;
+    width: 17px;
+    height: 17px; }
+    .menu-timeline-container .menu-timeline-pause:after {
+      content: "";
+      display: inline-block;
+      height: 100%;
+      vertical-align: middle;
+      width: 0; }
+    .menu-timeline-container .menu-timeline-pause:focus, .menu-timeline-container .menu-timeline-pause:hover, .menu-timeline-container .menu-timeline-pause.pressed {
+      background-color: #fff; }
+    .menu-timeline-container .menu-timeline-pause:before {
+      content: ""; }
+    .menu-timeline-container .menu-timeline-pause.paused {
+      /* the default mixins set font-size, which interferes when changing icons depenging on state */
+      /* @include fa-icon; // in _mixins.scss */
+      /* @extend .fa; // in _core.scss*/
+      font-family: FontAwesome; }
+      .menu-timeline-container .menu-timeline-pause.paused:before {
+        content: ""; }
+  .menu-timeline-container #menu-timeline-randomplay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    z-index: -1;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px); }
+    .menu-timeline-container #menu-timeline-randomplay + label {
+      cursor: pointer;
+      background-color: #eee;
+      border-color: #555;
+      border-style: solid;
+      border-width: 1px;
+      border-radius: 5px;
+      color: #000;
+      text-align: center;
+      box-sizing: content-box;
+      /* Use :after for vCenter - in case an icon is used (uses :before) */
+      /* the default mixins set font-size, which interferes when changing icons depenging on state */
+      /* @include fa-icon; // in _mixins.scss */
+      /* @extend .fa; // in _core.scss*/
+      font-family: FontAwesome;
+      display: inline-block;
+      padding: 2px;
+      margin-right: 1px;
+      font-size: 1em;
+      width: 17px;
+      height: 17px; }
+      .menu-timeline-container #menu-timeline-randomplay + label:after {
+        content: "";
+        display: inline-block;
+        height: 100%;
+        vertical-align: middle;
+        width: 0; }
+      .menu-timeline-container #menu-timeline-randomplay + label:focus, .menu-timeline-container #menu-timeline-randomplay + label:hover, .menu-timeline-container #menu-timeline-randomplay + label.pressed {
+        background-color: #fff; }
+      .menu-timeline-container #menu-timeline-randomplay + label:before {
+        content: ""; }
+    .menu-timeline-container #menu-timeline-randomplay:checked + label {
+      background-color: #5cb85c; }
+  .menu-timeline-container .menu-timeline-settings {
+    cursor: pointer;
+    background-color: #eee;
+    border-color: #555;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    color: #000;
+    text-align: center;
+    box-sizing: content-box;
+    /* Use :after for vCenter - in case an icon is used (uses :before) */
+    /* the default mixins set font-size, which interferes when changing icons depenging on state */
+    /* @include fa-icon; // in _mixins.scss */
+    /* @extend .fa; // in _core.scss*/
+    font-family: FontAwesome;
+    display: inline-block;
+    padding: 2px;
+    margin-right: 1px;
+    font-size: 1em;
+    width: 17px;
+    height: 17px; }
+    .menu-timeline-container .menu-timeline-settings:after {
+      content: "";
+      display: inline-block;
+      height: 100%;
+      vertical-align: middle;
+      width: 0; }
+    .menu-timeline-container .menu-timeline-settings:focus, .menu-timeline-container .menu-timeline-settings:hover, .menu-timeline-container .menu-timeline-settings.pressed {
+      background-color: #fff; }
+    .menu-timeline-container .menu-timeline-settings:before {
+      content: ""; }
+  .menu-timeline-container .menu-timeline-lockstate {
+    /* the default mixins set font-size, which interferes when changing icons depenging on state */
+    /* @include fa-icon; // in _mixins.scss */
+    /* @extend .fa; // in _core.scss*/
+    font-family: FontAwesome; }
+    .menu-timeline-container .menu-timeline-lockstate:before {
+      content: ""; }
+    .locked.menu-timeline-container .menu-timeline-lockstate {
+      /* the default mixins set font-size, which interferes when changing icons depenging on state */
+      /* @include fa-icon; // in _mixins.scss */
+      /* @extend .fa; // in _core.scss*/
+      font-family: FontAwesome; }
+      .locked.menu-timeline-container .menu-timeline-lockstate:before {
+        content: ""; }
   .menu-timeline-container .menu-timeline-scrollable-container {
-    overflow-y: scroll;
+    overflow: scroll;
     display: block;
     width: 100%;
-    height: 100%; }
+    flex-grow: 1; }
     .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content {
       min-width: 100%;
-      text-align: left;
-      overflow: scroll; }
+      text-align: left; }
       .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr > th:first-child,
       .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr > td:first-child {
         white-space: nowrap;
@@ -2795,163 +2988,6 @@
         border-left: 10px solid transparent; }
       .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th {
         position: relative; }
-        .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-in {
-          cursor: pointer;
-          background-color: #eee;
-          border-color: #555;
-          border-style: solid;
-          border-width: 1px;
-          border-radius: 5px;
-          color: #000;
-          text-align: center;
-          box-sizing: content-box;
-          /* Use :after for vCenter - in case an icon is used (uses :before) */
-          /* the default mixins set font-size, which interferes when changing icons depenging on state */
-          /* @include fa-icon; // in _mixins.scss */
-          /* @extend .fa; // in _core.scss*/
-          font-family: FontAwesome;
-          display: inline-block;
-          padding: 2px;
-          margin-right: 1px;
-          font-size: 1em;
-          width: 17px;
-          height: 17px; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-in:after {
-            content: "";
-            display: inline-block;
-            height: 100%;
-            vertical-align: middle;
-            width: 0; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-in:focus, .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-in:hover, .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-in.pressed {
-            background-color: #fff; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-in:before {
-            content: ""; }
-        .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-out {
-          cursor: pointer;
-          background-color: #eee;
-          border-color: #555;
-          border-style: solid;
-          border-width: 1px;
-          border-radius: 5px;
-          color: #000;
-          text-align: center;
-          box-sizing: content-box;
-          /* Use :after for vCenter - in case an icon is used (uses :before) */
-          /* the default mixins set font-size, which interferes when changing icons depenging on state */
-          /* @include fa-icon; // in _mixins.scss */
-          /* @extend .fa; // in _core.scss*/
-          font-family: FontAwesome;
-          display: inline-block;
-          padding: 2px;
-          margin-right: 1px;
-          font-size: 1em;
-          width: 17px;
-          height: 17px; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-out:after {
-            content: "";
-            display: inline-block;
-            height: 100%;
-            vertical-align: middle;
-            width: 0; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-out:focus, .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-out:hover, .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-out.pressed {
-            background-color: #fff; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-zoom-out:before {
-            content: ""; }
-        .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-pause {
-          cursor: pointer;
-          background-color: #eee;
-          border-color: #555;
-          border-style: solid;
-          border-width: 1px;
-          border-radius: 5px;
-          color: #000;
-          text-align: center;
-          box-sizing: content-box;
-          /* Use :after for vCenter - in case an icon is used (uses :before) */
-          /* the default mixins set font-size, which interferes when changing icons depenging on state */
-          /* @include fa-icon; // in _mixins.scss */
-          /* @extend .fa; // in _core.scss*/
-          font-family: FontAwesome;
-          display: inline-block;
-          padding: 2px;
-          margin-right: 1px;
-          font-size: 1em;
-          width: 17px;
-          height: 17px; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-pause:after {
-            content: "";
-            display: inline-block;
-            height: 100%;
-            vertical-align: middle;
-            width: 0; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-pause:focus, .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-pause:hover, .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-pause.pressed {
-            background-color: #fff; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-pause:before {
-            content: ""; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-pause.paused {
-            /* the default mixins set font-size, which interferes when changing icons depenging on state */
-            /* @include fa-icon; // in _mixins.scss */
-            /* @extend .fa; // in _core.scss*/
-            font-family: FontAwesome; }
-            .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-pause.paused:before {
-              content: ""; }
-        .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th #menu-timeline-randomplay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 0.1px;
-          height: 0.1px;
-          opacity: 0;
-          z-index: -1;
-          overflow: hidden;
-          clip: rect(1px, 1px, 1px, 1px); }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th #menu-timeline-randomplay + label {
-            cursor: pointer;
-            background-color: #eee;
-            border-color: #555;
-            border-style: solid;
-            border-width: 1px;
-            border-radius: 5px;
-            color: #000;
-            text-align: center;
-            box-sizing: content-box;
-            /* Use :after for vCenter - in case an icon is used (uses :before) */
-            /* the default mixins set font-size, which interferes when changing icons depenging on state */
-            /* @include fa-icon; // in _mixins.scss */
-            /* @extend .fa; // in _core.scss*/
-            font-family: FontAwesome;
-            display: inline-block;
-            padding: 2px;
-            margin-right: 1px;
-            font-size: 1em;
-            width: 17px;
-            height: 17px; }
-            .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th #menu-timeline-randomplay + label:after {
-              content: "";
-              display: inline-block;
-              height: 100%;
-              vertical-align: middle;
-              width: 0; }
-            .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th #menu-timeline-randomplay + label:focus, .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th #menu-timeline-randomplay + label:hover, .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th #menu-timeline-randomplay + label.pressed {
-              background-color: #fff; }
-            .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th #menu-timeline-randomplay + label:before {
-              content: ""; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th #menu-timeline-randomplay:checked + label {
-            background-color: #5cb85c; }
-        .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-lockstate {
-          /* the default mixins set font-size, which interferes when changing icons depenging on state */
-          /* @include fa-icon; // in _mixins.scss */
-          /* @extend .fa; // in _core.scss*/
-          font-family: FontAwesome; }
-          .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-lockstate:before {
-            content: ""; }
-          .locked.menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-lockstate {
-            /* the default mixins set font-size, which interferes when changing icons depenging on state */
-            /* @include fa-icon; // in _mixins.scss */
-            /* @extend .fa; // in _core.scss*/
-            font-family: FontAwesome; }
-            .locked.menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th .menu-timeline-lockstate:before {
-              content: ""; }
         .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th.menu-timeline-timeticks {
           cursor: pointer; }
           .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content tr th.menu-timeline-timeticks .menu-timeline-timetick {
@@ -3036,7 +3072,6 @@
                   width: 100%;
                   height: 100%;
                   color: #000;
-                  background: #eee;
                   border: none;
                   text-align: left;
                   text-overflow: ellipsis;
@@ -3096,6 +3131,58 @@
                   background-color: #c9809a; }
                 .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li > button.effect-color-20 {
                   background-color: #f4d6e8; }
+                .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event {
+                  width: 100px !important;
+                  border-right: none;
+                  border-top: none;
+                  border-bottom: none;
+                  border-left: solid 2px #a00; }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event .timeline-entry-begin-time-adjust,
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event .timeline-entry-end-time-adjust {
+                    display: none; }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button {
+                    border-bottom-right-radius: 50%;
+                    border-top-right-radius: 50%; }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-1 {
+                    background: linear-gradient(to right, #e59888, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-2 {
+                    background: linear-gradient(to right, #b8bef1, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-3 {
+                    background: linear-gradient(to right, #9ed497, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-4 {
+                    background: linear-gradient(to right, #d8afe9, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-5 {
+                    background: linear-gradient(to right, #eac78d, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-6 {
+                    background: linear-gradient(to right, #e69fd4, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-7 {
+                    background: linear-gradient(to right, #97d4c0, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-8 {
+                    background: linear-gradient(to right, #eb9ab6, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-9 {
+                    background: linear-gradient(to right, #84b858, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-10 {
+                    background: linear-gradient(to right, #a798cb, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-11 {
+                    background: linear-gradient(to right, #c0d280, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-12 {
+                    background: linear-gradient(to right, #95b0d7, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-13 {
+                    background: linear-gradient(to right, #ccd2ab, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-14 {
+                    background: linear-gradient(to right, #c492c3, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-15 {
+                    background: linear-gradient(to right, #d1a87d, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-16 {
+                    background: linear-gradient(to right, #a5d8ee, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-17 {
+                    background: linear-gradient(to right, #e5b6b2, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-18 {
+                    background: linear-gradient(to right, #e9e6f8, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-19 {
+                    background: linear-gradient(to right, #c9809a, transparent); }
+                  .menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content .menu-timeline-tracks > tr > td > ol > li.event > button.effect-color-20 {
+                    background: linear-gradient(to right, #f4d6e8, transparent); }
   .menu-timeline-container .menu-timeline-position-indicator {
     display: block;
     position: absolute;
@@ -3536,7 +3623,7 @@ body {
     height: 1.5cm;
     line-height: 1.5cm; } }
 
-.effect-change-image-config label {
+.effect-change-image-config > label {
   display: none; }
 
 .effect-change-image-config input[type="radio"][value="file"]:checked ~ .effect-change-image-file-tab {
