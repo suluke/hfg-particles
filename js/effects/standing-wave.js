@@ -36,7 +36,7 @@ class StandingWaveConfigUI extends ConfigUI {
           Wave function:
           <select class="effect-standing-wave-function" value="sine">
             <option value="sine">Sine</option>
-            <option value="triangle">Triangle</option>
+            <option value="linear">Triangle</option>
           </select>
         </label>
       </fieldset>
