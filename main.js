@@ -7053,7 +7053,8 @@ function preset(name, config, id) {
 var filePresets = [
   // Import built-in presets here
   preset('Webcam + Effects', Preset1),
-  preset('Webcam + Standing wave', Preset2) ];
+  preset('Webcam + Standing wave', Preset2)
+];
 
 // Create the exported listedPresets dict
 var listedPresets = {};
