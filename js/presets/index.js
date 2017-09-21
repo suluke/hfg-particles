@@ -2,6 +2,7 @@ import { effectList } from '../effects/index';
 import EffectConfig from '../effects/effect-config';
 import { create as createConfig } from './app-config';
 import Preset1 from './preset-1.json';
+import Preset2 from './preset-2.json';
 
 const LISTED_PRESETS_ID_BEGIN = 1000; // better safe than sorry
 
@@ -20,7 +21,8 @@ function preset(name, config, id = -1) {
 }
 const filePresets = [
   // Import built-in presets here
-  preset('Webcam + Effects', Preset1)
+  preset('Webcam + Effects', Preset1),
+  preset('Webcam + Standing wave', Preset2)
 ];
 
 // Create the exported listedPresets dict
