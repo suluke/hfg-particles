@@ -182,8 +182,8 @@
         "timeEnd": 14610,
         "repetitions": 1,
         "config": {
-          "maxRetries": 0,
-          "retryTimeout": 400
+          "maxRetries": 3,
+          "retryTimeout": 1000
         }
       }
     ],

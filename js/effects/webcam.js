@@ -23,7 +23,7 @@ class WebcamConfigUI extends ConfigUI {
         <br/>
         <label>
           Delay between retries:
-          <input type="number" min="0" max="10000" step="1" value="400" class="${classPrefix}-retry-timeout" />ms
+          <input type="number" min="0" max="10000" step="1" value="1000" class="${classPrefix}-retry-timeout" />ms
         </label>
       </fieldset>
     `);
@@ -51,8 +51,8 @@ class WebcamConfigUI extends ConfigUI {
   }
 
   applyConfig(config) {
-    this.maxRetriesInput.value = config.maxRetries || 0;
-    this.retryTimeoutInput.value = config.retryTimeout || 400;
+    this.maxRetriesInput.value = config.maxRetries || 3;
+    this.retryTimeoutInput.value = config.retryTimeout || 1000;
   }
 }
 
@@ -110,12 +110,10 @@ export default class WebcamEffect extends Effect {
         .then(() => Promise.resolve(videoTrack), (err) => Promise.reject(err));
     }, (err) => Promise.reject(err))
     .then((videoTrack) => {
-      // Now this is where the magic happens
       const capture = new ImageCapture(videoTrack);
-      let retries = 0;
-      const grabLoop = (imageOrTimestamp) => {
-        if (isActive() && imageOrTimestamp && (typeof imageOrTimestamp) !== 'number') {
-          const image = imageOrTimestamp;
+      // This is where the magic happens
+      const processFrame = (image) => {
+        if (isActive()) {
           const w = image.width;
           const h = image.height;
           // FIXME the camera resolution shouldn't change all that often
@@ -129,30 +127,53 @@ export default class WebcamEffect extends Effect {
           const pd = props.state.createParticleData(canvas, 'fit-image', {x: 'crop-both', y: 'crop-both'});
           props.state.setParticleData(pd);
         }
+      };
+      // When we are sure grabbing images works (which happens further
+      // below) we call this function to grab frames repeatedly in a loop
+      const grabLoop = () => {
         if (!stopped) {
           // FIXME if we don't grab frames, Chrome will soon make the
           // track invalid, causing the next grabFrame to throw an error
-          if (true || isActive()) {
-            capture.grabFrame()
-            .then(grabLoop, (err) => {
-              // FIXME Firefox needs some time to get ready for grabbing
-              // frames, so let's try this one more time if the first
-              // one didn't succeed
-              if (retries < instance.config.maxRetries) {
-                retries = retries + 1;
-                window.setTimeout(() => grabLoop(0), instance.config.retryTimeout);
-              } else {
-                // Throw the error from outside any promises
-                window.setTimeout(() => { throw err; }, 0);
-              }
-            });
-          } else {
+          // Otherwise, we could test here if we are active and do a
+          // no-op instead of grabFrame
+          capture.grabFrame()
+          .then((frame) => {
+            processFrame(frame);
+            // Queue this into the next animation frame so we don't
+            // explode the call stack with recursive calls
             window.requestAnimationFrame(grabLoop);
-          }
+          }, (err) => {
+            // Throw this error into the global scope
+            window.setTimeout(() => { throw new Error('Cannot grab images from the camera'); }, 0);
+          });
         }
       };
-      // start grabbing images!
-      window.requestAnimationFrame(grabLoop);
+
+      // As it turns out, having the video alone is not a guarantee that
+      // we can actually grab images (at least on FF). So let's make sure
+      // it works at least one time
+      return new Promise((res, rej) => {
+        let retries = 0;
+        const testGrab = (err) => {
+          capture.grabFrame()
+          .then((frame) => {
+            // Success, resolve and start grabbing!
+            processFrame(frame);
+            grabLoop();
+            res();
+          }, (err) => {
+            // Aw, no image :( Maybe try again?
+            if (retries < instance.config.maxRetries) {
+              retries = retries + 1;
+              window.setTimeout(testGrab, instance.config.retryTimeout);
+            } else {
+              // We finally have to give up :/
+              rej(new Error('Cannot grab images from camera'));
+            }
+          });
+        };
+        testGrab();
+      });
     }, (err) => Promise.reject(err));
   }
 
@@ -173,10 +194,13 @@ export default class WebcamEffect extends Effect {
   }
 
   static getDefaultConfig() {
-    return {};
+    return {
+      maxRetries: 3,
+      retryTimeout: 1000
+    };
   }
 
   static getRandomConfig() {
-    return {};
+    return WebcamEffect.getDefaultConfig();
   }
 }

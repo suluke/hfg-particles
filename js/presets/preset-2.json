@@ -24,7 +24,10 @@
         "timeBegin": 0,
         "timeEnd": 2152,
         "repetitions": 1,
-        "config": {}
+        "config": {
+          "maxRetries": 3,
+          "retryTimeout": 1000
+        }
       }
     ],
     [
