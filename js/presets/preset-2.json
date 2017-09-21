@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 0,
+  "backgroundColor": [
+    0,
+    0,
+    0,
+    1
+  ],
+  "xParticlesCount": 200,
+  "yParticlesCount": 125,
+  "defaultImageScaling": "crop-to-viewport",
+  "defaultImageCropping": {
+    "x": "crop-both",
+    "y": "crop-both"
+  },
+  "particleScaling": 1,
+  "particleShape": "circle",
+  "particleFading": "none",
+  "particleOverlap": "alpha blend",
+  "effects": [
+    [
+      {
+        "id": "WebcamEffect",
+        "timeBegin": 0,
+        "timeEnd": 2152,
+        "repetitions": 1,
+        "config": {}
+      }
+    ],
+    [
+      {
+        "id": "StandingWaveEffect",
+        "timeBegin": 0,
+        "timeEnd": 2143,
+        "repetitions": 1,
+        "config": {
+          "maxAmplitude": 0.05,
+          "waveCount": 20,
+          "timeInterpolation": "linear",
+          "waveFunction": "sine",
+          "dimension": "y"
+        }
+      }
+    ],
+    []
+  ],
+  "duration": 2152
+}

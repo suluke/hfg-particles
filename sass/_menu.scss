@@ -57,6 +57,40 @@ $menu-apply-btn-height: 10%;
         height: 10%;
         min-height: 20px;
       }
+
+      /**
+       * Load/Store/Reset Buttons
+       */
+      .menu-state-ctrl-buttons {
+        display: flex;
+        justify-content: center;
+        @mixin load-store-btn {
+          @include btn-base;
+          font-size: 1em;
+          padding: 5px;
+          margin: 5px;
+        }
+        .menu-btn-importstate {
+          @include icon($fa-var-folder-open);
+          @include load-store-btn;
+          & > input[type="file"] {
+            @include visuallyhidden;
+          }
+        }
+        .menu-btn-exportstate {
+          @include icon($fa-var-download);
+          @include load-store-btn;
+        }
+        .menu-btn-resetstate {
+          @include icon($fa-var-trash);
+          @include load-store-btn;
+        }
+      }
+
+      .menu-select-preset-control {
+        display: block;
+        text-align: center;
+      }
       
       /**
        * Effects list
@@ -104,35 +138,6 @@ $menu-apply-btn-height: 10%;
             text-align: center;
             background-color: rgba(0, 0, 0, 0.3);
           }
-        }
-      }
-
-      .menu-state-ctrl-buttons {
-        display: flex;
-        justify-content: center;
-        /**
-         * Load/Store/Reset Buttons
-         */
-        @mixin load-store-btn {
-          @include btn-base;
-          font-size: 1em;
-          padding: 5px;
-          margin: 5px;
-        }
-        .menu-btn-importstate {
-          @include icon($fa-var-folder-open);
-          @include load-store-btn;
-          & > input[type="file"] {
-            @include visuallyhidden;
-          }
-        }
-        .menu-btn-exportstate {
-          @include icon($fa-var-download);
-          @include load-store-btn;
-        }
-        .menu-btn-resetstate {
-          @include icon($fa-var-trash);
-          @include load-store-btn;
         }
       }
     }
