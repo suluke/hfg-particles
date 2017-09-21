@@ -6,6 +6,7 @@ import LoadImgDialog from './ui/load-default-img-dialog';
 import MainMenu from './ui/menu';
 import Renderer from './renderer';
 import Config from './config';
+import { allPresets } from './presets/index.js';
 
 console.info(Config);
 
