@@ -19,5 +19,7 @@ export default class InactivityMonitor {
     // DOM Events
     document.addEventListener('mousemove', onActivity);
     document.addEventListener('keypress', onActivity);
+    // Touch devices don't have (or at least make us of) mouses or keys
+    document.addEventListener('click', onActivity);
   }
 }
