@@ -13,11 +13,11 @@ class ParticleDisplaceConfigUI extends ConfigUI {
         <legend>${EffectName}</legend>
         <label>
           Displace distance:
-          <input type="number" min="0" class="${classPrefix}-distance" value="1" />
+          <input type="number" min="0" class="${classPrefix}-distance" value="0.5" />
         </label><br/>
         <label>
           Displace direction:
-          <input type="number" class="${classPrefix}-direction" value="0" />
+          <input type="number" class="${classPrefix}-direction" value="135" />
         </label>
         <select class="${classPrefix}-direction-unit">
           <option value="degrees" selected>deg</option>
@@ -88,9 +88,9 @@ class ParticleDisplaceConfigUI extends ConfigUI {
   }
 
   applyConfig(config) {
-    this.directionInput.value = config.direction || 0;
+    this.directionInput.value = config.direction || 135;
     this.directionUnitInput.value = config.directionUnit || 'degrees';
-    this.distanceInput.value = config.distance || 0;
+    this.distanceInput.value = config.distance || 0.5;
     this.easeInInput.value = config.easeInTime || 1000;
     this.easeOutInput.value = config.easeOutTime || 1000;
     this.easeFuncInput.value = config.easeFunc || 'sine';
@@ -99,12 +99,12 @@ class ParticleDisplaceConfigUI extends ConfigUI {
 
 export default class ParticleDisplaceEffect extends Effect {
   static register(instance, props, uniforms, vertexShader) {
-    let angle = instance.config.direction || 0;
+    let angle = instance.config.direction || 135;
     if (instance.config.directionUnit !== 'radians') {
       angle = angle / 360 * 2 * Math.PI;
     }
     angle = (angle + 2 * Math.PI) % (2 * Math.PI);
-    const distance = instance.config.distance || 0;
+    const distance = instance.config.distance || 0.5;
     const easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
     const easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
     // starts at 0, goes down to 1
@@ -152,9 +152,9 @@ export default class ParticleDisplaceEffect extends Effect {
 
   static getDefaultConfig() {
     return {
-      direction: 0,
+      direction: 135,
       directionUnit: 'degrees',
-      distance: 0,
+      distance: 0.5,
       easeInTime: 1000,
       easeOutTime: 1000,
       easeFunc: 'sine'
@@ -165,10 +165,10 @@ export default class ParticleDisplaceEffect extends Effect {
     return {
       direction: Math.random() * 360,
       directionUnit: 'degrees',
-      distance: Math.random() * 2,
+      distance: Math.random() - 0.5,
       easeInTime: 1000,
       easeOutTime: 1000,
-      easeFunc: ['sine', 'linear', 'none'][Math.floor(Math.random() * 3)]
+      easeFunc: ['sine', 'linear'][Math.floor(Math.random() * 2)]
     };
   }
 }
