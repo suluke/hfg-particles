@@ -15,28 +15,19 @@ function domImgToCanvas(img) {
 
 class ParticleData {
   constructor(imageData, regl, scalingInfo) {
-    const w = scalingInfo.particleCounts.x || imageData.width;
-    const h = scalingInfo.particleCounts.y || imageData.height;
-    
     const scaledData = mapImageToParticles(imageData, scalingInfo);
-
     const rgba = scaledData.data;
 
-    const pixelIndices = Array.from(Array(w * h).keys());
-    const texcoords = pixelIndices.map((i) => [((i % w) + 0.5) / w, (Math.floor(i / w) + 0.5) / h]);
-
     // members
-    this.width           = w;
-    this.height          = h;
-    this.texcoordsBuffer = regl.buffer(texcoords);
-    this.rgbaBuffer      = regl.buffer({usage: 'static', type: 'uint8', length: 4 * rgba.length, data: rgba});
-    this.destroyed = false;
+    this.rgbaBuffer = regl.buffer({usage: 'static', type: 'uint8', length: 4 * rgba.length, data: rgba});
+    this.destroyed  = false;
   }
   destroy() {
     if (!this.destroyed) {
-      this.texcoordsBuffer.destroy();
       this.rgbaBuffer.destroy();
       this.destroyed = true;
+    } else {
+      throw new Error('Attempt to destroy ParticleData more than once');
     }
   }
 }
@@ -83,17 +74,28 @@ export default class RendererState {
     this.hooks = [];
     this.width = 0;
     this.height = 0;
+    this.texcoordsBuffer = null;
   }
   adaptToConfig(config) {
     this.config = config;
     this.pipeline.reset(config.backgroundColor);
+
+    const pw = config.xParticlesCount;
+    const ph = config.yParticlesCount;
+
+    if (this.texcoordsBuffer !== null) {
+      this.texcoordsBuffer.destroy();
+    }
+    const pixelIndices = Array.from(Array(pw * ph).keys());
+    const texcoords = pixelIndices.map((i) => [((i % pw) + 0.5) / pw, (Math.floor(i / pw) + 0.5) / ph]);
+    this.texcoordsBuffer = this.regl.buffer(texcoords);
 
     // Update default particle data
     const DPD = this.particleDataStore[0];
     const defaultImg = DPD.imageCanvas;
     if (defaultImg !== null) {
       const scalingInfo = new ScalingInfo(
-        {x: config.xParticlesCount, y: config.yParticlesCount},
+        {x: pw, y: ph},
         DPD.imageScaling, DPD.imageCropping,
         {width: this.getWidth(), height: this.getHeight()}
       );

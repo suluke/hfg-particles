@@ -14,7 +14,7 @@ export default class CommandBuilder {
   createDefaultUniforms() {
     const uniforms = new Uniforms();
     uniforms.addUniform('invScreenAspectRatio', 'float', (ctx) => ctx.viewportHeight / ctx.viewportWidth);
-    uniforms.addUniform('particleSize', 'float', (ctx) => (ctx.viewportWidth / this.state.getCurrentParticleData().width) * this.config.particleScaling);
+    uniforms.addUniform('particleSize', 'float', (ctx) => (ctx.viewportWidth / this.config.xParticlesCount) * this.config.particleScaling);
     uniforms.addUniform('globalTime', 'int', (ctx, props) => props.clock.getTime());
     return uniforms;
   }
@@ -74,7 +74,7 @@ export default class CommandBuilder {
     return new Promise((res, rej) => {
       const uniforms = {};
       const attributes = {
-        texcoord: () => this.state.getCurrentParticleData().texcoordsBuffer,
+        texcoord: () => this.state.texcoordsBuffer,
         rgba_int: () => this.state.getCurrentParticleData().rgbaBuffer
       };
       const vert = CommandBuilder.prepareVertexShader();
