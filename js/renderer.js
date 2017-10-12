@@ -3,6 +3,17 @@ import CommandBuilder from './command-builder';
 import RendererClock from './renderer/clock';
 import RendererState from './renderer/state';
 
+/**
+ * The Renderer's job is to perform the following steps:
+ * 1. Take a config object with the user's desired settings
+ * 2. Inform the RendererState (state) about the new user config
+ * 3. Create a new regl command for rendering frames according to the config
+ * 4. Update the pipeline so that effects become available that require
+ *    more than a single render pass.
+ * 5. Inside the regl.frame callback (render loop), hydrate the regl
+ *    command (the pipeline, to be more precise) with the current state
+ *    and clock info (cf. RendererClock)
+ */
 export default class Renderer {
   constructor(canvas) {
     this.regl = createRegl({ canvas });

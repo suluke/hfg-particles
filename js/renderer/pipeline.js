@@ -79,6 +79,13 @@ class AccumulationCommand extends FullscreenRectCommand {
   }
 }
 
+/**
+ * The RendererPipeline manages the different passes needed to render a
+ * single frame. Usually, there is only one single pass required to
+ * render a frame. Only when there are accumulation effects, we need
+ * more than one render pass, namely for combining the most recent frame
+ * with the accumulation buffer.
+ */
 export default class RendererPipeline {
   constructor(regl) {
     this.regl = regl;

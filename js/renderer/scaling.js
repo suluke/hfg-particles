@@ -1,3 +1,9 @@
+/// The functions in this file are mainly responsible for interpreting
+/// ScalingInfo when mapping image/canvas pixel data onto the particle
+/// grid. ScalingInfo itself is a simple description format to give
+/// users the possibility to describe this mapping in an intuitive yet
+/// limited fashion.
+
 export class ScalingInfo {
   constructor(particleCounts, imageScaling, imageCropping, viewport) {
     this.particleCounts = particleCounts; // {x, y}

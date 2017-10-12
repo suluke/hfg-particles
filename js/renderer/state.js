@@ -17,58 +17,25 @@ class ParticleData {
   constructor(imageData, regl, scalingInfo) {
     const w = scalingInfo.particleCounts.x || imageData.width;
     const h = scalingInfo.particleCounts.y || imageData.height;
-    this.destroyed = false;
     
     const scaledData = mapImageToParticles(imageData, scalingInfo);
 
-    const particlePixels = scaledData.data;
+    const rgba = scaledData.data;
 
     const pixelIndices = Array.from(Array(w * h).keys());
-
     const texcoords = pixelIndices.map((i) => [((i % w) + 0.5) / w, (Math.floor(i / w) + 0.5) / h]);
 
-    const rgb = pixelIndices.map((i) => {
-      const pixel = particlePixels.slice(i * 4, (i * 4) + 4);
-
-      return [pixel[0] / 255, pixel[1] / 255, pixel[2] / 255];
-    });
-
-    const hsv = pixelIndices.map((i) => {
-      const pixel = rgb[i];
-
-      const cMax = Math.max(pixel[0], pixel[1], pixel[2]);
-      const cMin = Math.min(pixel[0], pixel[1], pixel[2]);
-      const d = cMax - cMin;
-
-      if (d < 0.00001 || cMax < 0.00001) {
-        return [0, 0, cMax];
-      }
-
-      let _h;
-      if (cMax === pixel[0]) {
-        _h = (pixel[1] - pixel[2]) / d;
-        if (_h < 0) {
-          _h += 6;
-        }
-      } else if (cMax === pixel[1]) {
-        _h = ((pixel[2] - pixel[0]) / d) + 2;
-      } else {
-        _h = ((pixel[0] - pixel[1]) / d) + 4;
-      }
-
-      return [_h * 60 * (Math.PI / 180), d / cMax, cMax];
-    });
+    // members
     this.width           = w;
     this.height          = h;
     this.texcoordsBuffer = regl.buffer(texcoords);
-    this.rgbBuffer       = regl.buffer(rgb);
-    this.hsvBuffer       = regl.buffer(hsv);
+    this.rgbaBuffer      = regl.buffer({usage: 'static', type: 'uint8', length: 4 * rgba.length, data: rgba});
+    this.destroyed = false;
   }
   destroy() {
     if (!this.destroyed) {
       this.texcoordsBuffer.destroy();
-      this.rgbBuffer.destroy();
-      this.hsvBuffer.destroy();
+      this.rgbaBuffer.destroy();
       this.destroyed = true;
     }
   }

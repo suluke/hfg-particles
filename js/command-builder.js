@@ -24,16 +24,39 @@ export default class CommandBuilder {
 
     vertexShader.attributes += `
       attribute vec2 texcoord;
-      attribute vec3 rgb;
-      attribute vec3 hsv;
+      attribute vec4 rgba_int;
     `;
     vertexShader.varyings += 'varying vec3 color;\n';
     vertexShader.globals += 'const float PI = 3.14159265;\n';
+    // Global library functions
     // TODO make functions a dict (= set) so that users can add them on
     // demand without defining them more than once
     vertexShader.functions += `
       vec2 getDirectionVector(float angle) {
         return vec2(cos(angle), sin(angle));
+      }
+      vec3 rgb2hsv(vec3 rgb) {
+        float cmin = min(rgb.r, min(rgb.g, rgb.b));
+        float cmax = max(rgb.r, max(rgb.g, rgb.b));
+        float d = cmax - cmin;
+        float eps = 0.00001;
+        if (d < eps || cmax < eps) {
+          return vec3(0, 0, cmax);
+        }
+
+        float _h;
+        if (cmax == rgb.r) {
+          _h = (rgb.g - rgb.b) / d;
+          if (_h < 0.) {
+            _h += 6.;
+          }
+        } else if (cmax == rgb.g) {
+          _h = ((rgb.b - rgb.r) / d) + 2.;
+        } else {
+          _h = ((rgb.r - rgb.g) / d) + 4.;
+        }
+
+        return vec3(_h * 60. * (PI / 180.), d / cmax, cmax);
       }
     `;
 
@@ -52,8 +75,7 @@ export default class CommandBuilder {
       const uniforms = {};
       const attributes = {
         texcoord: () => this.state.getCurrentParticleData().texcoordsBuffer,
-        rgb:      () => this.state.getCurrentParticleData().rgbBuffer,
-        hsv:      () => this.state.getCurrentParticleData().hsvBuffer
+        rgba_int: () => this.state.getCurrentParticleData().rgbaBuffer
       };
       const vert = CommandBuilder.prepareVertexShader();
       const frag = CommandBuilder.prepareFragmentShader();
@@ -87,6 +109,8 @@ export default class CommandBuilder {
       }
 
       vert.mainBody += `
+        vec3 rgb = rgba_int.rgb / 255.;
+        vec3 hsv = rgb2hsv(rgb);
         vec3 initialPosition = vec3(texcoord, 0);
         float pointSize = max(particleSize, 0.);
 
