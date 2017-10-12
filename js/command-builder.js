@@ -75,7 +75,7 @@ export default class CommandBuilder {
       const uniforms = {};
       const attributes = {
         texcoord: () => this.state.texcoordsBuffer,
-        rgba_int: () => this.state.getCurrentParticleData().rgbaBuffer
+        rgba_int: () => this.state.getColorBuffer()
       };
       const vert = CommandBuilder.prepareVertexShader();
       const frag = CommandBuilder.prepareFragmentShader();

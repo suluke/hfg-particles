@@ -15,20 +15,7 @@ function domImgToCanvas(img) {
 
 class ParticleData {
   constructor(imageData, regl, scalingInfo) {
-    const scaledData = mapImageToParticles(imageData, scalingInfo);
-    const rgba = scaledData.data;
-
-    // members
-    this.rgbaBuffer = regl.buffer({usage: 'static', type: 'uint8', length: 4 * rgba.length, data: rgba});
-    this.destroyed  = false;
-  }
-  destroy() {
-    if (!this.destroyed) {
-      this.rgbaBuffer.destroy();
-      this.destroyed = true;
-    } else {
-      throw new Error('Attempt to destroy ParticleData more than once');
-    }
+    this.rgba = mapImageToParticles(imageData, scalingInfo).data;
   }
 }
 
@@ -41,7 +28,6 @@ class ParticleDataStoreEntry {
   }
   destroy() {
     if (this.particleData !== null) {
-      this.particleData.destroy();
       this.particleData = null;
     }
     this.imageCanvas = null;
@@ -75,20 +61,29 @@ export default class RendererState {
     this.width = 0;
     this.height = 0;
     this.texcoordsBuffer = null;
+    this.colorFilters = [];
+    this.colorBuffer = null;
   }
   adaptToConfig(config) {
     this.config = config;
     this.pipeline.reset(config.backgroundColor);
+    this.colorFilters = [];
 
     const pw = config.xParticlesCount;
     const ph = config.yParticlesCount;
 
+    // texcoordsBuffer
     if (this.texcoordsBuffer !== null) {
       this.texcoordsBuffer.destroy();
     }
     const pixelIndices = Array.from(Array(pw * ph).keys());
     const texcoords = pixelIndices.map((i) => [((i % pw) + 0.5) / pw, (Math.floor(i / pw) + 0.5) / ph]);
     this.texcoordsBuffer = this.regl.buffer(texcoords);
+    // colorBuffer
+    if (this.colorBuffer !== null) {
+      this.colorBuffer.destroy();
+    }
+    this.colorBuffer = this.regl.buffer({usage: 'stream', type: 'uint8', length: 4 * ph * pw});
 
     // Update default particle data
     const DPD = this.particleDataStore[0];
@@ -150,11 +145,20 @@ export default class RendererState {
   destroyParticleData(id) {
     this.particleDataStore[id].destroy();
   }
-  getCurrentParticleData() {
+  addColorFilter(filter) {
+    this.colorFilters.push(filter);
+  }
+  getColorBuffer() {
     if (this.particleData < 0) {
       return null;
     }
-    return this.particleDataStore[this.particleData].particleData;
+    const original = this.particleDataStore[this.particleData].particleData.rgba;
+    let copy = Uint8Array.from(original);
+    for (let i = 0; i < this.colorFilters.length; i++) {
+      copy = this.colorFilters[i](copy);
+    }
+    this.colorBuffer(copy);
+    return this.colorBuffer;
   }
   createBuffer(...args) {
     const buf = this.regl.buffer(...args);
