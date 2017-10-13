@@ -144,7 +144,7 @@ export default class WebcamEffect extends Effect {
             window.requestAnimationFrame(grabLoop);
           }, (err) => {
             // Throw this error into the global scope
-            window.setTimeout(() => { throw new Error('Cannot grab images from the camera'); }, 0);
+            window.setTimeout(() => { throw err; }, 0);
           });
         }
       };
