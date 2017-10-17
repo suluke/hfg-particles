@@ -1,4 +1,5 @@
 import { parseHtml } from '../ui/util';
+import { fract } from './effect';
 
 export default class Ease {
   static makeConfigMarkup(classPrefix) {
@@ -77,6 +78,28 @@ export default class Ease {
       Ease.applyConfig(configUI, config);
       oldApplyConfig.call(configUI, config);
     };
+  }
+
+  static setupShaderEasing(instance, uniforms) {
+    const easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
+    const easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
+    // starts at 0, goes down to 1
+    const easeInProgress = uniforms.addUniform('easeInProgress', 'float', (ctx, props) => {
+      const time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+      return Math.min(1, time / (easeInTime / instance.getPeriod()));
+    });
+    // starts at 1, goes down to 0
+    const easeOutProgress = uniforms.addUniform('easeOutProgress', 'float', (ctx, props) => {
+      const time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+      return Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
+    });
+    const easeFuncs = {
+      none: '1.',
+      sine: `(1. - cos(PI * min(${easeInProgress}, ${easeOutProgress}))) / 2.`,
+      linear: `min(${easeInProgress}, ${easeOutProgress})`
+    };
+    const easeFunc = easeFuncs[instance.config.easeFunc || 'sine'];
+    return easeFunc;
   }
 }
 
