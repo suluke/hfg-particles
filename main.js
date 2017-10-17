@@ -1291,8 +1291,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-09-21T12:19:50.086Z',
-  git_rev:               '0df0e82',
+  timestamp:             '2017-10-17T19:48:16.803Z',
+  git_rev:               '269fe99',
   export_schema_version: 0
 };
 
@@ -5128,6 +5128,89 @@ var SparkleEffect = (function (Effect$$1) {
   return SparkleEffect;
 }(Effect));
 
+var Ease = function Ease () {};
+
+Ease.makeConfigMarkup = function makeConfigMarkup (classPrefix) {
+  var markup = parseHtml(("\n      <div>\n        <label>\n          Ease in time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-in\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease out time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-out\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease function:\n          <select class=\"" + classPrefix + "-ease-func\" value=\"sine\">\n            <option value=\"sine\" selected>Sine</option>\n            <option value=\"linear\">Linear</option>\n            <option value=\"none\">None</option>\n          </select>\n        </label>\n      </div>\n    "));
+  var fragment = document.createDocumentFragment();
+  while (markup.childNodes.length > 0) {
+    fragment.appendChild(markup.firstChild);
+  }
+  return fragment;
+};
+
+Ease.extendWithConfigInputs = function extendWithConfigInputs (configUI, classPrefix) {
+  var element = configUI.getElement();
+  configUI.easeInInput = element.querySelector(("input." + classPrefix + "-ease-in"));
+  configUI.easeOutInput = element.querySelector(("input." + classPrefix + "-ease-out"));
+  configUI.easeFuncInput = element.querySelector(("select." + classPrefix + "-ease-func"));
+  configUI.easeInInput.addEventListener('change', function () {
+    configUI.notifyChange();
+  });
+  configUI.easeOutInput.addEventListener('change', function () {
+    configUI.notifyChange();
+  });
+  configUI.easeFuncInput.addEventListener('change', function () {
+    configUI.notifyChange();
+  });
+};
+
+Ease.extendConfig = function extendConfig (configUI, config) {
+  config.easeInTime = parseInt(configUI.easeInInput.value, 10);
+  config.easeOutTime = parseInt(configUI.easeOutInput.value, 10);
+  config.easeFunc = configUI.easeFuncInput.value;
+  return config;
+};
+
+Ease.applyConfig = function applyConfig (configUI, config) {
+  configUI.easeInInput.value = config.easeInTime || 1000;
+  configUI.easeOutInput.value = config.easeOutTime || 1000;
+  configUI.easeFuncInput.value = config.easeFunc || 'sine';
+};
+
+Ease.extend = function extend (configUI, classPrefix, appendInputsSelector) {
+    if ( appendInputsSelector === void 0 ) appendInputsSelector = null;
+
+  var container = configUI.getElement();
+  if (appendInputsSelector !== null) {
+    container = container.querySelector(appendInputsSelector);
+  }
+  container.appendChild(Ease.makeConfigMarkup(classPrefix));
+  Ease.extendWithConfigInputs(configUI, classPrefix);
+  var oldGetConfig = configUI.getConfig;
+  var oldApplyConfig = configUI.applyConfig;
+
+  configUI.getConfig = function() {
+    return Ease.extendConfig(configUI, oldGetConfig.call(configUI));
+  };
+  configUI.applyConfig = function(config) {
+    Ease.applyConfig(configUI, config);
+    oldApplyConfig.call(configUI, config);
+  };
+};
+
+Ease.setupShaderEasing = function setupShaderEasing (instance, uniforms) {
+  var easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
+  var easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
+  // starts at 0, goes down to 1
+  var easeInProgress = uniforms.addUniform('easeInProgress', 'float', function (ctx, props) {
+    var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+    return Math.min(1, time / (easeInTime / instance.getPeriod()));
+  });
+  // starts at 1, goes down to 0
+  var easeOutProgress = uniforms.addUniform('easeOutProgress', 'float', function (ctx, props) {
+    var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+    return Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
+  });
+  var easeFuncs = {
+    none: '1.',
+    sine: ("(1. - cos(PI * min(" + easeInProgress + ", " + easeOutProgress + "))) / 2."),
+    linear: ("min(" + easeInProgress + ", " + easeOutProgress + ")")
+  };
+  var easeFunc = easeFuncs[instance.config.easeFunc || 'sine'];
+  return easeFunc;
+};
+
 var EffectName$11 = 'Particle spacing';
 var EffectDescription$11 = 'Adds or removes space between particles';
 
@@ -5137,13 +5220,10 @@ var ParticleSpacingConfigUI = (function (ConfigUI$$1) {
 
     ConfigUI$$1.call(this);
     var classPrefix = 'effect-particle-spacing';
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$11 + "</legend>\n        <label>\n          X spacing factor\n          <input type=\"number\" class=\"" + classPrefix + "-xspread\" value=\"1\" />\n        </label><br/>\n        <label>\n          Y spacing factor\n          <input type=\"number\" class=\"" + classPrefix + "-yspread\" value=\"1\" />\n        </label><br/>\n        <label>\n          Ease in time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-in\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease out time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-out\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease function:\n          <select class=\"" + classPrefix + "-ease-func\" value=\"sine\">\n            <option value=\"sine\" selected>Sine</option>\n            <option value=\"linear\">Linear</option>\n            <option value=\"none\">None</option>\n          </select>\n        </label>\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$11 + "</legend>\n        <label>\n          X spacing factor\n          <input type=\"number\" class=\"" + classPrefix + "-xspread\" value=\"1\" />\n        </label><br/>\n        <label>\n          Y spacing factor\n          <input type=\"number\" class=\"" + classPrefix + "-yspread\" value=\"1\" />\n        </label><br/>\n      </fieldset>\n    "));
     var ui = this.element;
     this.xSpreadInput = ui.querySelector(("input." + classPrefix + "-xspread"));
     this.ySpreadInput = ui.querySelector(("input." + classPrefix + "-yspread"));
-    this.easeInInput = ui.querySelector(("input." + classPrefix + "-ease-in"));
-    this.easeOutInput = ui.querySelector(("input." + classPrefix + "-ease-out"));
-    this.easeFuncInput = ui.querySelector(("select." + classPrefix + "-ease-func"));
 
     this.xSpreadInput.addEventListener('change', function () {
       this$1.notifyChange();
@@ -5151,15 +5231,8 @@ var ParticleSpacingConfigUI = (function (ConfigUI$$1) {
     this.ySpreadInput.addEventListener('change', function () {
       this$1.notifyChange();
     });
-    this.easeInInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
-    this.easeOutInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
-    this.easeFuncInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
+
+    Ease.extend(this, classPrefix);
   }
 
   if ( ConfigUI$$1 ) ParticleSpacingConfigUI.__proto__ = ConfigUI$$1;
@@ -5173,19 +5246,13 @@ var ParticleSpacingConfigUI = (function (ConfigUI$$1) {
   ParticleSpacingConfigUI.prototype.getConfig = function getConfig () {
     return {
       xSpread: parseFloat(this.xSpreadInput.value, 10),
-      ySpread: parseFloat(this.ySpreadInput.value, 10),
-      easeInTime: parseInt(this.easeInInput.value, 10),
-      easeOutTime: parseInt(this.easeOutInput.value, 10),
-      easeFunc: this.easeFuncInput.value
+      ySpread: parseFloat(this.ySpreadInput.value, 10)
     };
   };
 
   ParticleSpacingConfigUI.prototype.applyConfig = function applyConfig (config) {
     this.xSpreadInput.value = config.xSpread || 1;
     this.ySpreadInput.value = config.ySpread || 1;
-    this.easeInInput.value = config.easeInTime || 1000;
-    this.easeOutInput.value = config.easeOutTime || 1000;
-    this.easeFuncInput.value = config.easeFunc || 'sine';
   };
 
   return ParticleSpacingConfigUI;
@@ -5273,14 +5340,11 @@ var ParticleDisplaceConfigUI = (function (ConfigUI$$1) {
 
     ConfigUI$$1.call(this);
     var classPrefix = 'effect-particle-displace';
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$12 + "</legend>\n        <label>\n          Displace distance:\n          <input type=\"number\" min=\"0\" class=\"" + classPrefix + "-distance\" value=\"1\" />\n        </label><br/>\n        <label>\n          Displace direction:\n          <input type=\"number\" class=\"" + classPrefix + "-direction\" value=\"0\" />\n        </label>\n        <select class=\"" + classPrefix + "-direction-unit\">\n          <option value=\"degrees\" selected>deg</option>\n          <option value=\"radians\">rad</option>\n        </select>\n        <br/>\n        <label>\n          Ease in time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-in\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease out time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-out\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease function:\n          <select class=\"" + classPrefix + "-ease-func\" value=\"sine\">\n            <option value=\"sine\" selected>Sine</option>\n            <option value=\"linear\">Linear</option>\n            <option value=\"none\">None</option>\n          </select>\n        </label>\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$12 + "</legend>\n        <label>\n          Displace distance:\n          <input type=\"number\" min=\"0\" class=\"" + classPrefix + "-distance\" value=\"0.5\" />\n        </label><br/>\n        <label>\n          Displace direction:\n          <input type=\"number\" class=\"" + classPrefix + "-direction\" value=\"135\" />\n        </label>\n        <select class=\"" + classPrefix + "-direction-unit\">\n          <option value=\"degrees\" selected>deg</option>\n          <option value=\"radians\">rad</option>\n        </select>\n        <br/>\n      </fieldset>\n    "));
     var ui = this.element;
     this.distanceInput = ui.querySelector(("input." + classPrefix + "-distance"));
     this.directionInput = ui.querySelector(("input." + classPrefix + "-direction"));
     this.directionUnitInput = ui.querySelector(("select." + classPrefix + "-direction-unit"));
-    this.easeInInput = ui.querySelector(("input." + classPrefix + "-ease-in"));
-    this.easeOutInput = ui.querySelector(("input." + classPrefix + "-ease-out"));
-    this.easeFuncInput = ui.querySelector(("select." + classPrefix + "-ease-func"));
 
     this.distanceInput.addEventListener('change', function () {
       this$1.notifyChange();
@@ -5291,15 +5355,8 @@ var ParticleDisplaceConfigUI = (function (ConfigUI$$1) {
     this.directionUnitInput.addEventListener('change', function () {
       this$1.notifyChange();
     });
-    this.easeInInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
-    this.easeOutInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
-    this.easeFuncInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
+
+    Ease.extend(this, classPrefix);
   }
 
   if ( ConfigUI$$1 ) ParticleDisplaceConfigUI.__proto__ = ConfigUI$$1;
@@ -5314,20 +5371,14 @@ var ParticleDisplaceConfigUI = (function (ConfigUI$$1) {
     return {
       direction: parseFloat(this.directionInput.value),
       directionUnit: this.directionUnitInput.value,
-      distance: parseFloat(this.distanceInput.value),
-      easeInTime: parseInt(this.easeInInput.value, 10),
-      easeOutTime: parseInt(this.easeOutInput.value, 10),
-      easeFunc: this.easeFuncInput.value
+      distance: parseFloat(this.distanceInput.value)
     };
   };
 
   ParticleDisplaceConfigUI.prototype.applyConfig = function applyConfig (config) {
-    this.directionInput.value = config.direction || 0;
+    this.directionInput.value = config.direction || 135;
     this.directionUnitInput.value = config.directionUnit || 'degrees';
-    this.distanceInput.value = config.distance || 0;
-    this.easeInInput.value = config.easeInTime || 1000;
-    this.easeOutInput.value = config.easeOutTime || 1000;
-    this.easeFuncInput.value = config.easeFunc || 'sine';
+    this.distanceInput.value = config.distance || 0.5;
   };
 
   return ParticleDisplaceConfigUI;
@@ -5343,30 +5394,13 @@ var ParticleDisplaceEffect = (function (Effect$$1) {
   ParticleDisplaceEffect.prototype.constructor = ParticleDisplaceEffect;
 
   ParticleDisplaceEffect.register = function register (instance, props, uniforms, vertexShader) {
-    var angle = instance.config.direction || 0;
+    var angle = instance.config.direction || 135;
     if (instance.config.directionUnit !== 'radians') {
       angle = angle / 360 * 2 * Math.PI;
     }
     angle = (angle + 2 * Math.PI) % (2 * Math.PI);
-    var distance = instance.config.distance || 0;
-    var easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
-    var easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
-    // starts at 0, goes down to 1
-    var easeInProgress = uniforms.addUniform('easeInProgress', 'float', function (ctx, props) {
-      var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
-      return Math.min(1, time / (easeInTime / instance.getPeriod()));
-    });
-    // starts at 1, goes down to 0
-    var easeOutProgress = uniforms.addUniform('easeOutProgress', 'float', function (ctx, props) {
-      var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
-      return Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
-    });
-    var easeFuncs = {
-      none: '1.',
-      sine: ("(1. - cos(PI * min(" + easeInProgress + ", " + easeOutProgress + "))) / 2."),
-      linear: ("min(" + easeInProgress + ", " + easeOutProgress + ")")
-    };
-    var easeFunc = easeFuncs[instance.config.easeFunc || 'sine'];
+    var distance = instance.config.distance || 0.5;
+    var easeFunc = Ease.setupShaderEasing(instance, uniforms);
     vertexShader.mainBody += "\n      vec2 offset;\n      offset.y = cos(float(" + angle + "));\n      offset.x = sqrt(1. - pow(offset.y, 2.)) * (-2. * floor(float(" + angle + ") / PI) + 1.);\n      offset *= float(" + distance + ");\n      float ease = " + easeFunc + ";\n      offset *= ease;\n      position.xy += offset;\n    ";
   };
 
@@ -5388,9 +5422,9 @@ var ParticleDisplaceEffect = (function (Effect$$1) {
 
   ParticleDisplaceEffect.getDefaultConfig = function getDefaultConfig () {
     return {
-      direction: 0,
+      direction: 135,
       directionUnit: 'degrees',
-      distance: 0,
+      distance: 0.5,
       easeInTime: 1000,
       easeOutTime: 1000,
       easeFunc: 'sine'
@@ -5401,10 +5435,10 @@ var ParticleDisplaceEffect = (function (Effect$$1) {
     return {
       direction: Math.random() * 360,
       directionUnit: 'degrees',
-      distance: Math.random() * 2,
+      distance: Math.random() - 0.5,
       easeInTime: 1000,
       easeOutTime: 1000,
-      easeFunc: ['sine', 'linear', 'none'][Math.floor(Math.random() * 3)]
+      easeFunc: ['sine', 'linear'][Math.floor(Math.random() * 2)]
     };
   };
 
@@ -5420,13 +5454,10 @@ var ParticleSizeByHueConfigUI = (function (ConfigUI$$1) {
 
     ConfigUI$$1.call(this);
     var classPrefix = 'effect-particle-size-by-hue';
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$13 + "</legend>\n        <label>\n          Scaling factor:\n          <input type=\"number\" min=\"0\" class=\"" + classPrefix + "-scaling\" value=\"1\" />\n        </label><br/>\n        <label>\n          Hue rotation:\n          <input type=\"number\" min=\"0\" max=\"100\" step=\"1\" class=\"" + classPrefix + "-rotation\" value=\"0\" />%\n        </label><br/>\n        <label>\n          Ease in time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-in\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease out time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-out\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease function:\n          <select class=\"" + classPrefix + "-ease-func\" value=\"sine\">\n            <option value=\"sine\" selected>Sine</option>\n            <option value=\"linear\">Linear</option>\n            <option value=\"none\">None</option>\n          </select>\n        </label>\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$13 + "</legend>\n        <label>\n          Scaling factor:\n          <input type=\"number\" min=\"0\" class=\"" + classPrefix + "-scaling\" value=\"2\" />\n        </label><br/>\n        <label>\n          Hue rotation:\n          <input type=\"number\" min=\"0\" max=\"100\" step=\"1\" class=\"" + classPrefix + "-rotation\" value=\"0\" />%\n        </label><br/>\n      </fieldset>\n    "));
     var ui = this.element;
     this.scalingInput = ui.querySelector(("input." + classPrefix + "-scaling"));
     this.hueRotationInput = ui.querySelector(("input." + classPrefix + "-rotation"));
-    this.easeInInput = ui.querySelector(("input." + classPrefix + "-ease-in"));
-    this.easeOutInput = ui.querySelector(("input." + classPrefix + "-ease-out"));
-    this.easeFuncInput = ui.querySelector(("select." + classPrefix + "-ease-func"));
 
     this.scalingInput.addEventListener('change', function () {
       this$1.notifyChange();
@@ -5434,15 +5465,8 @@ var ParticleSizeByHueConfigUI = (function (ConfigUI$$1) {
     this.hueRotationInput.addEventListener('change', function () {
       this$1.notifyChange();
     });
-    this.easeInInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
-    this.easeOutInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
-    this.easeFuncInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
+
+    Ease.extend(this, classPrefix);
   }
 
   if ( ConfigUI$$1 ) ParticleSizeByHueConfigUI.__proto__ = ConfigUI$$1;
@@ -5454,22 +5478,16 @@ var ParticleSizeByHueConfigUI = (function (ConfigUI$$1) {
   };
 
   ParticleSizeByHueConfigUI.prototype.getConfig = function getConfig () {
-    return {
+    var config = {
       scaling: parseFloat(this.scalingInput.value),
       hueRotation: parseInt(this.hueRotationInput.value) / 100 * 2 * Math.PI,
-      easeInTime: parseInt(this.easeInInput.value, 10),
-      easeOutTime: parseInt(this.easeOutInput.value, 10),
-      easeFunc: this.easeFuncInput.value
     };
+    return config;
   };
 
   ParticleSizeByHueConfigUI.prototype.applyConfig = function applyConfig (config) {
-    console.log(config);
     this.scalingInput.value = config.scaling;
     this.hueRotationInput.value = Math.round(config.hueRotation / 2 / Math.PI * 100);
-    this.easeInInput.value = config.easeInTime || 1000;
-    this.easeOutInput.value = config.easeOutTime || 1000;
-    this.easeFuncInput.value = config.easeFunc || 'sine';
   };
 
   return ParticleSizeByHueConfigUI;
@@ -5526,7 +5544,7 @@ var ParticleSizeByHueEffect = (function (Effect$$1) {
 
   ParticleSizeByHueEffect.getDefaultConfig = function getDefaultConfig () {
     return {
-      scaling: 1,
+      scaling: 2,
       hueRotation: 0,
       easeInTime: 1000,
       easeOutTime: 1000,
@@ -6014,7 +6032,7 @@ var WebcamEffect = (function (Effect$$1) {
           });
         }
       };
-      
+
       // As it turns out, having the video alone is not a guarantee that
       // we can actually grab images (at least on FF). So let's make sure
       // it works at least one time
@@ -6073,13 +6091,132 @@ var WebcamEffect = (function (Effect$$1) {
   return WebcamEffect;
 }(Effect));
 
-var EffectName$16 = 'Dummy';
-var EffectDescription$16 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
+var EffectName$16 = 'Reduce Particle Count';
+var EffectDescription$16 = 'Drops the given amount of particles';
+
+var ParticlesReduceConfigUI = (function (ConfigUI$$1) {
+  function ParticlesReduceConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    var classPrefix = 'effect-particles-reduce';
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$16 + "</legend>\n        Remaining particles amount: <input class=\"" + classPrefix + "-reduction-amount\" type=\"number\" min=\"0\" max=\"100\" step=\"1\" value=\"100\"/>%\n        <br>\n        Hide particles by:\n        <select class=\"" + classPrefix + "-reduction-animation\">\n          <option selected value=\"fade-out\" title=\"fade-out exceeding particles\">fading out</option>\n          <option value=\"amount\" title=\"gradually reduce number of visible particles\">reducing amount</option>\n        </select>\n        <br>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.reductionAmountInput = ui.querySelector(("." + classPrefix + "-reduction-amount"));
+    this.reductionAnimationInput = ui.querySelector(("." + classPrefix + "-reduction-animation"));
+
+    this.reductionAmountInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.reductionAnimationInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+
+    Ease.extend(this, classPrefix);
+  }
+
+  if ( ConfigUI$$1 ) ParticlesReduceConfigUI.__proto__ = ConfigUI$$1;
+  ParticlesReduceConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  ParticlesReduceConfigUI.prototype.constructor = ParticlesReduceConfigUI;
+
+  ParticlesReduceConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  ParticlesReduceConfigUI.prototype.getConfig = function getConfig () {
+    return {
+      amount: parseFloat(this.reductionAmountInput.value) / 100,
+      animation: this.reductionAnimationInput.value
+    };
+  };
+
+  ParticlesReduceConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.reductionAmountInput.value = config.amount * 100;
+    this.reductionAnimationInput.value = config.animation;
+  };
+
+  return ParticlesReduceConfigUI;
+}(ConfigUI));
+
+var ParticlesReduceEffect = (function (Effect$$1) {
+  function ParticlesReduceEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) ParticlesReduceEffect.__proto__ = Effect$$1;
+  ParticlesReduceEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ParticlesReduceEffect.prototype.constructor = ParticlesReduceEffect;
+
+  ParticlesReduceEffect.register = function register (instance, props, uniforms, vertexShader) {
+    var amount = instance.config.amount;
+    var animation = instance.config.animation;
+    if (amount < 1) {
+      // This works as follows:
+      // We assume we want to render a different particle grid which is
+      // coarser than the one defined by {x,y}ParticlesCount but with a
+      // similar aspect ratio. Since it's cells are bigger than the cells
+      // in the original particle grid when rendered onto the same area,
+      // we refer to it as "super-grid"
+      var px = props.config.xParticlesCount;
+      var py = props.config.yParticlesCount;
+      var AR =  px / py;
+      var newH = Math.sqrt(amount * py * py);
+      var newW = Math.round(newH * AR);
+      newH = Math.round(newH);
+      // Now we know the super-grid's dimensions newW and newH. We can
+      // also calculate the grid's cell's dimensions relative to the old
+      // grid
+      var cellSize = Math.min(px / newW, Math.max(px, py)); // FIXME handle 0% better
+
+      var easeFunc = Ease.setupShaderEasing(instance, uniforms);
+
+      var transitionByAmount = {'amount': true, 'fade-out': false}[animation];
+
+      vertexShader.mainBody += "\n        float ease = " + easeFunc + ";\n        float cellSize = float(" + cellSize + ");\n        " + (transitionByAmount ? 'cellSize = mix(1., cellSize, ease);' : '') + "\n        // subcellMid is the center of the sub-cell occupied by the current\n        // vertex (a.k.a. particle)\n        vec2 subcellMid = initialPosition.xy * vec2(float(" + px + "), float(" + py + "));\n        // subcell is the 2d coord of this vertex' sub-cell\n        vec2 subcell = floor(subcellMid);\n        // translate the mid into super-grid coordinates\n        vec2 cellMid = subcellMid / vec2(cellSize);\n        // calculate the 2d coords of the super-cell this vertex falls into\n        vec2 cell = floor(cellMid);\n        // top left (TL) + bottom right (BR) of the super-cell in original grid coords\n        vec2 TL = (cellMid - vec2(0.5)) * vec2(cellSize); \n        vec2 BR = (cellMid + vec2(0.5)) * vec2(cellSize);\n        // Now we calculate the sub-cells that contain the super-cell's TL and BR \n        vec2 subcellTL = floor(TL);\n        vec2 subcellBR = floor(BR);\n        vec2 centerSubcell = mix(subcellTL, subcellBR, 0.5);\n        // a sub-cell dominates a super-cell iff it's the centerSubcell\n        bool dominatesCell = all(equal(subcell, centerSubcell));\n        if (dominatesCell) {\n          // The dominating cell's position should now be set to the center\n          // of the super-cell it dominates\n          vec2 superMid = (cell + vec2(0.5)) * cellSize / vec2(float(" + px + "), float(" + py + "));\n          vec2 offset = superMid - initialPosition.xy;\n          " + (transitionByAmount ? '' : 'offset = offset * vec2(ease);') + "\n          position.xy += offset;\n        } else {\n          pointSize = " + (transitionByAmount ? '0.' : '1. - ease') + ";\n          rgb = " + (transitionByAmount ? 'vec3(0.)' : 'rgb * vec3(1. - ease)') + ";\n        }\n      ";
+    } 
+  };
+
+  ParticlesReduceEffect.getDisplayName = function getDisplayName () {
+    return EffectName$16;
+  };
+
+  ParticlesReduceEffect.getDescription = function getDescription () {
+    return EffectDescription$16;
+  };
+
+  ParticlesReduceEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new ParticlesReduceConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  ParticlesReduceEffect.getDefaultConfig = function getDefaultConfig () {
+    return {
+      amount: 0.5,
+      animation: 'fade-out'
+    };
+  };
+
+  ParticlesReduceEffect.getRandomConfig = function getRandomConfig () {
+    return {
+      amount: Math.random(),
+      animation: ['fade-out', 'amount'][Math.floor(Math.random() * 2)]
+    };
+  };
+
+  return ParticlesReduceEffect;
+}(Effect));
+
+var EffectName$17 = 'Dummy';
+var EffectDescription$17 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
 
 var DummyConfigUI = (function (ConfigUI$$1) {
   function DummyConfigUI() {
     ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$16 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
+    var classPrefix = 'effect-dummy';
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$17 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
     var ui = this.element;
   }
 
@@ -6114,11 +6251,11 @@ var DummyEffect = (function (Effect$$1) {
   };
 
   DummyEffect.getDisplayName = function getDisplayName () {
-    return EffectName$16;
+    return EffectName$17;
   };
 
   DummyEffect.getDescription = function getDescription () {
-    return EffectDescription$16;
+    return EffectDescription$17;
   };
 
   DummyEffect.getConfigUI = function getConfigUI () {
@@ -6156,6 +6293,7 @@ var effectList = [
   ParticleSpacingEffect,
   ParticleDisplaceEffect,
   ParticleSizeByHueEffect,
+  ParticlesReduceEffect,
   ResetDefaultImageEffect,
   WebcamEffect,
 
@@ -6852,9 +6990,15 @@ Timeline.prototype.loadTimeline = function loadTimeline (trackList) {
     this$1.trackList.push(track);
     for (var j = 0; j < trackList[i].length; j++) {
       var entryDesc = EffectConfig.deserialize(trackList[i][j]);
-      var entry = new TimelineEntry(entryDesc.getEffectClass(), this$1);
-      entry.loadState(entryDesc);
-      track.addEntry(entry);
+      try {
+        var entry = new TimelineEntry(entryDesc.getEffectClass(), this$1);
+        entry.loadState(entryDesc);
+        track.addEntry(entry);
+      } catch (e) {
+        // Probably the effect hasn't been found due to a developer
+        // switching branches
+        console.warn(e);
+      }
     }
   }
   this.assertEmptyLastTrack(false);
@@ -17244,7 +17388,7 @@ CommandBuilder.prototype.createDefaultUniforms = function createDefaultUniforms 
 
   var uniforms = new Uniforms();
   uniforms.addUniform('invScreenAspectRatio', 'float', function (ctx) { return ctx.viewportHeight / ctx.viewportWidth; });
-  uniforms.addUniform('particleSize', 'float', function (ctx) { return (ctx.viewportWidth / this$1.state.getCurrentParticleData().width) * this$1.config.particleScaling; });
+  uniforms.addUniform('particleSize', 'float', function (ctx) { return (ctx.viewportWidth / this$1.config.xParticlesCount) * this$1.config.particleScaling; });
   uniforms.addUniform('globalTime', 'int', function (ctx, props) { return props.clock.getTime(); });
   return uniforms;
 };
@@ -17252,12 +17396,13 @@ CommandBuilder.prototype.createDefaultUniforms = function createDefaultUniforms 
 CommandBuilder.prepareVertexShader = function prepareVertexShader (uniforms) {
   var vertexShader = new Shader();
 
-  vertexShader.attributes += "\n      attribute vec2 texcoord;\n      attribute vec3 rgb;\n      attribute vec3 hsv;\n    ";
+  vertexShader.attributes += "\n      attribute vec2 texcoord;\n      attribute vec4 rgba_int;\n    ";
   vertexShader.varyings += 'varying vec3 color;\n';
   vertexShader.globals += 'const float PI = 3.14159265;\n';
+  // Global library functions
   // TODO make functions a dict (= set) so that users can add them on
   // demand without defining them more than once
-  vertexShader.functions += "\n      vec2 getDirectionVector(float angle) {\n        return vec2(cos(angle), sin(angle));\n      }\n    ";
+  vertexShader.functions += "\n      vec2 getDirectionVector(float angle) {\n        return vec2(cos(angle), sin(angle));\n      }\n      vec3 rgb2hsv(vec3 rgb) {\n        float cmin = min(rgb.r, min(rgb.g, rgb.b));\n        float cmax = max(rgb.r, max(rgb.g, rgb.b));\n        float d = cmax - cmin;\n        float eps = 0.00001;\n        if (d < eps || cmax < eps) {\n          return vec3(0, 0, cmax);\n        }\n\n        float _h;\n        if (cmax == rgb.r) {\n          _h = (rgb.g - rgb.b) / d;\n          if (_h < 0.) {\n            _h += 6.;\n          }\n        } else if (cmax == rgb.g) {\n          _h = ((rgb.b - rgb.r) / d) + 2.;\n        } else {\n          _h = ((rgb.r - rgb.g) / d) + 4.;\n        }\n\n        return vec3(_h * 60. * (PI / 180.), d / cmax, cmax);\n      }\n    ";
 
   return vertexShader;
 };
@@ -17275,9 +17420,8 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
   return new Promise(function (res, rej) {
     var uniforms = {};
     var attributes = {
-      texcoord: function () { return this$1.state.getCurrentParticleData().texcoordsBuffer; },
-      rgb:    function () { return this$1.state.getCurrentParticleData().rgbBuffer; },
-      hsv:    function () { return this$1.state.getCurrentParticleData().hsvBuffer; }
+      texcoord: function () { return this$1.state.texcoordsBuffer; },
+      rgba_int: function () { return this$1.state.getColorBuffer(); }
     };
     var vert = CommandBuilder.prepareVertexShader();
     var frag = CommandBuilder.prepareFragmentShader();
@@ -17310,7 +17454,7 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
         throw new Error(("Unknown particle overlap mode: " + (this$1.config.particleOverlap)));
     }
 
-    vert.mainBody += "\n        vec3 initialPosition = vec3(texcoord, 0);\n        float pointSize = max(particleSize, 0.);\n\n        vec3 position = initialPosition;\n      ";
+    vert.mainBody += "\n        vec3 rgb = rgba_int.rgb / 255.;\n        vec3 hsv = rgb2hsv(rgb);\n        vec3 initialPosition = vec3(texcoord, 0);\n        float pointSize = max(particleSize, 0.);\n\n        vec3 position = initialPosition;\n      ";
     var nextEffect = (function () {
       var i = 0;
       var j = 0;
@@ -17550,6 +17694,13 @@ var AccumulationCommand = (function (FullscreenRectCommand$$1) {
   return AccumulationCommand;
 }(FullscreenRectCommand));
 
+/**
+ * The RendererPipeline manages the different passes needed to render a
+ * single frame. Usually, there is only one single pass required to
+ * render a frame. Only when there are accumulation effects, we need
+ * more than one render pass, namely for combining the most recent frame
+ * with the accumulation buffer.
+ */
 var RendererPipeline = function RendererPipeline(regl) {
   var this$1 = this;
 
@@ -17616,17 +17767,11 @@ RendererPipeline.prototype.isValid = function isValid () {
   return this.mainCommand !== null;
 };
 
-function domImgToCanvas(img) {
-  var fullresCanvas = document.createElement('canvas');
-  var fullresContext = fullresCanvas.getContext('2d');
-  fullresCanvas.width = img.naturalWidth;
-  fullresCanvas.height = img.naturalHeight;
-  // flipped y-axis
-  fullresContext.translate(0, img.naturalHeight);
-  fullresContext.scale(1, -1);
-  fullresContext.drawImage(img, 0, 0);
-  return fullresCanvas;
-}
+/// The functions in this file are mainly responsible for interpreting
+/// ScalingInfo when mapping image/canvas pixel data onto the particle
+/// grid. ScalingInfo itself is a simple description format to give
+/// users the possibility to describe this mapping in an intuitive yet
+/// limited fashion.
 
 var ScalingInfo = function ScalingInfo(particleCounts, imageScaling, imageCropping, viewport) {
   this.particleCounts = particleCounts; // {x, y}
@@ -17781,63 +17926,20 @@ function mapImageToParticles(imageCanvas, scalingInfo) {
   return scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
 }
 
+function domImgToCanvas(img) {
+  var fullresCanvas = document.createElement('canvas');
+  var fullresContext = fullresCanvas.getContext('2d');
+  fullresCanvas.width = img.naturalWidth;
+  fullresCanvas.height = img.naturalHeight;
+  // flipped y-axis
+  fullresContext.translate(0, img.naturalHeight);
+  fullresContext.scale(1, -1);
+  fullresContext.drawImage(img, 0, 0);
+  return fullresCanvas;
+}
+
 var ParticleData = function ParticleData(imageData, regl, scalingInfo) {
-  var w = scalingInfo.particleCounts.x || imageData.width;
-  var h = scalingInfo.particleCounts.y || imageData.height;
-  this.destroyed = false;
-    
-  var scaledData = mapImageToParticles(imageData, scalingInfo);
-
-  var particlePixels = scaledData.data;
-
-  var pixelIndices = Array.from(Array(w * h).keys());
-
-  var texcoords = pixelIndices.map(function (i) { return [((i % w) + 0.5) / w, (Math.floor(i / w) + 0.5) / h]; });
-
-  var rgb = pixelIndices.map(function (i) {
-    var pixel = particlePixels.slice(i * 4, (i * 4) + 4);
-
-    return [pixel[0] / 255, pixel[1] / 255, pixel[2] / 255];
-  });
-
-  var hsv = pixelIndices.map(function (i) {
-    var pixel = rgb[i];
-
-    var cMax = Math.max(pixel[0], pixel[1], pixel[2]);
-    var cMin = Math.min(pixel[0], pixel[1], pixel[2]);
-    var d = cMax - cMin;
-
-    if (d < 0.00001 || cMax < 0.00001) {
-      return [0, 0, cMax];
-    }
-
-    var _h;
-    if (cMax === pixel[0]) {
-      _h = (pixel[1] - pixel[2]) / d;
-      if (_h < 0) {
-        _h += 6;
-      }
-    } else if (cMax === pixel[1]) {
-      _h = ((pixel[2] - pixel[0]) / d) + 2;
-    } else {
-      _h = ((pixel[0] - pixel[1]) / d) + 4;
-    }
-
-    return [_h * 60 * (Math.PI / 180), d / cMax, cMax];
-  });
-  this.width         = w;
-  this.height        = h;
-  this.texcoordsBuffer = regl.buffer(texcoords);
-  this.rgbBuffer     = regl.buffer(rgb);
-  this.hsvBuffer     = regl.buffer(hsv);
-};
-ParticleData.prototype.destroy = function destroy () {
-  if (!this.destroyed) {
-    this.texcoordsBuffer.destroy();
-    this.rgbBuffer.destroy();
-    this.hsvBuffer.destroy();
-    this.destroyed = true;
-  }
+  this.rgba = mapImageToParticles(imageData, scalingInfo).data;
 };
 
 var ParticleDataStoreEntry = function ParticleDataStoreEntry(imageCanvas, imageScaling, imageCropping, particleData) {
@@ -17848,7 +17950,6 @@ var ParticleDataStoreEntry = function ParticleDataStoreEntry(imageCanvas, imageS
 };
 ParticleDataStoreEntry.prototype.destroy = function destroy () {
   if (this.particleData !== null) {
-    this.particleData.destroy();
     this.particleData = null;
   }
   this.imageCanvas = null;
@@ -17879,19 +17980,39 @@ var RendererState = function RendererState(regl) {
   this.hooks = [];
   this.width = 0;
   this.height = 0;
+  this.texcoordsBuffer = null;
+  this.colorFilters = [];
+  this.colorBuffer = null;
 };
 RendererState.prototype.adaptToConfig = function adaptToConfig (config) {
     var this$1 = this;
 
   this.config = config;
   this.pipeline.reset(config.backgroundColor);
+  this.colorFilters = [];
+
+  var pw = config.xParticlesCount;
+  var ph = config.yParticlesCount;
+
+  // texcoordsBuffer
+  if (this.texcoordsBuffer !== null) {
+    this.texcoordsBuffer.destroy();
+  }
+  var pixelIndices = Array.from(Array(pw * ph).keys());
+  var texcoords = pixelIndices.map(function (i) { return [((i % pw) + 0.5) / pw, (Math.floor(i / pw) + 0.5) / ph]; });
+  this.texcoordsBuffer = this.regl.buffer(texcoords);
+  // colorBuffer
+  if (this.colorBuffer !== null) {
+    this.colorBuffer.destroy();
+  }
+  this.colorBuffer = this.regl.buffer({usage: 'stream', type: 'uint8', length: 4 * ph * pw});
 
   // Update default particle data
   var DPD = this.particleDataStore[0];
   var defaultImg = DPD.imageCanvas;
   if (defaultImg !== null) {
     var scalingInfo = new ScalingInfo(
-      {x: config.xParticlesCount, y: config.yParticlesCount},
+      {x: pw, y: ph},
       DPD.imageScaling, DPD.imageCropping,
       {width: this.getWidth(), height: this.getHeight()}
     );
@@ -17946,11 +18067,22 @@ RendererState.prototype.createParticleDataFromDomImg = function createParticleDa
 RendererState.prototype.destroyParticleData = function destroyParticleData (id) {
   this.particleDataStore[id].destroy();
 };
-RendererState.prototype.getCurrentParticleData = function getCurrentParticleData () {
+RendererState.prototype.addColorFilter = function addColorFilter (filter) {
+  this.colorFilters.push(filter);
+};
+RendererState.prototype.getColorBuffer = function getColorBuffer () {
+    var this$1 = this;
+
   if (this.particleData < 0) {
     return null;
   }
-  return this.particleDataStore[this.particleData].particleData;
+  var original = this.particleDataStore[this.particleData].particleData.rgba;
+  var copy = Uint8Array.from(original);
+  for (var i = 0; i < this.colorFilters.length; i++) {
+    copy = this$1.colorFilters[i](copy);
+  }
+  this.colorBuffer(copy);
+  return this.colorBuffer;
 };
 RendererState.prototype.createBuffer = function createBuffer () {
     var args = [], len = arguments.length;
@@ -18002,6 +18134,17 @@ RendererState.prototype.getHeight = function getHeight () {
   return this.height;
 };
 
+/**
+ * The Renderer's job is to perform the following steps:
+ * 1. Take a config object with the user's desired settings
+ * 2. Inform the RendererState (state) about the new user config
+ * 3. Create a new regl command for rendering frames according to the config
+ * 4. Update the pipeline so that effects become available that require
+ *    more than a single render pass.
+ * 5. Inside the regl.frame callback (render loop), hydrate the regl
+ *    command (the pipeline, to be more precise) with the current state
+ *    and clock info (cf. RendererClock)
+ */
 var Renderer = function Renderer(canvas) {
   var this$1 = this;
 
@@ -18013,11 +18156,15 @@ var Renderer = function Renderer(canvas) {
   this.config = null;
   this.commandBuilder = new CommandBuilder();
   this.clock = new RendererClock();
+  // low pass filtered FPS measurement found on stackoverflow.com/a/5111475/1468532 
+  var FILTER_STRENGTH = 20;
+  this.frameTime = 0;
   this.regl.frame(function () {
     if (!this$1.state.isValid()) {
       return;
     }
     this$1.clock.frame();
+    this$1.frameTime += (this$1.clock.getDelta() - this$1.frameTime) / FILTER_STRENGTH;
     this$1.state.pipeline.run({
       config: this$1.config,
       state:this$1.state,
@@ -18054,6 +18201,13 @@ Renderer.prototype.setConfig = function setConfig (config) {
 
 Renderer.prototype.getState = function getState () {
   return this.state;
+};
+
+Renderer.prototype.getFPS = function getFPS () {
+  if (this.frameTime === 0) {
+    return '?';
+  }
+  return Math.round(1000 / this.frameTime);
 };
 
 console.info(Config);
@@ -18187,5 +18341,10 @@ menu.addChangeListener(function (config) {
     window.localStorage.setItem('savedConfig', JSON.stringify(config, null, 2));
   }
 });
+
+// FPS display
+var fpsUpdater = window.setInterval(function () {
+  document.title = "Particles (" + (renderer.getFPS()) + " fps)";
+}, 2000);
 
 }());
