@@ -639,9 +639,15 @@ export default class Timeline {
       this.trackList.push(track);
       for (let j = 0; j < trackList[i].length; j++) {
         const entryDesc = EffectConfig.deserialize(trackList[i][j]);
-        const entry = new TimelineEntry(entryDesc.getEffectClass(), this);
-        entry.loadState(entryDesc);
-        track.addEntry(entry);
+        try {
+          const entry = new TimelineEntry(entryDesc.getEffectClass(), this);
+          entry.loadState(entryDesc);
+          track.addEntry(entry);
+        } catch (e) {
+          // Probably the effect hasn't been found due to a developer
+          // switching branches
+          console.warn(e);
+        }
       }
     }
     this.assertEmptyLastTrack(false)
