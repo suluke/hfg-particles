@@ -1,5 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
+import Easing from './ease-mixins';
 
 const EffectName = 'Particle spacing';
 const EffectDescription = 'Adds or removes space between particles';
@@ -19,32 +20,11 @@ class ParticleSpacingConfigUI extends ConfigUI {
           Y spacing factor
           <input type="number" class="${classPrefix}-yspread" value="1" />
         </label><br/>
-        <label>
-          Ease in time:
-          <input type="number" min="0" step="1" class="${classPrefix}-ease-in" value="1000" />
-          ms
-        </label><br/>
-        <label>
-          Ease out time:
-          <input type="number" min="0" step="1" class="${classPrefix}-ease-out" value="1000" />
-          ms
-        </label><br/>
-        <label>
-          Ease function:
-          <select class="${classPrefix}-ease-func" value="sine">
-            <option value="sine" selected>Sine</option>
-            <option value="linear">Linear</option>
-            <option value="none">None</option>
-          </select>
-        </label>
       </fieldset>
     `);
     const ui = this.element;
     this.xSpreadInput = ui.querySelector(`input.${classPrefix}-xspread`);
     this.ySpreadInput = ui.querySelector(`input.${classPrefix}-yspread`);
-    this.easeInInput = ui.querySelector(`input.${classPrefix}-ease-in`);
-    this.easeOutInput = ui.querySelector(`input.${classPrefix}-ease-out`);
-    this.easeFuncInput = ui.querySelector(`select.${classPrefix}-ease-func`);
 
     this.xSpreadInput.addEventListener('change', () => {
       this.notifyChange();
@@ -52,15 +32,8 @@ class ParticleSpacingConfigUI extends ConfigUI {
     this.ySpreadInput.addEventListener('change', () => {
       this.notifyChange();
     });
-    this.easeInInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
-    this.easeOutInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
-    this.easeFuncInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
+
+    Easing.extend(this, classPrefix);
   }
 
   getElement() {
@@ -70,19 +43,13 @@ class ParticleSpacingConfigUI extends ConfigUI {
   getConfig() {
     return {
       xSpread: parseFloat(this.xSpreadInput.value, 10),
-      ySpread: parseFloat(this.ySpreadInput.value, 10),
-      easeInTime: parseInt(this.easeInInput.value, 10),
-      easeOutTime: parseInt(this.easeOutInput.value, 10),
-      easeFunc: this.easeFuncInput.value
+      ySpread: parseFloat(this.ySpreadInput.value, 10)
     };
   }
 
   applyConfig(config) {
     this.xSpreadInput.value = config.xSpread || 1;
     this.ySpreadInput.value = config.ySpread || 1;
-    this.easeInInput.value = config.easeInTime || 1000;
-    this.easeOutInput.value = config.easeOutTime || 1000;
-    this.easeFuncInput.value = config.easeFunc || 'sine';
   }
 }
 

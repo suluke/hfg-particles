@@ -1,5 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
+import Ease from './ease-mixins';
 
 const EffectName = 'Particle size by hue';
 const EffectDescription = 'Particles will have different sizes depending on their color';
@@ -13,38 +14,17 @@ class ParticleSizeByHueConfigUI extends ConfigUI {
         <legend>${EffectName}</legend>
         <label>
           Scaling factor:
-          <input type="number" min="0" class="${classPrefix}-scaling" value="1" />
+          <input type="number" min="0" class="${classPrefix}-scaling" value="2" />
         </label><br/>
         <label>
           Hue rotation:
           <input type="number" min="0" max="100" step="1" class="${classPrefix}-rotation" value="0" />%
         </label><br/>
-        <label>
-          Ease in time:
-          <input type="number" min="0" step="1" class="${classPrefix}-ease-in" value="1000" />
-          ms
-        </label><br/>
-        <label>
-          Ease out time:
-          <input type="number" min="0" step="1" class="${classPrefix}-ease-out" value="1000" />
-          ms
-        </label><br/>
-        <label>
-          Ease function:
-          <select class="${classPrefix}-ease-func" value="sine">
-            <option value="sine" selected>Sine</option>
-            <option value="linear">Linear</option>
-            <option value="none">None</option>
-          </select>
-        </label>
       </fieldset>
     `);
     const ui = this.element;
     this.scalingInput = ui.querySelector(`input.${classPrefix}-scaling`);
     this.hueRotationInput = ui.querySelector(`input.${classPrefix}-rotation`);
-    this.easeInInput = ui.querySelector(`input.${classPrefix}-ease-in`);
-    this.easeOutInput = ui.querySelector(`input.${classPrefix}-ease-out`);
-    this.easeFuncInput = ui.querySelector(`select.${classPrefix}-ease-func`);
 
     this.scalingInput.addEventListener('change', () => {
       this.notifyChange();
@@ -52,15 +32,8 @@ class ParticleSizeByHueConfigUI extends ConfigUI {
     this.hueRotationInput.addEventListener('change', () => {
       this.notifyChange();
     });
-    this.easeInInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
-    this.easeOutInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
-    this.easeFuncInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
+
+    Ease.extend(this, classPrefix);
   }
 
   getElement() {
@@ -68,22 +41,16 @@ class ParticleSizeByHueConfigUI extends ConfigUI {
   }
 
   getConfig() {
-    return {
+    const config = {
       scaling: parseFloat(this.scalingInput.value),
       hueRotation: parseInt(this.hueRotationInput.value) / 100 * 2 * Math.PI,
-      easeInTime: parseInt(this.easeInInput.value, 10),
-      easeOutTime: parseInt(this.easeOutInput.value, 10),
-      easeFunc: this.easeFuncInput.value
     };
+    return config;
   }
 
   applyConfig(config) {
-    console.log(config);
     this.scalingInput.value = config.scaling;
     this.hueRotationInput.value = Math.round(config.hueRotation / 2 / Math.PI * 100);
-    this.easeInInput.value = config.easeInTime || 1000;
-    this.easeOutInput.value = config.easeOutTime || 1000;
-    this.easeFuncInput.value = config.easeFunc || 'sine';
   }
 }
 
@@ -138,7 +105,7 @@ export default class ParticleSizeByHueEffect extends Effect {
 
   static getDefaultConfig() {
     return {
-      scaling: 1,
+      scaling: 2,
       hueRotation: 0,
       easeInTime: 1000,
       easeOutTime: 1000,

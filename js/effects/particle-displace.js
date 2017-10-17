@@ -1,5 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
+import Ease from './ease-mixins';
 
 const EffectName = 'Displace Particles';
 const EffectDescription = 'Displaces all particles into a certain direction by the same distance';
@@ -24,33 +25,12 @@ class ParticleDisplaceConfigUI extends ConfigUI {
           <option value="radians">rad</option>
         </select>
         <br/>
-        <label>
-          Ease in time:
-          <input type="number" min="0" step="1" class="${classPrefix}-ease-in" value="1000" />
-          ms
-        </label><br/>
-        <label>
-          Ease out time:
-          <input type="number" min="0" step="1" class="${classPrefix}-ease-out" value="1000" />
-          ms
-        </label><br/>
-        <label>
-          Ease function:
-          <select class="${classPrefix}-ease-func" value="sine">
-            <option value="sine" selected>Sine</option>
-            <option value="linear">Linear</option>
-            <option value="none">None</option>
-          </select>
-        </label>
       </fieldset>
     `);
     const ui = this.element;
     this.distanceInput = ui.querySelector(`input.${classPrefix}-distance`);
     this.directionInput = ui.querySelector(`input.${classPrefix}-direction`);
     this.directionUnitInput = ui.querySelector(`select.${classPrefix}-direction-unit`);
-    this.easeInInput = ui.querySelector(`input.${classPrefix}-ease-in`);
-    this.easeOutInput = ui.querySelector(`input.${classPrefix}-ease-out`);
-    this.easeFuncInput = ui.querySelector(`select.${classPrefix}-ease-func`);
 
     this.distanceInput.addEventListener('change', () => {
       this.notifyChange();
@@ -61,15 +41,8 @@ class ParticleDisplaceConfigUI extends ConfigUI {
     this.directionUnitInput.addEventListener('change', () => {
       this.notifyChange();
     });
-    this.easeInInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
-    this.easeOutInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
-    this.easeFuncInput.addEventListener('change', () => {
-      this.notifyChange();
-    });
+
+    Ease.extend(this, classPrefix);
   }
 
   getElement() {
@@ -80,10 +53,7 @@ class ParticleDisplaceConfigUI extends ConfigUI {
     return {
       direction: parseFloat(this.directionInput.value),
       directionUnit: this.directionUnitInput.value,
-      distance: parseFloat(this.distanceInput.value),
-      easeInTime: parseInt(this.easeInInput.value, 10),
-      easeOutTime: parseInt(this.easeOutInput.value, 10),
-      easeFunc: this.easeFuncInput.value
+      distance: parseFloat(this.distanceInput.value)
     };
   }
 
@@ -91,9 +61,6 @@ class ParticleDisplaceConfigUI extends ConfigUI {
     this.directionInput.value = config.direction || 135;
     this.directionUnitInput.value = config.directionUnit || 'degrees';
     this.distanceInput.value = config.distance || 0.5;
-    this.easeInInput.value = config.easeInTime || 1000;
-    this.easeOutInput.value = config.easeOutTime || 1000;
-    this.easeFuncInput.value = config.easeFunc || 'sine';
   }
 }
 
