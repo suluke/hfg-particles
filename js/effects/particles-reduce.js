@@ -14,12 +14,22 @@ class ParticlesReduceConfigUI extends ConfigUI {
         <legend>${EffectName}</legend>
         Remaining particles amount: <input class="${classPrefix}-reduction-amount" type="number" min="0" max="100" step="1" value="100"/>%
         <br>
+        Hide particles by:
+        <select class="${classPrefix}-reduction-animation">
+          <option selected value="fade-out" title="fade-out exceeding particles">fading out</option>
+          <option value="amount" title="gradually reduce number of visible particles">reducing amount</option>
+        </select>
+        <br>
       </fieldset>
     `);
     const ui = this.element;
     this.reductionAmountInput = ui.querySelector(`.${classPrefix}-reduction-amount`);
+    this.reductionAnimationInput = ui.querySelector(`.${classPrefix}-reduction-animation`);
 
     this.reductionAmountInput.addEventListener('change', () => {
+      this.notifyChange();
+    });
+    this.reductionAnimationInput.addEventListener('change', () => {
       this.notifyChange();
     });
 
@@ -32,18 +42,21 @@ class ParticlesReduceConfigUI extends ConfigUI {
 
   getConfig() {
     return {
-      amount: parseFloat(this.reductionAmountInput.value) / 100
+      amount: parseFloat(this.reductionAmountInput.value) / 100,
+      animation: this.reductionAnimationInput.value
     };
   }
 
   applyConfig(config) {
     this.reductionAmountInput.value = config.amount * 100;
+    this.reductionAnimationInput.value = config.animation;
   }
 }
 
 export default class ParticlesReduceEffect extends Effect {
   static register(instance, props, uniforms, vertexShader) {
     const amount = instance.config.amount;
+    const animation = instance.config.animation;
     if (amount < 1) {
       // This works as follows:
       // We assume we want to render a different particle grid which is
@@ -64,9 +77,12 @@ export default class ParticlesReduceEffect extends Effect {
 
       const easeFunc = Ease.setupShaderEasing(instance, uniforms);
 
+      const transitionByAmount = {'amount': true, 'fade-out': false}[animation];
+
       vertexShader.mainBody += `
         float ease = ${easeFunc};
-        float cellSize = (1. - ease) + (ease * float(${cellSize}));
+        float cellSize = float(${cellSize});
+        ${transitionByAmount ? 'cellSize = mix(1., cellSize, ease);' : ''}
         // subcellMid is the center of the sub-cell occupied by the current
         // vertex (a.k.a. particle)
         vec2 subcellMid = initialPosition.xy * vec2(float(${px}), float(${py}));
@@ -86,13 +102,15 @@ export default class ParticlesReduceEffect extends Effect {
         // a sub-cell dominates a super-cell iff it's the centerSubcell
         bool dominatesCell = all(equal(subcell, centerSubcell));
         if (dominatesCell) {
-          // TODO This should just result in an offset
           // The dominating cell's position should now be set to the center
           // of the super-cell it dominates
-          position.xy = (cell + vec2(0.5)) * cellSize / vec2(float(${px}), float(${py}));
+          vec2 superMid = (cell + vec2(0.5)) * cellSize / vec2(float(${px}), float(${py}));
+          vec2 offset = superMid - initialPosition.xy;
+          ${transitionByAmount ? '' : 'offset = offset * vec2(ease);'}
+          position.xy += offset;
         } else {
-          pointSize = 0.;
-          rgb = vec3(0.);
+          pointSize = ${transitionByAmount ? '0.' : '1. - ease'};
+          rgb = ${transitionByAmount ? 'vec3(0.)' : 'rgb * vec3(1. - ease)'};
         }
       `;
     } 
@@ -116,13 +134,15 @@ export default class ParticlesReduceEffect extends Effect {
 
   static getDefaultConfig() {
     return {
-      amount: 0.5
+      amount: 0.5,
+      animation: 'fade-out'
     };
   }
 
   static getRandomConfig() {
     return {
-      amount: Math.random()
+      amount: Math.random(),
+      animation: ['fade-out', 'amount'][Math.floor(Math.random() * 2)]
     };
   }
 }
