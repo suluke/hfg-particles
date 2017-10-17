@@ -14,6 +14,7 @@ import ParticleDisplaceEffect from './particle-displace';
 import ParticleSizeByHueEffect from './particle-size-by-hue';
 import ResetDefaultImageEffect from './reset-default-image';
 import WebcamEffect from './webcam';
+import ParticlesReduceEffect from './particles-reduce';
 
 // should be last
 import DummyEffect from './dummy';
@@ -33,6 +34,7 @@ const effectList = [
   ParticleSpacingEffect,
   ParticleDisplaceEffect,
   ParticleSizeByHueEffect,
+  ParticlesReduceEffect,
   ResetDefaultImageEffect,
   WebcamEffect,
 

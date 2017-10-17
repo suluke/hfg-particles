@@ -7,6 +7,7 @@ const EffectDescription = 'An effect that has no effect - useful to extend the t
 class DummyConfigUI extends ConfigUI {
   constructor() {
     super();
+    const classPrefix = 'effect-dummy';
     this.element = parseHtml(`
       <fieldset>
         <legend>${EffectName}</legend>
