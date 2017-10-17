@@ -24,11 +24,15 @@ export default class Renderer {
     this.config = null;
     this.commandBuilder = new CommandBuilder();
     this.clock = new RendererClock();
+    // low pass filtered FPS measurement found on stackoverflow.com/a/5111475/1468532
+    const FILTER_STRENGTH = 20;
+    this.frameTime = 0;
     this.regl.frame(() => {
       if (!this.state.isValid()) {
         return;
       }
       this.clock.frame();
+      this.frameTime += (this.clock.getDelta() - this.frameTime) / FILTER_STRENGTH;
       this.state.pipeline.run({
         config: this.config,
         state:  this.state,
@@ -63,5 +67,12 @@ export default class Renderer {
 
   getState() {
     return this.state;
+  }
+
+  getFPS() {
+    if (this.frameTime === 0) {
+      return '?';
+    }
+    return Math.round(1000 / this.frameTime);
   }
 }

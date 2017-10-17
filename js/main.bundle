@@ -136,3 +136,8 @@ menu.addChangeListener((config) => {
     window.localStorage.setItem('savedConfig', JSON.stringify(config, null, 2));
   }
 });
+
+// FPS display
+let fpsUpdater = window.setInterval(() => {
+  document.title = `Particles (${renderer.getFPS()} fps)`;
+}, 2000);
