@@ -98,7 +98,7 @@ class ChangeImageConfigUI extends ConfigUI {
     const imageCropping = {
       x: this.cropXSelect.value,
       y: this.cropYSelect.value
-    }
+    };
     if (this.state === States.VALID) {
       return Promise.resolve({
         sourceTy,

@@ -15,6 +15,7 @@ import ParticleSizeByHueEffect from './particle-size-by-hue';
 import ResetDefaultImageEffect from './reset-default-image';
 import WebcamEffect from './webcam';
 import ParticlesReduceEffect from './particles-reduce';
+import VignetteEffect from './vignette';
 
 // should be last
 import DummyEffect from './dummy';
@@ -37,6 +38,7 @@ const effectList = [
   ParticlesReduceEffect,
   ResetDefaultImageEffect,
   WebcamEffect,
+  VignetteEffect,
 
   // Should be last
   DummyEffect
