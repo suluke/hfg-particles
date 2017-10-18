@@ -16,6 +16,8 @@ export default class CommandBuilder {
     uniforms.addUniform('invScreenAspectRatio', 'float', (ctx) => ctx.viewportHeight / ctx.viewportWidth);
     uniforms.addUniform('particleSize', 'float', (ctx) => (ctx.viewportWidth / this.config.xParticlesCount) * this.config.particleScaling);
     uniforms.addUniform('globalTime', 'int', (ctx, props) => props.clock.getTime());
+    uniforms.addUniform('viewport', 'vec2', (ctx) => [ctx.viewportWidth, ctx.viewportHeight]);
+    uniforms.addUniform('background_color', 'vec4', () => this.config.backgroundColor);
     return uniforms;
   }
 
@@ -77,10 +79,12 @@ export default class CommandBuilder {
         texcoord: () => this.state.texcoordsBuffer,
         rgba_int: () => this.state.getColorBuffer()
       };
+      const defaultUniforms = this.createDefaultUniforms();
       const vert = CommandBuilder.prepareVertexShader();
+      defaultUniforms.compile(vert, uniforms);
       const frag = CommandBuilder.prepareFragmentShader();
-      this.createDefaultUniforms().compile(vert, uniforms);
-
+      defaultUniforms.compile(frag, null); // default uniforms are already registered
+                                           // in uniforms object, therefore pass null
       const result = {
         primitive:  'points',
         // TODO This cannot be changed ad-hoc. A new command would be necessary.
@@ -116,6 +120,15 @@ export default class CommandBuilder {
 
         vec3 position = initialPosition;
       `;
+      frag.mainBody += `
+        vec3 rgb = color;
+        vec2 frag_coord = (gl_FragCoord.xy - vec2(.5)) / (viewport - vec2(1.));
+        // gl_PointCoord coord system is edge-centered, but it's more
+        // convenient if we center the system at the center of the
+        // fragment (see point_dist below for example)
+        vec2 point_coord = gl_PointCoord * vec2(2.) - vec2(1.);
+        float point_dist = length(point_coord);
+      `;
       const nextEffect = (() => {
         let i = 0;
         let j = 0;
@@ -144,9 +157,11 @@ export default class CommandBuilder {
         const effectAttributes = new Attributes(globalId);
         const effectClass = effectConfig.getEffectClass();
         vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
+        frag.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
         effectClass.registerAsync(effectConfig, this.props, effectUniforms, vert, frag, effectAttributes)
         .then(() => {
           vert.mainBody += '}';
+          frag.mainBody += '}';
 
           effectUniforms.compile(vert, uniforms);
           effectAttributes.compile(vert, attributes);
@@ -174,26 +189,24 @@ export default class CommandBuilder {
         const particleFading = this.config.particleFading || 'fade-out';
         const particleOverlap =  this.config.particleOverlap || 'add';
         const insideShape = {
-          circle: 'ceil(1. - dist)',
+          circle: 'ceil(1. - point_dist)',
           square: '1.',
           // PI/3 = 60 degrees = inner angle of equilateral triangle
-          triangle: 'gl_PointCoord.y < 0.933 && gl_PointCoord.y >= 0.067 + abs(pos.x/2.) * tan(PI/3.) ? 1. : 0.'
+          triangle: 'gl_PointCoord.y < 0.933 && gl_PointCoord.y >= 0.067 + abs(point_coord.x/2.) * tan(PI/3.) ? 1. : 0.'
         }[particleShape];
         const fadingFactor = {
           none:       {circle: '1.', square: '1.', triangle: '1.'},
           'fade-out': {
-            circle: '(cos(PI * dist) + 1.) / 2.',
-            square: '1. - max(abs(pos.x), abs(pos.y))',
+            circle: '(cos(PI * point_dist) + 1.) / 2.',
+            square: '1. - max(abs(point_coord.x), abs(point_coord.y))',
             triangle: '1. - length(vec2(.5, .289) - gl_PointCoord)'
           }
         }[particleFading][particleShape];
         const colorAssign = {
-          add:           'gl_FragColor = vec4(color * fadingFactor, 1);\n',
-          'alpha blend': 'gl_FragColor = vec4(color, fadingFactor);\n'
+          add:           'gl_FragColor = vec4(rgb * fadingFactor, 1);\n',
+          'alpha blend': 'gl_FragColor = vec4(rgb, fadingFactor);\n'
         }[particleOverlap];
         frag.mainBody += `
-          vec2 pos = gl_PointCoord * vec2(2.) - vec2(1.);
-          float dist = length(pos);
           float insideShape = ${insideShape};
           float fadingFactor = (${fadingFactor}) * insideShape;
           ${colorAssign}
