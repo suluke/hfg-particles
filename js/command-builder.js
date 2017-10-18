@@ -156,12 +156,12 @@ export default class CommandBuilder {
         const effectUniforms = new Uniforms(globalId);
         const effectAttributes = new Attributes(globalId);
         const effectClass = effectConfig.getEffectClass();
-        vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
-        frag.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {`;
+        vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {\n`;
+        frag.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {\n`;
         effectClass.registerAsync(effectConfig, this.props, effectUniforms, vert, frag, effectAttributes)
         .then(() => {
-          vert.mainBody += '}';
-          frag.mainBody += '}';
+          vert.mainBody += '}\n';
+          frag.mainBody += '}\n';
 
           effectUniforms.compile(vert, uniforms);
           effectAttributes.compile(vert, attributes);
@@ -171,7 +171,8 @@ export default class CommandBuilder {
           // TODO
           console.error(`An error occurred in ${effectConfig.id}`);
           console.error(err);
-          vert.mainBody += '}';
+          vert.mainBody += '//error during registration\n}\n';
+          frag.mainBody += '//error during registration\n}\n';
 
           effectUniforms.compile(vert, uniforms);
           effectAttributes.compile(vert, attributes);
