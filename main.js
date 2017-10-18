@@ -4389,7 +4389,7 @@ var Shader = function Shader() {
 };
 
 Shader.prototype.compile = function compile () {
-  return ("\n      precision highp float;\n      precision highp int;\n\n      // Attributes\n      " + (this.attributes) + "\n\n      // Uniforms\n      " + (this.uniforms) + "\n\n      // Varyings\n      " + (this.varyings) + "\n\n      // Globals\n      " + (this.globals) + "\n\n      // Functions\n      " + (this.functions) + "\n\n      void main() {\n        " + (this.mainBody) + "\n      }\n    ");
+  return ("\n      precision highp float;\n\n      // Attributes\n      " + (this.attributes) + "\n\n      // Uniforms\n      " + (this.uniforms) + "\n\n      // Varyings\n      " + (this.varyings) + "\n\n      // Globals\n      " + (this.globals) + "\n\n      // Functions\n      " + (this.functions) + "\n\n      void main() {\n        " + (this.mainBody) + "\n      }\n    ");
 };
 
 var ShaderData = function ShaderData(id, type) {
@@ -5896,7 +5896,7 @@ var WebcamConfigUI = (function (ConfigUI$$1) {
 
     ConfigUI$$1.call(this);
     var classPrefix = 'effect-webcam';
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$15 + "</legend>\n        Especially in Firefox, it is sometimes necessary to wait some time\n        before webcam images can be retrieved. It may also be helpful to\n        retry connecting to the webcam several times.\n        <br />\n        <label>\n          Max number of retries:\n          <input type=\"number\" min=\"0\" max=\"10\" step=\"1\" value=\"3\" class=\"" + classPrefix + "-retries\" />\n        </label>\n        <br/>\n        <label>\n          Delay between retries:\n          <input type=\"number\" min=\"0\" max=\"10000\" step=\"1\" value=\"1000\" class=\"" + classPrefix + "-retry-timeout\" />ms\n        </label>\n        <br/>\n        " + (imageScalingMarkup(classPrefix)) + "\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$15 + "</legend>\n        Especially in Firefox, it is sometimes necessary to wait some time\n        before webcam images can be retrieved. It may also be helpful to\n        retry connecting to the webcam several times.\n        <br />\n        <label>\n          Max number of retries:\n          <input type=\"number\" min=\"0\" max=\"10\" step=\"1\" value=\"3\" class=\"" + classPrefix + "-retries\" />\n        </label>\n        <br/>\n        <label>\n          Delay between retries:\n          <input type=\"number\" min=\"0\" max=\"10000\" step=\"1\" value=\"1000\" class=\"" + classPrefix + "-retry-timeout\" />ms\n        </label>\n      </fieldset>\n    "));
     var ui = this.element;
     this.maxRetriesInput = ui.querySelector(("." + classPrefix + "-retries"));
     this.retryTimeoutInput = ui.querySelector(("." + classPrefix + "-retry-timeout"));
@@ -5905,19 +5905,6 @@ var WebcamConfigUI = (function (ConfigUI$$1) {
       this$1.notifyChange();
     });
     this.retryTimeoutInput.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
-
-    this.scalingSelect = ui.querySelector(("select." + classPrefix + "-scaling-select"));
-    this.scalingSelect.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
-    this.cropXSelect = ui.querySelector(("select." + classPrefix + "-crop-x-select"));
-    this.cropXSelect.addEventListener('change', function () {
-      this$1.notifyChange();
-    });
-    this.cropYSelect = ui.querySelector(("select." + classPrefix + "-crop-y-select"));
-    this.cropYSelect.addEventListener('change', function () {
       this$1.notifyChange();
     });
   }
@@ -5931,26 +5918,15 @@ var WebcamConfigUI = (function (ConfigUI$$1) {
   };
 
   WebcamConfigUI.prototype.getConfig = function getConfig () {
-    var imageScaling = this.scalingSelect.value;
-    var imageCropping = {
-      x: this.cropXSelect.value,
-      y: this.cropYSelect.value
-    };
     return {
       maxRetries: parseInt(this.maxRetriesInput.value, 10),
-      retryTimeout: parseInt(this.retryTimeoutInput.value, 10),
-      imageScaling: imageScaling,
-      imageCropping: imageCropping
+      retryTimeout: parseInt(this.retryTimeoutInput.value, 10)
     };
   };
 
   WebcamConfigUI.prototype.applyConfig = function applyConfig (config) {
     this.maxRetriesInput.value = config.maxRetries || 3;
     this.retryTimeoutInput.value = config.retryTimeout || 1000;
-    this.scalingSelect.value = config.imageScaling || 'crop-to-viewport';
-    var imageCropping = config.imageCropping || {x: 'crop-both', y: 'crop-both'};
-    this.cropXSelect.value = imageCropping.x;
-    this.cropYSelect.value = imageCropping.y;
   };
 
   return WebcamConfigUI;
@@ -6032,7 +6008,7 @@ var WebcamEffect = (function (Effect$$1) {
           var ctx = canvas.getContext('2d');
           ctx.scale(-1, -1);
           ctx.drawImage(image, 0, 0, -w, -h);
-          var pd = props.state.createParticleData(canvas, instance.config.imageScaling, instance.config.imageCropping);
+          var pd = props.state.createParticleData(canvas, 'fit-image', {x: 'crop-both', y: 'crop-both'});
           props.state.setParticleData(pd);
         }
       };
@@ -6104,9 +6080,7 @@ var WebcamEffect = (function (Effect$$1) {
   WebcamEffect.getDefaultConfig = function getDefaultConfig () {
     return {
       maxRetries: 3,
-      retryTimeout: 1000,
-      imageScaling: 'crop-to-viewport',
-      imageCropping: {x: 'crop-both', y: 'crop-both'}
+      retryTimeout: 1000
     };
   };
 
@@ -6235,83 +6209,14 @@ var ParticlesReduceEffect = (function (Effect$$1) {
   return ParticlesReduceEffect;
 }(Effect));
 
-var EffectName$17 = 'Vignette';
-var EffectDescription$17 = 'Fade out the edges to make it look like an old crt tv';
-
-var VignetteConfigUI = (function (ConfigUI$$1) {
-  function VignetteConfigUI() {
-    ConfigUI$$1.call(this);
-    var classPrefix = 'effect-vignette';
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$17 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
-    var ui = this.element;
-  }
-
-  if ( ConfigUI$$1 ) VignetteConfigUI.__proto__ = ConfigUI$$1;
-  VignetteConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
-  VignetteConfigUI.prototype.constructor = VignetteConfigUI;
-
-  VignetteConfigUI.prototype.getElement = function getElement () {
-    return this.element;
-  };
-
-  VignetteConfigUI.prototype.getConfig = function getConfig () {
-    return {};
-  };
-
-  VignetteConfigUI.prototype.applyConfig = function applyConfig (config) {
-  };
-
-  return VignetteConfigUI;
-}(ConfigUI));
-
-var VignetteEffect = (function (Effect$$1) {
-  function VignetteEffect () {
-    Effect$$1.apply(this, arguments);
-  }
-
-  if ( Effect$$1 ) VignetteEffect.__proto__ = Effect$$1;
-  VignetteEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
-  VignetteEffect.prototype.constructor = VignetteEffect;
-
-  VignetteEffect.register = function register (instance, props, uniforms, vertexShader, fragmentShader) {
-    fragmentShader.mainBody += "\n      // magic taken from https://www.shadertoy.com/view/MsXGD4\n      vec2 uv = (frag_coord - 0.5) * 0.98;\n      float vignette = clamp(pow(cos(uv.x * 3.1415), 1.2) * pow(cos(uv.y * 3.1415), 1.2) * 50.0, 0.0, 1.0);\n      rgb = mix(background_color.rgb, rgb, vignette);\n    ";
-  };
-
-  VignetteEffect.getDisplayName = function getDisplayName () {
-    return EffectName$17;
-  };
-
-  VignetteEffect.getDescription = function getDescription () {
-    return EffectDescription$17;
-  };
-
-  VignetteEffect.getConfigUI = function getConfigUI () {
-    if (!this._configUI) {
-      this._configUI = new VignetteConfigUI();
-    }
-
-    return this._configUI;
-  };
-
-  VignetteEffect.getDefaultConfig = function getDefaultConfig () {
-    return {};
-  };
-
-  VignetteEffect.getRandomConfig = function getRandomConfig () {
-    return {};
-  };
-
-  return VignetteEffect;
-}(Effect));
-
-var EffectName$18 = 'Dummy';
-var EffectDescription$18 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
+var EffectName$17 = 'Dummy';
+var EffectDescription$17 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
 
 var DummyConfigUI = (function (ConfigUI$$1) {
   function DummyConfigUI() {
     ConfigUI$$1.call(this);
     var classPrefix = 'effect-dummy';
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$18 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$17 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
     var ui = this.element;
   }
 
@@ -6346,11 +6251,11 @@ var DummyEffect = (function (Effect$$1) {
   };
 
   DummyEffect.getDisplayName = function getDisplayName () {
-    return EffectName$18;
+    return EffectName$17;
   };
 
   DummyEffect.getDescription = function getDescription () {
-    return EffectDescription$18;
+    return EffectDescription$17;
   };
 
   DummyEffect.getConfigUI = function getConfigUI () {
@@ -6391,7 +6296,6 @@ var effectList = [
   ParticlesReduceEffect,
   ResetDefaultImageEffect,
   WebcamEffect,
-  VignetteEffect,
 
   // Should be last
   DummyEffect
@@ -7414,11 +7318,11 @@ var BgColorPicker = (function (Control) {
   BgColorPicker.prototype.updateConfig = function updateConfig (config) {
     // eslint-disable-next-line no-param-reassign
     config.backgroundColor = index(this.input.value)
-      .rgba.map(function (val, i) { return (i === 3 ? val : val / 255); });
+      .rgba.map(function (val, i) { return (i === 3 ? val : val / 256); });
   };
 
   BgColorPicker.prototype.applyConfig = function applyConfig (config) {
-    var ref = config.backgroundColor.map(function (val, i) { return (i === 3 ? val : val * 255); });
+    var ref = config.backgroundColor.map(function (val, i) { return (i === 3 ? val : val * 256); });
     var r = ref[0];
     var g = ref[1];
     var b = ref[2];
@@ -17486,8 +17390,6 @@ CommandBuilder.prototype.createDefaultUniforms = function createDefaultUniforms 
   uniforms.addUniform('invScreenAspectRatio', 'float', function (ctx) { return ctx.viewportHeight / ctx.viewportWidth; });
   uniforms.addUniform('particleSize', 'float', function (ctx) { return (ctx.viewportWidth / this$1.config.xParticlesCount) * this$1.config.particleScaling; });
   uniforms.addUniform('globalTime', 'int', function (ctx, props) { return props.clock.getTime(); });
-  uniforms.addUniform('viewport', 'vec2', function (ctx) { return [ctx.viewportWidth, ctx.viewportHeight]; });
-  uniforms.addUniform('background_color', 'vec4', function () { return this$1.config.backgroundColor; });
   return uniforms;
 };
 
@@ -17521,12 +17423,10 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
       texcoord: function () { return this$1.state.texcoordsBuffer; },
       rgba_int: function () { return this$1.state.getColorBuffer(); }
     };
-    var defaultUniforms = this$1.createDefaultUniforms();
     var vert = CommandBuilder.prepareVertexShader();
-    defaultUniforms.compile(vert, uniforms);
     var frag = CommandBuilder.prepareFragmentShader();
-    defaultUniforms.compile(frag, null); // default uniforms are already registered
-                                         // in uniforms object, therefore pass null
+    this$1.createDefaultUniforms().compile(vert, uniforms);
+
     var result = {
       primitive:'points',
       // TODO This cannot be changed ad-hoc. A new command would be necessary.
@@ -17555,7 +17455,6 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
     }
 
     vert.mainBody += "\n        vec3 rgb = rgba_int.rgb / 255.;\n        vec3 hsv = rgb2hsv(rgb);\n        vec3 initialPosition = vec3(texcoord, 0);\n        float pointSize = max(particleSize, 0.);\n\n        vec3 position = initialPosition;\n      ";
-    frag.mainBody += "\n        vec3 rgb = color;\n        vec2 frag_coord = (gl_FragCoord.xy - vec2(.5)) / (viewport - vec2(1.));\n        // gl_PointCoord coord system is edge-centered, but it's more\n        // convenient if we center the system at the center of the\n        // fragment (see point_dist below for example)\n        vec2 point_coord = gl_PointCoord * vec2(2.) - vec2(1.);\n        float point_dist = length(point_coord);\n      ";
     var nextEffect = (function () {
       var i = 0;
       var j = 0;
@@ -17584,11 +17483,9 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
       var effectAttributes = new Attributes(globalId);
       var effectClass = effectConfig.getEffectClass();
       vert.mainBody += "if (" + (effectConfig.timeBegin) + " <= globalTime && globalTime <= " + (effectConfig.timeEnd) + ") {";
-      frag.mainBody += "if (" + (effectConfig.timeBegin) + " <= globalTime && globalTime <= " + (effectConfig.timeEnd) + ") {";
       effectClass.registerAsync(effectConfig, this$1.props, effectUniforms, vert, frag, effectAttributes)
       .then(function () {
         vert.mainBody += '}';
-        frag.mainBody += '}';
 
         effectUniforms.compile(vert, uniforms);
         effectAttributes.compile(vert, attributes);
@@ -17612,24 +17509,24 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
       var particleFading = this$1.config.particleFading || 'fade-out';
       var particleOverlap =this$1.config.particleOverlap || 'add';
       var insideShape = {
-        circle: 'ceil(1. - point_dist)',
+        circle: 'ceil(1. - dist)',
         square: '1.',
         // PI/3 = 60 degrees = inner angle of equilateral triangle
-        triangle: 'gl_PointCoord.y < 0.933 && gl_PointCoord.y >= 0.067 + abs(point_coord.x/2.) * tan(PI/3.) ? 1. : 0.'
+        triangle: 'gl_PointCoord.y < 0.933 && gl_PointCoord.y >= 0.067 + abs(pos.x/2.) * tan(PI/3.) ? 1. : 0.'
       }[particleShape];
       var fadingFactor = {
         none:     {circle: '1.', square: '1.', triangle: '1.'},
         'fade-out': {
-          circle: '(cos(PI * point_dist) + 1.) / 2.',
-          square: '1. - max(abs(point_coord.x), abs(point_coord.y))',
+          circle: '(cos(PI * dist) + 1.) / 2.',
+          square: '1. - max(abs(pos.x), abs(pos.y))',
           triangle: '1. - length(vec2(.5, .289) - gl_PointCoord)'
         }
       }[particleFading][particleShape];
       var colorAssign = {
-        add:         'gl_FragColor = vec4(rgb * fadingFactor, 1);\n',
-        'alpha blend': 'gl_FragColor = vec4(rgb, fadingFactor);\n'
+        add:         'gl_FragColor = vec4(color * fadingFactor, 1);\n',
+        'alpha blend': 'gl_FragColor = vec4(color, fadingFactor);\n'
       }[particleOverlap];
-      frag.mainBody += "\n          float insideShape = " + insideShape + ";\n          float fadingFactor = (" + fadingFactor + ") * insideShape;\n          " + colorAssign + "\n        ";
+      frag.mainBody += "\n          vec2 pos = gl_PointCoord * vec2(2.) - vec2(1.);\n          float dist = length(pos);\n          float insideShape = " + insideShape + ";\n          float fadingFactor = (" + fadingFactor + ") * insideShape;\n          " + colorAssign + "\n        ";
 
       result.vert = vert.compile();
       result.frag = frag.compile();
