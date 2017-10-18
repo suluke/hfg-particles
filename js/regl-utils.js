@@ -42,6 +42,7 @@ export class Shader {
   compile() {
     return `
       precision highp float;
+      precision highp int;
 
       // Attributes
       ${this.attributes}
