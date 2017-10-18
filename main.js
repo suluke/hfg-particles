@@ -17583,12 +17583,12 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
       var effectUniforms = new Uniforms(globalId);
       var effectAttributes = new Attributes(globalId);
       var effectClass = effectConfig.getEffectClass();
-      vert.mainBody += "if (" + (effectConfig.timeBegin) + " <= globalTime && globalTime <= " + (effectConfig.timeEnd) + ") {";
-      frag.mainBody += "if (" + (effectConfig.timeBegin) + " <= globalTime && globalTime <= " + (effectConfig.timeEnd) + ") {";
+      vert.mainBody += "if (" + (effectConfig.timeBegin) + " <= globalTime && globalTime <= " + (effectConfig.timeEnd) + ") {\n";
+      frag.mainBody += "if (" + (effectConfig.timeBegin) + " <= globalTime && globalTime <= " + (effectConfig.timeEnd) + ") {\n";
       effectClass.registerAsync(effectConfig, this$1.props, effectUniforms, vert, frag, effectAttributes)
       .then(function () {
-        vert.mainBody += '}';
-        frag.mainBody += '}';
+        vert.mainBody += '}\n';
+        frag.mainBody += '}\n';
 
         effectUniforms.compile(vert, uniforms);
         effectAttributes.compile(vert, attributes);
@@ -17598,7 +17598,8 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
         // TODO
         console.error(("An error occurred in " + (effectConfig.id)));
         console.error(err);
-        vert.mainBody += '}';
+        vert.mainBody += '//error during registration\n}\n';
+        frag.mainBody += '//error during registration\n}\n';
 
         effectUniforms.compile(vert, uniforms);
         effectAttributes.compile(vert, attributes);
