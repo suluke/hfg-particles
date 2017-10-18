@@ -42,11 +42,11 @@ class BgColorPicker extends Control {
   updateConfig(config) {
     // eslint-disable-next-line no-param-reassign
     config.backgroundColor = parseColor(this.input.value)
-      .rgba.map((val, i) => (i === 3 ? val : val / 256));
+      .rgba.map((val, i) => (i === 3 ? val : val / 255));
   }
 
   applyConfig(config) {
-    const [r, g, b, a] = config.backgroundColor.map((val, i) => (i === 3 ? val : val * 256));
+    const [r, g, b, a] = config.backgroundColor.map((val, i) => (i === 3 ? val : val * 255));
     this.input.value = parseColor(`rgba(${r}, ${g}, ${b}, ${a})`).hex;
   }
 }
