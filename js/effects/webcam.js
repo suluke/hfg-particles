@@ -1,5 +1,5 @@
 import Effect, { ConfigUI, fract } from './effect';
-import { parseHtml } from '../ui/util';
+import { parseHtml, imageScalingMarkup } from '../ui/util';
 import { ImageCapture } from 'image-capture/lib/imagecapture';
 
 const EffectName = 'Webcam';
@@ -25,6 +25,8 @@ class WebcamConfigUI extends ConfigUI {
           Delay between retries:
           <input type="number" min="0" max="10000" step="1" value="1000" class="${classPrefix}-retry-timeout" />ms
         </label>
+        <br/>
+        ${imageScalingMarkup(classPrefix)}
       </fieldset>
     `);
     const ui = this.element;
@@ -37,6 +39,19 @@ class WebcamConfigUI extends ConfigUI {
     this.retryTimeoutInput.addEventListener('change', () => {
       this.notifyChange();
     });
+
+    this.scalingSelect = ui.querySelector(`select.${classPrefix}-scaling-select`);
+    this.scalingSelect.addEventListener('change', () => {
+      this.notifyChange();
+    });
+    this.cropXSelect = ui.querySelector(`select.${classPrefix}-crop-x-select`);
+    this.cropXSelect.addEventListener('change', () => {
+      this.notifyChange();
+    });
+    this.cropYSelect = ui.querySelector(`select.${classPrefix}-crop-y-select`);
+    this.cropYSelect.addEventListener('change', () => {
+      this.notifyChange();
+    });
   }
 
   getElement() {
@@ -44,15 +59,26 @@ class WebcamConfigUI extends ConfigUI {
   }
 
   getConfig() {
+    const imageScaling = this.scalingSelect.value;
+    const imageCropping = {
+      x: this.cropXSelect.value,
+      y: this.cropYSelect.value
+    };
     return {
       maxRetries: parseInt(this.maxRetriesInput.value, 10),
-      retryTimeout: parseInt(this.retryTimeoutInput.value, 10)
+      retryTimeout: parseInt(this.retryTimeoutInput.value, 10),
+      imageScaling,
+      imageCropping
     };
   }
 
   applyConfig(config) {
     this.maxRetriesInput.value = config.maxRetries || 3;
     this.retryTimeoutInput.value = config.retryTimeout || 1000;
+    this.scalingSelect.value = config.imageScaling || 'crop-to-viewport';
+    const imageCropping = config.imageCropping || {x: 'crop-both', y: 'crop-both'};
+    this.cropXSelect.value = imageCropping.x;
+    this.cropYSelect.value = imageCropping.y;
   }
 }
 
@@ -124,7 +150,7 @@ export default class WebcamEffect extends Effect {
           const ctx = canvas.getContext('2d');
           ctx.scale(-1, -1);
           ctx.drawImage(image, 0, 0, -w, -h);
-          const pd = props.state.createParticleData(canvas, 'fit-image', {x: 'crop-both', y: 'crop-both'});
+          const pd = props.state.createParticleData(canvas, instance.config.imageScaling, instance.config.imageCropping);
           props.state.setParticleData(pd);
         }
       };
@@ -196,7 +222,9 @@ export default class WebcamEffect extends Effect {
   static getDefaultConfig() {
     return {
       maxRetries: 3,
-      retryTimeout: 1000
+      retryTimeout: 1000,
+      imageScaling: 'crop-to-viewport',
+      imageCropping: {x: 'crop-both', y: 'crop-both'}
     };
   }
 
