@@ -1,5 +1,6 @@
 import { effectsById } from './effects/index';
 import { Shader, Uniforms, Attributes } from './regl-utils';
+import { reportError } from './error-manager';
 
 export default class CommandBuilder {
   buildCommand(props) {
@@ -168,11 +169,9 @@ export default class CommandBuilder {
           globalId += 1;
           registerEffects(res, rej);
         }, (err) => {
-          // TODO
-          console.error(`An error occurred in ${effectConfig.id}`);
-          console.error(err);
-          vert.mainBody += '//error during registration\n}\n';
-          frag.mainBody += '//error during registration\n}\n';
+          reportError(err);
+          vert.mainBody += '// error during registration\n}\n';
+          frag.mainBody += '// error during registration\n}\n';
 
           effectUniforms.compile(vert, uniforms);
           effectAttributes.compile(vert, attributes);

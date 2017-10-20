@@ -1,5 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml, imageScalingMarkup } from '../ui/util';
+import { NonFatalError } from '../error-manager';
 
 const EffectName = 'Change Image';
 const EffectDescription = 'Changes the particle data to a configurable image (file or url)';
@@ -165,7 +166,9 @@ export default class ChangeImageEffect extends Effect {
         });
         res();
       };
-      srcImage.onerror = rej;
+      srcImage.onerror = (err) => {
+        rej(new NonFatalError(`Could not load image for ${EffectName}`, err));
+      };
     });
   }
 

@@ -5,139 +5,142 @@ import InactivityMonitor from './ui/inactivity-monitor';
 import LoadImgDialog from './ui/load-default-img-dialog';
 import MainMenu from './ui/menu';
 import Renderer from './renderer';
+import ErrorManager from './error-manager';
 import Config from './config';
 import { allPresets } from './presets/index.js';
 
-console.info(Config);
+const errorManager = new ErrorManager(function() {
+  console.info(Config);
 
-// some constants
-const imageLoadingClass = 'loading-image';
-const canvas = document.getElementById('main-canvas');
+  // some constants
+  const imageLoadingClass = 'loading-image';
+  const canvas = document.getElementById('main-canvas');
 
-// set up ui components
-const fullscreenBtn = new FullscreenButton();
-const fullscreenListener = new DoubleClickFullscreen();
-const imgSelect = new ImgSelect();
-const inactivityMonitor = new InactivityMonitor();
-const imgLoadDialog = new LoadImgDialog();
-const renderer = new Renderer(canvas);
-const menu = new MainMenu(renderer.getClock());
+  // set up ui components
+  const fullscreenBtn = new FullscreenButton();
+  const fullscreenListener = new DoubleClickFullscreen();
+  const imgSelect = new ImgSelect();
+  const inactivityMonitor = new InactivityMonitor();
+  const imgLoadDialog = new LoadImgDialog();
+  const renderer = new Renderer(canvas);
+  const menu = new MainMenu(renderer.getClock());
 
-function tryLoadFromLocalStorage() {
-  if (window.localStorage) {
-    const configJson = window.localStorage.getItem('savedConfig');
-    if (configJson !== null) {
-      const config = JSON.parse(configJson);
-      menu.applyConfig(config);
-      menu.submit();
-      return true;
+  function tryLoadFromLocalStorage() {
+    if (window.localStorage) {
+      const configJson = window.localStorage.getItem('savedConfig');
+      if (configJson !== null) {
+        const config = JSON.parse(configJson);
+        menu.applyConfig(config);
+        menu.submit();
+        return true;
+      }
     }
+    return false;
   }
-  return false;
-}
-function tryLoadFromHash() {
-  if (window.location.hash) {
-    const hash = window.location.hash.substring(1);
-    let hashDict = hash.split('&')
-    .reduce((acc, item) => {
-      var parts = item.split('=');
-      acc[parts[0]] = parts[1];
-      return acc;
-    }, {});
-    if (hashDict.preset !== undefined && allPresets[hashDict.preset]) {
-      const preset = allPresets[hashDict.preset];
-      menu.applyConfig(preset.config);
-      menu.submit();
-      window.location.hash = '';
-      return true;
+  function tryLoadFromHash() {
+    if (window.location.hash) {
+      const hash = window.location.hash.substring(1);
+      let hashDict = hash.split('&')
+      .reduce((acc, item) => {
+        var parts = item.split('=');
+        acc[parts[0]] = parts[1];
+        return acc;
+      }, {});
+      if (hashDict.preset !== undefined && allPresets[hashDict.preset]) {
+        const preset = allPresets[hashDict.preset];
+        menu.applyConfig(preset.config);
+        menu.submit();
+        window.location.hash = '';
+        return true;
+      }
     }
+    return false;
   }
-  return false;
-}
-// Try loading the timeline from different places
-if (!tryLoadFromHash()) {
-  tryLoadFromLocalStorage();
-}
-window.addEventListener("hashchange", tryLoadFromHash);
+  // Try loading the timeline from different places
+  if (!tryLoadFromHash()) {
+    tryLoadFromLocalStorage();
+  }
+  window.addEventListener("hashchange", tryLoadFromHash);
 
-const adjustCanvasSize = () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  renderer.resize(window.innerWidth, window.innerHeight);
-};
-window.addEventListener('resize', adjustCanvasSize);
-adjustCanvasSize();
+  const adjustCanvasSize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    renderer.resize(window.innerWidth, window.innerHeight);
+  };
+  window.addEventListener('resize', adjustCanvasSize);
+  adjustCanvasSize();
 
-const earlyConfig = menu.submittedConfig;
-let isInitialPageLoad = true;
-const srcImage = document.createElement('img');
-srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
-srcImage.src = earlyConfig.defaultImage || 'default.jpg';
-srcImage.onload = () => {
-  if (isInitialPageLoad) {
-    isInitialPageLoad = false;
-    renderer.getState().setDefaultDomImage(
-      srcImage, earlyConfig.defaultImageScaling,
-      earlyConfig.defaultImageCropping
-    );
-    // particleCounts are either what has been loaded from localStorage
-    // or the dimensions of the default image (adapted to the user's
-    // screen aspect ratio)
-    const screenAR = window.innerWidth / window.innerHeight;
-    const particleCounts = {
-      xParticlesCount: menu.submittedConfig.xParticlesCount || srcImage.naturalWidth,
-      yParticlesCount: menu.submittedConfig.yParticlesCount || Math.round(srcImage.naturalHeight / screenAR)
-    };
-    // We want to get the default particle count from the default image,
-    // but what the user specified before the page was reloaded should
-    // also be ok.
-    // Modifying the default config this late seems hacky, but what else
-    // can we do?
-    menu.defaultConfig = Object.assign(menu.defaultConfig, particleCounts);
-    menu.applyConfig(Object.assign(menu.submittedConfig, particleCounts));
-    menu.submit();
-    document.documentElement.classList.remove(imageLoadingClass);
-  } else {
-    imgLoadDialog.load(srcImage)
-    .then(({ imageScaling, imageCropping }) => {
-      renderer.getState().setDefaultDomImage(srcImage, imageScaling, imageCropping);
-      menu.applyConfig(Object.assign({}, menu.submittedConfig, {
-        defaultImageScaling: imageScaling, defaultImageCropping: imageCropping
-      }));
-      // Trigger state.adaptToConfig (rebuilds default particle data) and
-      // unpause the renderer clock
+  const earlyConfig = menu.submittedConfig;
+  let isInitialPageLoad = true;
+  const srcImage = document.createElement('img');
+  srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
+  srcImage.src = earlyConfig.defaultImage || 'default.jpg';
+  srcImage.onload = () => {
+    if (isInitialPageLoad) {
+      isInitialPageLoad = false;
+      renderer.getState().setDefaultDomImage(
+        srcImage, earlyConfig.defaultImageScaling,
+        earlyConfig.defaultImageCropping
+      );
+      // particleCounts are either what has been loaded from localStorage
+      // or the dimensions of the default image (adapted to the user's
+      // screen aspect ratio)
+      const screenAR = window.innerWidth / window.innerHeight;
+      const particleCounts = {
+        xParticlesCount: menu.submittedConfig.xParticlesCount || srcImage.naturalWidth,
+        yParticlesCount: menu.submittedConfig.yParticlesCount || Math.round(srcImage.naturalHeight / screenAR)
+      };
+      // We want to get the default particle count from the default image,
+      // but what the user specified before the page was reloaded should
+      // also be ok.
+      // Modifying the default config this late seems hacky, but what else
+      // can we do?
+      menu.defaultConfig = Object.assign(menu.defaultConfig, particleCounts);
+      menu.applyConfig(Object.assign(menu.submittedConfig, particleCounts));
       menu.submit();
-    }, () => {
-      /* User canceled loading image */
-      // If we don't clear, changeListeners may not fire if same image is selected again
-      imgSelect.clear();
-    })
-    .then(() => {
-      // do this both on cancel and on accept (= .finally())
       document.documentElement.classList.remove(imageLoadingClass);
-    });
-  }
-};
-srcImage.onerror = () => {
-  document.documentElement.classList.remove(imageLoadingClass);
-};
+    } else {
+      imgLoadDialog.load(srcImage)
+      .then(({ imageScaling, imageCropping }) => {
+        renderer.getState().setDefaultDomImage(srcImage, imageScaling, imageCropping);
+        menu.applyConfig(Object.assign({}, menu.submittedConfig, {
+          defaultImageScaling: imageScaling, defaultImageCropping: imageCropping
+        }));
+        // Trigger state.adaptToConfig (rebuilds default particle data) and
+        // unpause the renderer clock
+        menu.submit();
+      }, () => {
+        /* User canceled loading image */
+        // If we don't clear, changeListeners may not fire if same image is selected again
+        imgSelect.clear();
+      })
+      .then(() => {
+        // do this both on cancel and on accept (= .finally())
+        document.documentElement.classList.remove(imageLoadingClass);
+      });
+    }
+  };
+  srcImage.onerror = () => {
+    document.documentElement.classList.remove(imageLoadingClass);
+  };
 
-imgSelect.addChangeListener((url) => {
-  // Prevent messed-up app states caused by multiple parallel image loads
-  if (!document.documentElement.classList.contains(imageLoadingClass)) {
-    srcImage.src = url;
-    document.documentElement.classList.add(imageLoadingClass);
-  }
+  imgSelect.addChangeListener((url) => {
+    // Prevent messed-up app states caused by multiple parallel image loads
+    if (!document.documentElement.classList.contains(imageLoadingClass)) {
+      srcImage.src = url;
+      document.documentElement.classList.add(imageLoadingClass);
+    }
+  });
+
+  menu.addChangeListener((config) => {
+    renderer.setConfig(config);
+    if (window.localStorage) {
+      window.localStorage.setItem('savedConfig', JSON.stringify(config, null, 2));
+    }
+  });
+
+  // FPS display
+  let fpsUpdater = window.setInterval(() => {
+    document.title = `Particles (${renderer.getFPS()} fps)`;
+  }, 2000);
 });
-
-menu.addChangeListener((config) => {
-  renderer.setConfig(config);
-  if (window.localStorage) {
-    window.localStorage.setItem('savedConfig', JSON.stringify(config, null, 2));
-  }
-});
-
-// FPS display
-let fpsUpdater = window.setInterval(() => {
-  document.title = `Particles (${renderer.getFPS()} fps)`;
-}, 2000);
