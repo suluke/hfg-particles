@@ -439,8 +439,9 @@ class Timeticks {
 }
 
 class TimeIndicator {
-  constructor(clock, timeticks) {
-    this.clock = clock;
+  constructor(menu, timeticks) {
+    this.menu = menu;
+    this.clock = menu.clock;
     this.timeticks = timeticks;
     this.element = document.querySelector('.menu-timeline-container .menu-timeline-position-indicator');
     this.element.style.right = 'initial';
@@ -455,6 +456,9 @@ class TimeIndicator {
     updateLoop();
   }
   updateStyles() {
+    if (!this.menu.isVisible()) {
+      return;
+    }
     this.element.style.left = '0px';
     const selfRect = this.element.getBoundingClientRect();
     const ticksElm = this.timeticks.getElement();
@@ -590,9 +594,10 @@ class RandomplayButton {
 }
 
 class TimeDisplay {
-  constructor(clock) {
+  constructor(menu) {
     this.element = document.querySelector('.menu-timeline-current-time');
-    this.clock = clock;
+    this.menu = menu;
+    this.clock = menu.clock;
     const updateLoop = () => {
       this.update();
       window.requestAnimationFrame(updateLoop);
@@ -600,6 +605,9 @@ class TimeDisplay {
     updateLoop();
   }
   update() {
+    if (!this.menu.isVisible()) {
+      return;
+    }
     let time = this.clock.getTime();
     if (time < 0) {
       time = 0;
@@ -622,10 +630,10 @@ export default class Timeline {
     this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
     this.effectConfigDialog = new EffectConfigDialog();
     this.timeticks = new Timeticks(menu.clock);
-    this.timeDisplay = new TimeDisplay(menu.clock);
+    this.timeDisplay = new TimeDisplay(menu);
     this.pauseButton = new PauseButton(menu.clock);
     this.randomplayButton = new RandomplayButton(this);
-    this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
+    this.positionIndicator = new TimeIndicator(menu, this.timeticks);
     this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
     this.timeticks.addScaleChangeListener(() => {
       this.pxPerSecond = this.timeticks.getPxPerSecond();

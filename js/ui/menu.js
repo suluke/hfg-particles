@@ -398,11 +398,12 @@ export default class MainMenu {
     this.defaultConfig = null; // defaults will be read later
     this.submittedConfig = null;
 
-    this.timeline = new Timeline(this);
     this.menuContent = this.menu.querySelector('.menu-content');
     this.effectList = this.menu.querySelector('.menu-effect-list');
     this.toggle = document.getElementById('toggle-menu-visible');
     this.applyBtn = document.getElementById('menu-btn-apply');
+
+    this.timeline = new Timeline(this);
 
     const menu = this.menu;
     const toggle = this.toggle;
@@ -502,5 +503,9 @@ export default class MainMenu {
 
   notifyChange() {
     this.applyBtn.disabled = false;
+  }
+
+  isVisible() {
+    return this.toggle.checked;
   }
 }
