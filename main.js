@@ -5995,6 +5995,165 @@ var WebcamConfigUI = (function (ConfigUI$$1) {
   return WebcamConfigUI;
 }(ConfigUI));
 
+var WebcamEffectImpl = function WebcamEffectImpl(instance, props) {
+  this.instance = instance;
+  this.props = props;
+
+  this.alive = false;
+  this.retries = 0;
+  this.canvas = document.createElement('canvas');
+  this.stream = null;
+  this.track = null;
+  this.capture = null;
+  this.particleData = -1;
+};
+
+WebcamEffectImpl.prototype.isActive = function isActive () {
+  var instance = this.instance;
+  var clock = this.props.clock;
+  var time = clock.getTime();
+  return this.isAlive() && !clock.isPaused() && instance.timeBegin <= time && time <= instance.timeEnd;
+};
+WebcamEffectImpl.prototype.isAlive = function isAlive () {
+  return this.alive;
+};
+WebcamEffectImpl.prototype.start = function start () {
+    var this$1 = this;
+
+  this.alive = true;
+  // Shutdown hook
+  this.props.state.addHook(function () { return this$1.kill(); });
+  return this.createStream()
+  .then(function (stream) { this$1.stream = stream; return this$1.createTrack(); },
+        function (err) { return Promise.reject(err); })
+  .then(function (track) { this$1.track = track; this$1.capture = new imagecapture_1(this$1.track); return this$1.tryStartGrabbing(); },
+        function (err) { return Promise.reject(err); });
+};
+WebcamEffectImpl.prototype.kill = function kill () {
+  this.alive = false;
+  // FIXME understand and document when this can happen.
+  // E.g. when the getUserMedia() request is ignored in icognito
+  // mode
+  var stream = this.stream;
+  if (stream !== null) {
+    var allTracks = stream.getTracks();
+    for (var i = 0; i < allTracks.length; i++) {
+      allTracks[i].stop();
+    }
+  }
+  this.stream = null;
+};
+WebcamEffectImpl.prototype.grabLoop = function grabLoop () {
+    var this$1 = this;
+
+  // When we are sure grabbing images works (which happens further
+  // below) we call this function to grab frames repeatedly in a loop
+  if (this.isAlive()) {
+    var track = this.track;
+    var capture = this.capture;
+    if (track.muted) {
+      this.kill();
+      console.warn('Video stream muted. Spinning up new WebcamEffectImpl...');
+      new WebcamEffectImpl(this.instance, this.props).start();
+      return;
+    }
+    // FIXME if we don't grab frames, Chrome will soon make the
+    // track invalid, causing the next grabFrame to throw an error
+    // Otherwise, we could test here if we are active and do a
+    // no-op instead of grabFrame
+    capture.grabFrame()
+    .then(function (frame) {
+      this$1.processFrame(frame);
+      // Queue this into the next animation frame so we don't
+      // explode the call stack with recursive calls
+      window.requestAnimationFrame(function () { return this$1.grabLoop(); });
+    }, function (err) {
+      // Throw this error into the global scope
+      window.setTimeout(function () { throw new Error('Cannot grab images from the camera'); }, 0);
+    });
+  }
+};
+WebcamEffectImpl.prototype.tryStartGrabbing = function tryStartGrabbing () {
+    var this$1 = this;
+
+  // As it turns out, having the video alone is not a guarantee that
+  // we can actually grab images (at least on FF). So let's make sure
+  // it works at least one time
+  return new Promise(function (res, rej) {
+    var testGrab = function (err) {
+      this$1.capture.grabFrame()
+      .then(function (frame) {
+        // Success, resolve and start grabbing!
+        this$1.processFrame(frame);
+        this$1.grabLoop();
+        res();
+      }, function (err) {
+        // Aw, no image :( Maybe try again?
+        if (this$1.retries < this$1.instance.config.maxRetries) {
+          this$1.retries = this$1.retries + 1;
+          window.setTimeout(testGrab, this$1.instance.config.retryTimeout);
+        } else {
+          // We finally have to give up :/
+          rej(new Error('Cannot grab images from camera'));
+        }
+      });
+    };
+    testGrab();
+  });
+};
+WebcamEffectImpl.prototype.processFrame = function processFrame (image) {
+  // This is where the magic happens
+  if (this.isActive()) {
+    var canvas = this.canvas;
+    var state = this.props.state;
+    var config = this.instance.config;
+    var w = image.width;
+    var h = image.height;
+    // FIXME the camera resolution shouldn't change all that often
+    //     Maybe we can do this only once. Or we keep relying on
+    //     the browser to optimize.
+    canvas.width = w;
+    canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.scale(-1, -1);
+    ctx.drawImage(image, 0, 0, -w, -h);
+    var pd = state.createParticleData(canvas, config.imageScaling, config.imageCropping);
+    state.setParticleData(pd);
+    if (this.particleData !== -1) {
+      state.destroyParticleData(this.particleData);
+    }
+    this.particleData = pd;
+  }
+};
+WebcamEffectImpl.prototype.createStream = function createStream () {
+  var mediaConstraints = {
+    audio: false,
+    video: true // we want video
+  };
+  // Let's ask the browser if we can haz video
+  return navigator.mediaDevices.getUserMedia(mediaConstraints);
+};
+WebcamEffectImpl.prototype.createTrack = function createTrack () {
+  var videoTracks = this.stream.getVideoTracks();
+  if (videoTracks.length === 0) {
+    return Promise.reject('No video tracks in user media');
+  }
+  // We got a video feed!
+  // Let's try to adapt it to our needs a little bit more
+  var videoTrack = videoTracks[0];
+  var state = this.props.state;
+  var constraints = {
+    width: state.getWidth(),
+    height: state.getHeight(),
+    aspectRatio: state.getWidth() / state.getHeight(),
+    facingMode: 'user'
+  };
+  // According to MDN, this shouldn't ever reject.
+  // TODO maybe add an assertion for that
+  return videoTrack.applyConstraints(constraints)
+    .then(function () { return Promise.resolve(videoTrack); }, function (err) { return Promise.reject(err); });
+};
+
 var WebcamEffect = (function (Effect$$1) {
   function WebcamEffect () {
     Effect$$1.apply(this, arguments);
@@ -6005,128 +6164,7 @@ var WebcamEffect = (function (Effect$$1) {
   WebcamEffect.prototype.constructor = WebcamEffect;
 
   WebcamEffect.registerAsync = function registerAsync (instance, props) {
-    // State variables
-    var canvas = document.createElement('canvas');
-    var stream = null;
-    var stopped = false;
-    var stop = function () { stopped = true; };
-    var isActive = function () {
-      var clock = props.clock;
-      var time = clock.getTime();
-      return !clock.isPaused() && instance.timeBegin <= time && time <= instance.timeEnd;
-    };
-
-    // Shutdown hook
-    props.state.addHook(function () {
-      stop();
-      // FIXME understand and document when this can happen.
-      // E.g. when the getUserMedia() request is ignored in icognito
-      // mode
-      if (stream !== null) {
-        var allTracks = stream.getTracks();
-        for (var i = 0; i < allTracks.length; i++) {
-          allTracks[i].stop();
-        }
-      }
-    });
-
-    var mediaConstraints = {
-      audio: false,
-      video: true // we want video
-    };
-    // Let's ask the browser if we can haz video
-    return navigator.mediaDevices.getUserMedia(mediaConstraints)
-    .then(function (theStream) {
-      stream = theStream;
-      var videoTracks = stream.getVideoTracks();
-      if (videoTracks.length === 0) {
-        return Promise.reject('No video tracks in user media');
-      }
-      // We got a video feed!
-      // Let's try to adapt it to our needs a little bit more
-      var videoTrack = videoTracks[0];
-      var constraints = {
-        width: props.state.getWidth(),
-        height: props.state.getHeight(),
-        aspectRatio: props.state.getWidth() / props.state.getHeight(),
-        facingMode: 'user'
-      };
-      // According to MDN, this shouldn't ever reject.
-      // TODO maybe add an assertion for that
-      return videoTrack.applyConstraints(constraints)
-        .then(function () { return Promise.resolve(videoTrack); }, function (err) { return Promise.reject(err); });
-    }, function (err) { return Promise.reject(err); })
-    .then(function (videoTrack) {
-      var capture = new imagecapture_1(videoTrack);
-      var prevPd = -1;
-      // This is where the magic happens
-      var processFrame = function (image) {
-        if (isActive()) {
-          var w = image.width;
-          var h = image.height;
-          // FIXME the camera resolution shouldn't change all that often
-          //       Maybe we can do this only once. Or we keep relying on
-          //       the browser to optimize.
-          canvas.width = w;
-          canvas.height = h;
-          var ctx = canvas.getContext('2d');
-          ctx.scale(-1, -1);
-          ctx.drawImage(image, 0, 0, -w, -h);
-          var pd = props.state.createParticleData(canvas, instance.config.imageScaling, instance.config.imageCropping);
-          props.state.setParticleData(pd);
-          if (prevPd !== -1) {
-            props.state.destroyParticleData(prevPd);
-          }
-          prevPd = pd;
-        }
-      };
-      // When we are sure grabbing images works (which happens further
-      // below) we call this function to grab frames repeatedly in a loop
-      var grabLoop = function () {
-        if (!stopped) {
-          // FIXME if we don't grab frames, Chrome will soon make the
-          // track invalid, causing the next grabFrame to throw an error
-          // Otherwise, we could test here if we are active and do a
-          // no-op instead of grabFrame
-          capture.grabFrame()
-          .then(function (frame) {
-            processFrame(frame);
-            // Queue this into the next animation frame so we don't
-            // explode the call stack with recursive calls
-            window.requestAnimationFrame(grabLoop);
-          }, function (err) {
-            // Throw this error into the global scope
-            window.setTimeout(function () { throw new Error('Cannot grab images from the camera'); }, 0);
-          });
-        }
-      };
-
-      // As it turns out, having the video alone is not a guarantee that
-      // we can actually grab images (at least on FF). So let's make sure
-      // it works at least one time
-      return new Promise(function (res, rej) {
-        var retries = 0;
-        var testGrab = function (err) {
-          capture.grabFrame()
-          .then(function (frame) {
-            // Success, resolve and start grabbing!
-            processFrame(frame);
-            grabLoop();
-            res();
-          }, function (err) {
-            // Aw, no image :( Maybe try again?
-            if (retries < instance.config.maxRetries) {
-              retries = retries + 1;
-              window.setTimeout(testGrab, instance.config.retryTimeout);
-            } else {
-              // We finally have to give up :/
-              rej(new Error('Cannot grab images from camera'));
-            }
-          });
-        };
-        testGrab();
-      });
-    }, function (err) { return Promise.reject(err); });
+    return new WebcamEffectImpl(instance, props).start();
   };
 
   WebcamEffect.getDisplayName = function getDisplayName () {
@@ -7311,7 +7349,7 @@ var particleScaling = 1;
 var particleShape = "circle";
 var particleFading = "none";
 var particleOverlap = "alpha blend";
-var effects = [[{"id":"HueDisplaceEffect","timeBegin":8592,"timeEnd":10613,"repetitions":1,"config":{"distance":0.7319085067626532,"scaleByValue":0.4112831056504884,"randomDirectionOffset":false,"rotate":0.6353214673534142}}],[{"id":"ConvergePointEffect","timeBegin":2189,"timeEnd":6844,"repetitions":1,"config":{}}],[{"id":"ConvergeCircleEffect","timeBegin":9297,"timeEnd":13311,"repetitions":1,"config":{"rotationSpeed":0.32695472212132115}}],[{"id":"WaveEffect","timeBegin":0,"timeEnd":2015,"repetitions":1,"config":{"multiplier":0.3148697308748081,"amplitude":0.11115075915060912}}],[{"id":"TrailsEffect","timeBegin":7827,"timeEnd":14610,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmoothTrailsEffect","timeBegin":2845,"timeEnd":5692,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmearEffect","timeBegin":5041,"timeEnd":13056,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"StandingWaveEffect","timeBegin":9065,"timeEnd":13188,"repetitions":1,"config":{"maxAmplitude":0.11655939598142143,"waveCount":12.072390651463863,"timeInterpolation":"linear","waveFunction":"sine","dimension":"x"}}],[{"id":"SparkleEffect","timeBegin":4482,"timeEnd":10731,"repetitions":1,"config":{"scaleMin":0.685,"scaleMax":2.563,"ratio":0.275,"duration":1485}}],[{"id":"ParticleSpacingEffect","timeBegin":5162,"timeEnd":13696,"repetitions":1,"config":{"xSpread":0.5,"ySpread":1.5,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"sine"}}],[{"id":"ParticleDisplaceEffect","timeBegin":3543,"timeEnd":6774,"repetitions":1,"config":{"direction":224.4457831353151,"directionUnit":"degrees","distance":0.023417750859263453,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"none"}}],[{"id":"ParticleSizeByHueEffect","timeBegin":1877,"timeEnd":11750,"repetitions":1,"config":{"scaling":2.582142277304504,"hueRotation":4.761756559852353,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"linear"}}],[{"id":"WebcamEffect","timeBegin":0,"timeEnd":14610,"repetitions":1,"config":{"maxRetries":3,"retryTimeout":1000}}],[]];
+var effects = [[{"id":"HueDisplaceEffect","timeBegin":8592,"timeEnd":10613,"repetitions":1,"config":{"distance":0.7319085067626532,"scaleByValue":0.4112831056504884,"randomDirectionOffset":false,"rotate":0.6353214673534142}}],[{"id":"ConvergePointEffect","timeBegin":2189,"timeEnd":6844,"repetitions":1,"config":{}}],[{"id":"ConvergeCircleEffect","timeBegin":9297,"timeEnd":13311,"repetitions":1,"config":{"rotationSpeed":0.32695472212132115}}],[{"id":"WaveEffect","timeBegin":0,"timeEnd":2015,"repetitions":1,"config":{"multiplier":0.3148697308748081,"amplitude":0.11115075915060912}}],[{"id":"TrailsEffect","timeBegin":7827,"timeEnd":14610,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmoothTrailsEffect","timeBegin":2845,"timeEnd":5692,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmearEffect","timeBegin":5041,"timeEnd":13056,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"StandingWaveEffect","timeBegin":9065,"timeEnd":13188,"repetitions":1,"config":{"maxAmplitude":0.11655939598142143,"waveCount":12.072390651463863,"timeInterpolation":"linear","waveFunction":"sine","dimension":"x"}}],[{"id":"SparkleEffect","timeBegin":4482,"timeEnd":10731,"repetitions":1,"config":{"scaleMin":0.685,"scaleMax":2.563,"ratio":0.275,"duration":1485}}],[{"id":"ParticleSpacingEffect","timeBegin":5162,"timeEnd":13696,"repetitions":1,"config":{"xSpread":0.5,"ySpread":1.5,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"sine"}}],[{"id":"ParticleDisplaceEffect","timeBegin":3543,"timeEnd":6774,"repetitions":1,"config":{"direction":224.4457831353151,"directionUnit":"degrees","distance":0.023417750859263453,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"none"}}],[{"id":"ParticleSizeByHueEffect","timeBegin":1877,"timeEnd":11750,"repetitions":1,"config":{"scaling":2.582142277304504,"hueRotation":4.761756559852353,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"linear"}}],[{"id":"WebcamEffect","timeBegin":0,"timeEnd":14610,"repetitions":1,"config":{"maxRetries":3,"retryTimeout":1000,"imageScaling":"crop-to-viewport","imageCropping":{"x":"crop-both","y":"crop-both"}}}],[]];
 var duration = 14610;
 var Preset1 = {
 	schemaVersion: schemaVersion,
@@ -7338,7 +7376,7 @@ var particleScaling$1 = 1;
 var particleShape$1 = "circle";
 var particleFading$1 = "none";
 var particleOverlap$1 = "alpha blend";
-var effects$1 = [[{"id":"WebcamEffect","timeBegin":0,"timeEnd":2152,"repetitions":1,"config":{"maxRetries":3,"retryTimeout":1000}}],[{"id":"StandingWaveEffect","timeBegin":0,"timeEnd":2143,"repetitions":1,"config":{"maxAmplitude":0.05,"waveCount":20,"timeInterpolation":"linear","waveFunction":"sine","dimension":"y"}}],[]];
+var effects$1 = [[{"id":"WebcamEffect","timeBegin":0,"timeEnd":2152,"repetitions":1,"config":{"maxRetries":3,"retryTimeout":1000,"imageScaling":"crop-to-viewport","imageCropping":{"x":"crop-both","y":"crop-both"}}}],[{"id":"StandingWaveEffect","timeBegin":0,"timeEnd":2143,"repetitions":1,"config":{"maxAmplitude":0.05,"waveCount":20,"timeInterpolation":"linear","waveFunction":"sine","dimension":"y"}}],[]];
 var duration$1 = 2152;
 var Preset2 = {
 	schemaVersion: schemaVersion$1,
@@ -18228,7 +18266,13 @@ RendererState.prototype.createParticleDataFromDomImg = function createParticleDa
   return this.createParticleData(domImgToCanvas(domImg), imageScaling, imageCropping);
 };
 RendererState.prototype.destroyParticleData = function destroyParticleData (id) {
-  this.particleDataStore[id].destroy();
+  // Some effects (like webcam) may be a bit late to the party after
+  // the state has been reset
+  if (this.particleDataStore[id]) {
+    this.particleDataStore[id].destroy();
+  } else {
+    console.warn('Trying to destroy ParticleData that doesn\'t exist');
+  }
 };
 RendererState.prototype.getColorBuffer = function getColorBuffer () {
   if (this.particleData < 0) {
