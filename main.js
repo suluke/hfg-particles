@@ -1291,8 +1291,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-10-18T13:04:58.969Z',
-  git_rev:               'a2efbb8',
+  timestamp:             '2017-10-21T15:56:38.246Z',
+  git_rev:               'ad06845',
   export_schema_version: 0
 };
 
@@ -1856,6 +1856,43 @@ var WaveEffect = (function (Effect$$1) {
   return WaveEffect;
 }(Effect));
 
+var NonFatalError = (function (Error) {
+  function NonFatalError(msg, data) {
+    Error.call(this);
+    this.msg = msg;
+    this.data = data;
+  }
+
+  if ( Error ) NonFatalError.__proto__ = Error;
+  NonFatalError.prototype = Object.create( Error && Error.prototype );
+  NonFatalError.prototype.constructor = NonFatalError;
+
+  return NonFatalError;
+}(Error));
+
+var ErrorManager = function ErrorManager(onload) {
+  var this$1 = this;
+
+  try {
+    window.onerror = function (event, script, line, col, err) {
+      this$1.handleError(event, script, line, col, err);
+    };
+    onload();
+  } catch (err) {
+    this.handleError(err.message, 'main.bundle', -1, -1, err);
+  }
+};
+ErrorManager.prototype.handleError = function handleError (msg, script, line, col, err) {
+  console.log(err);
+};
+
+
+
+function reportError(error) {
+  // assert that this doesn't get lost inside some promise
+  window.setTimeout(function() { throw error; }, 0);
+}
+
 var EffectName$4 = 'Change Image';
 var EffectDescription$4 = 'Changes the particle data to a configurable image (file or url)';
 
@@ -2017,7 +2054,9 @@ var ChangeImageEffect = (function (Effect$$1) {
         });
         res();
       };
-      srcImage.onerror = rej;
+      srcImage.onerror = function (err) {
+        rej(new NonFatalError(("Could not load image for " + EffectName$4), err));
+      };
     });
   };
 
@@ -6880,10 +6919,11 @@ Timeticks.prototype.getElement = function getElement () {
   return this.element;
 };
 
-var TimeIndicator = function TimeIndicator(clock, timeticks) {
+var TimeIndicator = function TimeIndicator(menu, timeticks) {
   var this$1 = this;
 
-  this.clock = clock;
+  this.menu = menu;
+  this.clock = menu.clock;
   this.timeticks = timeticks;
   this.element = document.querySelector('.menu-timeline-container .menu-timeline-position-indicator');
   this.element.style.right = 'initial';
@@ -6898,6 +6938,9 @@ var TimeIndicator = function TimeIndicator(clock, timeticks) {
   updateLoop();
 };
 TimeIndicator.prototype.updateStyles = function updateStyles () {
+  if (!this.menu.isVisible()) {
+    return;
+  }
   this.element.style.left = '0px';
   var selfRect = this.element.getBoundingClientRect();
   var ticksElm = this.timeticks.getElement();
@@ -7033,11 +7076,12 @@ RandomplayButton.generateRandomTimeline = function generateRandomTimeline (curre
   return config;
 };
 
-var TimeDisplay = function TimeDisplay(clock) {
+var TimeDisplay = function TimeDisplay(menu) {
   var this$1 = this;
 
   this.element = document.querySelector('.menu-timeline-current-time');
-  this.clock = clock;
+  this.menu = menu;
+  this.clock = menu.clock;
   var updateLoop = function () {
     this$1.update();
     window.requestAnimationFrame(updateLoop);
@@ -7045,6 +7089,9 @@ var TimeDisplay = function TimeDisplay(clock) {
   updateLoop();
 };
 TimeDisplay.prototype.update = function update () {
+  if (!this.menu.isVisible()) {
+    return;
+  }
   var time = this.clock.getTime();
   if (time < 0) {
     time = 0;
@@ -7067,10 +7114,10 @@ var Timeline = function Timeline(menu) {
   this.trackListElm = this.element.querySelector('.menu-timeline-tracks');
   this.effectConfigDialog = new EffectConfigDialog();
   this.timeticks = new Timeticks(menu.clock);
-  this.timeDisplay = new TimeDisplay(menu.clock);
+  this.timeDisplay = new TimeDisplay(menu);
   this.pauseButton = new PauseButton(menu.clock);
   this.randomplayButton = new RandomplayButton(this);
-  this.positionIndicator = new TimeIndicator(menu.clock, this.timeticks);
+  this.positionIndicator = new TimeIndicator(menu, this.timeticks);
   this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
   this.timeticks.addScaleChangeListener(function () {
     this$1.pxPerSecond = this$1.timeticks.getPxPerSecond();
@@ -7842,11 +7889,12 @@ var MainMenu = function MainMenu(clock) {
   this.defaultConfig = null; // defaults will be read later
   this.submittedConfig = null;
 
-  this.timeline = new Timeline(this);
   this.menuContent = this.menu.querySelector('.menu-content');
   this.effectList = this.menu.querySelector('.menu-effect-list');
   this.toggle = document.getElementById('toggle-menu-visible');
   this.applyBtn = document.getElementById('menu-btn-apply');
+
+  this.timeline = new Timeline(this);
 
   var menu = this.menu;
   var toggle = this.toggle;
@@ -7954,7 +8002,11 @@ MainMenu.prototype.notifyChange = function notifyChange () {
   this.applyBtn.disabled = false;
 };
 
-var regl$1 = createCommonjsModule(function (module, exports) {
+MainMenu.prototype.isVisible = function isVisible () {
+  return this.toggle.checked;
+};
+
+var regl = createCommonjsModule(function (module, exports) {
 (function (global, factory) {
 	module.exports = factory();
 }(commonjsGlobal, (function () { 'use strict';
@@ -17595,11 +17647,9 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
         globalId += 1;
         registerEffects(res, rej);
       }, function (err) {
-        // TODO
-        console.error(("An error occurred in " + (effectConfig.id)));
-        console.error(err);
-        vert.mainBody += '//error during registration\n}\n';
-        frag.mainBody += '//error during registration\n}\n';
+        reportError(err);
+        vert.mainBody += '// error during registration\n}\n';
+        frag.mainBody += '// error during registration\n}\n';
 
         effectUniforms.compile(vert, uniforms);
         effectAttributes.compile(vert, attributes);
@@ -18085,15 +18135,14 @@ var RendererState = function RendererState(regl) {
   this.width = 0;
   this.height = 0;
   this.texcoordsBuffer = null;
-  this.colorFilters = [];
   this.colorBuffer = null;
+  this.dataInBuffer = -1;
 };
 RendererState.prototype.adaptToConfig = function adaptToConfig (config) {
     var this$1 = this;
 
   this.config = config;
   this.pipeline.reset(config.backgroundColor);
-  this.colorFilters = [];
 
   var pw = config.xParticlesCount;
   var ph = config.yParticlesCount;
@@ -18109,6 +18158,7 @@ RendererState.prototype.adaptToConfig = function adaptToConfig (config) {
   if (this.colorBuffer !== null) {
     this.colorBuffer.destroy();
   }
+  this.dataInBuffer = -1;
   this.colorBuffer = this.regl.buffer({usage: 'stream', type: 'uint8', length: 4 * ph * pw});
 
   // Update default particle data
@@ -18171,21 +18221,15 @@ RendererState.prototype.createParticleDataFromDomImg = function createParticleDa
 RendererState.prototype.destroyParticleData = function destroyParticleData (id) {
   this.particleDataStore[id].destroy();
 };
-RendererState.prototype.addColorFilter = function addColorFilter (filter) {
-  this.colorFilters.push(filter);
-};
 RendererState.prototype.getColorBuffer = function getColorBuffer () {
-    var this$1 = this;
-
   if (this.particleData < 0) {
     return null;
   }
-  var original = this.particleDataStore[this.particleData].particleData.rgba;
-  var copy = Uint8Array.from(original);
-  for (var i = 0; i < this.colorFilters.length; i++) {
-    copy = this$1.colorFilters[i](copy);
+  if (this.dataInBuffer !== this.particleData) {
+    var data = this.particleDataStore[this.particleData].particleData.rgba;
+    this.colorBuffer(data);
+    this.dataInBuffer = this.particleData;
   }
-  this.colorBuffer(copy);
   return this.colorBuffer;
 };
 RendererState.prototype.createBuffer = function createBuffer () {
@@ -18252,7 +18296,7 @@ RendererState.prototype.getHeight = function getHeight () {
 var Renderer = function Renderer(canvas) {
   var this$1 = this;
 
-  this.regl = regl$1({ canvas: canvas });
+  this.regl = regl({ canvas: canvas });
   console.info(("max texture size: " + (this.regl.limits.maxTextureSize)));
   console.info(("point size dims: " + (this.regl.limits.pointSizeDims[0]) + " " + (this.regl.limits.pointSizeDims[1])));
   console.info(("max uniforms: " + (this.regl.limits.maxVertexUniforms) + " " + (this.regl.limits.maxFragmentUniforms)));
@@ -18314,141 +18358,143 @@ Renderer.prototype.getFPS = function getFPS () {
   return Math.round(1000 / this.frameTime);
 };
 
-console.info(Config);
+var errorManager = new ErrorManager(function() {
+  console.info(Config);
 
-// some constants
-var imageLoadingClass = 'loading-image';
-var canvas = document.getElementById('main-canvas');
+  // some constants
+  var imageLoadingClass = 'loading-image';
+  var canvas = document.getElementById('main-canvas');
 
-// set up ui components
-var fullscreenBtn = new FullscreenButton();
-var fullscreenListener = new DoubleClickFullscreen();
-var imgSelect = new ImgSelect();
-var inactivityMonitor = new InactivityMonitor();
-var imgLoadDialog = new LoadImgDialog();
-var renderer = new Renderer(canvas);
-var menu = new MainMenu(renderer.getClock());
+  // set up ui components
+  var fullscreenBtn = new FullscreenButton();
+  var fullscreenListener = new DoubleClickFullscreen();
+  var imgSelect = new ImgSelect();
+  var inactivityMonitor = new InactivityMonitor();
+  var imgLoadDialog = new LoadImgDialog();
+  var renderer = new Renderer(canvas);
+  var menu = new MainMenu(renderer.getClock());
 
-function tryLoadFromLocalStorage() {
-  if (window.localStorage) {
-    var configJson = window.localStorage.getItem('savedConfig');
-    if (configJson !== null) {
-      var config = JSON.parse(configJson);
-      menu.applyConfig(config);
-      menu.submit();
-      return true;
+  function tryLoadFromLocalStorage() {
+    if (window.localStorage) {
+      var configJson = window.localStorage.getItem('savedConfig');
+      if (configJson !== null) {
+        var config = JSON.parse(configJson);
+        menu.applyConfig(config);
+        menu.submit();
+        return true;
+      }
     }
+    return false;
   }
-  return false;
-}
-function tryLoadFromHash() {
-  if (window.location.hash) {
-    var hash = window.location.hash.substring(1);
-    var hashDict = hash.split('&')
-    .reduce(function (acc, item) {
-      var parts = item.split('=');
-      acc[parts[0]] = parts[1];
-      return acc;
-    }, {});
-    if (hashDict.preset !== undefined && allPresets[hashDict.preset]) {
-      var preset = allPresets[hashDict.preset];
-      menu.applyConfig(preset.config);
-      menu.submit();
-      window.location.hash = '';
-      return true;
+  function tryLoadFromHash() {
+    if (window.location.hash) {
+      var hash = window.location.hash.substring(1);
+      var hashDict = hash.split('&')
+      .reduce(function (acc, item) {
+        var parts = item.split('=');
+        acc[parts[0]] = parts[1];
+        return acc;
+      }, {});
+      if (hashDict.preset !== undefined && allPresets[hashDict.preset]) {
+        var preset = allPresets[hashDict.preset];
+        menu.applyConfig(preset.config);
+        menu.submit();
+        window.location.hash = '';
+        return true;
+      }
     }
+    return false;
   }
-  return false;
-}
-// Try loading the timeline from different places
-if (!tryLoadFromHash()) {
-  tryLoadFromLocalStorage();
-}
-window.addEventListener("hashchange", tryLoadFromHash);
+  // Try loading the timeline from different places
+  if (!tryLoadFromHash()) {
+    tryLoadFromLocalStorage();
+  }
+  window.addEventListener("hashchange", tryLoadFromHash);
 
-var adjustCanvasSize = function () {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  renderer.resize(window.innerWidth, window.innerHeight);
-};
-window.addEventListener('resize', adjustCanvasSize);
-adjustCanvasSize();
+  var adjustCanvasSize = function () {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    renderer.resize(window.innerWidth, window.innerHeight);
+  };
+  window.addEventListener('resize', adjustCanvasSize);
+  adjustCanvasSize();
 
-var earlyConfig = menu.submittedConfig;
-var isInitialPageLoad = true;
-var srcImage = document.createElement('img');
-srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
-srcImage.src = earlyConfig.defaultImage || 'default.jpg';
-srcImage.onload = function () {
-  if (isInitialPageLoad) {
-    isInitialPageLoad = false;
-    renderer.getState().setDefaultDomImage(
-      srcImage, earlyConfig.defaultImageScaling,
-      earlyConfig.defaultImageCropping
-    );
-    // particleCounts are either what has been loaded from localStorage
-    // or the dimensions of the default image (adapted to the user's
-    // screen aspect ratio)
-    var screenAR = window.innerWidth / window.innerHeight;
-    var particleCounts = {
-      xParticlesCount: menu.submittedConfig.xParticlesCount || srcImage.naturalWidth,
-      yParticlesCount: menu.submittedConfig.yParticlesCount || Math.round(srcImage.naturalHeight / screenAR)
-    };
-    // We want to get the default particle count from the default image,
-    // but what the user specified before the page was reloaded should
-    // also be ok.
-    // Modifying the default config this late seems hacky, but what else
-    // can we do?
-    menu.defaultConfig = Object.assign(menu.defaultConfig, particleCounts);
-    menu.applyConfig(Object.assign(menu.submittedConfig, particleCounts));
-    menu.submit();
-    document.documentElement.classList.remove(imageLoadingClass);
-  } else {
-    imgLoadDialog.load(srcImage)
-    .then(function (ref) {
-      var imageScaling = ref.imageScaling;
-      var imageCropping = ref.imageCropping;
-
-      renderer.getState().setDefaultDomImage(srcImage, imageScaling, imageCropping);
-      menu.applyConfig(Object.assign({}, menu.submittedConfig, {
-        defaultImageScaling: imageScaling, defaultImageCropping: imageCropping
-      }));
-      // Trigger state.adaptToConfig (rebuilds default particle data) and
-      // unpause the renderer clock
+  var earlyConfig = menu.submittedConfig;
+  var isInitialPageLoad = true;
+  var srcImage = document.createElement('img');
+  srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
+  srcImage.src = earlyConfig.defaultImage || 'default.jpg';
+  srcImage.onload = function () {
+    if (isInitialPageLoad) {
+      isInitialPageLoad = false;
+      renderer.getState().setDefaultDomImage(
+        srcImage, earlyConfig.defaultImageScaling,
+        earlyConfig.defaultImageCropping
+      );
+      // particleCounts are either what has been loaded from localStorage
+      // or the dimensions of the default image (adapted to the user's
+      // screen aspect ratio)
+      var screenAR = window.innerWidth / window.innerHeight;
+      var particleCounts = {
+        xParticlesCount: menu.submittedConfig.xParticlesCount || srcImage.naturalWidth,
+        yParticlesCount: menu.submittedConfig.yParticlesCount || Math.round(srcImage.naturalHeight / screenAR)
+      };
+      // We want to get the default particle count from the default image,
+      // but what the user specified before the page was reloaded should
+      // also be ok.
+      // Modifying the default config this late seems hacky, but what else
+      // can we do?
+      menu.defaultConfig = Object.assign(menu.defaultConfig, particleCounts);
+      menu.applyConfig(Object.assign(menu.submittedConfig, particleCounts));
       menu.submit();
-    }, function () {
-      /* User canceled loading image */
-      // If we don't clear, changeListeners may not fire if same image is selected again
-      imgSelect.clear();
-    })
-    .then(function () {
-      // do this both on cancel and on accept (= .finally())
       document.documentElement.classList.remove(imageLoadingClass);
-    });
-  }
-};
-srcImage.onerror = function () {
-  document.documentElement.classList.remove(imageLoadingClass);
-};
+    } else {
+      imgLoadDialog.load(srcImage)
+      .then(function (ref) {
+        var imageScaling = ref.imageScaling;
+        var imageCropping = ref.imageCropping;
 
-imgSelect.addChangeListener(function (url) {
-  // Prevent messed-up app states caused by multiple parallel image loads
-  if (!document.documentElement.classList.contains(imageLoadingClass)) {
-    srcImage.src = url;
-    document.documentElement.classList.add(imageLoadingClass);
-  }
+        renderer.getState().setDefaultDomImage(srcImage, imageScaling, imageCropping);
+        menu.applyConfig(Object.assign({}, menu.submittedConfig, {
+          defaultImageScaling: imageScaling, defaultImageCropping: imageCropping
+        }));
+        // Trigger state.adaptToConfig (rebuilds default particle data) and
+        // unpause the renderer clock
+        menu.submit();
+      }, function () {
+        /* User canceled loading image */
+        // If we don't clear, changeListeners may not fire if same image is selected again
+        imgSelect.clear();
+      })
+      .then(function () {
+        // do this both on cancel and on accept (= .finally())
+        document.documentElement.classList.remove(imageLoadingClass);
+      });
+    }
+  };
+  srcImage.onerror = function () {
+    document.documentElement.classList.remove(imageLoadingClass);
+  };
+
+  imgSelect.addChangeListener(function (url) {
+    // Prevent messed-up app states caused by multiple parallel image loads
+    if (!document.documentElement.classList.contains(imageLoadingClass)) {
+      srcImage.src = url;
+      document.documentElement.classList.add(imageLoadingClass);
+    }
+  });
+
+  menu.addChangeListener(function (config) {
+    renderer.setConfig(config);
+    if (window.localStorage) {
+      window.localStorage.setItem('savedConfig', JSON.stringify(config, null, 2));
+    }
+  });
+
+  // FPS display
+  var fpsUpdater = window.setInterval(function () {
+    document.title = "Particles (" + (renderer.getFPS()) + " fps)";
+  }, 2000);
 });
-
-menu.addChangeListener(function (config) {
-  renderer.setConfig(config);
-  if (window.localStorage) {
-    window.localStorage.setItem('savedConfig', JSON.stringify(config, null, 2));
-  }
-});
-
-// FPS display
-var fpsUpdater = window.setInterval(function () {
-  document.title = "Particles (" + (renderer.getFPS()) + " fps)";
-}, 2000);
 
 }());
