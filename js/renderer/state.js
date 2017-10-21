@@ -61,13 +61,12 @@ export default class RendererState {
     this.width = 0;
     this.height = 0;
     this.texcoordsBuffer = null;
-    this.colorFilters = [];
     this.colorBuffer = null;
+    this.dataInBuffer = -1;
   }
   adaptToConfig(config) {
     this.config = config;
     this.pipeline.reset(config.backgroundColor);
-    this.colorFilters = [];
 
     const pw = config.xParticlesCount;
     const ph = config.yParticlesCount;
@@ -83,6 +82,7 @@ export default class RendererState {
     if (this.colorBuffer !== null) {
       this.colorBuffer.destroy();
     }
+    this.dataInBuffer = -1;
     this.colorBuffer = this.regl.buffer({usage: 'stream', type: 'uint8', length: 4 * ph * pw});
 
     // Update default particle data
@@ -145,19 +145,15 @@ export default class RendererState {
   destroyParticleData(id) {
     this.particleDataStore[id].destroy();
   }
-  addColorFilter(filter) {
-    this.colorFilters.push(filter);
-  }
   getColorBuffer() {
     if (this.particleData < 0) {
       return null;
     }
-    const original = this.particleDataStore[this.particleData].particleData.rgba;
-    let copy = Uint8Array.from(original);
-    for (let i = 0; i < this.colorFilters.length; i++) {
-      copy = this.colorFilters[i](copy);
+    if (this.dataInBuffer !== this.particleData) {
+      const data = this.particleDataStore[this.particleData].particleData.rgba;
+      this.colorBuffer(data);
+      this.dataInBuffer = this.particleData;
     }
-    this.colorBuffer(copy);
     return this.colorBuffer;
   }
   createBuffer(...args) {
