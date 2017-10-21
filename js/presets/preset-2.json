@@ -26,7 +26,12 @@
         "repetitions": 1,
         "config": {
           "maxRetries": 3,
-          "retryTimeout": 1000
+          "retryTimeout": 1000,
+          "imageScaling": "crop-to-viewport",
+          "imageCropping": {
+            "x": "crop-both",
+            "y": "crop-both"
+          }
         }
       }
     ],
