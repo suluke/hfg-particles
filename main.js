@@ -1291,8 +1291,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-10-21T15:56:38.246Z',
-  git_rev:               'ad06845',
+  timestamp:             '2017-10-21T19:12:10.627Z',
+  git_rev:               'a0b881b',
   export_schema_version: 0
 };
 
@@ -6058,6 +6058,7 @@ var WebcamEffect = (function (Effect$$1) {
     }, function (err) { return Promise.reject(err); })
     .then(function (videoTrack) {
       var capture = new imagecapture_1(videoTrack);
+      var prevPd = -1;
       // This is where the magic happens
       var processFrame = function (image) {
         if (isActive()) {
@@ -6073,6 +6074,10 @@ var WebcamEffect = (function (Effect$$1) {
           ctx.drawImage(image, 0, 0, -w, -h);
           var pd = props.state.createParticleData(canvas, instance.config.imageScaling, instance.config.imageCropping);
           props.state.setParticleData(pd);
+          if (prevPd !== -1) {
+            props.state.destroyParticleData(prevPd);
+          }
+          prevPd = pd;
         }
       };
       // When we are sure grabbing images works (which happens further
@@ -6151,6 +6156,10 @@ var WebcamEffect = (function (Effect$$1) {
 
   WebcamEffect.getRandomConfig = function getRandomConfig () {
     return WebcamEffect.getDefaultConfig();
+  };
+
+  WebcamEffect.supportsRepetition = function supportsRepetition () {
+    return false;
   };
 
   return WebcamEffect;
