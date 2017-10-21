@@ -143,7 +143,13 @@ export default class RendererState {
     return this.createParticleData(domImgToCanvas(domImg), imageScaling, imageCropping);
   }
   destroyParticleData(id) {
-    this.particleDataStore[id].destroy();
+    // Some effects (like webcam) may be a bit late to the party after
+    // the state has been reset
+    if (this.particleDataStore[id]) {
+      this.particleDataStore[id].destroy();
+    } else {
+      console.warn('Trying to destroy ParticleData that doesn\'t exist');
+    }
   }
   getColorBuffer() {
     if (this.particleData < 0) {
