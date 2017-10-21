@@ -137,6 +137,7 @@ export default class WebcamEffect extends Effect {
     }, (err) => Promise.reject(err))
     .then((videoTrack) => {
       const capture = new ImageCapture(videoTrack);
+      let prevPd = -1;
       // This is where the magic happens
       const processFrame = (image) => {
         if (isActive()) {
@@ -152,6 +153,10 @@ export default class WebcamEffect extends Effect {
           ctx.drawImage(image, 0, 0, -w, -h);
           const pd = props.state.createParticleData(canvas, instance.config.imageScaling, instance.config.imageCropping);
           props.state.setParticleData(pd);
+          if (prevPd !== -1) {
+            props.state.destroyParticleData(prevPd);
+          }
+          prevPd = pd;
         }
       };
       // When we are sure grabbing images works (which happens further
@@ -230,5 +235,9 @@ export default class WebcamEffect extends Effect {
 
   static getRandomConfig() {
     return WebcamEffect.getDefaultConfig();
+  }
+
+  static supportsRepetition() {
+    return false;
   }
 }
