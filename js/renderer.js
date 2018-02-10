@@ -32,7 +32,9 @@ export default class Renderer {
         return;
       }
       this.clock.frame();
-      this.frameTime += (this.clock.getDelta() - this.frameTime) / FILTER_STRENGTH;
+      if (!this.clock.isPaused()) {
+        this.frameTime += (this.clock.getDelta() - this.frameTime) / FILTER_STRENGTH;
+      }
       this.state.pipeline.run({
         config: this.config,
         state:  this.state,
