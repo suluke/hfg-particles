@@ -15,8 +15,8 @@ import RendererState from './renderer/state';
  *    and clock info (cf. RendererClock)
  */
 export default class Renderer {
-  constructor(canvas) {
-    this.regl = createRegl({ canvas });
+  constructor(webgl) {
+    this.regl = createRegl({ gl: webgl });
     console.info(`max texture size: ${this.regl.limits.maxTextureSize}`);
     console.info(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
     console.info(`max uniforms: ${this.regl.limits.maxVertexUniforms} ${this.regl.limits.maxFragmentUniforms}`);
@@ -25,6 +25,7 @@ export default class Renderer {
     this.commandBuilder = new CommandBuilder();
     this.clock = new RendererClock();
     this.resizeListeners = [];
+    this.frameListeners = [];
     // low pass filtered FPS measurement found on stackoverflow.com/a/5111475/1468532
     this.frameTime = 0;
     this.pipelineCfg = {config: null, state: null, clock: null};
@@ -54,6 +55,8 @@ export default class Renderer {
     this.pipelineCfg.state  = this.state,
     this.pipelineCfg.clock  = this.clock
     this.state.pipeline.run(this.pipelineCfg);
+    for (let i = 0; i < this.frameListeners.length; i++)
+      this.frameListeners[i](webgl.canvas, this.frameTime);
   }
 
   resize(width, height) {
@@ -105,5 +108,17 @@ export default class Renderer {
       return '?';
     }
     return Math.round(1000 / this.frameTime);
+  }
+
+  addFrameListener(listener) {
+    this.frameListeners.push(listener);
+  }
+  removeFrameListener(listener) {
+    const pos = this.frameListeners.indexOf(listener);
+    if (pos >= 0) {
+      this.frameListeners.splice(pos, 1);
+    } else {
+      throw new Error('Could not find frame listener to be removed');
+    }
   }
 }

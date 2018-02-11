@@ -1,0 +1,65 @@
+@keyframes recorder_blink_outer {
+  from {
+    border-color: #e0291d;
+  }
+  50% {
+    border-color: rgba(224, 41, 29, 0.2);
+  }
+  to {
+    border-color: #e0291d;
+  }
+}
+@keyframes recorder_blink_inner {
+  from {
+    background-color: #e0291d;
+  }
+  50% {
+    background-color: rgba(224, 41, 29, 0.2);
+  }
+  to {
+    background-color: #e0291d;
+  }
+}
+
+.btn-record {
+  position: absolute;
+  display: block;
+  bottom: 5%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border-width: 2px;
+  border-style: solid;
+  border-color: #e0291d;
+
+  background-color: transparent;
+  outline: none;
+  &::-moz-focus-inner {
+    border: none;
+  }
+
+  &:after {
+    content: "";
+    display: block;
+    width: 75%;
+    height: 75%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #e0291d;
+    border-radius: 50%;
+  }
+  &.recording {
+    opacity: 100 !important;
+    animation: recorder_blink_outer 2s infinite;
+    &:after {
+      width: 60%;
+      height: 60%;
+      border-radius: 10%;
+      animation: recorder_blink_inner 2s infinite;
+    }
+  }
+}

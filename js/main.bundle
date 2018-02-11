@@ -4,6 +4,7 @@ import ImgSelect from './ui/image-select';
 import InactivityMonitor from './ui/inactivity-monitor';
 import LoadImgDialog from './ui/load-default-img-dialog';
 import MainMenu from './ui/menu';
+import RecordButton from './ui/record';
 import Renderer from './renderer';
 import ErrorManager from './error-manager';
 import Config from './config';
@@ -18,14 +19,18 @@ const errorManager = new ErrorManager(function() {
   // some constants
   const imageLoadingClass = 'loading-image';
   const canvas = document.getElementById('main-canvas');
+  const ctx = canvas.getContext('webgl');
+
+  // initialize rendering core
+  const renderer = new Renderer(ctx);
 
   // set up ui components
   const fullscreenBtn = new FullscreenButton();
   const fullscreenListener = new DoubleClickFullscreen();
   const imgSelect = new ImgSelect();
-  const inactivityMonitor = new InactivityMonitor();
   const imgLoadDialog = new LoadImgDialog();
-  const renderer = new Renderer(canvas);
+  const inactivityMonitor = new InactivityMonitor();
+  const recordBtn = new RecordButton(renderer);
   const menu = new MainMenu(renderer.getClock());
 
   function tryLoadFromLocalStorage() {
