@@ -1,29 +1,12 @@
 import parseColor from 'parse-color'; // used by BgColorPicker
 import Config from '../config';
 import Timeline from './timeline';
+import Control from './control';
+import PresetSelect from './menu-preset-select';
 import { parseHtml } from './util';
 
 import EffectConfig from '../effects/effect-config';
 import { effectList as effects } from '../effects/index';
-
-/**
- * Base class of all controls participating in the main menu
- * This is rather for documenting the common interface than
- * offering concrete functionality for reuse.
- */
-export class Control {
-  constructor(menu) {
-    this.menu = menu;
-  }
-  // eslint-disable-next-line class-methods-use-this
-  updateConfig(/* config */) {
-    throw new Error('Method not implemented');
-  }
-  // eslint-disable-next-line class-methods-use-this
-  applyConfig(/* config */) {
-    throw new Error('Method not implemented');
-  }
-}
 
 /**
  *
@@ -293,7 +276,6 @@ class ResetAppstateButton extends Control {
   applyConfig(/* config */) {}
 }
 
-import PresetSelect from './menu-preset-select';
 const ControlsList = [
   BgColorPicker, ParticleCountControl, DefaultImageControl,
   ParticleSizeControl, ParticleShapeControl, ParticleEdgeFadeControl, ParticleOverlapControl,

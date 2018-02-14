@@ -1,4 +1,4 @@
-import { Control } from './menu';
+import Control from './control';
 import { listedPresets } from '../presets/index';
 
 export default class MenuPresetSelectControl {
