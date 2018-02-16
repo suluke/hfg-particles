@@ -52,18 +52,34 @@ const ffmpegLoader = new FfmpegLoader();
 
 class Recorder {
   constructor(renderer, ffmpeg) {
+    this.fps = 20;
     this.renderer = renderer;
+    this.scalingCanvas = document.createElement('canvas');
+    // TODO no idea what happens when we resize - but who would want to
+    // resize while recording anyways?
+    const renderW = renderer.getState().getWidth();
+    const renderH = renderer.getState().getHeight();
+    const maxDim = 640;
+    const scaledW = Math.round(renderW > renderH ? maxDim : renderW / renderH * maxDim) & (~1);
+    const scaledH = Math.round(renderW > renderH ? renderH / renderW * maxDim : maxDim) & (~1);
+    this.scalingCanvas.width  = scaledW;
+    this.scalingCanvas.height = scaledH;
+    const scalingCtx = this.scalingCanvas.getContext('2d');
+    scalingCtx.scale(scaledW / renderW, scaledH / renderH);
     this.ffmpeg = ffmpeg;
     this.frames = [];
+    this.dimensions = { width: scaledW, height: scaledH };
+
+    const desiredFrameTime = 1 / this.fps * 1000;
+    console.log(desiredFrameTime);
+    let waited = desiredFrameTime;
     this.frameCallback = (canvas, frameTime) => {
-      const gl = canvas.getContext('webgl');
-      const w = gl.drawingBufferWidth & (~1);
-      const h = gl.drawingBufferHeight & (~1);
-      const pixels = new Uint8Array(w * h * 4);
-      gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-      const pixelsClamped = new Uint8ClampedArray(pixels);
-      const imgData = new ImageData(pixelsClamped, w, h);
-      this.frames.push(imgData);
+      waited += frameTime;
+      if (waited >= desiredFrameTime) {
+        waited = 0;
+        scalingCtx.drawImage(canvas, 0, 0, scaledW, scaledH);
+        this.frames.push(scalingCtx.getImageData(0, 0, scaledW, scaledH));
+      }
     };
   }
   start() {
@@ -75,6 +91,9 @@ class Recorder {
   compile(callback) {
     let stdout = '';
     let stderr = '';
+    let exitCode = 0;
+    const frameCount = this.frames.length;
+    const progressRegex = /^frame=\s*([0-9]+) fps=/;
     this.ffmpeg.onmessage = (e) => {
       const msg = e.data;
       switch (msg.type) {
@@ -82,17 +101,23 @@ class Recorder {
         stdout += msg.data + "\n";
         break;
       case 'stderr':
+        if (progressRegex.test(msg.data)) {
+          const res = progressRegex.exec(msg.data);
+          console.log(`frame ${res[1]}/${frameCount}`);
+        }
         stderr += msg.data + "\n";
         break;
       case 'exit':
-        console.log(stdout);
-        console.log(stderr);
-        console.log(`Process exited with code ${msg.data}`);
+        exitCode = msg.data;
         break;
       case 'done':
-        const video = msg.data.MEMFS[0].data;
-        const blob = new Blob([video]);
-        this.present(blob, callback);
+        if (exitCode === 0) {
+          const video = msg.data.MEMFS[0].data;
+          const blob = new Blob([video]);
+          this.present(blob, callback);
+        } else {
+          console.log(`FFMPEG exited with code ${exitCode}`);
+        }
         break;
       }
     };
@@ -109,16 +134,18 @@ class Recorder {
       const padding = new Array(width - n.length + 1).join('0');
       return `${padding}${n}`;
     };
+
+    // a canvas to encode collected ImageDatas to jpeg
     const canvas = document.createElement('canvas');
-    const w = this.frames[0].width;
-    const h = this.frames[0].height;
-    const maxDim = 800;
-    canvas.width = w > h ? maxDim : w / h * maxDim;
-    canvas.height = w > h ? h / w * maxDim : maxDim;
+    const { width:w, height:h } = this.dimensions;
+    canvas.width = w;
+    canvas.height = h;
     const ctx = canvas.getContext('2d');
 
-    for (let i = 0; i < this.frames.length; i++) {
-      ctx.putImageData(this.frames[i], 0, 0);
+    let frameNum = 0;
+    while (this.frames.length > 0) {
+      const frame = this.frames.shift();
+      ctx.putImageData(frame, 0, 0);
       const url = canvas.toDataURL('image/jpeg').replace(/^data:image\/jpeg;base64,/, '');
       const byteString = atob(url);
       const ab = new ArrayBuffer(byteString.length);
@@ -129,7 +156,7 @@ class Recorder {
         ia[p] = byteString.charCodeAt(p);
       }
       const file = {
-        name: `img${pad(i, 4)}.jpg`,
+        name: `img${pad(frameNum++, 4)}.jpg`,
         data: ia
       };
       files.push(file);
@@ -138,7 +165,7 @@ class Recorder {
     this.ffmpeg.postMessage({
       type: 'run',
       arguments: [
-        '-r', '20', '-f', 'image2', '-s', `${w}x${h}`, '-i', 'img%04d.jpg', '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '20', 'out.mp4'
+        '-r', `${this.fps}`, '-f', 'image2', '-s', `${w}x${h}`, '-i', 'img%04d.jpg', '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '25', 'out.mp4'
       ],
       MEMFS: files
     });
@@ -156,19 +183,22 @@ export default class RecordButton {
     // set up dom elements (but don't display them yet)
     const container = document.querySelector('body');
     const elm = parseHtml(`
-      <button type="button" class="btn-record">
+      <div class="recorder-container">
+        <button type="button" class="btn-record">
+      </div>
     `);
-    elm.addEventListener('click', (...args) => { this.onClick(...args); });
+    const btn = elm.querySelector('button');
+    btn.addEventListener('click', (...args) => { this.onClick(...args); });
 
     ffmpegLoader.getFFMPEG()
       .then((ffmpeg) => {
         container.appendChild(elm);
         this.ffmpeg = ffmpeg;
-        console.log(ffmpeg);
       }, (err) => {
         console.error(err);
       });
 
+    this.btn = btn;
     this.elm = elm;
     this.recorder = null;
     this.renderer = renderer;
@@ -181,15 +211,17 @@ export default class RecordButton {
       this.recorder.start();
     } else {
       this.recorder.stop();
+      window.setTimeout(() => {
       this.recorder.compile((blob, url) => {
-        const dlLink = document.createElement('a');
-        dlLink.setAttribute('href', url);
-        dlLink.setAttribute('download', 'video.mp4');
-        dlLink.textContent = 'DOWNLOAD';
-        this.elm.appendChild(dlLink);
-      });
-      this.recorder = null;
+          const dlLink = document.createElement('a');
+          dlLink.setAttribute('href', url);
+          dlLink.setAttribute('download', 'video.mp4');
+          dlLink.textContent = 'DOWNLOAD';
+          this.elm.appendChild(dlLink);
+        });
+        this.recorder = null;
+      }, 0);
     }
-    this.elm.classList.toggle('recording');
+    this.btn.classList.toggle('recording');
   }
 }
