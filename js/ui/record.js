@@ -171,7 +171,8 @@ class Recorder {
         arguments: [
           '-r', `${this.fps}`, '-f', 'image2', '-s', `${w}x${h}`, '-i', filePattern, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '25', 'out.mp4'
         ],
-        MEMFS
+        MEMFS,
+        TOTAL_MEMORY: 100000000
       });
     });
   }
@@ -233,7 +234,10 @@ export default class RecordButton {
           }, (error) => {
             console.error(error);
           })
-          .then(() => { this.elm.classList.remove('processing'); });
+          .then(() => {
+            this.elm.classList.remove('processing');
+            this.renderer.getClock().setPaused(false);
+          });
         this.recorder = null;
       }, 0);
     }
