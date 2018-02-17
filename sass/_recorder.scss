@@ -29,8 +29,18 @@
   transform: translate(-50%, 0);
   width: 100px;
   height: 100px;
+  svg.recorder-encoding-progress {
+    display: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
   .btn-record {
     display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     border-radius: 50%;
@@ -56,15 +66,18 @@
       background-color: #e0291d;
       border-radius: 50%;
     }
-    &.recording {
-      opacity: 100 !important;
-      animation: recorder_blink_outer 2s infinite;
-      &:after {
-        width: 60%;
-        height: 60%;
-        border-radius: 10%;
-        animation: recorder_blink_inner 2s infinite;
-      }
+  }
+  &.recording .btn-record {
+    opacity: 100 !important;
+    animation: recorder_blink_outer 2s infinite;
+    &:after {
+      width: 60%;
+      height: 60%;
+      border-radius: 10%;
+      animation: recorder_blink_inner 2s infinite;
     }
+  }
+  &.processing .btn-record {
+    display: none;
   }
 }

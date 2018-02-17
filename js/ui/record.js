@@ -65,20 +65,29 @@ class Recorder {
     this.scalingCanvas.width  = scaledW;
     this.scalingCanvas.height = scaledH;
     const scalingCtx = this.scalingCanvas.getContext('2d');
-    scalingCtx.scale(scaledW / renderW, scaledH / renderH);
     this.ffmpeg = ffmpeg;
     this.frames = [];
     this.dimensions = { width: scaledW, height: scaledH };
 
     const desiredFrameTime = 1 / this.fps * 1000;
-    console.log(desiredFrameTime);
     let waited = desiredFrameTime;
     this.frameCallback = (canvas, frameTime) => {
       waited += frameTime;
       if (waited >= desiredFrameTime) {
         waited = 0;
         scalingCtx.drawImage(canvas, 0, 0, scaledW, scaledH);
-        this.frames.push(scalingCtx.getImageData(0, 0, scaledW, scaledH));
+        // compress the image as jpg by making a base64 data-url and
+        // decoding it to plain bytes (which can be consumed by ffmpeg)
+        const url = this.scalingCanvas.toDataURL('image/jpeg').replace(/^data:image\/jpeg;base64,/, '');
+        const byteString = atob(url);
+        const ab = new ArrayBuffer(byteString.length);
+        // create a view into the buffer
+        const ia = new Uint8Array(ab);
+        // set the bytes of the buffer to the correct values
+        for (let p = 0; p < byteString.length; p++) {
+          ia[p] = byteString.charCodeAt(p);
+        }
+        this.frames.push(ia);
       }
     };
   }
@@ -88,93 +97,83 @@ class Recorder {
   stop() {
     this.renderer.removeFrameListener(this.frameCallback);
   }
-  compile(callback) {
-    let stdout = '';
-    let stderr = '';
-    let exitCode = 0;
-    const frameCount = this.frames.length;
-    const progressRegex = /^frame=\s*([0-9]+) fps=/;
-    this.ffmpeg.onmessage = (e) => {
-      const msg = e.data;
-      switch (msg.type) {
-      case 'stdout':
-        stdout += msg.data + "\n";
-        break;
-      case 'stderr':
-        if (progressRegex.test(msg.data)) {
-          const res = progressRegex.exec(msg.data);
-          console.log(`frame ${res[1]}/${frameCount}`);
-        }
-        stderr += msg.data + "\n";
-        break;
-      case 'exit':
-        exitCode = msg.data;
-        break;
-      case 'done':
-        if (exitCode === 0) {
-          const video = msg.data.MEMFS[0].data;
-          const blob = new Blob([video]);
-          this.present(blob, callback);
-        } else {
-          console.log(`FFMPEG exited with code ${exitCode}`);
-        }
-        break;
-      }
-    };
-    const files = [];
-    /// Pad the given number n to have the desired width
-    const pad = (n, width) => {
-      n = `${n}`;
-      if (n.length >= width) {
-        if (n.length > width) {
-          console.warn('Number too big for padding to width');
-        }
-        return n;
-      }
-      const padding = new Array(width - n.length + 1).join('0');
-      return `${padding}${n}`;
-    };
+  compile(onProgress) {
+    return new Promise((resolve, reject) => {
+      const frameCount = this.frames.length;
 
-    // a canvas to encode collected ImageDatas to jpeg
-    const canvas = document.createElement('canvas');
-    const { width:w, height:h } = this.dimensions;
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-
-    let frameNum = 0;
-    while (this.frames.length > 0) {
-      const frame = this.frames.shift();
-      ctx.putImageData(frame, 0, 0);
-      const url = canvas.toDataURL('image/jpeg').replace(/^data:image\/jpeg;base64,/, '');
-      const byteString = atob(url);
-      const ab = new ArrayBuffer(byteString.length);
-      // create a view into the buffer
-      const ia = new Uint8Array(ab);
-      // set the bytes of the buffer to the correct values
-      for (let p = 0; p < byteString.length; p++) {
-        ia[p] = byteString.charCodeAt(p);
-      }
-      const file = {
-        name: `img${pad(frameNum++, 4)}.jpg`,
-        data: ia
+      // set up communication with ffmpeg webworker
+      let stdout = '';
+      let stderr = '';
+      let exitCode = 0;
+      const progressRegex = /^frame=\s*([0-9]+) fps=/;
+      this.ffmpeg.onmessage = (e) => {
+        const msg = e.data;
+        switch (msg.type) {
+        case 'stdout':
+          stdout += msg.data + "\n";
+          break;
+        case 'stderr':
+          if (progressRegex.test(msg.data)) {
+            const res = progressRegex.exec(msg.data);
+            if (onProgress) {
+              onProgress(res[1] / frameCount);
+            }
+          }
+          stderr += msg.data + "\n";
+          break;
+        case 'exit':
+          exitCode = msg.data;
+          break;
+        case 'done':
+          if (exitCode === 0) {
+            const video = msg.data.MEMFS[0].data;
+            const blob = new Blob([video]);
+            const url = window.URL.createObjectURL(blob);
+            resolve({blob, url});
+          } else {
+            console.log(`FFMPEG exited with code ${exitCode}`);
+            reject(new Error(stderr));
+          }
+          break;
+        }
       };
-      files.push(file);
-    }
-    this.frames = []; // free frame data
-    this.ffmpeg.postMessage({
-      type: 'run',
-      arguments: [
-        '-r', `${this.fps}`, '-f', 'image2', '-s', `${w}x${h}`, '-i', 'img%04d.jpg', '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '25', 'out.mp4'
-      ],
-      MEMFS: files
+
+      /// Pad the given number n to have the desired width
+      const pad = (n, width) => {
+        n = `${n}`;
+        if (n.length >= width) {
+          if (n.length > width) {
+            console.warn('Number too big for padding to width');
+          }
+          return n;
+        }
+        const padding = new Array(width - n.length + 1).join('0');
+        return `${padding}${n}`;
+      };
+
+      // set up the virtual filesystem for ffmpeg
+      const MEMFS = [];
+      let frameNum = 0;
+      const padWidth = Math.ceil(Math.log10(frameCount));
+      const { width:w, height:h } = this.dimensions;
+      while (this.frames.length > 0) {
+        const frame = this.frames.shift();
+        const file = {
+          name: `img${pad(frameNum++, padWidth)}.jpg`,
+          data: frame
+        };
+        MEMFS.push(file);
+      }
+      // kick off encoding
+      const filePattern = `img%0${padWidth}d.jpg`;
+      this.ffmpeg.postMessage({
+        type: 'run',
+        arguments: [
+          '-r', `${this.fps}`, '-f', 'image2', '-s', `${w}x${h}`, '-i', filePattern, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '25', 'out.mp4'
+        ],
+        MEMFS
+      });
     });
-  }
-  present(blob, callback) {
-    const url = window.URL.createObjectURL(blob);
-    console.log(blob);
-    console.log(url);
-    callback(blob, url);
   }
 }
 
@@ -184,6 +183,7 @@ export default class RecordButton {
     const container = document.querySelector('body');
     const elm = parseHtml(`
       <div class="recorder-container">
+        <svg xmlns="http://www.w3.org/2000/svg" class="recorder-encoding-progress"></svg>
         <button type="button" class="btn-record">
       </div>
     `);
@@ -203,25 +203,40 @@ export default class RecordButton {
     this.recorder = null;
     this.renderer = renderer;
     this.ffmpeg = null;
+    this.dlLink = null;
   }
 
   onClick() {
     if (this.recorder == null) {
       this.recorder = new Recorder(this.renderer, this.ffmpeg);
+      if (this.dlLink !== null) {
+        this.dlLink.parentNode.removeChild(this.dlLink);
+      }
       this.recorder.start();
     } else {
+      this.elm.classList.add('processing');
       this.recorder.stop();
+      // encoding has the highest priority now (for the user as-well)
+      // so at least pretend to free CPU resources by pausing
+      this.renderer.getClock().setPaused();
+      // compiling the video at least used to take quite some time, so
+      // let's put it in the next event loop iteration
       window.setTimeout(() => {
-      this.recorder.compile((blob, url) => {
-          const dlLink = document.createElement('a');
-          dlLink.setAttribute('href', url);
-          dlLink.setAttribute('download', 'video.mp4');
-          dlLink.textContent = 'DOWNLOAD';
-          this.elm.appendChild(dlLink);
-        });
+        this.recorder.compile((progress) => { console.log(progress); })
+          .then(({blob, url}) => {
+            const dlLink = document.createElement('a');
+            dlLink.setAttribute('href', url);
+            dlLink.setAttribute('download', 'video.mp4');
+            dlLink.textContent = 'DOWNLOAD';
+            this.elm.appendChild(dlLink);
+            this.dlLink = dlLink;
+          }, (error) => {
+            console.error(error);
+          })
+          .then(() => { this.elm.classList.remove('processing'); });
         this.recorder = null;
       }, 0);
     }
-    this.btn.classList.toggle('recording');
+    this.elm.classList.toggle('recording');
   }
 }
