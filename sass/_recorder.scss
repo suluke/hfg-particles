@@ -1,23 +1,25 @@
+$record-red: #e0291d;
+
 @keyframes recorder_blink_outer {
   from {
-    border-color: #e0291d;
+    border-color: $record-red;
   }
   50% {
-    border-color: rgba(224, 41, 29, 0.2);
+    border-color: transparentize($record-red, 0.8);
   }
   to {
-    border-color: #e0291d;
+    border-color: $record-red;
   }
 }
 @keyframes recorder_blink_inner {
   from {
-    background-color: #e0291d;
+    background-color: $record-red;
   }
   50% {
-    background-color: rgba(224, 41, 29, 0.2);
+    background-color: transparentize($record-red, 0.8);
   }
   to {
-    background-color: #e0291d;
+    background-color: $record-red;
   }
 }
 
@@ -46,7 +48,7 @@
     border-radius: 50%;
     border-width: 2px;
     border-style: solid;
-    border-color: #e0291d;
+    border-color: $record-red;
 
     background-color: transparent;
     outline: none;
@@ -63,7 +65,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background-color: #e0291d;
+      background-color: $record-red;
       border-radius: 50%;
     }
   }
@@ -79,5 +81,11 @@
   }
   &.processing .btn-record {
     display: none;
+  }
+  &.disabled .btn-record {
+    border-color: grayscale($record-red);
+    &:after {
+      background-color: grayscale($record-red);
+    }
   }
 }

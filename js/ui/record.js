@@ -183,21 +183,15 @@ export default class RecordButton {
     // set up dom elements (but don't display them yet)
     const container = document.querySelector('body');
     const elm = parseHtml(`
-      <div class="recorder-container">
+      <div class="recorder-container disabled">
         <svg xmlns="http://www.w3.org/2000/svg" class="recorder-encoding-progress"></svg>
         <button type="button" class="btn-record">
       </div>
     `);
+    container.appendChild(elm);
     const btn = elm.querySelector('button');
-    btn.addEventListener('click', (...args) => { this.onClick(...args); });
-
-    ffmpegLoader.getFFMPEG()
-      .then((ffmpeg) => {
-        container.appendChild(elm);
-        this.ffmpeg = ffmpeg;
-      }, (err) => {
-        console.error(err);
-      });
+    this.activateListener = () => { this.showActivationDialog(); }
+    btn.addEventListener('click', this.activateListener);
 
     this.btn = btn;
     this.elm = elm;
@@ -205,6 +199,23 @@ export default class RecordButton {
     this.renderer = renderer;
     this.ffmpeg = null;
     this.dlLink = null;
+  }
+
+  showActivationDialog() {
+    // TODO
+    this.btn.removeEventListener('click', this.activateListener);
+    this.activate();
+  }
+
+  activate() {
+    this.btn.addEventListener('click', (...args) => { this.onClick(...args); });
+    ffmpegLoader.getFFMPEG()
+      .then((ffmpeg) => {
+        this.elm.classList.remove('disabled');
+        this.ffmpeg = ffmpeg;
+      }, (err) => {
+        console.error(err);
+      });
   }
 
   onClick() {
