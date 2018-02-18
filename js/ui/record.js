@@ -178,6 +178,60 @@ class Recorder {
   }
 }
 
+class RecorderActivationDialog {
+  constructor() {
+    const classPrefix = 'video-recording';
+    const activateBtnClass = `btn-${classPrefix}-activate`;
+    const cancelBtnClass = `btn-${classPrefix}-cancel`;
+
+    // Object properties
+    this.parentNode = document.getElementById('modal-container');
+    this.resolve = null;
+    this.reject = null;
+    this.elm = parseHtml(`
+      <div class="${classPrefix}-backdrop">
+        <div class="${classPrefix}-popup">
+          <h3>
+            WARNING: You are about to activate the video recording feature.
+          </h3>
+          <p>
+            This feature
+            <ul>
+              <li>is highly experimental technology</li>
+              <li>is still under development</li>
+              <li>needs to download an additional 13mb of javascript</li>
+            </ul>
+            For these reasons, the overall user experience is likely to suffer.
+            You can still cancel activating this feature by clicking 'Cancel' below.
+          </p>
+          <button type="button" class="${activateBtnClass}">Activate</button>
+          <button type="button" class="${cancelBtnClass}">Cancel</button>
+        </div>
+      </div>
+    `);
+    const activateBtn = this.elm.querySelector(`.${activateBtnClass}`);
+    activateBtn.addEventListener('click', () => {
+      this.hide();
+      this.resolve();
+    });
+    const cancelBtn = this.elm.querySelector(`.${cancelBtnClass}`);
+    cancelBtn.addEventListener('click', () => {
+      this.hide();
+      this.reject(new Error('User canceled recorder activation'));
+    });
+  }
+  promptUser() {
+    return new Promise((resolve, reject) => {
+      this.resolve = resolve;
+      this.reject = reject;
+      this.parentNode.appendChild(this.elm);
+    });
+  }
+  hide() {
+    this.parentNode.removeChild(this.elm);
+  }
+}
+
 export default class RecordButton {
   constructor(renderer) {
     // set up dom elements (but don't display them yet)
@@ -202,9 +256,14 @@ export default class RecordButton {
   }
 
   showActivationDialog() {
-    // TODO
-    this.btn.removeEventListener('click', this.activateListener);
-    this.activate();
+    const dialog = new RecorderActivationDialog();
+    dialog.promptUser()
+      .then(() => {
+        this.btn.removeEventListener('click', this.activateListener);
+        this.activate();
+      }, (error) => {
+        // Nothing to do
+      });
   }
 
   activate() {

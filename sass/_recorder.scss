@@ -1,3 +1,16 @@
+@import 'mixins/modal';
+@import 'mixins/hide';
+
+$dialog-prefix: video-recording;
+
+.#{$dialog-prefix}-backdrop {
+  @include backdrop;
+
+  .#{$dialog-prefix}-popup {
+    @include modal;
+  }
+}
+
 $record-red: #e0291d;
 
 @keyframes recorder_blink_outer {
