@@ -3,6 +3,7 @@ import Config from '../config';
 import Timeline from './timeline';
 import Control from './control';
 import PresetSelect from './menu-preset-select';
+import MenuResizer from './menu-size-adjust';
 import { parseHtml } from './util';
 
 import EffectConfig from '../effects/effect-config';
@@ -437,6 +438,8 @@ export default class MainMenu {
     }
     this.timeline.loadTimeline(tracks);
 
+    this.menuResizer = new MenuResizer(this);
+
     this.submittedConfig = this.readConfig();
   }
 
@@ -481,6 +484,16 @@ export default class MainMenu {
     menuWidth = menuWidth.substring(0, menuWidth.length);
 
     return parseInt(menuWidth, 10) === window.innerWidth;
+  }
+
+  /// @return the dom element serving as the top-level container of all
+  ///         menu elements and also defining the menu's bounding box
+  getRootPane() {
+    return this.menuContent;
+  }
+
+  getTimeline() {
+    return this.timeline;
   }
 
   notifyChange() {

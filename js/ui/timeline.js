@@ -763,4 +763,9 @@ export default class Timeline {
       }
     }
   }
+  /// @return the dom element serving as the top-level container of all
+  ///         timeline elements and also defining the timeline's bounding box
+  getRootPane() {
+    return this.element;
+  }
 }
