@@ -1,0 +1,18 @@
+{
+  "_metadata_": {
+    "id": "de_DE",
+    "name": "Deutsch",
+    "flag": "de.svg"
+  },
+  "menu": {
+    "general_settings": {
+      "heading": "Allgemeine Einstellungen"
+    },
+    "locale_switch": {
+      "desc": "Sprache:"
+    },
+    "bg_color_control": {
+      "desc": "Hintergrundfarbe:"
+    }
+  }
+}

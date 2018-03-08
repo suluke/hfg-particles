@@ -3,10 +3,55 @@ import Config from '../config';
 import Timeline from './timeline';
 import Control from './control';
 import PresetSelect from './menu-preset-select';
+import LocalizationManager from './i18n';
 import { parseHtml } from './util';
 
 import EffectConfig from '../effects/effect-config';
 import { effectList as effects } from '../effects/index';
+
+class LocalePicker extends Control {
+  constructor(menu) {
+    this.menu = menu;
+    this.element = document.getElementById('menu-locale-control');
+    this.select = this.element.querySelector('select');
+
+    this.localizationManager = new LocalizationManager();
+
+    const locales = LocalizationManager.getAvailableLocales();
+    const localeKeys = Object.keys(locales);
+    const opts = document.createDocumentFragment();
+    for (let i = 0; i < localeKeys.length; i++) {
+      const key = localeKeys[i];
+      const locale = locales[key];
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = locale._metadata_.name;
+      if (this.localizationManager.getLocale() === key) {
+        opt.selected = true;
+      }
+      opts.appendChild(opt);
+    }
+    this.select.appendChild(opts);
+    this.select.addEventListener('change', () => {
+      this.localizationManager.setLocale(this.select.value);
+    });
+
+    this.localizationManager.initialize();
+  }
+
+  updateConfig(config) {
+    // eslint-disable-next-line no-param-reassign
+    config.locale = this.localizationManager.getLocale();
+  }
+
+  applyConfig(config) {
+    if (config.locale) {
+      this.localizationManager.setLocale(config.locale);
+      const opt = this.select.querySelector(`[value="${config.locale}"]`);
+      opt.selected = true;
+    }
+  }
+}
 
 /**
  *
@@ -277,7 +322,7 @@ class ResetAppstateButton extends Control {
 }
 
 const ControlsList = [
-  BgColorPicker, ParticleCountControl, DefaultImageControl,
+  LocalePicker, BgColorPicker, ParticleCountControl, DefaultImageControl,
   ParticleSizeControl, ParticleShapeControl, ParticleEdgeFadeControl, ParticleOverlapControl,
   PresetSelect,
   ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
