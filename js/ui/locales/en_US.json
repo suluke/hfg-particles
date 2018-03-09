@@ -83,6 +83,9 @@
     }
   },
   "menu": {
+    "apply_btn": {
+      "label": "Apply"
+    },
     "general_settings": {
       "heading": "General"
     },
@@ -123,6 +126,9 @@
         "prompt": "Load a preset configuration"
       }
     },
+    "toggle_btn": {
+      "title": "Toggle menu"
+    },
     "bg_color_control": {
       "desc": "Background color:"
     },
@@ -137,6 +143,9 @@
     "title": "Particles Playground",
     "dropzone": {
       "desc": "Drop image file to load"
+    },
+    "upload_btn": {
+      "title": "Select image"
     }
   }
 }

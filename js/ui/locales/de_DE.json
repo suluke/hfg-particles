@@ -83,6 +83,9 @@
     }
   },
   "menu": {
+    "apply_btn": {
+      "label": "Anwenden"
+    },
     "general_settings": {
       "heading": "Allgemeine Einstellungen"
     },
@@ -123,6 +126,9 @@
         "prompt": "Beispielkonfiguration laden"
       }
     },
+    "toggle_btn": {
+      "title": "Menü ein-/ausblenden"
+    },
     "bg_color_control": {
       "desc": "Hintergrundfarbe:"
     },
@@ -137,6 +143,9 @@
     "title": "Partikelspielplatz",
     "dropzone": {
       "desc": "Bilddatei ablegen zum Laden"
+    },
+    "upload_btn": {
+      "title": "Bild auswählen"
     }
   }
 }

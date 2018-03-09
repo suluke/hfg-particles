@@ -6,6 +6,7 @@ import en_US from './locales/en_US.json';
 const DefaultLocale = 'en_US';
 const AvailableLocales = { de_DE, en_US };
 const DomAttrName = 'data-hfg-i18n-id';
+const DomAttrsI18nAttr = 'data-hfg-i18n-attrs';
 
 function gettext(key, locale) {
   const parts = key.split('.');
@@ -92,6 +93,7 @@ export default class LocalizationManager {
   }
 
   manageStaticDOMElements() {
+    // Step 1: Collect nodes to localize text-content
     const elms = document.querySelectorAll(`[${DomAttrName}]`);
     for (let i = 0; i < elms.length; i++) {
       const elm = elms[i];
@@ -101,6 +103,27 @@ export default class LocalizationManager {
       }
       const elmsWithKey = this.managedDomElements[key];
       elmsWithKey.push(elm);
+    }
+
+    // Step 2: Collect nodes to localize attrs
+    const attrElms = document.querySelectorAll(`[${DomAttrsI18nAttr}]`);
+    for (let i = 0; i < attrElms.length; i++) {
+      const elm = attrElms[i];
+      const descriptor = elm.getAttribute(DomAttrsI18nAttr);
+      const attrKeyPairs = descriptor.split(';');
+      for (let j = 0; j < attrKeyPairs.length; j++) {
+        const attrKeyPair = attrKeyPairs[j];
+        const attrKey = attrKeyPair.split(':');
+        if (!attrKey.length === 2) {
+          throw new Error(`Malformed attribute i18n descriptor: ${descriptor}`);
+        }
+        const [ attr, key ] = attrKey;
+        if (!this.managedAttrs[attr]) {
+          this.managedAttrs[attr] = [];
+        }
+        const tasks = this.managedAttrs[attr];
+        tasks.push({ key, elm });
+      }
     }
   }
 
