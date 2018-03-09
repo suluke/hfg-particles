@@ -88,7 +88,7 @@ export default class LocalizationManager {
     if (!this.managedAttrs[translationKey]) {
       this.managedAttrs[translationKey] = [];
     }
-    const tasks = this.managedAttrs[translationKey];
+    const tasks = this.managedAttrs[attr];
     tasks.push({ key: translationKey, elm });
   }
 
