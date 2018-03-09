@@ -11,8 +11,54 @@
     "locale_switch": {
       "desc": "Sprache:"
     },
+    "particles": {
+      "count": {
+        "desc": "Anzahl Partikel",
+        "horizontal": "Horizontal (x):",
+        "vertical": "Vertikal (y):"
+      },
+      "fading": {
+        "desc": "Partikelkante:",
+        "none": "hart",
+        "fade_out": "weich"
+      },
+      "overlap": {
+        "desc": "Partikelüberdeckung:",
+        "glow": "aufhellen",
+        "blend": "mischen"
+      },
+      "shape": {
+        "desc": "Partikelform:",
+        "circle": "Kreis",
+        "square": "Quadrat",
+        "triangle": "Dreieck"
+      },
+      "size": {
+        "desc": "Partikelgröße:"
+      }
+    },
+    "state": {
+      "load": "Laden",
+      "save": "Speichern",
+      "reset": "Zurücksetzen",
+      "load_preset": {
+        "prompt": "Beispielkonfiguration laden"
+      }
+    },
     "bg_color_control": {
       "desc": "Hintergrundfarbe:"
+    },
+    "weblinks": {
+      "desc": "Weblinks:",
+      "manual": "Handbuch",
+      "source_code": "Source Code (Github, MIT License)",
+      "default_image": "Voreingestelltes Bild: Edgar Degas (Wikimedia Commons)"
+    }
+  },
+  "page": {
+    "title": "Partikelspielplatz",
+    "dropzone": {
+      "desc": "Bilddatei ablegen zum Laden"
     }
   }
 }

@@ -11,8 +11,54 @@
     "locale_switch": {
       "desc": "Language:"
     },
+    "particles": {
+      "count": {
+        "desc": "Number of particles",
+        "horizontal": "Horizontal (x):",
+        "vertical": "Vertical (y):"
+      },
+      "fading": {
+        "desc": "Particle edge fading:",
+        "none": "none",
+        "fade_out": "fade out"
+      },
+      "overlap": {
+        "desc": "Particle overlap:",
+        "glow": "glow",
+        "blend": "blend"
+      },
+      "shape": {
+        "desc": "Particle shape:",
+        "circle": "circle",
+        "square": "square",
+        "triangle": "triangle"
+      },
+      "size": {
+        "desc": "Particle size:"
+      }
+    },
+    "state": {
+      "load": "Load",
+      "save": "Save",
+      "reset": "Reset",
+      "load_preset": {
+        "prompt": "Load a preset configuration"
+      }
+    },
     "bg_color_control": {
       "desc": "Background color:"
+    },
+    "weblinks": {
+      "desc": "Weblinks:",
+      "manual": "Manual",
+      "source_code": "Source Code (Github, MIT License)",
+      "default_image": "Default image by Edgar Degas (Wikimedia Commons)"
+    }
+  },
+  "page": {
+    "title": "Particles Playground",
+    "dropzone": {
+      "desc": "Drop image file to load"
     }
   }
 }

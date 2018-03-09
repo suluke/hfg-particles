@@ -1,3 +1,5 @@
+import Control from './control';
+
 import de_DE from './locales/de_DE.json';
 import en_US from './locales/en_US.json';
 
@@ -72,5 +74,49 @@ export default class LocalizationManager {
 
   static getAvailableLocales() {
     return AvailableLocales;
+  }
+}
+
+export class LocalePicker extends Control {
+  constructor(menu) {
+    this.menu = menu;
+    this.element = document.getElementById('menu-locale-control');
+    this.select = this.element.querySelector('select');
+
+    this.localizationManager = new LocalizationManager();
+
+    const locales = LocalizationManager.getAvailableLocales();
+    const localeKeys = Object.keys(locales);
+    const opts = document.createDocumentFragment();
+    for (let i = 0; i < localeKeys.length; i++) {
+      const key = localeKeys[i];
+      const locale = locales[key];
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = locale._metadata_.name;
+      if (this.localizationManager.getLocale() === key) {
+        opt.selected = true;
+      }
+      opts.appendChild(opt);
+    }
+    this.select.appendChild(opts);
+    this.select.addEventListener('change', () => {
+      this.localizationManager.setLocale(this.select.value);
+    });
+
+    this.localizationManager.initialize();
+  }
+
+  updateConfig(config) {
+    // eslint-disable-next-line no-param-reassign
+    config.locale = this.localizationManager.getLocale();
+  }
+
+  applyConfig(config) {
+    if (config.locale) {
+      this.localizationManager.setLocale(config.locale);
+      const opt = this.select.querySelector(`[value="${config.locale}"]`);
+      opt.selected = true;
+    }
   }
 }
