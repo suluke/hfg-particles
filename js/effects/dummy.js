@@ -2,7 +2,6 @@ import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Dummy';
-const EffectDescription = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
 
 class DummyConfigUI extends ConfigUI {
   constructor() {
@@ -33,12 +32,8 @@ export default class DummyEffect extends Effect {
   static register(instance, props, uniforms, vertexShader) {
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'dummy';
   }
 
   static getConfigUI() {

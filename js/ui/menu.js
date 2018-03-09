@@ -3,7 +3,7 @@ import Config from '../config';
 import Timeline from './timeline';
 import Control from './control';
 import PresetSelect from './menu-preset-select';
-import { LocalePicker } from './i18n';
+import LocalizationManager, { LocalePicker } from './i18n';
 import { parseHtml } from './util';
 
 import EffectConfig from '../effects/effect-config';
@@ -285,15 +285,19 @@ const ControlsList = [
 ];
 
 class EffectListItem {
-  constructor(effect, timeline) {
+  constructor(effect, menu) {
     this.effect = effect;
-    this.timeline = timeline;
+    this.timeline = menu.getTimeline();
+    const i18n = menu.getLocalizationManager();
     this.element = parseHtml(`
-      <li title="${effect.getDescription()}">${effect.getDisplayName()}</li>
+      <li></li>
     `);
+    i18n.manageDOMElement(this.element, `effects.${effect.getTranslationId()}.display_name`);
+    i18n.manageDOMNodeAttr(this.element, 'title', `effects.${effect.getTranslationId()}.description`);
     this.dragCopy = parseHtml(`
-      <div class="effect-list-item drag-drop-copy">${effect.getDisplayName()}</div>
+      <div class="effect-list-item drag-drop-copy"></div>
     `);
+    i18n.manageDOMElement(this.dragCopy, `effects.${effect.getTranslationId()}.display_name`);
     
     const dragCopy = this.dragCopy;
     const showDragCopy = (x, y) => {
@@ -375,6 +379,7 @@ class EffectListItem {
 export default class MainMenu {
   constructor(clock) {
     this.menu = document.getElementById('menu-container');
+    this.localizationManager = new LocalizationManager();
     this.clock = clock;
     this.controls = [];
     this.changeListeners = [];
@@ -415,7 +420,7 @@ export default class MainMenu {
 
     const effectListElms = document.createDocumentFragment();
     for (let i = 0; i < effects.length; i++) {
-      const elm = new EffectListItem(effects[i], this.timeline).getElement();
+      const elm = new EffectListItem(effects[i], this).getElement();
       effectListElms.appendChild(elm);
     }
     this.effectList.appendChild(effectListElms);
@@ -439,6 +444,13 @@ export default class MainMenu {
     this.timeline.loadTimeline(tracks);
 
     this.submittedConfig = this.readConfig();
+  }
+
+  getTimeline() {
+    return this.timeline;
+  }
+  getLocalizationManager() {
+    return this.localizationManager;
   }
 
   applyConfig(config) {

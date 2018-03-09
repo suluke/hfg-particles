@@ -2,7 +2,6 @@ import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Vignette';
-const EffectDescription = 'Fade out the edges to make it look like an old crt tv';
 
 class VignetteConfigUI extends ConfigUI {
   constructor() {
@@ -39,12 +38,8 @@ export default class VignetteEffect extends Effect {
     `;
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'vignette';
   }
 
   static getConfigUI() {

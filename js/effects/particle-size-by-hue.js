@@ -3,7 +3,6 @@ import { parseHtml } from '../ui/util';
 import Ease from './ease-mixins';
 
 const EffectName = 'Particle size by hue';
-const EffectDescription = 'Particles will have different sizes depending on their color';
 
 class ParticleSizeByHueConfigUI extends ConfigUI {
   constructor() {
@@ -87,12 +86,8 @@ export default class ParticleSizeByHueEffect extends Effect {
     `;
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'particle_size_by_hue';
   }
 
   static getConfigUI() {

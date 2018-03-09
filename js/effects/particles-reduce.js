@@ -3,7 +3,6 @@ import { parseHtml } from '../ui/util';
 import Ease from './ease-mixins';
 
 const EffectName = 'Reduce Particle Count';
-const EffectDescription = 'Drops the given amount of particles';
 
 class ParticlesReduceConfigUI extends ConfigUI {
   constructor() {
@@ -116,12 +115,8 @@ export default class ParticlesReduceEffect extends Effect {
     } 
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'particles_reduce';
   }
 
   static getConfigUI() {

@@ -16,7 +16,7 @@ export default class Effect {
     return this.name;
   }
 
-  static getDisplayName() {
+  static getTranslationId() {
     throw new Error('Method not implemented');
   }
 
@@ -29,10 +29,6 @@ export default class Effect {
   }
 
   static getRandomConfig() {
-    throw new Error('Method not implemented');
-  }
-
-  static getDescription() {
     throw new Error('Method not implemented');
   }
 

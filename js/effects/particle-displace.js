@@ -3,7 +3,6 @@ import { parseHtml } from '../ui/util';
 import Ease from './ease-mixins';
 
 const EffectName = 'Displace Particles';
-const EffectDescription = 'Displaces all particles into a certain direction by the same distance';
 
 class ParticleDisplaceConfigUI extends ConfigUI {
   constructor() {
@@ -84,12 +83,8 @@ export default class ParticleDisplaceEffect extends Effect {
     `;
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'particle_displace';
   }
 
   static getConfigUI() {

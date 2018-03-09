@@ -2,7 +2,6 @@ import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Converge to circle';
-const EffectDescription = 'Particles are attracted towards their position on an HSV color wheel centered around the center of the screen';
 
 class ConvergeCircleConfigUI extends ConfigUI {
   constructor() {
@@ -77,12 +76,8 @@ export default class ConvergeCircleEffect extends Effect {
     `;
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'converge_circle';
   }
 
   static getConfigUI() {

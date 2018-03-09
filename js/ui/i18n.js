@@ -7,7 +7,7 @@ const DefaultLocale = 'en_US';
 const AvailableLocales = { de_DE, en_US };
 const DomAttrName = 'data-hfg-i18n-id';
 
-function translate(key, locale, domNode) {
+function gettext(key, locale) {
   const parts = key.split('.');
   let text = locale;
   while (parts.length > 0) {
@@ -19,6 +19,11 @@ function translate(key, locale, domNode) {
     }
     text = text[part];
   }
+  return text;
+}
+
+function translate(key, locale, domNode) {
+  const text = gettext(key, locale);
   if (text !== null) {
     domNode.textContent = text;
   }
@@ -27,6 +32,7 @@ function translate(key, locale, domNode) {
 export default class LocalizationManager {
   constructor() {
     this.managedDomElements = {};
+    this.managedAttrs = {};
     this.localeKey = DefaultLocale;
   }
 
@@ -57,6 +63,32 @@ export default class LocalizationManager {
         translate(key, AvailableLocales[this.localeKey], elm);
       }
     }
+    const attrs = Object.keys(this.managedAttrs);
+    for (let i = 0; i < attrs.length; i++) {
+      const attr = attrs[i];
+      const tasks = this.managedAttrs[attr];
+      for (let j = 0; j < tasks.length; j++) {
+        const task = tasks[j];
+        task.elm.setAttribute(attr, gettext(task.key, AvailableLocales[this.localeKey]));
+      }
+    }
+  }
+
+  manageDOMElement(elm, translationKey) {
+    if (!this.managedDomElements[translationKey]) {
+      this.managedDomElements[translationKey] = [];
+    }
+    const elmsWithKey = this.managedDomElements[translationKey];
+    elmsWithKey.push(elm);
+    translate(translationKey, AvailableLocales[this.localeKey], elm);
+  }
+
+  manageDOMNodeAttr(elm, attr, translationKey) {
+    if (!this.managedAttrs[translationKey]) {
+      this.managedAttrs[translationKey] = [];
+    }
+    const tasks = this.managedAttrs[translationKey];
+    tasks.push({ key: translationKey, elm });
   }
 
   manageStaticDOMElements() {
@@ -83,7 +115,7 @@ export class LocalePicker extends Control {
     this.element = document.getElementById('menu-locale-control');
     this.select = this.element.querySelector('select');
 
-    this.localizationManager = new LocalizationManager();
+    this.localizationManager = menu.getLocalizationManager();
 
     const locales = LocalizationManager.getAvailableLocales();
     const localeKeys = Object.keys(locales);

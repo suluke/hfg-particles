@@ -3,7 +3,6 @@ import { parseHtml } from '../ui/util';
 import Easing from './ease-mixins';
 
 const EffectName = 'Particle spacing';
-const EffectDescription = 'Adds or removes space between particles';
 
 class ParticleSpacingConfigUI extends ConfigUI {
   constructor() {
@@ -87,12 +86,8 @@ export default class ParticleSpacingEffect extends Effect {
     `;
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'particle_spacing';
   }
 
   static getConfigUI() {

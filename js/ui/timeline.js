@@ -22,7 +22,6 @@ class TimelineEntry {
       <li class="${this.effect.isEventOnly() ? 'event' : ''}">
         <div class="${beginHandleClass}"></div>
         <button type="button" class="${getColorClassnameForEffect(this.effect)}">
-          ${this.effect.getDisplayName()}
         </button>
         <div class="${endHandleClass}"></div>
       </li>
@@ -52,6 +51,8 @@ class TimelineEntry {
     });
 
     this.openConfigBtn = this.element.querySelector('button');
+    const i18n = timeline.menu.getLocalizationManager();
+    i18n.manageDOMElement(this.openConfigBtn, `effects.${effect.getTranslationId()}.display_name`);
     this.openConfigBtn.addEventListener('click', () => {
       if (this.clickPrevented) {
         this.clickPrevented = false;

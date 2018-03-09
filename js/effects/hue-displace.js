@@ -2,7 +2,6 @@ import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Displace by hue';
-const EffectDescription = 'Particles move into different directions depending on their hue';
 
 class HueDisplaceConfigUI extends ConfigUI {
   constructor() {
@@ -99,12 +98,8 @@ export default class HueDisplaceEffect extends Effect {
     }
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'hue_displace';
   }
 
   static getConfigUI() {

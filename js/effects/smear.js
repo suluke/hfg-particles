@@ -3,7 +3,6 @@ import { parseHtml } from '../ui/util';
 import AccumulationEffect, { AccumulationAgent } from './accumulation';
 
 const EffectName = 'Smear';
-const EffectDescription = 'Smears the image in a circular way';
 
 class SmearConfigUI extends ConfigUI {
   constructor() {
@@ -72,12 +71,8 @@ export default class SmearEffect extends AccumulationEffect {
     return SmearAgent;
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'smear';
   }
 
   static getConfigUI() {
