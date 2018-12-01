@@ -1,10 +1,11 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml, imageScalingMarkup } from '../ui/util';
-import Flickr, { ApiKey } from '../polyfills/flickr';
+import Flickr from 'flickr-sdk/flickr-sdk.js';
 
 const EffectName = 'Flickr Image';
 const EffectDescription = 'Changes the underlying image to one loaded from Flickr\'s recent images feed';
 const Attribution = 'This product uses the Flickr API but is not endorsed or certified by Flickr.';
+const ApiKey = 'bbd60ce148c0a1dedcaaffd228a03264';
 
 class FlickrImageConfigUI extends ConfigUI {
   constructor() {
@@ -104,7 +105,7 @@ class FlickrCacheEntry {
  */
 class FlickrImageCache {
   constructor() {
-    this.flickr = new Flickr({ api_key: ApiKey });
+    this.flickr = new Flickr(ApiKey);
     /// a dictionary mapping search queries to FlickrCachEntries
     this.byQuery = {};
   }
@@ -120,11 +121,12 @@ class FlickrImageCache {
     const entry = this.getEntryForSearchTerm(searchTerm);
 
     const onResponse = (response) => {
+      const parsed = JSON.parse(response.text);
       // since page is 1-indexed, a real greater is necessary
-      if (entry.page > response.photos.pages) {
+      if (entry.page > parsed.photos.pages) {
         entry.page = 1;
       }
-      return response;
+      return parsed;
     };
     // Two different flickr apis, depending on search string content
     let query = null;
@@ -190,7 +192,8 @@ class FlickrImageCache {
     return this.flickr.photos.getSizes({
       photo_id: photo.id
     }).then((sizes) => {
-      const original = this.selectBestImageVersion(sizes);
+      const parsed = JSON.parse(sizes.text);
+      const original = this.selectBestImageVersion(parsed);
       const url = original.source;
       const loader = document.createElement('img');
       loader.crossOrigin = 'Anonymous';
