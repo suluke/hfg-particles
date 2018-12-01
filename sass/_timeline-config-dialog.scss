@@ -1,0 +1,27 @@
+@import 'mixins/modal';
+@import 'mixins/responsive';
+@import 'mixins/icons';
+
+.timeline-config-dialog-backdrop {
+  @include backdrop;
+
+  .timeline-config-dialog {
+    @include modal;
+
+    .timeline-config-randomized-effects {
+      list-style-type: none;
+      column-count: 2;
+      @include screensize(6) {
+        column-count: 3;
+      }
+      text-align: left;
+      margin: 0;
+
+      a {
+        color: initial;
+        text-decoration: none;
+        @include icon($fa-var-cog, true)
+      }
+    }
+  }
+}
