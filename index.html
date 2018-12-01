@@ -33,52 +33,58 @@
         name="toggle-menu-visible"
         id="toggle-menu-visible"
         class="toggle-menu-visible"
-        title="Toggle menu">
-      <label for="toggle-menu-visible" title="Toggle menu"></label>
+        data-hfg-i18n-attrs="title:menu.toggle_btn.title">
+      <label for="toggle-menu-visible" data-hfg-i18n-attrs="title:menu.toggle_btn.title"></label>
       <div class="menu-content">
         <div class="menu-content-inner">
-          <h1>Particles</h1>
+          <h1 data-hfg-i18n-id="page.title">Particles Playground</h1>
           <fieldset id="menu-general-controls">
-            <legend>General</legend>
+            <legend data-hfg-i18n-id="menu.general_settings.heading">General</legend>
+            <label id="menu-locale-control">
+              <span data-hfg-i18n-id="menu.locale_switch.desc">Language:</span>
+              <select>
+                <!-- to be filled by LocalePicker -->
+              </select>
+            </label><br/>
             <label id="menu-bg-color-control">
-              Background color:
+              <span data-hfg-i18n-id="menu.bg_color_control.desc">Background color:</span>
               <input type="color" value="#000000" />
             </label><br/>
             <fieldset>
-              <legend>Number of particles</legend>
+              <legend data-hfg-i18n-id="menu.particles.count.desc">Number of particles</legend>
               <label>
-                Horizontal (x):
+                <span data-hfg-i18n-id="menu.particles.count.horizontal">Horizontal (x):</span>
                 <input type="number" min="1" step="1" id="menu-particles-x"/>
               </label><br/>
               <label>
-                Vertical (y):
+                <span data-hfg-i18n-id="menu.particles.count.vertical">Vertical (y):</span>
                 <input type="number" min="1" step="1" id="menu-particles-y"/>
               </label>
             </fieldset>
             <label id="menu-particle-size-control">
-              Particle size:
+              <span data-hfg-i18n-id="menu.particles.size.desc">Particle size:</span>
               <input type="number" value="100" />%
             </label><br/>
             <label id="menu-particle-shape-control">
-              Particle shape:
+              <span data-hfg-i18n-id="menu.particles.shape.desc">Particle shape:</span>
               <select>
-                <option value="circle" selected>circle</option>
-                <option value="square">square</option>
-                <option value="triangle">triangle</option>
+                <option value="circle" data-hfg-i18n-id="menu.particles.shape.circle" selected>circle</option>
+                <option value="square" data-hfg-i18n-id="menu.particles.shape.square">square</option>
+                <option value="triangle" data-hfg-i18n-id="menu.particles.shape.triangle">triangle</option>
               </select>
             </label><br/>
             <label id="menu-particle-edge-fade-control">
-              Particle edge fading:
+              <span data-hfg-i18n-id="menu.particles.fading.desc">Particle edge fading:</span>
               <select>
-                <option value="none" selected>none</option>
-                <option value="fade-out">fade out</option>
+                <option value="none" data-hfg-i18n-id="menu.particles.fading.none" selected>none</option>
+                <option value="fade-out" data-hfg-i18n-id="menu.particles.fading.fade_out">fade out</option>
               </select>
             </label><br/>
             <label id="menu-particle-overlap-control">
-              Particle overlap:
+              <span data-hfg-i18n-id="menu.particles.overlap.desc">Particle overlap:</span>
               <select>
-                <option value="add">glow</option>
-                <option value="alpha blend" selected>blend</option>
+                <option value="add" data-hfg-i18n-id="menu.particles.overlap.glow">glow</option>
+                <option value="alpha blend" data-hfg-i18n-id="menu.particles.overlap.blend" selected>blend</option>
               </select>
             </label>
           </fieldset>
@@ -88,31 +94,31 @@
           -->
           <div class="menu-state-ctrl-buttons">
             <label id="menu-btn-importstate" class="menu-btn-importstate">
-              Load
+              <span data-hfg-i18n-id="menu.state.load">Load</span>
               <input type="file" accept=".json,application/json"/>
             </label>
-            <button type="button" id="menu-btn-exportstate" class="menu-btn-exportstate">Save</button>
-            <button type="button" id="menu-btn-resetstate" class="menu-btn-resetstate">Reset</button>
+            <button type="button" id="menu-btn-exportstate" class="menu-btn-exportstate" data-hfg-i18n-id="menu.state.save">Save</button>
+            <button type="button" id="menu-btn-resetstate" class="menu-btn-resetstate" data-hfg-i18n-id="menu.state.reset">Reset</button>
           </div>
           <label class="menu-select-preset-control">
             <select>
-              <option value="" disabled selected>Load a preset configuration</option>
+              <option value="" disabled selected data-hfg-i18n-id="menu.state.load_preset.prompt">Load a preset configuration</option>
             </select>
           </label><br />
           <ul class="menu-effect-list">
             <!-- Effects will be listed here -->
           </ul>
           <div class="menu-weblinks-container">
-            Weblinks:
+            <span data-hfg-i18n-id="menu.weblinks.desc">Weblinks:</span>
             <ul>
               <li><a href="https://github.com/suluke/hfg-particles/tree/master/manual/MANUAL.md">
-                <span class="fa fa-book" /> Manual
+                <span class="fa fa-book" /> <span data-hfg-i18n-id="menu.weblinks.manual">Manual</span>
               </a></li>
               <li><a href="https://github.com/suluke/hfg-particles">
-                <span class="fa fa-github" /> Source Code (Github, MIT License)
+                <span class="fa fa-github" /> <span data-hfg-i18n-id="menu.weblinks.source_code">Source Code (Github, MIT License)</span>
               </a></li>
               <li><a href="https://commons.wikimedia.org/wiki/File:Edgar_Germain_Hilaire_Degas_071.jpg">
-                <span class="fa fa-image" /> Default image by Edgar Degas (Wikimedia Commons)
+                <span class="fa fa-image" /> <span data-hfg-i18n-id="menu.weblinks.default_image">Default image by Edgar Degas (Wikimedia Commons)</span>
               </a></li>
             </ul>
           </div>
@@ -120,6 +126,7 @@
         <button type="button"
           id="menu-btn-apply"
           class="menu-btn-apply"
+          data-hfg-i18n-id="menu.apply_btn.label"
           disabled
         >Apply</button>
       </div>
@@ -154,15 +161,15 @@
 
     <p class="file-drag-indicator">
       <span class="file-drag-icon"></span>
-      Drop image file to load
+      <span data-hfg-i18n-id="page.dropzone.desc">Drop image file to load</span>
     </p>
     <input type="file"
       name="btn-file-select"
       id="btn-file-select"
       class="btn-file-select"
-      title="Select image"
+      data-hfg-i18n-attrs="title:page.upload_btn.title"
       accept="image/*">
-    <label for="btn-file-select" title="Select image"></label>
+    <label for="btn-file-select" data-hfg-i18n-attrs="title:page.upload_btn.title"></label>
 
     <div id="modal-container"></div>
 

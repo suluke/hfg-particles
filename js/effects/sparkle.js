@@ -2,7 +2,6 @@ import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Sparkle';
-const EffectDescription = 'Particle size and brightness increase randomly';
 
 class SparkleConfigUI extends ConfigUI {
   constructor() {
@@ -157,12 +156,8 @@ export default class SparkleEffect extends Effect {
     `;
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'sparkle';
   }
 
   static getConfigUI() {

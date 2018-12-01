@@ -3,7 +3,6 @@ import { parseHtml, imageScalingMarkup } from '../ui/util';
 import { ImageCapture } from 'image-capture/lib/imagecapture';
 
 const EffectName = 'Webcam';
-const EffectDescription = 'Make use of the user\'s webcam as the particles\' color values';
 
 class WebcamConfigUI extends ConfigUI {
   constructor() {
@@ -242,12 +241,8 @@ export default class WebcamEffect extends Effect {
     return new WebcamEffectImpl(instance, props).start();
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'webcam';
   }
 
   static getConfigUI() {

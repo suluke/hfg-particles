@@ -1,0 +1,151 @@
+{
+  "_metadata_": {
+    "id": "de_DE",
+    "name": "Deutsch",
+    "flag": "de.svg"
+  },
+  "effects": {
+    "change_image": {
+      "display_name": "Wechsle Bild",
+      "description": "Ändert die Partikeldaten auf den Inhalt eines wählbaren Bildes (Datei oder URL)"
+    },
+    "converge_circle": {
+      "display_name": "Konvergiere auf Farbkreis",
+      "description": "Partikel werden zu ihrer Position auf einem um den Bildschirmmittelpunkt zentrierten Farbkreis gezogen"
+    },
+    "converge_point": {
+      "display_name": "Konvergiere zu Punkt",
+      "description": "Partikel werden zum Mittelpunkt des Bildschirms gezogen"
+    },
+    "dummy": {
+      "display_name": "Dummy",
+      "description": "Ein Effekt ohne Auswirkung - nützlich um die Timeline zu strecken, ohne dass etwas passiert"
+    },
+    "flickr_image": {
+      "display_name": "Flickr Bild",
+      "description": "Ändert die Partikeldaten auf den Inhalt eines Bildes aus dem Neue-Bilder-Feed von Flickr"
+    },
+    "hue_displace": {
+      "display_name": "Versatz nach Farbe",
+      "description": "Partikel werden in verschiedene Richtungen verschoben, in Abhängigkeit von ihrem Farbwert (Hue)"
+    },
+    "particle_displace": {
+      "display_name": "Partikelversatz",
+      "description": "Verschiebt alle Partikel in eine wählbare Richtung um die gleiche Distanz"
+    },
+    "particle_size_by_hue": {
+      "display_name": "Partikelgröße nach Farbe",
+      "description": "Abhängig von ihrer Farbe wird die größe der einzelnen Partikel variiert"
+    },
+    "particle_spacing": {
+      "display_name": "Partikelabstand",
+      "description": "Der Abstand zwischen Partikeln wird vergrößert oder verkleinert"
+    },
+    "particles_reduce": {
+      "display_name": "Partikelanzahl reduzieren",
+      "description": "Entfernt Partikel um einen wählbaren Faktor"
+    },
+    "reset_default_image": {
+      "display_name": "Standardbild zurücksetzen",
+      "description": "Setzt das aktive Bild auf das aktuelle Standardbild zurück (d.h. auf das Bild des Servers oder das vom Nutzer zuletzt gesetzte Bild)"
+    },
+    "smear": {
+      "display_name": "Verschmieren",
+      "description": "Smears the image in a circular way"
+    },
+    "smooth_trails": {
+      "display_name": "Weiche Bewegungsunschärfe",
+      "description": "Aktiviert einen etwas weicheren Nachleucht-Effekt"
+    },
+    "sparkle": {
+      "display_name": "Glitzern",
+      "description": "Partikelgröße und -helligkeit variieren zufällig"
+    },
+    "standing_wave": {
+      "display_name": "Stehende Welle",
+      "description": "Eine stehende Welle oszilliert"
+    },
+    "trails": {
+      "display_name": "Bewegungsunschärfe",
+      "description": "Aktiviert einen Nachleucht-Effekt, der Bewegungsunschärfe ähnelt"
+    },
+    "vignette": {
+      "display_name": "Vignette",
+      "description": "Senkt die Helligkeit an den Ecken um einen Röhrenfernseher-ähnlichen Eindruck zu erzielen"
+    },
+    "wave": {
+      "display_name": "Welle",
+      "description": "Eine Welle passiert den Bildschirm von links nach rechts"
+    },
+    "webcam": {
+      "display_name": "Webcam",
+      "description": "Nutzt die Webcam des Nutzers um die zugrundeliegenden Partikeldaten dynamisch zu verändern"
+    }
+  },
+  "menu": {
+    "apply_btn": {
+      "label": "Anwenden"
+    },
+    "general_settings": {
+      "heading": "Allgemeine Einstellungen"
+    },
+    "locale_switch": {
+      "desc": "Sprache:"
+    },
+    "particles": {
+      "count": {
+        "desc": "Anzahl Partikel",
+        "horizontal": "Horizontal (x):",
+        "vertical": "Vertikal (y):"
+      },
+      "fading": {
+        "desc": "Partikelkante:",
+        "none": "hart",
+        "fade_out": "weich"
+      },
+      "overlap": {
+        "desc": "Partikelüberdeckung:",
+        "glow": "aufhellen",
+        "blend": "mischen"
+      },
+      "shape": {
+        "desc": "Partikelform:",
+        "circle": "Kreis",
+        "square": "Quadrat",
+        "triangle": "Dreieck"
+      },
+      "size": {
+        "desc": "Partikelgröße:"
+      }
+    },
+    "state": {
+      "load": "Laden",
+      "save": "Speichern",
+      "reset": "Zurücksetzen",
+      "load_preset": {
+        "prompt": "Beispielkonfiguration laden"
+      }
+    },
+    "toggle_btn": {
+      "title": "Menü ein-/ausblenden"
+    },
+    "bg_color_control": {
+      "desc": "Hintergrundfarbe:"
+    },
+    "weblinks": {
+      "desc": "Weblinks:",
+      "manual": "Handbuch",
+      "source_code": "Source Code (Github, MIT License)",
+      "default_image": "Voreingestelltes Bild: Edgar Degas (Wikimedia Commons)"
+    }
+  },
+  "page": {
+    "title": "Partikelspielplatz",
+    "dropzone": {
+      "desc": "Bilddatei ablegen zum Laden"
+    },
+    "upload_btn": {
+      "title": "Bild auswählen"
+    }
+  }
+}

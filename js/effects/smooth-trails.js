@@ -3,7 +3,6 @@ import { parseHtml } from '../ui/util';
 import AccumulationEffect, { AccumulationAgent } from './accumulation';
 
 const EffectName = 'Smooth trails';
-const EffectDescription = 'Enables an smoother fading image echo';
 
 class SmoothTrailsConfigUI extends ConfigUI {
   constructor() {
@@ -76,12 +75,8 @@ export default class SmoothTrailsEffect extends AccumulationEffect {
     return SmoothTrailsAgent;
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'smooth_trails';
   }
 
   static getConfigUI() {

@@ -1,0 +1,151 @@
+{
+  "_metadata_": {
+    "id": "en_US",
+    "name": "English (US)",
+    "flag": "us.svg"
+  },
+  "effects": {
+    "change_image": {
+      "display_name": "Change Image",
+      "description": "Changes the particle data to a configurable image (file or url)"
+    },
+    "converge_circle": {
+      "display_name": "Converge to circle",
+      "description": "Particles are attracted towards their position on an HSV color wheel centered around the center of the screen"
+    },
+    "converge_point": {
+      "display_name": "Converge to point",
+      "description": "Particles are attracted towards the center of the screen"
+    },
+    "dummy": {
+      "display_name": "Dummy",
+      "description": "An effect that has no effect - useful to extend the timeline length without having anything happen"
+    },
+    "flickr_image": {
+      "display_name": "Flickr Image",
+      "description": "Changes the underlying image to one loaded from Flickr's recent images feed"
+    },
+    "hue_displace": {
+      "display_name": "Displace by Hue",
+      "description": "Particles move into different directions depending on their hue"
+    },
+    "particle_displace": {
+      "display_name": "Displace Particles",
+      "description": "Displaces all particles into a certain direction by the same distance"
+    },
+    "particle_size_by_hue": {
+      "display_name": "Particle Size by Hue",
+      "description": "Particles will have different sizes depending on their color"
+    },
+    "particle_spacing": {
+      "display_name": "Particle Spacing",
+      "description": "Adds or removes space between particles"
+    },
+    "particles_reduce": {
+      "display_name": "Reduce Particles Count",
+      "description": "Drops the given amount of particles"
+    },
+    "reset_default_image": {
+      "display_name": "Reset Default Image",
+      "description": "This effect changes the currently active image back to the default image (i.e. what came from the server or was uploaded by the user)"
+    },
+    "smear": {
+      "display_name": "Smear",
+      "description": "Smears the image in a circular way"
+    },
+    "smooth_trails": {
+      "display_name": "Smooth Trails",
+      "description": "Enables an smoother fading image echo"
+    },
+    "sparkle": {
+      "display_name": "Sparkle",
+      "description": "Particle size and brightness increase randomly"
+    },
+    "standing_wave": {
+      "display_name": "Standing Wave",
+      "description": "A standing wave oscillates"
+    },
+    "trails": {
+      "display_name": "Trails",
+      "description": "Enables an fading image echo"
+    },
+    "vignette": {
+      "display_name": "Vignette",
+      "description": "Fade out the edges to make it look like an old CRT TV"
+    },
+    "wave": {
+      "display_name": "Wave",
+      "description": "A wave passes through the particles from left to right over the screen"
+    },
+    "webcam": {
+      "display_name": "Webcam",
+      "description": "Make use of the user's webcam as the particles' color values"
+    }
+  },
+  "menu": {
+    "apply_btn": {
+      "label": "Apply"
+    },
+    "general_settings": {
+      "heading": "General"
+    },
+    "locale_switch": {
+      "desc": "Language:"
+    },
+    "particles": {
+      "count": {
+        "desc": "Number of particles",
+        "horizontal": "Horizontal (x):",
+        "vertical": "Vertical (y):"
+      },
+      "fading": {
+        "desc": "Particle edge fading:",
+        "none": "none",
+        "fade_out": "fade out"
+      },
+      "overlap": {
+        "desc": "Particle overlap:",
+        "glow": "glow",
+        "blend": "blend"
+      },
+      "shape": {
+        "desc": "Particle shape:",
+        "circle": "circle",
+        "square": "square",
+        "triangle": "triangle"
+      },
+      "size": {
+        "desc": "Particle size:"
+      }
+    },
+    "state": {
+      "load": "Load",
+      "save": "Save",
+      "reset": "Reset",
+      "load_preset": {
+        "prompt": "Load a preset configuration"
+      }
+    },
+    "toggle_btn": {
+      "title": "Toggle menu"
+    },
+    "bg_color_control": {
+      "desc": "Background color:"
+    },
+    "weblinks": {
+      "desc": "Weblinks:",
+      "manual": "Manual",
+      "source_code": "Source Code (Github, MIT License)",
+      "default_image": "Default image by Edgar Degas (Wikimedia Commons)"
+    }
+  },
+  "page": {
+    "title": "Particles Playground",
+    "dropzone": {
+      "desc": "Drop image file to load"
+    },
+    "upload_btn": {
+      "title": "Select image"
+    }
+  }
+}

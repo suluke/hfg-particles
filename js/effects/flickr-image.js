@@ -3,7 +3,6 @@ import { parseHtml, imageScalingMarkup } from '../ui/util';
 import Flickr from 'flickr-sdk/flickr-sdk.js';
 
 const EffectName = 'Flickr Image';
-const EffectDescription = 'Changes the underlying image to one loaded from Flickr\'s recent images feed';
 const Attribution = 'This product uses the Flickr API but is not endorsed or certified by Flickr.';
 const ApiKey = 'bbd60ce148c0a1dedcaaffd228a03264';
 
@@ -312,12 +311,8 @@ export default class FlickrImageEffect extends Effect {
     });
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'flickr_image';
   }
 
   static getConfigUI() {

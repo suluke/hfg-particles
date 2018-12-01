@@ -3,7 +3,6 @@ import { parseHtml, imageScalingMarkup } from '../ui/util';
 import { NonFatalError } from '../error-manager';
 
 const EffectName = 'Change Image';
-const EffectDescription = 'Changes the particle data to a configurable image (file or url)';
 
 const States = {
   INVALID: 0,
@@ -172,12 +171,8 @@ export default class ChangeImageEffect extends Effect {
     });
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'change_image';
   }
 
   static getConfigUI() {

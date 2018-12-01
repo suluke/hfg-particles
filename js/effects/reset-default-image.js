@@ -2,9 +2,6 @@ import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Reset Default Image';
-const EffectDescription = 'This effect changes the currently active image ' +
-                          'back to the default image (i.e. what came from ' +
-                          'the server or was uploaded by the user)';
 
 class ResetDefaultImageConfigUI extends ConfigUI {
   constructor() {
@@ -50,12 +47,8 @@ export default class ResetDefaultImageEffect extends Effect {
     });
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'reset_default_image';
   }
 
   static getConfigUI() {

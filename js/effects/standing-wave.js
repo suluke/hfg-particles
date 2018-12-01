@@ -2,7 +2,6 @@ import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Standing Wave';
-const EffectDescription = 'A standing wave oscillates';
 
 class StandingWaveConfigUI extends ConfigUI {
   constructor() {
@@ -125,12 +124,8 @@ export default class StandingWaveEffect extends Effect {
     }
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'standing_wave';
   }
 
   static getConfigUI() {

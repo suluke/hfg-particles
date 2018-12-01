@@ -2,7 +2,6 @@ import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Wave';
-const EffectDescription = 'A wave passes through the particles from left to right over the screen';
 
 class WaveConfigUI extends ConfigUI {
   constructor() {
@@ -94,12 +93,8 @@ export default class WaveEffect extends Effect {
     `;
   }
 
-  static getDisplayName() {
-    return EffectName;
-  }
-
-  static getDescription() {
-    return EffectDescription;
+  static getTranslationId() {
+    return 'wave';
   }
 
   static getConfigUI() {
