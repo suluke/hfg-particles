@@ -2397,7 +2397,7 @@
   border: none;
   outline: none;
   opacity: 0;
-  background-color: transparent; }
+  background-color: rgba(0, 0, 0, 0); }
 
 .drag-drop-copy {
   z-index: 100;

@@ -1206,15 +1206,15 @@ Converter.prototype.getValues = function(space) {
    };
 });
 
-var index$1 = convert;
+var colorConvert = convert;
 
-var index = function (cstr) {
+var parseColor = function (cstr) {
     var m, conv, parts, alpha;
     if (m = /^((?:rgb|hs[lv]|cmyk|xyz|lab)a?)\s*\(([^\)]*)\)/.exec(cstr)) {
         var name = m[1];
         var base = name.replace(/a$/, '');
         var size = base === 'cmyk' ? 4 : 3;
-        conv = index$1[base];
+        conv = colorConvert[base];
         
         parts = m[2].replace(/^\s+|\s+$/g, '')
             .split(/\s*,\s*/)
@@ -1237,7 +1237,7 @@ var index = function (cstr) {
     else if (/^#[A-Fa-f0-9]+$/.test(cstr)) {
         var base = cstr.replace(/^#/,'');
         var size = base.length;
-        conv = index$1.rgb;
+        conv = colorConvert.rgb;
         parts = base.split(size === 3 ? /(.)/ : /(..)/);
         parts = parts.filter(Boolean)
             .map(function (x) {
@@ -1256,7 +1256,7 @@ var index = function (cstr) {
         if (!parts[2]) { parts[2] = 0; }
     }
     else {
-        conv = index$1.keyword;
+        conv = colorConvert.keyword;
         conv.keyword = function () { return cstr };
         parts = cstr;
         alpha = 1;
@@ -1291,8 +1291,8 @@ var index = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2017-10-21T19:12:10.627Z',
-  git_rev:               'a0b881b',
+  timestamp:             '2018-12-01T18:08:22.697Z',
+  git_rev:               '813fc15',
   export_schema_version: 0
 };
 
@@ -1457,7 +1457,7 @@ function fract(x) {
 var EffectName = 'Displace by hue';
 var EffectDescription = 'Particles move into different directions depending on their hue';
 
-var HueDisplaceConfigUI = (function (ConfigUI$$1) {
+var HueDisplaceConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function HueDisplaceConfigUI() {
     var this$1 = this;
 
@@ -1511,7 +1511,7 @@ var HueDisplaceConfigUI = (function (ConfigUI$$1) {
   return HueDisplaceConfigUI;
 }(ConfigUI));
 
-var HueDisplaceEffect = (function (Effect$$1) {
+var HueDisplaceEffect = /*@__PURE__*/(function (Effect$$1) {
   function HueDisplaceEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -1583,7 +1583,7 @@ var HueDisplaceEffect = (function (Effect$$1) {
 var EffectName$1 = 'Converge to point';
 var EffectDescription$1 = 'Particles are attracted towards the center of the screen';
 
-var ConvergePointConfigUI = (function (ConfigUI$$1) {
+var ConvergePointConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function ConvergePointConfigUI() {
     ConfigUI$$1.call(this);
     this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$1 + "</legend>\n      </fieldset>\n    "));
@@ -1611,7 +1611,7 @@ var ConvergePointConfigUI = (function (ConfigUI$$1) {
   return ConvergePointConfigUI;
 }(ConfigUI));
 
-var ConvergePointEffect = (function (Effect$$1) {
+var ConvergePointEffect = /*@__PURE__*/(function (Effect$$1) {
   function ConvergePointEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -1661,7 +1661,7 @@ var ConvergePointEffect = (function (Effect$$1) {
 var EffectName$2 = 'Converge to circle';
 var EffectDescription$2 = 'Particles are attracted towards their position on an HSV color wheel centered around the center of the screen';
 
-var ConvergeCircleConfigUI = (function (ConfigUI$$1) {
+var ConvergeCircleConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function ConvergeCircleConfigUI() {
     var this$1 = this;
 
@@ -1697,7 +1697,7 @@ var ConvergeCircleConfigUI = (function (ConfigUI$$1) {
   return ConvergeCircleConfigUI;
 }(ConfigUI));
 
-var ConvergeCircleEffect = (function (Effect$$1) {
+var ConvergeCircleEffect = /*@__PURE__*/(function (Effect$$1) {
   function ConvergeCircleEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -1750,7 +1750,7 @@ var ConvergeCircleEffect = (function (Effect$$1) {
 var EffectName$3 = 'Wave';
 var EffectDescription$3 = 'A wave passes through the particles from left to right over the screen';
 
-var WaveConfigUI = (function (ConfigUI$$1) {
+var WaveConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function WaveConfigUI() {
     var this$1 = this;
 
@@ -1793,7 +1793,7 @@ var WaveConfigUI = (function (ConfigUI$$1) {
   return WaveConfigUI;
 }(ConfigUI));
 
-var WaveEffect = (function (Effect$$1) {
+var WaveEffect = /*@__PURE__*/(function (Effect$$1) {
   function WaveEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -1856,7 +1856,7 @@ var WaveEffect = (function (Effect$$1) {
   return WaveEffect;
 }(Effect));
 
-var NonFatalError = (function (Error) {
+var NonFatalError = /*@__PURE__*/(function (Error) {
   function NonFatalError(msg, data) {
     Error.call(this);
     this.msg = msg;
@@ -1902,7 +1902,7 @@ var States = {
   LOADING: 2
 };
 
-var ChangeImageConfigUI = (function (ConfigUI$$1) {
+var ChangeImageConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function ChangeImageConfigUI() {
     var this$1 = this;
 
@@ -2018,7 +2018,7 @@ var ChangeImageConfigUI = (function (ConfigUI$$1) {
   return ChangeImageConfigUI;
 }(ConfigUI));
 
-var ChangeImageEffect = (function (Effect$$1) {
+var ChangeImageEffect = /*@__PURE__*/(function (Effect$$1) {
   function ChangeImageEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -2037,7 +2037,6 @@ var ChangeImageEffect = (function (Effect$$1) {
           srcImage, instance.config.imageScaling, instance.config.imageCropping
         );
         var alive = true;
-        var prevWasChange = false;
         var checkTime = function () {
           if (!alive) {
             return;
@@ -2099,1949 +2098,16607 @@ var ChangeImageEffect = (function (Effect$$1) {
   return ChangeImageEffect;
 }(Effect));
 
-(function() {
- var Utils = {};
-Utils.encodeRFC5987ValueChars = function (str) {
-      return encodeURIComponent(str).
-      replace(/['()!]/g, escape).
-      replace(/\*/g, '%2A').
-      replace(/%(?:7C|60|5E)/g, unescape);
-    };
-Utils.formQueryString = function (queryArguments) {
-      var Utils = this,
-          args = [],
-          append = function(key) {
-            args.push(key + "=" + Utils.encodeRFC5987ValueChars(queryArguments[key]));
-          };
-      Object.keys(queryArguments).sort().forEach(append);
-      return args.join("&");
-    };
-Utils.checkRequirements = function (method_name, required, callOptions, callback) {
-    required = required || [];
-    for(var r=0, last=required.length, arg; r<last; r++) {
-      arg = required[r];
-      if(arg.name === "api_key") { continue; }
-      if(!callOptions.hasOwnProperty(arg.name)) {
-        return callback(new Error("missing required argument '"+arg.name+"' in call to "+method_name));
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+function commonjsRequire () {
+	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
+}
+
+function unwrapExports (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var flickrSdk = createCommonjsModule(function (module, exports) {
+(function(f){{module.exports=f();}})(function(){return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof commonjsRequire=="function"&&commonjsRequire;if(!u&&a){ return a(o,!0); }if(i){ return i(o,!0); }var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND", f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r);}return n[o].exports}var i=typeof commonjsRequire=="function"&&commonjsRequire;for(var o=0;o<r.length;o++){ s(r[o]); }return s})({1:[function(require,module,exports){
+/*!
+ * Copyright 2017 Yahoo Holdings.
+ * Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
+ */
+
+exports = module.exports = require('./services/rest');
+
+// Services
+exports.OAuth = require('./services/oauth');
+exports.Feeds = require('./services/feeds');
+exports.Upload = require('./services/upload');
+exports.Replace = require('./services/replace');
+
+},{"./services/feeds":75,"./services/oauth":76,"./services/replace":77,"./services/rest":78,"./services/upload":79}],2:[function(require,module,exports){
+/*!
+ * Copyright 2017 Yahoo Holdings.
+ * Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
+ */
+
+var request = require('superagent');
+var parse = require('querystring').parse;
+
+/**
+ * Subclass superagent's Request class so that we can add
+ * our own functionality to it.
+ * @param {String} method
+ * @param {String} url
+ * @constructor
+ */
+
+function Request(method, url) {
+	request.Request.call(this, method, url);
+
+	// keep track of all request params for oauth signing
+	this.params = {};
+}
+
+Request.prototype = Object.create(request.Request.prototype);
+
+/**
+ * Override .query() to also add query string params to our params hash.
+ * @param {String|Object} val
+ * @returns {this}
+ */
+
+Request.prototype.query = function (val) {
+	if (typeof val === 'string') {
+		Object.assign(this.params, parse(val));
+	} else {
+		Object.assign(this.params, val);
+	}
+
+	// super
+	return request.Request.prototype.query.call(this, val);
+};
+
+/**
+ * Override .field() to also add fields to our params hash.
+ * @param {String|Object} key
+ * @param {String} val
+ * @returns {this}
+ */
+
+Request.prototype.field = function (key, val) {
+	if (typeof key === 'string') {
+		this.params[key] = val;
+	} else {
+		Object.assign(this.params, key);
+	}
+
+	// super
+	return request.Request.prototype.field.call(this, key, val);
+};
+
+/**
+ * Convenience method to either call .query() or .field()
+ * based on this request's method.
+ * @param {Object} obj
+ * @returns {this}
+ */
+
+Request.prototype.param = function (obj) {
+	switch (this.method) {
+	case 'POST':
+		return this.field.call(this, obj);
+	default:
+		return this.query.call(this, obj);
+	}
+};
+
+/**
+ * Mimic the request factory method that superagent exports.
+ * @param {String} method
+ * @param {String} url
+ * @returns {Request}
+ */
+
+exports = module.exports = function (method, url) {
+	// callback
+	if ('function' === typeof url) {
+		return new exports.Request('GET', method).end(url);
+	}
+
+	// url first
+	if (1 === arguments.length) {
+		return new exports.Request('GET', method);
+	}
+
+	return new exports.Request(method, url);
+};
+
+/**
+ * Re-export all of the things superagent exports.
+ */
+
+Object.assign(exports, request);
+
+/**
+ * @module Request
+ */
+
+exports.Request = Request;
+
+},{"querystring":14,"superagent":38}],3:[function(require,module,exports){
+/*!
+ * Copyright 2017 Yahoo Holdings.
+ * Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
+ */
+
+/**
+ * Asserts that any of the N keys passed in
+ * are found in the obj
+ * @param {Object} obj
+ * @param {(String|String[])} keys
+ * @throws {Error}
+ */
+
+module.exports = function (obj, keys) {
+	var matches;
+
+	if (!keys) {
+		// you shouldn't be calling this function if you're
+		// not providing keys, but we won't die if you do
+		return;
+	}
+
+	obj = obj || {};
+
+	if (typeof keys === 'string') {
+
+		if (!obj.hasOwnProperty(keys)) {
+			throw new Error('Missing required argument "' + keys + '"');
+		}
+	} else {
+
+		matches = keys.filter(function (key) {
+			return obj.hasOwnProperty(key);
+		});
+
+		if (matches.length === 0) {
+			throw new Error('Missing required argument, you must provide one of the following: "' + keys.join('", "') + '"');
+		}
+	}
+
+};
+
+},{}],4:[function(require,module,exports){
+
+},{}],5:[function(require,module,exports){
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+/* eslint-disable no-proto */
+
+var base64 = require('base64-js');
+var ieee754 = require('ieee754');
+
+exports.Buffer = Buffer;
+exports.SlowBuffer = SlowBuffer;
+exports.INSPECT_MAX_BYTES = 50;
+
+var K_MAX_LENGTH = 0x7fffffff;
+exports.kMaxLength = K_MAX_LENGTH;
+
+/**
+ * If `Buffer.TYPED_ARRAY_SUPPORT`:
+ *   === true    Use Uint8Array implementation (fastest)
+ *   === false   Print warning and recommend using `buffer` v4.x which has an Object
+ *               implementation (most compatible, even IE6)
+ *
+ * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
+ * Opera 11.6+, iOS 4.2+.
+ *
+ * We report that the browser does not support typed arrays if the are not subclassable
+ * using __proto__. Firefox 4-29 lacks support for adding new properties to `Uint8Array`
+ * (See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438). IE 10 lacks support
+ * for __proto__ and has a buggy typed array implementation.
+ */
+Buffer.TYPED_ARRAY_SUPPORT = typedArraySupport();
+
+if (!Buffer.TYPED_ARRAY_SUPPORT && typeof console !== 'undefined' &&
+    typeof console.error === 'function') {
+  console.error(
+    'This browser lacks typed array (Uint8Array) support which is required by ' +
+    '`buffer` v5.x. Use `buffer` v4.x if you require old browser support.'
+  );
+}
+
+function typedArraySupport () {
+  // Can typed array instances can be augmented?
+  try {
+    var arr = new Uint8Array(1);
+    arr.__proto__ = {__proto__: Uint8Array.prototype, foo: function () { return 42 }};
+    return arr.foo() === 42
+  } catch (e) {
+    return false
+  }
+}
+
+function createBuffer (length) {
+  if (length > K_MAX_LENGTH) {
+    throw new RangeError('Invalid typed array length')
+  }
+  // Return an augmented `Uint8Array` instance
+  var buf = new Uint8Array(length);
+  buf.__proto__ = Buffer.prototype;
+  return buf
+}
+
+/**
+ * The Buffer constructor returns instances of `Uint8Array` that have their
+ * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
+ * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
+ * and the `Uint8Array` methods. Square bracket notation works as expected -- it
+ * returns a single octet.
+ *
+ * The `Uint8Array` prototype remains unmodified.
+ */
+
+function Buffer (arg, encodingOrOffset, length) {
+  // Common case.
+  if (typeof arg === 'number') {
+    if (typeof encodingOrOffset === 'string') {
+      throw new Error(
+        'If encoding is specified then the first argument must be a string'
+      )
+    }
+    return allocUnsafe(arg)
+  }
+  return from(arg, encodingOrOffset, length)
+}
+
+// Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
+if (typeof Symbol !== 'undefined' && Symbol.species &&
+    Buffer[Symbol.species] === Buffer) {
+  Object.defineProperty(Buffer, Symbol.species, {
+    value: null,
+    configurable: true,
+    enumerable: false,
+    writable: false
+  });
+}
+
+Buffer.poolSize = 8192; // not used by this implementation
+
+function from (value, encodingOrOffset, length) {
+  if (typeof value === 'number') {
+    throw new TypeError('"value" argument must not be a number')
+  }
+
+  if (isArrayBuffer(value)) {
+    return fromArrayBuffer(value, encodingOrOffset, length)
+  }
+
+  if (typeof value === 'string') {
+    return fromString(value, encodingOrOffset)
+  }
+
+  return fromObject(value)
+}
+
+/**
+ * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
+ * if value is a number.
+ * Buffer.from(str[, encoding])
+ * Buffer.from(array)
+ * Buffer.from(buffer)
+ * Buffer.from(arrayBuffer[, byteOffset[, length]])
+ **/
+Buffer.from = function (value, encodingOrOffset, length) {
+  return from(value, encodingOrOffset, length)
+};
+
+// Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
+// https://github.com/feross/buffer/pull/148
+Buffer.prototype.__proto__ = Uint8Array.prototype;
+Buffer.__proto__ = Uint8Array;
+
+function assertSize (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('"size" argument must be a number')
+  } else if (size < 0) {
+    throw new RangeError('"size" argument must not be negative')
+  }
+}
+
+function alloc (size, fill, encoding) {
+  assertSize(size);
+  if (size <= 0) {
+    return createBuffer(size)
+  }
+  if (fill !== undefined) {
+    // Only pay attention to encoding if it's a string. This
+    // prevents accidentally sending in a number that would
+    // be interpretted as a start offset.
+    return typeof encoding === 'string'
+      ? createBuffer(size).fill(fill, encoding)
+      : createBuffer(size).fill(fill)
+  }
+  return createBuffer(size)
+}
+
+/**
+ * Creates a new filled Buffer instance.
+ * alloc(size[, fill[, encoding]])
+ **/
+Buffer.alloc = function (size, fill, encoding) {
+  return alloc(size, fill, encoding)
+};
+
+function allocUnsafe (size) {
+  assertSize(size);
+  return createBuffer(size < 0 ? 0 : checked(size) | 0)
+}
+
+/**
+ * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
+ * */
+Buffer.allocUnsafe = function (size) {
+  return allocUnsafe(size)
+};
+/**
+ * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
+ */
+Buffer.allocUnsafeSlow = function (size) {
+  return allocUnsafe(size)
+};
+
+function fromString (string, encoding) {
+  if (typeof encoding !== 'string' || encoding === '') {
+    encoding = 'utf8';
+  }
+
+  if (!Buffer.isEncoding(encoding)) {
+    throw new TypeError('"encoding" must be a valid string encoding')
+  }
+
+  var length = byteLength(string, encoding) | 0;
+  var buf = createBuffer(length);
+
+  var actual = buf.write(string, encoding);
+
+  if (actual !== length) {
+    // Writing a hex string, for example, that contains invalid characters will
+    // cause everything after the first invalid character to be ignored. (e.g.
+    // 'abxxcd' will be treated as 'ab')
+    buf = buf.slice(0, actual);
+  }
+
+  return buf
+}
+
+function fromArrayLike (array) {
+  var length = array.length < 0 ? 0 : checked(array.length) | 0;
+  var buf = createBuffer(length);
+  for (var i = 0; i < length; i += 1) {
+    buf[i] = array[i] & 255;
+  }
+  return buf
+}
+
+function fromArrayBuffer (array, byteOffset, length) {
+  if (byteOffset < 0 || array.byteLength < byteOffset) {
+    throw new RangeError('\'offset\' is out of bounds')
+  }
+
+  if (array.byteLength < byteOffset + (length || 0)) {
+    throw new RangeError('\'length\' is out of bounds')
+  }
+
+  var buf;
+  if (byteOffset === undefined && length === undefined) {
+    buf = new Uint8Array(array);
+  } else if (length === undefined) {
+    buf = new Uint8Array(array, byteOffset);
+  } else {
+    buf = new Uint8Array(array, byteOffset, length);
+  }
+
+  // Return an augmented `Uint8Array` instance
+  buf.__proto__ = Buffer.prototype;
+  return buf
+}
+
+function fromObject (obj) {
+  if (Buffer.isBuffer(obj)) {
+    var len = checked(obj.length) | 0;
+    var buf = createBuffer(len);
+
+    if (buf.length === 0) {
+      return buf
+    }
+
+    obj.copy(buf, 0, 0, len);
+    return buf
+  }
+
+  if (obj) {
+    if (isArrayBufferView(obj) || 'length' in obj) {
+      if (typeof obj.length !== 'number' || numberIsNaN(obj.length)) {
+        return createBuffer(0)
+      }
+      return fromArrayLike(obj)
+    }
+
+    if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
+      return fromArrayLike(obj.data)
+    }
+  }
+
+  throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.')
+}
+
+function checked (length) {
+  // Note: cannot use `length < K_MAX_LENGTH` here because that fails when
+  // length is NaN (which is otherwise coerced to zero.)
+  if (length >= K_MAX_LENGTH) {
+    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
+                         'size: 0x' + K_MAX_LENGTH.toString(16) + ' bytes')
+  }
+  return length | 0
+}
+
+function SlowBuffer (length) {
+  if (+length != length) { // eslint-disable-line eqeqeq
+    length = 0;
+  }
+  return Buffer.alloc(+length)
+}
+
+Buffer.isBuffer = function isBuffer (b) {
+  return b != null && b._isBuffer === true
+};
+
+Buffer.compare = function compare (a, b) {
+  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
+    throw new TypeError('Arguments must be Buffers')
+  }
+
+  if (a === b) { return 0 }
+
+  var x = a.length;
+  var y = b.length;
+
+  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
+    if (a[i] !== b[i]) {
+      x = a[i];
+      y = b[i];
+      break
+    }
+  }
+
+  if (x < y) { return -1 }
+  if (y < x) { return 1 }
+  return 0
+};
+
+Buffer.isEncoding = function isEncoding (encoding) {
+  switch (String(encoding).toLowerCase()) {
+    case 'hex':
+    case 'utf8':
+    case 'utf-8':
+    case 'ascii':
+    case 'latin1':
+    case 'binary':
+    case 'base64':
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      return true
+    default:
+      return false
+  }
+};
+
+Buffer.concat = function concat (list, length) {
+  if (!Array.isArray(list)) {
+    throw new TypeError('"list" argument must be an Array of Buffers')
+  }
+
+  if (list.length === 0) {
+    return Buffer.alloc(0)
+  }
+
+  var i;
+  if (length === undefined) {
+    length = 0;
+    for (i = 0; i < list.length; ++i) {
+      length += list[i].length;
+    }
+  }
+
+  var buffer = Buffer.allocUnsafe(length);
+  var pos = 0;
+  for (i = 0; i < list.length; ++i) {
+    var buf = list[i];
+    if (!Buffer.isBuffer(buf)) {
+      throw new TypeError('"list" argument must be an Array of Buffers')
+    }
+    buf.copy(buffer, pos);
+    pos += buf.length;
+  }
+  return buffer
+};
+
+function byteLength (string, encoding) {
+  if (Buffer.isBuffer(string)) {
+    return string.length
+  }
+  if (isArrayBufferView(string) || isArrayBuffer(string)) {
+    return string.byteLength
+  }
+  if (typeof string !== 'string') {
+    string = '' + string;
+  }
+
+  var len = string.length;
+  if (len === 0) { return 0 }
+
+  // Use a for loop to avoid recursion
+  var loweredCase = false;
+  for (;;) {
+    switch (encoding) {
+      case 'ascii':
+      case 'latin1':
+      case 'binary':
+        return len
+      case 'utf8':
+      case 'utf-8':
+      case undefined:
+        return utf8ToBytes(string).length
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return len * 2
+      case 'hex':
+        return len >>> 1
+      case 'base64':
+        return base64ToBytes(string).length
+      default:
+        if (loweredCase) { return utf8ToBytes(string).length } // assume utf8
+        encoding = ('' + encoding).toLowerCase();
+        loweredCase = true;
+    }
+  }
+}
+Buffer.byteLength = byteLength;
+
+function slowToString (encoding, start, end) {
+  var loweredCase = false;
+
+  // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
+  // property of a typed array.
+
+  // This behaves neither like String nor Uint8Array in that we set start/end
+  // to their upper/lower bounds if the value passed is out of range.
+  // undefined is handled specially as per ECMA-262 6th Edition,
+  // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
+  if (start === undefined || start < 0) {
+    start = 0;
+  }
+  // Return early if start > this.length. Done here to prevent potential uint32
+  // coercion fail below.
+  if (start > this.length) {
+    return ''
+  }
+
+  if (end === undefined || end > this.length) {
+    end = this.length;
+  }
+
+  if (end <= 0) {
+    return ''
+  }
+
+  // Force coersion to uint32. This will also coerce falsey/NaN values to 0.
+  end >>>= 0;
+  start >>>= 0;
+
+  if (end <= start) {
+    return ''
+  }
+
+  if (!encoding) { encoding = 'utf8'; }
+
+  while (true) {
+    switch (encoding) {
+      case 'hex':
+        return hexSlice(this, start, end)
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Slice(this, start, end)
+
+      case 'ascii':
+        return asciiSlice(this, start, end)
+
+      case 'latin1':
+      case 'binary':
+        return latin1Slice(this, start, end)
+
+      case 'base64':
+        return base64Slice(this, start, end)
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return utf16leSlice(this, start, end)
+
+      default:
+        if (loweredCase) { throw new TypeError('Unknown encoding: ' + encoding) }
+        encoding = (encoding + '').toLowerCase();
+        loweredCase = true;
+    }
+  }
+}
+
+// This property is used by `Buffer.isBuffer` (and the `is-buffer` npm package)
+// to detect a Buffer instance. It's not possible to use `instanceof Buffer`
+// reliably in a browserify context because there could be multiple different
+// copies of the 'buffer' package in use. This method works even for Buffer
+// instances that were created from another copy of the `buffer` package.
+// See: https://github.com/feross/buffer/issues/154
+Buffer.prototype._isBuffer = true;
+
+function swap (b, n, m) {
+  var i = b[n];
+  b[n] = b[m];
+  b[m] = i;
+}
+
+Buffer.prototype.swap16 = function swap16 () {
+  var len = this.length;
+  if (len % 2 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 16-bits')
+  }
+  for (var i = 0; i < len; i += 2) {
+    swap(this, i, i + 1);
+  }
+  return this
+};
+
+Buffer.prototype.swap32 = function swap32 () {
+  var len = this.length;
+  if (len % 4 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 32-bits')
+  }
+  for (var i = 0; i < len; i += 4) {
+    swap(this, i, i + 3);
+    swap(this, i + 1, i + 2);
+  }
+  return this
+};
+
+Buffer.prototype.swap64 = function swap64 () {
+  var len = this.length;
+  if (len % 8 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 64-bits')
+  }
+  for (var i = 0; i < len; i += 8) {
+    swap(this, i, i + 7);
+    swap(this, i + 1, i + 6);
+    swap(this, i + 2, i + 5);
+    swap(this, i + 3, i + 4);
+  }
+  return this
+};
+
+Buffer.prototype.toString = function toString () {
+  var length = this.length;
+  if (length === 0) { return '' }
+  if (arguments.length === 0) { return utf8Slice(this, 0, length) }
+  return slowToString.apply(this, arguments)
+};
+
+Buffer.prototype.equals = function equals (b) {
+  if (!Buffer.isBuffer(b)) { throw new TypeError('Argument must be a Buffer') }
+  if (this === b) { return true }
+  return Buffer.compare(this, b) === 0
+};
+
+Buffer.prototype.inspect = function inspect () {
+  var str = '';
+  var max = exports.INSPECT_MAX_BYTES;
+  if (this.length > 0) {
+    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ');
+    if (this.length > max) { str += ' ... '; }
+  }
+  return '<Buffer ' + str + '>'
+};
+
+Buffer.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
+  if (!Buffer.isBuffer(target)) {
+    throw new TypeError('Argument must be a Buffer')
+  }
+
+  if (start === undefined) {
+    start = 0;
+  }
+  if (end === undefined) {
+    end = target ? target.length : 0;
+  }
+  if (thisStart === undefined) {
+    thisStart = 0;
+  }
+  if (thisEnd === undefined) {
+    thisEnd = this.length;
+  }
+
+  if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
+    throw new RangeError('out of range index')
+  }
+
+  if (thisStart >= thisEnd && start >= end) {
+    return 0
+  }
+  if (thisStart >= thisEnd) {
+    return -1
+  }
+  if (start >= end) {
+    return 1
+  }
+
+  start >>>= 0;
+  end >>>= 0;
+  thisStart >>>= 0;
+  thisEnd >>>= 0;
+
+  if (this === target) { return 0 }
+
+  var x = thisEnd - thisStart;
+  var y = end - start;
+  var len = Math.min(x, y);
+
+  var thisCopy = this.slice(thisStart, thisEnd);
+  var targetCopy = target.slice(start, end);
+
+  for (var i = 0; i < len; ++i) {
+    if (thisCopy[i] !== targetCopy[i]) {
+      x = thisCopy[i];
+      y = targetCopy[i];
+      break
+    }
+  }
+
+  if (x < y) { return -1 }
+  if (y < x) { return 1 }
+  return 0
+};
+
+// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
+// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
+//
+// Arguments:
+// - buffer - a Buffer to search
+// - val - a string, Buffer, or number
+// - byteOffset - an index into `buffer`; will be clamped to an int32
+// - encoding - an optional encoding, relevant is val is a string
+// - dir - true for indexOf, false for lastIndexOf
+function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
+  // Empty buffer means no match
+  if (buffer.length === 0) { return -1 }
+
+  // Normalize byteOffset
+  if (typeof byteOffset === 'string') {
+    encoding = byteOffset;
+    byteOffset = 0;
+  } else if (byteOffset > 0x7fffffff) {
+    byteOffset = 0x7fffffff;
+  } else if (byteOffset < -0x80000000) {
+    byteOffset = -0x80000000;
+  }
+  byteOffset = +byteOffset;  // Coerce to Number.
+  if (numberIsNaN(byteOffset)) {
+    // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
+    byteOffset = dir ? 0 : (buffer.length - 1);
+  }
+
+  // Normalize byteOffset: negative offsets start from the end of the buffer
+  if (byteOffset < 0) { byteOffset = buffer.length + byteOffset; }
+  if (byteOffset >= buffer.length) {
+    if (dir) { return -1 }
+    else { byteOffset = buffer.length - 1; }
+  } else if (byteOffset < 0) {
+    if (dir) { byteOffset = 0; }
+    else { return -1 }
+  }
+
+  // Normalize val
+  if (typeof val === 'string') {
+    val = Buffer.from(val, encoding);
+  }
+
+  // Finally, search either indexOf (if dir is true) or lastIndexOf
+  if (Buffer.isBuffer(val)) {
+    // Special case: looking for empty string/buffer always fails
+    if (val.length === 0) {
+      return -1
+    }
+    return arrayIndexOf(buffer, val, byteOffset, encoding, dir)
+  } else if (typeof val === 'number') {
+    val = val & 0xFF; // Search for a byte value [0-255]
+    if (typeof Uint8Array.prototype.indexOf === 'function') {
+      if (dir) {
+        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset)
+      } else {
+        return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
       }
     }
-  };
-Utils.generateAPIFunction = function (method) {
-    return function(callOptions, callback) {
-      if(callOptions && !callback) { callback = callOptions; callOptions = {}; }
-      var queryArguments = Utils.generateQueryArguments(method.name, this.flickrOptions, callOptions);
-      Utils.queryFlickr(queryArguments, this.flickrOptions, method.security, callback);
-    };
-  };
-Utils.generateAPIDevFunction = function (method) {
-    return function(callOptions, callback) {
-      if(callOptions && !callback) { callback = callOptions; callOptions = {}; }
-      Utils.checkRequirements(method.name, method.required, callOptions, callback);
-      var queryArguments = Utils.generateQueryArguments(method.name, this.flickrOptions, callOptions);
-      Utils.queryFlickr(queryArguments, this.flickrOptions, method.security, callback, method.errors);
-    };
-  };
-Utils.generateQueryArguments = function (method_name, flickrOptions, callOptions) {
-    // set up authorized method access
-    var queryArguments = {
-      method: method_name,
-      format: "json",
-    };
-    if(flickrOptions.api_key) {
-      queryArguments.api_key = flickrOptions.api_key;
+    return arrayIndexOf(buffer, [ val ], byteOffset, encoding, dir)
+  }
+
+  throw new TypeError('val must be string, number or Buffer')
+}
+
+function arrayIndexOf (arr, val, byteOffset, encoding, dir) {
+  var indexSize = 1;
+  var arrLength = arr.length;
+  var valLength = val.length;
+
+  if (encoding !== undefined) {
+    encoding = String(encoding).toLowerCase();
+    if (encoding === 'ucs2' || encoding === 'ucs-2' ||
+        encoding === 'utf16le' || encoding === 'utf-16le') {
+      if (arr.length < 2 || val.length < 2) {
+        return -1
+      }
+      indexSize = 2;
+      arrLength /= 2;
+      valLength /= 2;
+      byteOffset /= 2;
     }
-    // set up bindings for method-specific args
-    Object.keys(callOptions).forEach(function(key) {
-      queryArguments[key] = callOptions[key];
-    });
-    return queryArguments;
-  };
-Utils.queryFlickr = function (queryArguments, flickrOptions, security, processResult) {
-    if(flickrOptions.endpoint) {
-      return this.queryProxyEndpoint(queryArguments, flickrOptions, processResult);
+  }
+
+  function read (buf, i) {
+    if (indexSize === 1) {
+      return buf[i]
+    } else {
+      return buf.readUInt16BE(i * indexSize)
     }
-    return this.queryFlickrAPI(queryArguments, flickrOptions, security, processResult);
-  };
-Utils.upload = function (uploadOptions, flickrOptions, processResult) {
-    return processResult(new Error("Uploading directly from the browser is not supported"));
-  };
-Utils.queryFlickrAPI = function (queryArguments, flickrOptions, security, processResult) {
-    var url = "https://api.flickr.com/services/rest/",
-        queryString = this.formQueryString(queryArguments),
-        flickrURL = url + "?" + queryString;
-    // Do we need special permissions? (read private, 1, write, 2, or delete, 3)?
-    // if so, those are currently not supported. Send an error-notification.
-    if(security.requiredperms > 0) {
-      return processResult(new Error("signed calls (write/delete) currently not supported"));
+  }
+
+  var i;
+  if (dir) {
+    var foundIndex = -1;
+    for (i = byteOffset; i < arrLength; i++) {
+      if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
+        if (foundIndex === -1) { foundIndex = i; }
+        if (i - foundIndex + 1 === valLength) { return foundIndex * indexSize }
+      } else {
+        if (foundIndex !== -1) { i -= i - foundIndex; }
+        foundIndex = -1;
+      }
     }
-    this.handleURLRequest("GET", flickrURL, processResult);
-  };
-Utils.queryProxyEndpoint = function (queryArguments, flickrOptions, processResult) {
-    var queryString = this.formQueryString(queryArguments),
-        url = flickrOptions.endpoint + "?" + queryString;
-    this.handleURLRequest("POST", url, processResult, queryArguments);
-  };
-Utils.handleURLRequest = function (verb, url, processResult, postdata) {
-    var xhr = new XMLHttpRequest();
-    xhr.open(verb, url, true);
-    if(postdata) {
-      xhr.setRequestHeader("Content-Type", "application/json");
+  } else {
+    if (byteOffset + valLength > arrLength) { byteOffset = arrLength - valLength; }
+    for (i = byteOffset; i >= 0; i--) {
+      var found = true;
+      for (var j = 0; j < valLength; j++) {
+        if (read(arr, i + j) !== read(val, j)) {
+          found = false;
+          break
+        }
+      }
+      if (found) { return i }
     }
-    xhr.onreadystatechange = function() {
-      if(xhr.readyState === 4) {
-        if(xhr.status == 200) {
-          var error = false,
-              body = xhr.responseText;
-          // we get a response, but there's no response body. That's a problem.
-          if(!body) {
-            error = "HTTP Error " + response.statusCode + " (" + statusCodes[response.statusCode] + ")";
-            return processResult(error);
+  }
+
+  return -1
+}
+
+Buffer.prototype.includes = function includes (val, byteOffset, encoding) {
+  return this.indexOf(val, byteOffset, encoding) !== -1
+};
+
+Buffer.prototype.indexOf = function indexOf (val, byteOffset, encoding) {
+  return bidirectionalIndexOf(this, val, byteOffset, encoding, true)
+};
+
+Buffer.prototype.lastIndexOf = function lastIndexOf (val, byteOffset, encoding) {
+  return bidirectionalIndexOf(this, val, byteOffset, encoding, false)
+};
+
+function hexWrite (buf, string, offset, length) {
+  offset = Number(offset) || 0;
+  var remaining = buf.length - offset;
+  if (!length) {
+    length = remaining;
+  } else {
+    length = Number(length);
+    if (length > remaining) {
+      length = remaining;
+    }
+  }
+
+  // must be an even number of digits
+  var strLen = string.length;
+  if (strLen % 2 !== 0) { throw new TypeError('Invalid hex string') }
+
+  if (length > strLen / 2) {
+    length = strLen / 2;
+  }
+  for (var i = 0; i < length; ++i) {
+    var parsed = parseInt(string.substr(i * 2, 2), 16);
+    if (numberIsNaN(parsed)) { return i }
+    buf[offset + i] = parsed;
+  }
+  return i
+}
+
+function utf8Write (buf, string, offset, length) {
+  return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length)
+}
+
+function asciiWrite (buf, string, offset, length) {
+  return blitBuffer(asciiToBytes(string), buf, offset, length)
+}
+
+function latin1Write (buf, string, offset, length) {
+  return asciiWrite(buf, string, offset, length)
+}
+
+function base64Write (buf, string, offset, length) {
+  return blitBuffer(base64ToBytes(string), buf, offset, length)
+}
+
+function ucs2Write (buf, string, offset, length) {
+  return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length)
+}
+
+Buffer.prototype.write = function write (string, offset, length, encoding) {
+  // Buffer#write(string)
+  if (offset === undefined) {
+    encoding = 'utf8';
+    length = this.length;
+    offset = 0;
+  // Buffer#write(string, encoding)
+  } else if (length === undefined && typeof offset === 'string') {
+    encoding = offset;
+    length = this.length;
+    offset = 0;
+  // Buffer#write(string, offset[, length][, encoding])
+  } else if (isFinite(offset)) {
+    offset = offset >>> 0;
+    if (isFinite(length)) {
+      length = length >>> 0;
+      if (encoding === undefined) { encoding = 'utf8'; }
+    } else {
+      encoding = length;
+      length = undefined;
+    }
+  } else {
+    throw new Error(
+      'Buffer.write(string, encoding, offset[, length]) is no longer supported'
+    )
+  }
+
+  var remaining = this.length - offset;
+  if (length === undefined || length > remaining) { length = remaining; }
+
+  if ((string.length > 0 && (length < 0 || offset < 0)) || offset > this.length) {
+    throw new RangeError('Attempt to write outside buffer bounds')
+  }
+
+  if (!encoding) { encoding = 'utf8'; }
+
+  var loweredCase = false;
+  for (;;) {
+    switch (encoding) {
+      case 'hex':
+        return hexWrite(this, string, offset, length)
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Write(this, string, offset, length)
+
+      case 'ascii':
+        return asciiWrite(this, string, offset, length)
+
+      case 'latin1':
+      case 'binary':
+        return latin1Write(this, string, offset, length)
+
+      case 'base64':
+        // Warning: maxLength not taken into account in base64Write
+        return base64Write(this, string, offset, length)
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return ucs2Write(this, string, offset, length)
+
+      default:
+        if (loweredCase) { throw new TypeError('Unknown encoding: ' + encoding) }
+        encoding = ('' + encoding).toLowerCase();
+        loweredCase = true;
+    }
+  }
+};
+
+Buffer.prototype.toJSON = function toJSON () {
+  return {
+    type: 'Buffer',
+    data: Array.prototype.slice.call(this._arr || this, 0)
+  }
+};
+
+function base64Slice (buf, start, end) {
+  if (start === 0 && end === buf.length) {
+    return base64.fromByteArray(buf)
+  } else {
+    return base64.fromByteArray(buf.slice(start, end))
+  }
+}
+
+function utf8Slice (buf, start, end) {
+  end = Math.min(buf.length, end);
+  var res = [];
+
+  var i = start;
+  while (i < end) {
+    var firstByte = buf[i];
+    var codePoint = null;
+    var bytesPerSequence = (firstByte > 0xEF) ? 4
+      : (firstByte > 0xDF) ? 3
+      : (firstByte > 0xBF) ? 2
+      : 1;
+
+    if (i + bytesPerSequence <= end) {
+      var secondByte, thirdByte, fourthByte, tempCodePoint;
+
+      switch (bytesPerSequence) {
+        case 1:
+          if (firstByte < 0x80) {
+            codePoint = firstByte;
           }
-          // we get a response, and there were no errors
-          if(!error) {
-            try {
-              body = body.trim().replace(/^jsonFlickrApi\(/,'').replace(/\}\)$/,'}');
-              body = JSON.parse(body);
-              if(body.stat !== "ok") {
-                // There was a request error, and the JSON .stat property
-                // will tell us what that error was.
-                return processResult(body.message);
-              }
-            } catch (e) {
-              // general JSON error
-              return processResult("could not parse body as JSON");
+          break
+        case 2:
+          secondByte = buf[i + 1];
+          if ((secondByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0x1F) << 0x6 | (secondByte & 0x3F);
+            if (tempCodePoint > 0x7F) {
+              codePoint = tempCodePoint;
             }
           }
-          // Some kind of other error occurred. Simply call the process
-          // handler blindly with both the error and error body.
-          processResult(error, body);
-        }
-        else { processResult("HTTP status not 200 (received "+xhr.status+")"); }
+          break
+        case 3:
+          secondByte = buf[i + 1];
+          thirdByte = buf[i + 2];
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | (thirdByte & 0x3F);
+            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
+              codePoint = tempCodePoint;
+            }
+          }
+          break
+        case 4:
+          secondByte = buf[i + 1];
+          thirdByte = buf[i + 2];
+          fourthByte = buf[i + 3];
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | (fourthByte & 0x3F);
+            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
+              codePoint = tempCodePoint;
+            }
+          }
       }
-    };
-    xhr.send(postdata ? JSON.stringify(postdata) : null);
+    }
+
+    if (codePoint === null) {
+      // we did not generate a valid codePoint so insert a
+      // replacement char (U+FFFD) and advance only 1 byte
+      codePoint = 0xFFFD;
+      bytesPerSequence = 1;
+    } else if (codePoint > 0xFFFF) {
+      // encode to utf16 (surrogate pair dance)
+      codePoint -= 0x10000;
+      res.push(codePoint >>> 10 & 0x3FF | 0xD800);
+      codePoint = 0xDC00 | codePoint & 0x3FF;
+    }
+
+    res.push(codePoint);
+    i += bytesPerSequence;
+  }
+
+  return decodeCodePointsArray(res)
+}
+
+// Based on http://stackoverflow.com/a/22747272/680742, the browser with
+// the lowest limit is Chrome, with 0x10000 args.
+// We go 1 magnitude less, for safety
+var MAX_ARGUMENTS_LENGTH = 0x1000;
+
+function decodeCodePointsArray (codePoints) {
+  var len = codePoints.length;
+  if (len <= MAX_ARGUMENTS_LENGTH) {
+    return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
+  }
+
+  // Decode in chunks to avoid "call stack size exceeded".
+  var res = '';
+  var i = 0;
+  while (i < len) {
+    res += String.fromCharCode.apply(
+      String,
+      codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH)
+    );
+  }
+  return res
+}
+
+function asciiSlice (buf, start, end) {
+  var ret = '';
+  end = Math.min(buf.length, end);
+
+  for (var i = start; i < end; ++i) {
+    ret += String.fromCharCode(buf[i] & 0x7F);
+  }
+  return ret
+}
+
+function latin1Slice (buf, start, end) {
+  var ret = '';
+  end = Math.min(buf.length, end);
+
+  for (var i = start; i < end; ++i) {
+    ret += String.fromCharCode(buf[i]);
+  }
+  return ret
+}
+
+function hexSlice (buf, start, end) {
+  var len = buf.length;
+
+  if (!start || start < 0) { start = 0; }
+  if (!end || end < 0 || end > len) { end = len; }
+
+  var out = '';
+  for (var i = start; i < end; ++i) {
+    out += toHex(buf[i]);
+  }
+  return out
+}
+
+function utf16leSlice (buf, start, end) {
+  var bytes = buf.slice(start, end);
+  var res = '';
+  for (var i = 0; i < bytes.length; i += 2) {
+    res += String.fromCharCode(bytes[i] + (bytes[i + 1] * 256));
+  }
+  return res
+}
+
+Buffer.prototype.slice = function slice (start, end) {
+  var len = this.length;
+  start = ~~start;
+  end = end === undefined ? len : ~~end;
+
+  if (start < 0) {
+    start += len;
+    if (start < 0) { start = 0; }
+  } else if (start > len) {
+    start = len;
+  }
+
+  if (end < 0) {
+    end += len;
+    if (end < 0) { end = 0; }
+  } else if (end > len) {
+    end = len;
+  }
+
+  if (end < start) { end = start; }
+
+  var newBuf = this.subarray(start, end);
+  // Return an augmented `Uint8Array` instance
+  newBuf.__proto__ = Buffer.prototype;
+  return newBuf
+};
+
+/*
+ * Need to make sure that buffer isn't trying to write out of bounds.
+ */
+function checkOffset (offset, ext, length) {
+  if ((offset % 1) !== 0 || offset < 0) { throw new RangeError('offset is not uint') }
+  if (offset + ext > length) { throw new RangeError('Trying to access beyond buffer length') }
+}
+
+Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
+  offset = offset >>> 0;
+  byteLength = byteLength >>> 0;
+  if (!noAssert) { checkOffset(offset, byteLength, this.length); }
+
+  var val = this[offset];
+  var mul = 1;
+  var i = 0;
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul;
+  }
+
+  return val
+};
+
+Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
+  offset = offset >>> 0;
+  byteLength = byteLength >>> 0;
+  if (!noAssert) {
+    checkOffset(offset, byteLength, this.length);
+  }
+
+  var val = this[offset + --byteLength];
+  var mul = 1;
+  while (byteLength > 0 && (mul *= 0x100)) {
+    val += this[offset + --byteLength] * mul;
+  }
+
+  return val
+};
+
+Buffer.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 1, this.length); }
+  return this[offset]
+};
+
+Buffer.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 2, this.length); }
+  return this[offset] | (this[offset + 1] << 8)
+};
+
+Buffer.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 2, this.length); }
+  return (this[offset] << 8) | this[offset + 1]
+};
+
+Buffer.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 4, this.length); }
+
+  return ((this[offset]) |
+      (this[offset + 1] << 8) |
+      (this[offset + 2] << 16)) +
+      (this[offset + 3] * 0x1000000)
+};
+
+Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 4, this.length); }
+
+  return (this[offset] * 0x1000000) +
+    ((this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    this[offset + 3])
+};
+
+Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
+  offset = offset >>> 0;
+  byteLength = byteLength >>> 0;
+  if (!noAssert) { checkOffset(offset, byteLength, this.length); }
+
+  var val = this[offset];
+  var mul = 1;
+  var i = 0;
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul;
+  }
+  mul *= 0x80;
+
+  if (val >= mul) { val -= Math.pow(2, 8 * byteLength); }
+
+  return val
+};
+
+Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
+  offset = offset >>> 0;
+  byteLength = byteLength >>> 0;
+  if (!noAssert) { checkOffset(offset, byteLength, this.length); }
+
+  var i = byteLength;
+  var mul = 1;
+  var val = this[offset + --i];
+  while (i > 0 && (mul *= 0x100)) {
+    val += this[offset + --i] * mul;
+  }
+  mul *= 0x80;
+
+  if (val >= mul) { val -= Math.pow(2, 8 * byteLength); }
+
+  return val
+};
+
+Buffer.prototype.readInt8 = function readInt8 (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 1, this.length); }
+  if (!(this[offset] & 0x80)) { return (this[offset]) }
+  return ((0xff - this[offset] + 1) * -1)
+};
+
+Buffer.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 2, this.length); }
+  var val = this[offset] | (this[offset + 1] << 8);
+  return (val & 0x8000) ? val | 0xFFFF0000 : val
+};
+
+Buffer.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 2, this.length); }
+  var val = this[offset + 1] | (this[offset] << 8);
+  return (val & 0x8000) ? val | 0xFFFF0000 : val
+};
+
+Buffer.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 4, this.length); }
+
+  return (this[offset]) |
+    (this[offset + 1] << 8) |
+    (this[offset + 2] << 16) |
+    (this[offset + 3] << 24)
+};
+
+Buffer.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 4, this.length); }
+
+  return (this[offset] << 24) |
+    (this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    (this[offset + 3])
+};
+
+Buffer.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 4, this.length); }
+  return ieee754.read(this, offset, true, 23, 4)
+};
+
+Buffer.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 4, this.length); }
+  return ieee754.read(this, offset, false, 23, 4)
+};
+
+Buffer.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 8, this.length); }
+  return ieee754.read(this, offset, true, 52, 8)
+};
+
+Buffer.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
+  offset = offset >>> 0;
+  if (!noAssert) { checkOffset(offset, 8, this.length); }
+  return ieee754.read(this, offset, false, 52, 8)
+};
+
+function checkInt (buf, value, offset, ext, max, min) {
+  if (!Buffer.isBuffer(buf)) { throw new TypeError('"buffer" argument must be a Buffer instance') }
+  if (value > max || value < min) { throw new RangeError('"value" argument is out of bounds') }
+  if (offset + ext > buf.length) { throw new RangeError('Index out of range') }
+}
+
+Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  byteLength = byteLength >>> 0;
+  if (!noAssert) {
+    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
+    checkInt(this, value, offset, byteLength, maxBytes, 0);
+  }
+
+  var mul = 1;
+  var i = 0;
+  this[offset] = value & 0xFF;
+  while (++i < byteLength && (mul *= 0x100)) {
+    this[offset + i] = (value / mul) & 0xFF;
+  }
+
+  return offset + byteLength
+};
+
+Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  byteLength = byteLength >>> 0;
+  if (!noAssert) {
+    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
+    checkInt(this, value, offset, byteLength, maxBytes, 0);
+  }
+
+  var i = byteLength - 1;
+  var mul = 1;
+  this[offset + i] = value & 0xFF;
+  while (--i >= 0 && (mul *= 0x100)) {
+    this[offset + i] = (value / mul) & 0xFF;
+  }
+
+  return offset + byteLength
+};
+
+Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) { checkInt(this, value, offset, 1, 0xff, 0); }
+  this[offset] = (value & 0xff);
+  return offset + 1
+};
+
+Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) { checkInt(this, value, offset, 2, 0xffff, 0); }
+  this[offset] = (value & 0xff);
+  this[offset + 1] = (value >>> 8);
+  return offset + 2
+};
+
+Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) { checkInt(this, value, offset, 2, 0xffff, 0); }
+  this[offset] = (value >>> 8);
+  this[offset + 1] = (value & 0xff);
+  return offset + 2
+};
+
+Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) { checkInt(this, value, offset, 4, 0xffffffff, 0); }
+  this[offset + 3] = (value >>> 24);
+  this[offset + 2] = (value >>> 16);
+  this[offset + 1] = (value >>> 8);
+  this[offset] = (value & 0xff);
+  return offset + 4
+};
+
+Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) { checkInt(this, value, offset, 4, 0xffffffff, 0); }
+  this[offset] = (value >>> 24);
+  this[offset + 1] = (value >>> 16);
+  this[offset + 2] = (value >>> 8);
+  this[offset + 3] = (value & 0xff);
+  return offset + 4
+};
+
+Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) {
+    var limit = Math.pow(2, (8 * byteLength) - 1);
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit);
+  }
+
+  var i = 0;
+  var mul = 1;
+  var sub = 0;
+  this[offset] = value & 0xFF;
+  while (++i < byteLength && (mul *= 0x100)) {
+    if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) {
+      sub = 1;
+    }
+    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF;
+  }
+
+  return offset + byteLength
+};
+
+Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) {
+    var limit = Math.pow(2, (8 * byteLength) - 1);
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit);
+  }
+
+  var i = byteLength - 1;
+  var mul = 1;
+  var sub = 0;
+  this[offset + i] = value & 0xFF;
+  while (--i >= 0 && (mul *= 0x100)) {
+    if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) {
+      sub = 1;
+    }
+    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF;
+  }
+
+  return offset + byteLength
+};
+
+Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) { checkInt(this, value, offset, 1, 0x7f, -0x80); }
+  if (value < 0) { value = 0xff + value + 1; }
+  this[offset] = (value & 0xff);
+  return offset + 1
+};
+
+Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) { checkInt(this, value, offset, 2, 0x7fff, -0x8000); }
+  this[offset] = (value & 0xff);
+  this[offset + 1] = (value >>> 8);
+  return offset + 2
+};
+
+Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) { checkInt(this, value, offset, 2, 0x7fff, -0x8000); }
+  this[offset] = (value >>> 8);
+  this[offset + 1] = (value & 0xff);
+  return offset + 2
+};
+
+Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) { checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000); }
+  this[offset] = (value & 0xff);
+  this[offset + 1] = (value >>> 8);
+  this[offset + 2] = (value >>> 16);
+  this[offset + 3] = (value >>> 24);
+  return offset + 4
+};
+
+Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) { checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000); }
+  if (value < 0) { value = 0xffffffff + value + 1; }
+  this[offset] = (value >>> 24);
+  this[offset + 1] = (value >>> 16);
+  this[offset + 2] = (value >>> 8);
+  this[offset + 3] = (value & 0xff);
+  return offset + 4
+};
+
+function checkIEEE754 (buf, value, offset, ext, max, min) {
+  if (offset + ext > buf.length) { throw new RangeError('Index out of range') }
+  if (offset < 0) { throw new RangeError('Index out of range') }
+}
+
+function writeFloat (buf, value, offset, littleEndian, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) {
+    checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38);
+  }
+  ieee754.write(buf, value, offset, littleEndian, 23, 4);
+  return offset + 4
+}
+
+Buffer.prototype.writeFloatLE = function writeFloatLE (value, offset, noAssert) {
+  return writeFloat(this, value, offset, true, noAssert)
+};
+
+Buffer.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) {
+  return writeFloat(this, value, offset, false, noAssert)
+};
+
+function writeDouble (buf, value, offset, littleEndian, noAssert) {
+  value = +value;
+  offset = offset >>> 0;
+  if (!noAssert) {
+    checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308);
+  }
+  ieee754.write(buf, value, offset, littleEndian, 52, 8);
+  return offset + 8
+}
+
+Buffer.prototype.writeDoubleLE = function writeDoubleLE (value, offset, noAssert) {
+  return writeDouble(this, value, offset, true, noAssert)
+};
+
+Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert) {
+  return writeDouble(this, value, offset, false, noAssert)
+};
+
+// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
+Buffer.prototype.copy = function copy (target, targetStart, start, end) {
+  if (!start) { start = 0; }
+  if (!end && end !== 0) { end = this.length; }
+  if (targetStart >= target.length) { targetStart = target.length; }
+  if (!targetStart) { targetStart = 0; }
+  if (end > 0 && end < start) { end = start; }
+
+  // Copy 0 bytes; we're done
+  if (end === start) { return 0 }
+  if (target.length === 0 || this.length === 0) { return 0 }
+
+  // Fatal error conditions
+  if (targetStart < 0) {
+    throw new RangeError('targetStart out of bounds')
+  }
+  if (start < 0 || start >= this.length) { throw new RangeError('sourceStart out of bounds') }
+  if (end < 0) { throw new RangeError('sourceEnd out of bounds') }
+
+  // Are we oob?
+  if (end > this.length) { end = this.length; }
+  if (target.length - targetStart < end - start) {
+    end = target.length - targetStart + start;
+  }
+
+  var len = end - start;
+  var i;
+
+  if (this === target && start < targetStart && targetStart < end) {
+    // descending copy from end
+    for (i = len - 1; i >= 0; --i) {
+      target[i + targetStart] = this[i + start];
+    }
+  } else if (len < 1000) {
+    // ascending copy from start
+    for (i = 0; i < len; ++i) {
+      target[i + targetStart] = this[i + start];
+    }
+  } else {
+    Uint8Array.prototype.set.call(
+      target,
+      this.subarray(start, start + len),
+      targetStart
+    );
+  }
+
+  return len
+};
+
+// Usage:
+//    buffer.fill(number[, offset[, end]])
+//    buffer.fill(buffer[, offset[, end]])
+//    buffer.fill(string[, offset[, end]][, encoding])
+Buffer.prototype.fill = function fill (val, start, end, encoding) {
+  // Handle string cases:
+  if (typeof val === 'string') {
+    if (typeof start === 'string') {
+      encoding = start;
+      start = 0;
+      end = this.length;
+    } else if (typeof end === 'string') {
+      encoding = end;
+      end = this.length;
+    }
+    if (val.length === 1) {
+      var code = val.charCodeAt(0);
+      if (code < 256) {
+        val = code;
+      }
+    }
+    if (encoding !== undefined && typeof encoding !== 'string') {
+      throw new TypeError('encoding must be a string')
+    }
+    if (typeof encoding === 'string' && !Buffer.isEncoding(encoding)) {
+      throw new TypeError('Unknown encoding: ' + encoding)
+    }
+  } else if (typeof val === 'number') {
+    val = val & 255;
+  }
+
+  // Invalid ranges are not set to a default, so can range check early.
+  if (start < 0 || this.length < start || this.length < end) {
+    throw new RangeError('Out of range index')
+  }
+
+  if (end <= start) {
+    return this
+  }
+
+  start = start >>> 0;
+  end = end === undefined ? this.length : end >>> 0;
+
+  if (!val) { val = 0; }
+
+  var i;
+  if (typeof val === 'number') {
+    for (i = start; i < end; ++i) {
+      this[i] = val;
+    }
+  } else {
+    var bytes = Buffer.isBuffer(val)
+      ? val
+      : new Buffer(val, encoding);
+    var len = bytes.length;
+    for (i = 0; i < end - start; ++i) {
+      this[i + start] = bytes[i % len];
+    }
+  }
+
+  return this
+};
+
+// HELPER FUNCTIONS
+// ================
+
+var INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g;
+
+function base64clean (str) {
+  // Node strips out invalid characters like \n and \t from the string, base64-js does not
+  str = str.trim().replace(INVALID_BASE64_RE, '');
+  // Node converts strings with length < 2 to ''
+  if (str.length < 2) { return '' }
+  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
+  while (str.length % 4 !== 0) {
+    str = str + '=';
+  }
+  return str
+}
+
+function toHex (n) {
+  if (n < 16) { return '0' + n.toString(16) }
+  return n.toString(16)
+}
+
+function utf8ToBytes (string, units) {
+  units = units || Infinity;
+  var codePoint;
+  var length = string.length;
+  var leadSurrogate = null;
+  var bytes = [];
+
+  for (var i = 0; i < length; ++i) {
+    codePoint = string.charCodeAt(i);
+
+    // is surrogate component
+    if (codePoint > 0xD7FF && codePoint < 0xE000) {
+      // last char was a lead
+      if (!leadSurrogate) {
+        // no lead yet
+        if (codePoint > 0xDBFF) {
+          // unexpected trail
+          if ((units -= 3) > -1) { bytes.push(0xEF, 0xBF, 0xBD); }
+          continue
+        } else if (i + 1 === length) {
+          // unpaired lead
+          if ((units -= 3) > -1) { bytes.push(0xEF, 0xBF, 0xBD); }
+          continue
+        }
+
+        // valid lead
+        leadSurrogate = codePoint;
+
+        continue
+      }
+
+      // 2 leads in a row
+      if (codePoint < 0xDC00) {
+        if ((units -= 3) > -1) { bytes.push(0xEF, 0xBF, 0xBD); }
+        leadSurrogate = codePoint;
+        continue
+      }
+
+      // valid surrogate pair
+      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000;
+    } else if (leadSurrogate) {
+      // valid bmp char, but last char was a lead
+      if ((units -= 3) > -1) { bytes.push(0xEF, 0xBF, 0xBD); }
+    }
+
+    leadSurrogate = null;
+
+    // encode utf8
+    if (codePoint < 0x80) {
+      if ((units -= 1) < 0) { break }
+      bytes.push(codePoint);
+    } else if (codePoint < 0x800) {
+      if ((units -= 2) < 0) { break }
+      bytes.push(
+        codePoint >> 0x6 | 0xC0,
+        codePoint & 0x3F | 0x80
+      );
+    } else if (codePoint < 0x10000) {
+      if ((units -= 3) < 0) { break }
+      bytes.push(
+        codePoint >> 0xC | 0xE0,
+        codePoint >> 0x6 & 0x3F | 0x80,
+        codePoint & 0x3F | 0x80
+      );
+    } else if (codePoint < 0x110000) {
+      if ((units -= 4) < 0) { break }
+      bytes.push(
+        codePoint >> 0x12 | 0xF0,
+        codePoint >> 0xC & 0x3F | 0x80,
+        codePoint >> 0x6 & 0x3F | 0x80,
+        codePoint & 0x3F | 0x80
+      );
+    } else {
+      throw new Error('Invalid code point')
+    }
+  }
+
+  return bytes
+}
+
+function asciiToBytes (str) {
+  var byteArray = [];
+  for (var i = 0; i < str.length; ++i) {
+    // Node's code seems to be doing this and not & 0x7F..
+    byteArray.push(str.charCodeAt(i) & 0xFF);
+  }
+  return byteArray
+}
+
+function utf16leToBytes (str, units) {
+  var c, hi, lo;
+  var byteArray = [];
+  for (var i = 0; i < str.length; ++i) {
+    if ((units -= 2) < 0) { break }
+
+    c = str.charCodeAt(i);
+    hi = c >> 8;
+    lo = c % 256;
+    byteArray.push(lo);
+    byteArray.push(hi);
+  }
+
+  return byteArray
+}
+
+function base64ToBytes (str) {
+  return base64.toByteArray(base64clean(str))
+}
+
+function blitBuffer (src, dst, offset, length) {
+  for (var i = 0; i < length; ++i) {
+    if ((i + offset >= dst.length) || (i >= src.length)) { break }
+    dst[i + offset] = src[i];
+  }
+  return i
+}
+
+// ArrayBuffers from another context (i.e. an iframe) do not pass the `instanceof` check
+// but they should be treated as valid. See: https://github.com/feross/buffer/issues/166
+function isArrayBuffer (obj) {
+  return obj instanceof ArrayBuffer ||
+    (obj != null && obj.constructor != null && obj.constructor.name === 'ArrayBuffer' &&
+      typeof obj.byteLength === 'number')
+}
+
+// Node 0.10 supports `ArrayBuffer` but lacks `ArrayBuffer.isView`
+function isArrayBufferView (obj) {
+  return (typeof ArrayBuffer.isView === 'function') && ArrayBuffer.isView(obj)
+}
+
+function numberIsNaN (obj) {
+  return obj !== obj // eslint-disable-line no-self-compare
+}
+
+},{"base64-js":6,"ieee754":7}],6:[function(require,module,exports){
+exports.byteLength = byteLength;
+exports.toByteArray = toByteArray;
+exports.fromByteArray = fromByteArray;
+
+var lookup = [];
+var revLookup = [];
+var Arr = typeof Uint8Array !== 'undefined' ? Uint8Array : Array;
+
+var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+for (var i = 0, len = code.length; i < len; ++i) {
+  lookup[i] = code[i];
+  revLookup[code.charCodeAt(i)] = i;
+}
+
+revLookup['-'.charCodeAt(0)] = 62;
+revLookup['_'.charCodeAt(0)] = 63;
+
+function placeHoldersCount (b64) {
+  var len = b64.length;
+  if (len % 4 > 0) {
+    throw new Error('Invalid string. Length must be a multiple of 4')
+  }
+
+  // the number of equal signs (place holders)
+  // if there are two placeholders, than the two characters before it
+  // represent one byte
+  // if there is only one, then the three characters before it represent 2 bytes
+  // this is just a cheap hack to not do indexOf twice
+  return b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0
+}
+
+function byteLength (b64) {
+  // base64 is 4/3 + up to two characters of the original data
+  return (b64.length * 3 / 4) - placeHoldersCount(b64)
+}
+
+function toByteArray (b64) {
+  var i, l, tmp, placeHolders, arr;
+  var len = b64.length;
+  placeHolders = placeHoldersCount(b64);
+
+  arr = new Arr((len * 3 / 4) - placeHolders);
+
+  // if there are placeholders, only get up to the last complete 4 chars
+  l = placeHolders > 0 ? len - 4 : len;
+
+  var L = 0;
+
+  for (i = 0; i < l; i += 4) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)];
+    arr[L++] = (tmp >> 16) & 0xFF;
+    arr[L++] = (tmp >> 8) & 0xFF;
+    arr[L++] = tmp & 0xFF;
+  }
+
+  if (placeHolders === 2) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 2) | (revLookup[b64.charCodeAt(i + 1)] >> 4);
+    arr[L++] = tmp & 0xFF;
+  } else if (placeHolders === 1) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 10) | (revLookup[b64.charCodeAt(i + 1)] << 4) | (revLookup[b64.charCodeAt(i + 2)] >> 2);
+    arr[L++] = (tmp >> 8) & 0xFF;
+    arr[L++] = tmp & 0xFF;
+  }
+
+  return arr
+}
+
+function tripletToBase64 (num) {
+  return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F]
+}
+
+function encodeChunk (uint8, start, end) {
+  var tmp;
+  var output = [];
+  for (var i = start; i < end; i += 3) {
+    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2]);
+    output.push(tripletToBase64(tmp));
+  }
+  return output.join('')
+}
+
+function fromByteArray (uint8) {
+  var tmp;
+  var len = uint8.length;
+  var extraBytes = len % 3; // if we have 1 byte left, pad 2 bytes
+  var output = '';
+  var parts = [];
+  var maxChunkLength = 16383; // must be multiple of 3
+
+  // go through the array every three bytes, we'll deal with trailing stuff later
+  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
+    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)));
+  }
+
+  // pad the end with zeros, but make sure to not forget the extra bytes
+  if (extraBytes === 1) {
+    tmp = uint8[len - 1];
+    output += lookup[tmp >> 2];
+    output += lookup[(tmp << 4) & 0x3F];
+    output += '==';
+  } else if (extraBytes === 2) {
+    tmp = (uint8[len - 2] << 8) + (uint8[len - 1]);
+    output += lookup[tmp >> 10];
+    output += lookup[(tmp >> 4) & 0x3F];
+    output += lookup[(tmp << 2) & 0x3F];
+    output += '=';
+  }
+
+  parts.push(output);
+
+  return parts.join('')
+}
+
+},{}],7:[function(require,module,exports){
+exports.read = function (buffer, offset, isLE, mLen, nBytes) {
+  var e, m;
+  var eLen = nBytes * 8 - mLen - 1;
+  var eMax = (1 << eLen) - 1;
+  var eBias = eMax >> 1;
+  var nBits = -7;
+  var i = isLE ? (nBytes - 1) : 0;
+  var d = isLE ? -1 : 1;
+  var s = buffer[offset + i];
+
+  i += d;
+
+  e = s & ((1 << (-nBits)) - 1);
+  s >>= (-nBits);
+  nBits += eLen;
+  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  m = e & ((1 << (-nBits)) - 1);
+  e >>= (-nBits);
+  nBits += mLen;
+  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  if (e === 0) {
+    e = 1 - eBias;
+  } else if (e === eMax) {
+    return m ? NaN : ((s ? -1 : 1) * Infinity)
+  } else {
+    m = m + Math.pow(2, mLen);
+    e = e - eBias;
+  }
+  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
+};
+
+exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
+  var e, m, c;
+  var eLen = nBytes * 8 - mLen - 1;
+  var eMax = (1 << eLen) - 1;
+  var eBias = eMax >> 1;
+  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0);
+  var i = isLE ? 0 : (nBytes - 1);
+  var d = isLE ? 1 : -1;
+  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0;
+
+  value = Math.abs(value);
+
+  if (isNaN(value) || value === Infinity) {
+    m = isNaN(value) ? 1 : 0;
+    e = eMax;
+  } else {
+    e = Math.floor(Math.log(value) / Math.LN2);
+    if (value * (c = Math.pow(2, -e)) < 1) {
+      e--;
+      c *= 2;
+    }
+    if (e + eBias >= 1) {
+      value += rt / c;
+    } else {
+      value += rt * Math.pow(2, 1 - eBias);
+    }
+    if (value * c >= 2) {
+      e++;
+      c /= 2;
+    }
+
+    if (e + eBias >= eMax) {
+      m = 0;
+      e = eMax;
+    } else if (e + eBias >= 1) {
+      m = (value * c - 1) * Math.pow(2, mLen);
+      e = e + eBias;
+    } else {
+      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
+      e = 0;
+    }
+  }
+
+  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
+
+  e = (e << mLen) | m;
+  eLen += mLen;
+  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
+
+  buffer[offset + i - d] |= s * 128;
+};
+
+},{}],8:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+function EventEmitter() {
+  this._events = this._events || {};
+  this._maxListeners = this._maxListeners || undefined;
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+EventEmitter.defaultMaxListeners = 10;
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!isNumber(n) || n < 0 || isNaN(n))
+    { throw TypeError('n must be a positive number'); }
+  this._maxListeners = n;
+  return this;
+};
+
+EventEmitter.prototype.emit = function(type) {
+  var er, handler, len, args, i, listeners;
+
+  if (!this._events)
+    { this._events = {}; }
+
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events.error ||
+        (isObject(this._events.error) && !this._events.error.length)) {
+      er = arguments[1];
+      if (er instanceof Error) {
+        throw er; // Unhandled 'error' event
+      } else {
+        // At least give some kind of context to the user
+        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
+        err.context = er;
+        throw err;
+      }
+    }
+  }
+
+  handler = this._events[type];
+
+  if (isUndefined(handler))
+    { return false; }
+
+  if (isFunction(handler)) {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        args = Array.prototype.slice.call(arguments, 1);
+        handler.apply(this, args);
+    }
+  } else if (isObject(handler)) {
+    args = Array.prototype.slice.call(arguments, 1);
+    listeners = handler.slice();
+    len = listeners.length;
+    for (i = 0; i < len; i++)
+      { listeners[i].apply(this, args); }
+  }
+
+  return true;
+};
+
+EventEmitter.prototype.addListener = function(type, listener) {
+  var m;
+
+  if (!isFunction(listener))
+    { throw TypeError('listener must be a function'); }
+
+  if (!this._events)
+    { this._events = {}; }
+
+  // To avoid recursion in the case that type === "newListener"! Before
+  // adding it to the listeners, first emit "newListener".
+  if (this._events.newListener)
+    { this.emit('newListener', type,
+              isFunction(listener.listener) ?
+              listener.listener : listener); }
+
+  if (!this._events[type])
+    // Optimize the case of one listener. Don't need the extra array object.
+    { this._events[type] = listener; }
+  else if (isObject(this._events[type]))
+    // If we've already got an array, just append.
+    { this._events[type].push(listener); }
+  else
+    // Adding the second element, need to change to array.
+    { this._events[type] = [this._events[type], listener]; }
+
+  // Check for listener leak
+  if (isObject(this._events[type]) && !this._events[type].warned) {
+    if (!isUndefined(this._maxListeners)) {
+      m = this._maxListeners;
+    } else {
+      m = EventEmitter.defaultMaxListeners;
+    }
+
+    if (m && m > 0 && this._events[type].length > m) {
+      this._events[type].warned = true;
+      console.error('(node) warning: possible EventEmitter memory ' +
+                    'leak detected. %d listeners added. ' +
+                    'Use emitter.setMaxListeners() to increase limit.',
+                    this._events[type].length);
+      if (typeof console.trace === 'function') {
+        // not supported in IE 10
+        console.trace();
+      }
+    }
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  if (!isFunction(listener))
+    { throw TypeError('listener must be a function'); }
+
+  var fired = false;
+
+  function g() {
+    this.removeListener(type, g);
+
+    if (!fired) {
+      fired = true;
+      listener.apply(this, arguments);
+    }
+  }
+
+  g.listener = listener;
+  this.on(type, g);
+
+  return this;
+};
+
+// emits a 'removeListener' event iff the listener was removed
+EventEmitter.prototype.removeListener = function(type, listener) {
+  var list, position, length, i;
+
+  if (!isFunction(listener))
+    { throw TypeError('listener must be a function'); }
+
+  if (!this._events || !this._events[type])
+    { return this; }
+
+  list = this._events[type];
+  length = list.length;
+  position = -1;
+
+  if (list === listener ||
+      (isFunction(list.listener) && list.listener === listener)) {
+    delete this._events[type];
+    if (this._events.removeListener)
+      { this.emit('removeListener', type, listener); }
+
+  } else if (isObject(list)) {
+    for (i = length; i-- > 0;) {
+      if (list[i] === listener ||
+          (list[i].listener && list[i].listener === listener)) {
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0)
+      { return this; }
+
+    if (list.length === 1) {
+      list.length = 0;
+      delete this._events[type];
+    } else {
+      list.splice(position, 1);
+    }
+
+    if (this._events.removeListener)
+      { this.emit('removeListener', type, listener); }
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  var key, listeners;
+
+  if (!this._events)
+    { return this; }
+
+  // not listening for removeListener, no need to emit
+  if (!this._events.removeListener) {
+    if (arguments.length === 0)
+      { this._events = {}; }
+    else if (this._events[type])
+      { delete this._events[type]; }
+    return this;
+  }
+
+  // emit removeListener for all listeners on all events
+  if (arguments.length === 0) {
+    for (key in this._events) {
+      if (key === 'removeListener') { continue; }
+      this.removeAllListeners(key);
+    }
+    this.removeAllListeners('removeListener');
+    this._events = {};
+    return this;
+  }
+
+  listeners = this._events[type];
+
+  if (isFunction(listeners)) {
+    this.removeListener(type, listeners);
+  } else if (listeners) {
+    // LIFO order
+    while (listeners.length)
+      { this.removeListener(type, listeners[listeners.length - 1]); }
+  }
+  delete this._events[type];
+
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  var ret;
+  if (!this._events || !this._events[type])
+    { ret = []; }
+  else if (isFunction(this._events[type]))
+    { ret = [this._events[type]]; }
+  else
+    { ret = this._events[type].slice(); }
+  return ret;
+};
+
+EventEmitter.prototype.listenerCount = function(type) {
+  if (this._events) {
+    var evlistener = this._events[type];
+
+    if (isFunction(evlistener))
+      { return 1; }
+    else if (evlistener)
+      { return evlistener.length; }
+  }
+  return 0;
+};
+
+EventEmitter.listenerCount = function(emitter, type) {
+  return emitter.listenerCount(type);
+};
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+
+},{}],9:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor;
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
   };
- Utils.errors = {
-    "95": {
-        "code": 95,
-        "message": "SSL is required",
-        "_content": "SSL is required to access the Flickr API."
-    },
-    "96": {
-        "code": 96,
-        "message": "Invalid signature",
-        "_content": "The passed signature was invalid."
-    },
-    "97": {
-        "code": 97,
-        "message": "Missing signature",
-        "_content": "The call required signing but no signature was sent."
-    },
-    "98": {
-        "code": 98,
-        "message": "Login failed / Invalid auth token",
-        "_content": "The login details or auth token passed were invalid."
-    },
-    "99": {
-        "code": 99,
-        "message": "User not logged in / Insufficient permissions",
-        "_content": "The method requires user authentication but the user was not logged in, or the authenticated method call did not have the required permissions."
-    },
-    "100": {
-        "code": 100,
-        "message": "Invalid API Key",
-        "_content": "The API key passed was not valid or has expired."
-    },
-    "105": {
-        "code": 105,
-        "message": "Service currently unavailable",
-        "_content": "The requested service is temporarily unavailable."
-    },
-    "106": {
-        "code": 106,
-        "message": "Write operation failed",
-        "_content": "The requested operation failed due to a temporary issue."
-    },
-    "108": {
-        "code": "108",
-        "message": "Invalid frob",
-        "_content": "The specified frob does not exist or has already been used."
-    },
-    "111": {
-        "code": 111,
-        "message": "Format \"xxx\" not found",
-        "_content": "The requested response format was not found."
-    },
-    "112": {
-        "code": 112,
-        "message": "Method \"xxx\" not found",
-        "_content": "The requested method was not found."
-    },
-    "114": {
-        "code": 114,
-        "message": "Invalid SOAP envelope",
-        "_content": "The SOAP envelope send in the request could not be parsed."
-    },
-    "115": {
-        "code": 115,
-        "message": "Invalid XML-RPC Method Call",
-        "_content": "The XML-RPC request document could not be parsed."
-    },
-    "116": {
-        "code": 116,
-        "message": "Bad URL found",
-        "_content": "One or more arguments contained a URL that has been used for abuse on Flickr."
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor;
+    var TempCtor = function () {};
+    TempCtor.prototype = superCtor.prototype;
+    ctor.prototype = new TempCtor();
+    ctor.prototype.constructor = ctor;
+  };
+}
+
+},{}],10:[function(require,module,exports){
+/*!
+ * Determine if an object is a Buffer
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+
+// The _isBuffer check is for Safari 5-7 support, because it's missing
+// Object.prototype.constructor. Remove this eventually
+module.exports = function (obj) {
+  return obj != null && (isBuffer(obj) || isSlowBuffer(obj) || !!obj._isBuffer)
+};
+
+function isBuffer (obj) {
+  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
+}
+
+// For Node v0.10 support. Remove this eventually.
+function isSlowBuffer (obj) {
+  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
+}
+
+},{}],11:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ());
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var arguments$1 = arguments;
+
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments$1[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
     }
 };
- var Flickr = function (flickrOptions) {
-  this.bindOptions(flickrOptions);
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
 };
- Flickr.prototype = {};
- Flickr.methods = {
- "flickr.activity.userComments": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.activity.userComments"
- },
- "flickr.activity.userPhotos": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.activity.userPhotos"
- },
- "flickr.auth.checkToken": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.auth.checkToken"
- },
- "flickr.auth.getFrob": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.auth.getFrob"
- },
- "flickr.auth.getFullToken": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.auth.getFullToken"
- },
- "flickr.auth.getToken": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.auth.getToken"
- },
- "flickr.auth.oauth.checkToken": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 1,
-   "requiredperms": 0
-  },
-  "name": "flickr.auth.oauth.checkToken"
- },
- "flickr.auth.oauth.getAccessToken": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 1,
-   "requiredperms": 0
-  },
-  "name": "flickr.auth.oauth.getAccessToken"
- },
- "flickr.blogs.getList": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.blogs.getList"
- },
- "flickr.blogs.getServices": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.blogs.getServices"
- },
- "flickr.blogs.postPhoto": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.blogs.postPhoto"
- },
- "flickr.cameras.getBrandModels": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.cameras.getBrandModels"
- },
- "flickr.cameras.getBrands": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.cameras.getBrands"
- },
- "flickr.collections.getInfo": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.collections.getInfo"
- },
- "flickr.collections.getTree": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.collections.getTree"
- },
- "flickr.commons.getInstitutions": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.commons.getInstitutions"
- },
- "flickr.contacts.getList": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.contacts.getList"
- },
- "flickr.contacts.getListRecentlyUploaded": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.contacts.getListRecentlyUploaded"
- },
- "flickr.contacts.getPublicList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.contacts.getPublicList"
- },
- "flickr.contacts.getTaggingSuggestions": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.contacts.getTaggingSuggestions"
- },
- "flickr.favorites.add": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.favorites.add"
- },
- "flickr.favorites.getContext": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.favorites.getContext"
- },
- "flickr.favorites.getList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.favorites.getList"
- },
- "flickr.favorites.getPublicList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.favorites.getPublicList"
- },
- "flickr.favorites.remove": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.favorites.remove"
- },
- "flickr.galleries.addPhoto": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.galleries.addPhoto"
- },
- "flickr.galleries.create": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.galleries.create"
- },
- "flickr.galleries.editMeta": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.galleries.editMeta"
- },
- "flickr.galleries.editPhoto": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.galleries.editPhoto"
- },
- "flickr.galleries.editPhotos": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.galleries.editPhotos"
- },
- "flickr.galleries.getInfo": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.galleries.getInfo"
- },
- "flickr.galleries.getList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.galleries.getList"
- },
- "flickr.galleries.getListForPhoto": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.galleries.getListForPhoto"
- },
- "flickr.galleries.getPhotos": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.galleries.getPhotos"
- },
- "flickr.groups.browse": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.groups.browse"
- },
- "flickr.groups.discuss.replies.add": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.groups.discuss.replies.add"
- },
- "flickr.groups.discuss.replies.delete": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 3
-  },
-  "name": "flickr.groups.discuss.replies.delete"
- },
- "flickr.groups.discuss.replies.edit": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.groups.discuss.replies.edit"
- },
- "flickr.groups.discuss.replies.getInfo": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.groups.discuss.replies.getInfo"
- },
- "flickr.groups.discuss.replies.getList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.groups.discuss.replies.getList"
- },
- "flickr.groups.discuss.topics.add": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.groups.discuss.topics.add"
- },
- "flickr.groups.discuss.topics.getInfo": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.groups.discuss.topics.getInfo"
- },
- "flickr.groups.discuss.topics.getList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.groups.discuss.topics.getList"
- },
- "flickr.groups.getInfo": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.groups.getInfo"
- },
- "flickr.groups.join": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.groups.join"
- },
- "flickr.groups.joinRequest": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.groups.joinRequest"
- },
- "flickr.groups.leave": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 3
-  },
-  "name": "flickr.groups.leave"
- },
- "flickr.groups.members.getList": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.groups.members.getList"
- },
- "flickr.groups.pools.add": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.groups.pools.add"
- },
- "flickr.groups.pools.getContext": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.groups.pools.getContext"
- },
- "flickr.groups.pools.getGroups": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.groups.pools.getGroups"
- },
- "flickr.groups.pools.getPhotos": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.groups.pools.getPhotos"
- },
- "flickr.groups.pools.remove": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.groups.pools.remove"
- },
- "flickr.groups.search": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.groups.search"
- },
- "flickr.interestingness.getList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.interestingness.getList"
- },
- "flickr.machinetags.getNamespaces": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.machinetags.getNamespaces"
- },
- "flickr.machinetags.getPairs": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.machinetags.getPairs"
- },
- "flickr.machinetags.getPredicates": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.machinetags.getPredicates"
- },
- "flickr.machinetags.getRecentValues": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.machinetags.getRecentValues"
- },
- "flickr.machinetags.getValues": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.machinetags.getValues"
- },
- "flickr.panda.getList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.panda.getList"
- },
- "flickr.panda.getPhotos": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.panda.getPhotos"
- },
- "flickr.people.findByEmail": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.people.findByEmail"
- },
- "flickr.people.findByUsername": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.people.findByUsername"
- },
- "flickr.people.getGroups": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.people.getGroups"
- },
- "flickr.people.getInfo": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.people.getInfo"
- },
- "flickr.people.getLimits": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.people.getLimits"
- },
- "flickr.people.getPhotos": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.people.getPhotos"
- },
- "flickr.people.getPhotosOf": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.people.getPhotosOf"
- },
- "flickr.people.getPublicGroups": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.people.getPublicGroups"
- },
- "flickr.people.getPublicPhotos": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.people.getPublicPhotos"
- },
- "flickr.people.getUploadStatus": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.people.getUploadStatus"
- },
- "flickr.photos.addTags": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.addTags"
- },
- "flickr.photos.comments.addComment": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.comments.addComment"
- },
- "flickr.photos.comments.deleteComment": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.comments.deleteComment"
- },
- "flickr.photos.comments.editComment": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.comments.editComment"
- },
- "flickr.photos.comments.getList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.comments.getList"
- },
- "flickr.photos.comments.getRecentForContacts": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.comments.getRecentForContacts"
- },
- "flickr.photos.delete": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 3
-  },
-  "name": "flickr.photos.delete"
- },
- "flickr.photos.geo.batchCorrectLocation": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.geo.batchCorrectLocation"
- },
- "flickr.photos.geo.correctLocation": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.geo.correctLocation"
- },
- "flickr.photos.geo.getLocation": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.geo.getLocation"
- },
- "flickr.photos.geo.getPerms": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.geo.getPerms"
- },
- "flickr.photos.geo.photosForLocation": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.geo.photosForLocation"
- },
- "flickr.photos.geo.removeLocation": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.geo.removeLocation"
- },
- "flickr.photos.geo.setContext": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.geo.setContext"
- },
- "flickr.photos.geo.setLocation": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.geo.setLocation"
- },
- "flickr.photos.geo.setPerms": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.geo.setPerms"
- },
- "flickr.photos.getAllContexts": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.getAllContexts"
- },
- "flickr.photos.getContactsPhotos": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.getContactsPhotos"
- },
- "flickr.photos.getContactsPublicPhotos": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.getContactsPublicPhotos"
- },
- "flickr.photos.getContext": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.getContext"
- },
- "flickr.photos.getCounts": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.getCounts"
- },
- "flickr.photos.getExif": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.getExif"
- },
- "flickr.photos.getFavorites": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.getFavorites"
- },
- "flickr.photos.getInfo": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.getInfo"
- },
- "flickr.photos.getNotInSet": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.getNotInSet"
- },
- "flickr.photos.getPerms": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.getPerms"
- },
- "flickr.photos.getRecent": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.getRecent"
- },
- "flickr.photos.getSizes": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.getSizes"
- },
- "flickr.photos.getUntagged": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.getUntagged"
- },
- "flickr.photos.getWithGeoData": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.getWithGeoData"
- },
- "flickr.photos.getWithoutGeoData": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.getWithoutGeoData"
- },
- "flickr.photos.licenses.getInfo": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.licenses.getInfo"
- },
- "flickr.photos.licenses.setLicense": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.licenses.setLicense"
- },
- "flickr.photos.notes.add": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.notes.add"
- },
- "flickr.photos.notes.delete": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.notes.delete"
- },
- "flickr.photos.notes.edit": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.notes.edit"
- },
- "flickr.photos.people.add": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.people.add"
- },
- "flickr.photos.people.delete": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.people.delete"
- },
- "flickr.photos.people.deleteCoords": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.people.deleteCoords"
- },
- "flickr.photos.people.editCoords": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.people.editCoords"
- },
- "flickr.photos.people.getList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.people.getList"
- },
- "flickr.photos.recentlyUpdated": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.recentlyUpdated"
- },
- "flickr.photos.removeTag": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.removeTag"
- },
- "flickr.photos.search": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.search"
- },
- "flickr.photos.setContentType": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.setContentType"
- },
- "flickr.photos.setDates": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.setDates"
- },
- "flickr.photos.setMeta": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.setMeta"
- },
- "flickr.photos.setPerms": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.setPerms"
- },
- "flickr.photos.setSafetyLevel": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.setSafetyLevel"
- },
- "flickr.photos.setTags": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.setTags"
- },
- "flickr.photos.suggestions.approveSuggestion": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.suggestions.approveSuggestion"
- },
- "flickr.photos.suggestions.getList": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.photos.suggestions.getList"
- },
- "flickr.photos.suggestions.rejectSuggestion": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.suggestions.rejectSuggestion"
- },
- "flickr.photos.suggestions.removeSuggestion": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.suggestions.removeSuggestion"
- },
- "flickr.photos.suggestions.suggestLocation": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.suggestions.suggestLocation"
- },
- "flickr.photos.transform.rotate": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photos.transform.rotate"
- },
- "flickr.photos.upload.checkTickets": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photos.upload.checkTickets"
- },
- "flickr.photosets.addPhoto": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.addPhoto"
- },
- "flickr.photosets.comments.addComment": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.comments.addComment"
- },
- "flickr.photosets.comments.deleteComment": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.comments.deleteComment"
- },
- "flickr.photosets.comments.editComment": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.comments.editComment"
- },
- "flickr.photosets.comments.getList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photosets.comments.getList"
- },
- "flickr.photosets.create": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.create"
- },
- "flickr.photosets.delete": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.delete"
- },
- "flickr.photosets.editMeta": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.editMeta"
- },
- "flickr.photosets.editPhotos": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.editPhotos"
- },
- "flickr.photosets.getContext": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photosets.getContext"
- },
- "flickr.photosets.getInfo": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photosets.getInfo"
- },
- "flickr.photosets.getList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photosets.getList"
- },
- "flickr.photosets.getPhotos": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.photosets.getPhotos"
- },
- "flickr.photosets.orderSets": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.orderSets"
- },
- "flickr.photosets.removePhoto": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.removePhoto"
- },
- "flickr.photosets.removePhotos": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.removePhotos"
- },
- "flickr.photosets.reorderPhotos": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.reorderPhotos"
- },
- "flickr.photosets.setPrimaryPhoto": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 2
-  },
-  "name": "flickr.photosets.setPrimaryPhoto"
- },
- "flickr.places.find": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.find"
- },
- "flickr.places.findByLatLon": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.findByLatLon"
- },
- "flickr.places.getChildrenWithPhotosPublic": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.getChildrenWithPhotosPublic"
- },
- "flickr.places.getInfo": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.getInfo"
- },
- "flickr.places.getInfoByUrl": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.getInfoByUrl"
- },
- "flickr.places.getPlaceTypes": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.getPlaceTypes"
- },
- "flickr.places.getShapeHistory": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.getShapeHistory"
- },
- "flickr.places.getTopPlacesList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.getTopPlacesList"
- },
- "flickr.places.placesForBoundingBox": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.placesForBoundingBox"
- },
- "flickr.places.placesForContacts": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.places.placesForContacts"
- },
- "flickr.places.placesForTags": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.placesForTags"
- },
- "flickr.places.placesForUser": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.places.placesForUser"
- },
- "flickr.places.resolvePlaceId": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.resolvePlaceId"
- },
- "flickr.places.resolvePlaceURL": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.resolvePlaceURL"
- },
- "flickr.places.tagsForPlace": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.places.tagsForPlace"
- },
- "flickr.prefs.getContentType": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.prefs.getContentType"
- },
- "flickr.prefs.getGeoPerms": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.prefs.getGeoPerms"
- },
- "flickr.prefs.getHidden": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.prefs.getHidden"
- },
- "flickr.prefs.getPrivacy": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.prefs.getPrivacy"
- },
- "flickr.prefs.getSafetyLevel": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.prefs.getSafetyLevel"
- },
- "flickr.push.getSubscriptions": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.push.getSubscriptions"
- },
- "flickr.push.getTopics": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.push.getTopics"
- },
- "flickr.push.subscribe": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.push.subscribe"
- },
- "flickr.push.unsubscribe": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.push.unsubscribe"
- },
- "flickr.reflection.getMethodInfo": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.reflection.getMethodInfo"
- },
- "flickr.reflection.getMethods": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.reflection.getMethods"
- },
- "flickr.stats.getCollectionDomains": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getCollectionDomains"
- },
- "flickr.stats.getCollectionReferrers": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getCollectionReferrers"
- },
- "flickr.stats.getCollectionStats": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getCollectionStats"
- },
- "flickr.stats.getCSVFiles": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getCSVFiles"
- },
- "flickr.stats.getPhotoDomains": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getPhotoDomains"
- },
- "flickr.stats.getPhotoReferrers": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getPhotoReferrers"
- },
- "flickr.stats.getPhotosetDomains": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getPhotosetDomains"
- },
- "flickr.stats.getPhotosetReferrers": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getPhotosetReferrers"
- },
- "flickr.stats.getPhotosetStats": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getPhotosetStats"
- },
- "flickr.stats.getPhotoStats": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getPhotoStats"
- },
- "flickr.stats.getPhotostreamDomains": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getPhotostreamDomains"
- },
- "flickr.stats.getPhotostreamReferrers": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getPhotostreamReferrers"
- },
- "flickr.stats.getPhotostreamStats": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getPhotostreamStats"
- },
- "flickr.stats.getPopularPhotos": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getPopularPhotos"
- },
- "flickr.stats.getTotalViews": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.stats.getTotalViews"
- },
- "flickr.tags.getClusterPhotos": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.tags.getClusterPhotos"
- },
- "flickr.tags.getClusters": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.tags.getClusters"
- },
- "flickr.tags.getHotList": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.tags.getHotList"
- },
- "flickr.tags.getListPhoto": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.tags.getListPhoto"
- },
- "flickr.tags.getListUser": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.tags.getListUser"
- },
- "flickr.tags.getListUserPopular": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.tags.getListUserPopular"
- },
- "flickr.tags.getListUserRaw": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.tags.getListUserRaw"
- },
- "flickr.tags.getMostFrequentlyUsed": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.tags.getMostFrequentlyUsed"
- },
- "flickr.tags.getRelated": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.tags.getRelated"
- },
- "flickr.test.echo": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.test.echo"
- },
- "flickr.test.login": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.test.login"
- },
- "flickr.test.null": {
-  "security": {
-   "needslogin": 1,
-   "needssigning": 1,
-   "requiredperms": 1
-  },
-  "name": "flickr.test.null"
- },
- "flickr.urls.getGroup": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.urls.getGroup"
- },
- "flickr.urls.getUserPhotos": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.urls.getUserPhotos"
- },
- "flickr.urls.getUserProfile": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.urls.getUserProfile"
- },
- "flickr.urls.lookupGallery": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.urls.lookupGallery"
- },
- "flickr.urls.lookupGroup": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.urls.lookupGroup"
- },
- "flickr.urls.lookupUser": {
-  "security": {
-   "needslogin": 0,
-   "needssigning": 0,
-   "requiredperms": 0
-  },
-  "name": "flickr.urls.lookupUser"
- }
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] };
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],12:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+module.exports = function(qs, sep, eq, options) {
+  sep = sep || '&';
+  eq = eq || '=';
+  var obj = {};
+
+  if (typeof qs !== 'string' || qs.length === 0) {
+    return obj;
+  }
+
+  var regexp = /\+/g;
+  qs = qs.split(sep);
+
+  var maxKeys = 1000;
+  if (options && typeof options.maxKeys === 'number') {
+    maxKeys = options.maxKeys;
+  }
+
+  var len = qs.length;
+  // maxKeys <= 0 means that we should not limit keys count
+  if (maxKeys > 0 && len > maxKeys) {
+    len = maxKeys;
+  }
+
+  for (var i = 0; i < len; ++i) {
+    var x = qs[i].replace(regexp, '%20'),
+        idx = x.indexOf(eq),
+        kstr, vstr, k, v;
+
+    if (idx >= 0) {
+      kstr = x.substr(0, idx);
+      vstr = x.substr(idx + 1);
+    } else {
+      kstr = x;
+      vstr = '';
+    }
+
+    k = decodeURIComponent(kstr);
+    v = decodeURIComponent(vstr);
+
+    if (!hasOwnProperty(obj, k)) {
+      obj[k] = v;
+    } else if (isArray(obj[k])) {
+      obj[k].push(v);
+    } else {
+      obj[k] = [obj[k], v];
+    }
+  }
+
+  return obj;
+};
+
+var isArray = Array.isArray || function (xs) {
+  return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+},{}],13:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var stringifyPrimitive = function(v) {
+  switch (typeof v) {
+    case 'string':
+      return v;
+
+    case 'boolean':
+      return v ? 'true' : 'false';
+
+    case 'number':
+      return isFinite(v) ? v : '';
+
+    default:
+      return '';
+  }
+};
+
+module.exports = function(obj, sep, eq, name) {
+  sep = sep || '&';
+  eq = eq || '=';
+  if (obj === null) {
+    obj = undefined;
+  }
+
+  if (typeof obj === 'object') {
+    return map(objectKeys(obj), function(k) {
+      var ks = encodeURIComponent(stringifyPrimitive(k)) + eq;
+      if (isArray(obj[k])) {
+        return map(obj[k], function(v) {
+          return ks + encodeURIComponent(stringifyPrimitive(v));
+        }).join(sep);
+      } else {
+        return ks + encodeURIComponent(stringifyPrimitive(obj[k]));
+      }
+    }).join(sep);
+
+  }
+
+  if (!name) { return ''; }
+  return encodeURIComponent(stringifyPrimitive(name)) + eq +
+         encodeURIComponent(stringifyPrimitive(obj));
+};
+
+var isArray = Array.isArray || function (xs) {
+  return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+function map (xs, f) {
+  if (xs.map) { return xs.map(f); }
+  var res = [];
+  for (var i = 0; i < xs.length; i++) {
+    res.push(f(xs[i], i));
+  }
+  return res;
+}
+
+var objectKeys = Object.keys || function (obj) {
+  var res = [];
+  for (var key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) { res.push(key); }
+  }
+  return res;
+};
+
+},{}],14:[function(require,module,exports){
+exports.decode = exports.parse = require('./decode');
+exports.encode = exports.stringify = require('./encode');
+
+},{"./decode":12,"./encode":13}],15:[function(require,module,exports){
+module.exports = require('./lib/_stream_duplex.js');
+
+},{"./lib/_stream_duplex.js":16}],16:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// a duplex stream is just a stream that is both readable and writable.
+// Since JS doesn't have multiple prototypal inheritance, this class
+// prototypally inherits from Readable, and then parasitically from
+// Writable.
+
+var processNextTick = require('process-nextick-args');
+/*</replacement>*/
+
+/*<replacement>*/
+var objectKeys = Object.keys || function (obj) {
+  var keys = [];
+  for (var key in obj) {
+    keys.push(key);
+  }return keys;
+};
+/*</replacement>*/
+
+module.exports = Duplex;
+
+/*<replacement>*/
+var util = require('core-util-is');
+util.inherits = require('inherits');
+/*</replacement>*/
+
+var Readable = require('./_stream_readable');
+var Writable = require('./_stream_writable');
+
+util.inherits(Duplex, Readable);
+
+var keys = objectKeys(Writable.prototype);
+for (var v = 0; v < keys.length; v++) {
+  var method = keys[v];
+  if (!Duplex.prototype[method]) { Duplex.prototype[method] = Writable.prototype[method]; }
+}
+
+function Duplex(options) {
+  if (!(this instanceof Duplex)) { return new Duplex(options); }
+
+  Readable.call(this, options);
+  Writable.call(this, options);
+
+  if (options && options.readable === false) { this.readable = false; }
+
+  if (options && options.writable === false) { this.writable = false; }
+
+  this.allowHalfOpen = true;
+  if (options && options.allowHalfOpen === false) { this.allowHalfOpen = false; }
+
+  this.once('end', onend);
+}
+
+// the no-half-open enforcer
+function onend() {
+  // if we allow half-open state, or if the writable side ended,
+  // then we're ok.
+  if (this.allowHalfOpen || this._writableState.ended) { return; }
+
+  // no more data can be written.
+  // But allow more writes to happen in this tick.
+  processNextTick(onEndNT, this);
+}
+
+function onEndNT(self) {
+  self.end();
+}
+
+Object.defineProperty(Duplex.prototype, 'destroyed', {
+  get: function () {
+    if (this._readableState === undefined || this._writableState === undefined) {
+      return false;
+    }
+    return this._readableState.destroyed && this._writableState.destroyed;
+  },
+  set: function (value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (this._readableState === undefined || this._writableState === undefined) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._readableState.destroyed = value;
+    this._writableState.destroyed = value;
+  }
+});
+
+Duplex.prototype._destroy = function (err, cb) {
+  this.push(null);
+  this.end();
+
+  processNextTick(cb, err);
+};
+
+
+},{"./_stream_readable":18,"./_stream_writable":20,"core-util-is":24,"inherits":9,"process-nextick-args":26}],17:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// a passthrough stream.
+// basically just the most minimal sort of Transform stream.
+// Every written chunk gets output as-is.
+
+module.exports = PassThrough;
+
+var Transform = require('./_stream_transform');
+
+/*<replacement>*/
+var util = require('core-util-is');
+util.inherits = require('inherits');
+/*</replacement>*/
+
+util.inherits(PassThrough, Transform);
+
+function PassThrough(options) {
+  if (!(this instanceof PassThrough)) { return new PassThrough(options); }
+
+  Transform.call(this, options);
+}
+
+PassThrough.prototype._transform = function (chunk, encoding, cb) {
+  cb(null, chunk);
+};
+},{"./_stream_transform":19,"core-util-is":24,"inherits":9}],18:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var processNextTick = require('process-nextick-args');
+/*</replacement>*/
+
+module.exports = Readable;
+
+/*<replacement>*/
+var isArray = require('isarray');
+/*</replacement>*/
+
+/*<replacement>*/
+var Duplex;
+/*</replacement>*/
+
+Readable.ReadableState = ReadableState;
+
+/*<replacement>*/
+var EE = require('events').EventEmitter;
+
+var EElistenerCount = function (emitter, type) {
+  return emitter.listeners(type).length;
+};
+/*</replacement>*/
+
+/*<replacement>*/
+var Stream = require('./internal/streams/stream');
+/*</replacement>*/
+
+// TODO(bmeurer): Change this back to const once hole checks are
+// properly optimized away early in Ignition+TurboFan.
+/*<replacement>*/
+var Buffer = require('safe-buffer').Buffer;
+var OurUint8Array = global.Uint8Array || function () {};
+function _uint8ArrayToBuffer(chunk) {
+  return Buffer.from(chunk);
+}
+function _isUint8Array(obj) {
+  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
+}
+/*</replacement>*/
+
+/*<replacement>*/
+var util = require('core-util-is');
+util.inherits = require('inherits');
+/*</replacement>*/
+
+/*<replacement>*/
+var debugUtil = require('util');
+var debug = void 0;
+if (debugUtil && debugUtil.debuglog) {
+  debug = debugUtil.debuglog('stream');
+} else {
+  debug = function () {};
+}
+/*</replacement>*/
+
+var BufferList = require('./internal/streams/BufferList');
+var destroyImpl = require('./internal/streams/destroy');
+var StringDecoder;
+
+util.inherits(Readable, Stream);
+
+var kProxyEvents = ['error', 'close', 'destroy', 'pause', 'resume'];
+
+function prependListener(emitter, event, fn) {
+  // Sadly this is not cacheable as some libraries bundle their own
+  // event emitter implementation with them.
+  if (typeof emitter.prependListener === 'function') {
+    return emitter.prependListener(event, fn);
+  } else {
+    // This is a hack to make sure that our error handler is attached before any
+    // userland ones.  NEVER DO THIS. This is here only because this code needs
+    // to continue to work with older versions of Node.js that do not include
+    // the prependListener() method. The goal is to eventually remove this hack.
+    if (!emitter._events || !emitter._events[event]) { emitter.on(event, fn); }else if (isArray(emitter._events[event])) { emitter._events[event].unshift(fn); }else { emitter._events[event] = [fn, emitter._events[event]]; }
+  }
+}
+
+function ReadableState(options, stream) {
+  Duplex = Duplex || require('./_stream_duplex');
+
+  options = options || {};
+
+  // object stream flag. Used to make read(n) ignore n and to
+  // make all the buffer merging and length checks go away
+  this.objectMode = !!options.objectMode;
+
+  if (stream instanceof Duplex) { this.objectMode = this.objectMode || !!options.readableObjectMode; }
+
+  // the point at which it stops calling _read() to fill the buffer
+  // Note: 0 is a valid value, means "don't call _read preemptively ever"
+  var hwm = options.highWaterMark;
+  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
+  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
+
+  // cast to ints.
+  this.highWaterMark = Math.floor(this.highWaterMark);
+
+  // A linked list is used to store data chunks instead of an array because the
+  // linked list can remove elements from the beginning faster than
+  // array.shift()
+  this.buffer = new BufferList();
+  this.length = 0;
+  this.pipes = null;
+  this.pipesCount = 0;
+  this.flowing = null;
+  this.ended = false;
+  this.endEmitted = false;
+  this.reading = false;
+
+  // a flag to be able to tell if the event 'readable'/'data' is emitted
+  // immediately, or on a later tick.  We set this to true at first, because
+  // any actions that shouldn't happen until "later" should generally also
+  // not happen before the first read call.
+  this.sync = true;
+
+  // whenever we return null, then we set a flag to say
+  // that we're awaiting a 'readable' event emission.
+  this.needReadable = false;
+  this.emittedReadable = false;
+  this.readableListening = false;
+  this.resumeScheduled = false;
+
+  // has it been destroyed
+  this.destroyed = false;
+
+  // Crypto is kind of old and crusty.  Historically, its default string
+  // encoding is 'binary' so we have to make this configurable.
+  // Everything else in the universe uses 'utf8', though.
+  this.defaultEncoding = options.defaultEncoding || 'utf8';
+
+  // the number of writers that are awaiting a drain event in .pipe()s
+  this.awaitDrain = 0;
+
+  // if true, a maybeReadMore has been scheduled
+  this.readingMore = false;
+
+  this.decoder = null;
+  this.encoding = null;
+  if (options.encoding) {
+    if (!StringDecoder) { StringDecoder = require('string_decoder/').StringDecoder; }
+    this.decoder = new StringDecoder(options.encoding);
+    this.encoding = options.encoding;
+  }
+}
+
+function Readable(options) {
+  Duplex = Duplex || require('./_stream_duplex');
+
+  if (!(this instanceof Readable)) { return new Readable(options); }
+
+  this._readableState = new ReadableState(options, this);
+
+  // legacy
+  this.readable = true;
+
+  if (options) {
+    if (typeof options.read === 'function') { this._read = options.read; }
+
+    if (typeof options.destroy === 'function') { this._destroy = options.destroy; }
+  }
+
+  Stream.call(this);
+}
+
+Object.defineProperty(Readable.prototype, 'destroyed', {
+  get: function () {
+    if (this._readableState === undefined) {
+      return false;
+    }
+    return this._readableState.destroyed;
+  },
+  set: function (value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (!this._readableState) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._readableState.destroyed = value;
+  }
+});
+
+Readable.prototype.destroy = destroyImpl.destroy;
+Readable.prototype._undestroy = destroyImpl.undestroy;
+Readable.prototype._destroy = function (err, cb) {
+  this.push(null);
+  cb(err);
+};
+
+// Manually shove something into the read() buffer.
+// This returns true if the highWaterMark has not been hit yet,
+// similar to how Writable.write() returns true if you should
+// write() some more.
+Readable.prototype.push = function (chunk, encoding) {
+  var state = this._readableState;
+  var skipChunkCheck;
+
+  if (!state.objectMode) {
+    if (typeof chunk === 'string') {
+      encoding = encoding || state.defaultEncoding;
+      if (encoding !== state.encoding) {
+        chunk = Buffer.from(chunk, encoding);
+        encoding = '';
+      }
+      skipChunkCheck = true;
+    }
+  } else {
+    skipChunkCheck = true;
+  }
+
+  return readableAddChunk(this, chunk, encoding, false, skipChunkCheck);
+};
+
+// Unshift should *always* be something directly out of read()
+Readable.prototype.unshift = function (chunk) {
+  return readableAddChunk(this, chunk, null, true, false);
+};
+
+function readableAddChunk(stream, chunk, encoding, addToFront, skipChunkCheck) {
+  var state = stream._readableState;
+  if (chunk === null) {
+    state.reading = false;
+    onEofChunk(stream, state);
+  } else {
+    var er;
+    if (!skipChunkCheck) { er = chunkInvalid(state, chunk); }
+    if (er) {
+      stream.emit('error', er);
+    } else if (state.objectMode || chunk && chunk.length > 0) {
+      if (typeof chunk !== 'string' && !state.objectMode && Object.getPrototypeOf(chunk) !== Buffer.prototype) {
+        chunk = _uint8ArrayToBuffer(chunk);
+      }
+
+      if (addToFront) {
+        if (state.endEmitted) { stream.emit('error', new Error('stream.unshift() after end event')); }else { addChunk(stream, state, chunk, true); }
+      } else if (state.ended) {
+        stream.emit('error', new Error('stream.push() after EOF'));
+      } else {
+        state.reading = false;
+        if (state.decoder && !encoding) {
+          chunk = state.decoder.write(chunk);
+          if (state.objectMode || chunk.length !== 0) { addChunk(stream, state, chunk, false); }else { maybeReadMore(stream, state); }
+        } else {
+          addChunk(stream, state, chunk, false);
+        }
+      }
+    } else if (!addToFront) {
+      state.reading = false;
+    }
+  }
+
+  return needMoreData(state);
+}
+
+function addChunk(stream, state, chunk, addToFront) {
+  if (state.flowing && state.length === 0 && !state.sync) {
+    stream.emit('data', chunk);
+    stream.read(0);
+  } else {
+    // update the buffer info.
+    state.length += state.objectMode ? 1 : chunk.length;
+    if (addToFront) { state.buffer.unshift(chunk); }else { state.buffer.push(chunk); }
+
+    if (state.needReadable) { emitReadable(stream); }
+  }
+  maybeReadMore(stream, state);
+}
+
+function chunkInvalid(state, chunk) {
+  var er;
+  if (!_isUint8Array(chunk) && typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
+    er = new TypeError('Invalid non-string/buffer chunk');
+  }
+  return er;
+}
+
+// if it's past the high water mark, we can push in some more.
+// Also, if we have no data yet, we can stand some
+// more bytes.  This is to work around cases where hwm=0,
+// such as the repl.  Also, if the push() triggered a
+// readable event, and the user called read(largeNumber) such that
+// needReadable was set, then we ought to push more, so that another
+// 'readable' event will be triggered.
+function needMoreData(state) {
+  return !state.ended && (state.needReadable || state.length < state.highWaterMark || state.length === 0);
+}
+
+Readable.prototype.isPaused = function () {
+  return this._readableState.flowing === false;
+};
+
+// backwards compatibility.
+Readable.prototype.setEncoding = function (enc) {
+  if (!StringDecoder) { StringDecoder = require('string_decoder/').StringDecoder; }
+  this._readableState.decoder = new StringDecoder(enc);
+  this._readableState.encoding = enc;
+  return this;
+};
+
+// Don't raise the hwm > 8MB
+var MAX_HWM = 0x800000;
+function computeNewHighWaterMark(n) {
+  if (n >= MAX_HWM) {
+    n = MAX_HWM;
+  } else {
+    // Get the next highest power of 2 to prevent increasing hwm excessively in
+    // tiny amounts
+    n--;
+    n |= n >>> 1;
+    n |= n >>> 2;
+    n |= n >>> 4;
+    n |= n >>> 8;
+    n |= n >>> 16;
+    n++;
+  }
+  return n;
+}
+
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function howMuchToRead(n, state) {
+  if (n <= 0 || state.length === 0 && state.ended) { return 0; }
+  if (state.objectMode) { return 1; }
+  if (n !== n) {
+    // Only flow one buffer at a time
+    if (state.flowing && state.length) { return state.buffer.head.data.length; }else { return state.length; }
+  }
+  // If we're asking for more than the current hwm, then raise the hwm.
+  if (n > state.highWaterMark) { state.highWaterMark = computeNewHighWaterMark(n); }
+  if (n <= state.length) { return n; }
+  // Don't have enough
+  if (!state.ended) {
+    state.needReadable = true;
+    return 0;
+  }
+  return state.length;
+}
+
+// you can override either this method, or the async _read(n) below.
+Readable.prototype.read = function (n) {
+  debug('read', n);
+  n = parseInt(n, 10);
+  var state = this._readableState;
+  var nOrig = n;
+
+  if (n !== 0) { state.emittedReadable = false; }
+
+  // if we're doing read(0) to trigger a readable event, but we
+  // already have a bunch of data in the buffer, then just trigger
+  // the 'readable' event and move on.
+  if (n === 0 && state.needReadable && (state.length >= state.highWaterMark || state.ended)) {
+    debug('read: emitReadable', state.length, state.ended);
+    if (state.length === 0 && state.ended) { endReadable(this); }else { emitReadable(this); }
+    return null;
+  }
+
+  n = howMuchToRead(n, state);
+
+  // if we've ended, and we're now clear, then finish it up.
+  if (n === 0 && state.ended) {
+    if (state.length === 0) { endReadable(this); }
+    return null;
+  }
+
+  // All the actual chunk generation logic needs to be
+  // *below* the call to _read.  The reason is that in certain
+  // synthetic stream cases, such as passthrough streams, _read
+  // may be a completely synchronous operation which may change
+  // the state of the read buffer, providing enough data when
+  // before there was *not* enough.
+  //
+  // So, the steps are:
+  // 1. Figure out what the state of things will be after we do
+  // a read from the buffer.
+  //
+  // 2. If that resulting state will trigger a _read, then call _read.
+  // Note that this may be asynchronous, or synchronous.  Yes, it is
+  // deeply ugly to write APIs this way, but that still doesn't mean
+  // that the Readable class should behave improperly, as streams are
+  // designed to be sync/async agnostic.
+  // Take note if the _read call is sync or async (ie, if the read call
+  // has returned yet), so that we know whether or not it's safe to emit
+  // 'readable' etc.
+  //
+  // 3. Actually pull the requested chunks out of the buffer and return.
+
+  // if we need a readable event, then we need to do some reading.
+  var doRead = state.needReadable;
+  debug('need readable', doRead);
+
+  // if we currently have less than the highWaterMark, then also read some
+  if (state.length === 0 || state.length - n < state.highWaterMark) {
+    doRead = true;
+    debug('length less than watermark', doRead);
+  }
+
+  // however, if we've ended, then there's no point, and if we're already
+  // reading, then it's unnecessary.
+  if (state.ended || state.reading) {
+    doRead = false;
+    debug('reading or ended', doRead);
+  } else if (doRead) {
+    debug('do read');
+    state.reading = true;
+    state.sync = true;
+    // if the length is currently zero, then we *need* a readable event.
+    if (state.length === 0) { state.needReadable = true; }
+    // call internal read method
+    this._read(state.highWaterMark);
+    state.sync = false;
+    // If _read pushed data synchronously, then `reading` will be false,
+    // and we need to re-evaluate how much data we can return to the user.
+    if (!state.reading) { n = howMuchToRead(nOrig, state); }
+  }
+
+  var ret;
+  if (n > 0) { ret = fromList(n, state); }else { ret = null; }
+
+  if (ret === null) {
+    state.needReadable = true;
+    n = 0;
+  } else {
+    state.length -= n;
+  }
+
+  if (state.length === 0) {
+    // If we have nothing in the buffer, then we want to know
+    // as soon as we *do* get something into the buffer.
+    if (!state.ended) { state.needReadable = true; }
+
+    // If we tried to read() past the EOF, then emit end on the next tick.
+    if (nOrig !== n && state.ended) { endReadable(this); }
+  }
+
+  if (ret !== null) { this.emit('data', ret); }
+
+  return ret;
+};
+
+function onEofChunk(stream, state) {
+  if (state.ended) { return; }
+  if (state.decoder) {
+    var chunk = state.decoder.end();
+    if (chunk && chunk.length) {
+      state.buffer.push(chunk);
+      state.length += state.objectMode ? 1 : chunk.length;
+    }
+  }
+  state.ended = true;
+
+  // emit 'readable' now to make sure it gets picked up.
+  emitReadable(stream);
+}
+
+// Don't emit readable right away in sync mode, because this can trigger
+// another read() call => stack overflow.  This way, it might trigger
+// a nextTick recursion warning, but that's not so bad.
+function emitReadable(stream) {
+  var state = stream._readableState;
+  state.needReadable = false;
+  if (!state.emittedReadable) {
+    debug('emitReadable', state.flowing);
+    state.emittedReadable = true;
+    if (state.sync) { processNextTick(emitReadable_, stream); }else { emitReadable_(stream); }
+  }
+}
+
+function emitReadable_(stream) {
+  debug('emit readable');
+  stream.emit('readable');
+  flow(stream);
+}
+
+// at this point, the user has presumably seen the 'readable' event,
+// and called read() to consume some data.  that may have triggered
+// in turn another _read(n) call, in which case reading = true if
+// it's in progress.
+// However, if we're not ended, or reading, and the length < hwm,
+// then go ahead and try to read some more preemptively.
+function maybeReadMore(stream, state) {
+  if (!state.readingMore) {
+    state.readingMore = true;
+    processNextTick(maybeReadMore_, stream, state);
+  }
+}
+
+function maybeReadMore_(stream, state) {
+  var len = state.length;
+  while (!state.reading && !state.flowing && !state.ended && state.length < state.highWaterMark) {
+    debug('maybeReadMore read 0');
+    stream.read(0);
+    if (len === state.length)
+      // didn't get any data, stop spinning.
+      { break; }else { len = state.length; }
+  }
+  state.readingMore = false;
+}
+
+// abstract method.  to be overridden in specific implementation classes.
+// call cb(er, data) where data is <= n in length.
+// for virtual (non-string, non-buffer) streams, "length" is somewhat
+// arbitrary, and perhaps not very meaningful.
+Readable.prototype._read = function (n) {
+  this.emit('error', new Error('_read() is not implemented'));
+};
+
+Readable.prototype.pipe = function (dest, pipeOpts) {
+  var src = this;
+  var state = this._readableState;
+
+  switch (state.pipesCount) {
+    case 0:
+      state.pipes = dest;
+      break;
+    case 1:
+      state.pipes = [state.pipes, dest];
+      break;
+    default:
+      state.pipes.push(dest);
+      break;
+  }
+  state.pipesCount += 1;
+  debug('pipe count=%d opts=%j', state.pipesCount, pipeOpts);
+
+  var doEnd = (!pipeOpts || pipeOpts.end !== false) && dest !== process.stdout && dest !== process.stderr;
+
+  var endFn = doEnd ? onend : unpipe;
+  if (state.endEmitted) { processNextTick(endFn); }else { src.once('end', endFn); }
+
+  dest.on('unpipe', onunpipe);
+  function onunpipe(readable, unpipeInfo) {
+    debug('onunpipe');
+    if (readable === src) {
+      if (unpipeInfo && unpipeInfo.hasUnpiped === false) {
+        unpipeInfo.hasUnpiped = true;
+        cleanup();
+      }
+    }
+  }
+
+  function onend() {
+    debug('onend');
+    dest.end();
+  }
+
+  // when the dest drains, it reduces the awaitDrain counter
+  // on the source.  This would be more elegant with a .once()
+  // handler in flow(), but adding and removing repeatedly is
+  // too slow.
+  var ondrain = pipeOnDrain(src);
+  dest.on('drain', ondrain);
+
+  var cleanedUp = false;
+  function cleanup() {
+    debug('cleanup');
+    // cleanup event handlers once the pipe is broken
+    dest.removeListener('close', onclose);
+    dest.removeListener('finish', onfinish);
+    dest.removeListener('drain', ondrain);
+    dest.removeListener('error', onerror);
+    dest.removeListener('unpipe', onunpipe);
+    src.removeListener('end', onend);
+    src.removeListener('end', unpipe);
+    src.removeListener('data', ondata);
+
+    cleanedUp = true;
+
+    // if the reader is waiting for a drain event from this
+    // specific writer, then it would cause it to never start
+    // flowing again.
+    // So, if this is awaiting a drain, then we just call it now.
+    // If we don't know, then assume that we are waiting for one.
+    if (state.awaitDrain && (!dest._writableState || dest._writableState.needDrain)) { ondrain(); }
+  }
+
+  // If the user pushes more data while we're writing to dest then we'll end up
+  // in ondata again. However, we only want to increase awaitDrain once because
+  // dest will only emit one 'drain' event for the multiple writes.
+  // => Introduce a guard on increasing awaitDrain.
+  var increasedAwaitDrain = false;
+  src.on('data', ondata);
+  function ondata(chunk) {
+    debug('ondata');
+    increasedAwaitDrain = false;
+    var ret = dest.write(chunk);
+    if (false === ret && !increasedAwaitDrain) {
+      // If the user unpiped during `dest.write()`, it is possible
+      // to get stuck in a permanently paused state if that write
+      // also returned false.
+      // => Check whether `dest` is still a piping destination.
+      if ((state.pipesCount === 1 && state.pipes === dest || state.pipesCount > 1 && indexOf(state.pipes, dest) !== -1) && !cleanedUp) {
+        debug('false write response, pause', src._readableState.awaitDrain);
+        src._readableState.awaitDrain++;
+        increasedAwaitDrain = true;
+      }
+      src.pause();
+    }
+  }
+
+  // if the dest has an error, then stop piping into it.
+  // however, don't suppress the throwing behavior for this.
+  function onerror(er) {
+    debug('onerror', er);
+    unpipe();
+    dest.removeListener('error', onerror);
+    if (EElistenerCount(dest, 'error') === 0) { dest.emit('error', er); }
+  }
+
+  // Make sure our error handler is attached before userland ones.
+  prependListener(dest, 'error', onerror);
+
+  // Both close and finish should trigger unpipe, but only once.
+  function onclose() {
+    dest.removeListener('finish', onfinish);
+    unpipe();
+  }
+  dest.once('close', onclose);
+  function onfinish() {
+    debug('onfinish');
+    dest.removeListener('close', onclose);
+    unpipe();
+  }
+  dest.once('finish', onfinish);
+
+  function unpipe() {
+    debug('unpipe');
+    src.unpipe(dest);
+  }
+
+  // tell the dest that it's being piped to
+  dest.emit('pipe', src);
+
+  // start the flow if it hasn't been started already.
+  if (!state.flowing) {
+    debug('pipe resume');
+    src.resume();
+  }
+
+  return dest;
+};
+
+function pipeOnDrain(src) {
+  return function () {
+    var state = src._readableState;
+    debug('pipeOnDrain', state.awaitDrain);
+    if (state.awaitDrain) { state.awaitDrain--; }
+    if (state.awaitDrain === 0 && EElistenerCount(src, 'data')) {
+      state.flowing = true;
+      flow(src);
+    }
+  };
+}
+
+Readable.prototype.unpipe = function (dest) {
+  var state = this._readableState;
+  var unpipeInfo = { hasUnpiped: false };
+
+  // if we're not piping anywhere, then do nothing.
+  if (state.pipesCount === 0) { return this; }
+
+  // just one destination.  most common case.
+  if (state.pipesCount === 1) {
+    // passed in one, but it's not the right one.
+    if (dest && dest !== state.pipes) { return this; }
+
+    if (!dest) { dest = state.pipes; }
+
+    // got a match.
+    state.pipes = null;
+    state.pipesCount = 0;
+    state.flowing = false;
+    if (dest) { dest.emit('unpipe', this, unpipeInfo); }
+    return this;
+  }
+
+  // slow case. multiple pipe destinations.
+
+  if (!dest) {
+    // remove all.
+    var dests = state.pipes;
+    var len = state.pipesCount;
+    state.pipes = null;
+    state.pipesCount = 0;
+    state.flowing = false;
+
+    for (var i = 0; i < len; i++) {
+      dests[i].emit('unpipe', this, unpipeInfo);
+    }return this;
+  }
+
+  // try to find the right one.
+  var index = indexOf(state.pipes, dest);
+  if (index === -1) { return this; }
+
+  state.pipes.splice(index, 1);
+  state.pipesCount -= 1;
+  if (state.pipesCount === 1) { state.pipes = state.pipes[0]; }
+
+  dest.emit('unpipe', this, unpipeInfo);
+
+  return this;
+};
+
+// set up data events if they are asked for
+// Ensure readable listeners eventually get something
+Readable.prototype.on = function (ev, fn) {
+  var res = Stream.prototype.on.call(this, ev, fn);
+
+  if (ev === 'data') {
+    // Start flowing on next tick if stream isn't explicitly paused
+    if (this._readableState.flowing !== false) { this.resume(); }
+  } else if (ev === 'readable') {
+    var state = this._readableState;
+    if (!state.endEmitted && !state.readableListening) {
+      state.readableListening = state.needReadable = true;
+      state.emittedReadable = false;
+      if (!state.reading) {
+        processNextTick(nReadingNextTick, this);
+      } else if (state.length) {
+        emitReadable(this);
+      }
+    }
+  }
+
+  return res;
+};
+Readable.prototype.addListener = Readable.prototype.on;
+
+function nReadingNextTick(self) {
+  debug('readable nexttick read 0');
+  self.read(0);
+}
+
+// pause() and resume() are remnants of the legacy readable stream API
+// If the user uses them, then switch into old mode.
+Readable.prototype.resume = function () {
+  var state = this._readableState;
+  if (!state.flowing) {
+    debug('resume');
+    state.flowing = true;
+    resume(this, state);
+  }
+  return this;
+};
+
+function resume(stream, state) {
+  if (!state.resumeScheduled) {
+    state.resumeScheduled = true;
+    processNextTick(resume_, stream, state);
+  }
+}
+
+function resume_(stream, state) {
+  if (!state.reading) {
+    debug('resume read 0');
+    stream.read(0);
+  }
+
+  state.resumeScheduled = false;
+  state.awaitDrain = 0;
+  stream.emit('resume');
+  flow(stream);
+  if (state.flowing && !state.reading) { stream.read(0); }
+}
+
+Readable.prototype.pause = function () {
+  debug('call pause flowing=%j', this._readableState.flowing);
+  if (false !== this._readableState.flowing) {
+    debug('pause');
+    this._readableState.flowing = false;
+    this.emit('pause');
+  }
+  return this;
+};
+
+function flow(stream) {
+  var state = stream._readableState;
+  debug('flow', state.flowing);
+  while (state.flowing && stream.read() !== null) {}
+}
+
+// wrap an old-style stream as the async data source.
+// This is *not* part of the readable stream interface.
+// It is an ugly unfortunate mess of history.
+Readable.prototype.wrap = function (stream) {
+  var state = this._readableState;
+  var paused = false;
+
+  var self = this;
+  stream.on('end', function () {
+    debug('wrapped end');
+    if (state.decoder && !state.ended) {
+      var chunk = state.decoder.end();
+      if (chunk && chunk.length) { self.push(chunk); }
+    }
+
+    self.push(null);
+  });
+
+  stream.on('data', function (chunk) {
+    debug('wrapped data');
+    if (state.decoder) { chunk = state.decoder.write(chunk); }
+
+    // don't skip over falsy values in objectMode
+    if (state.objectMode && (chunk === null || chunk === undefined)) { return; }else if (!state.objectMode && (!chunk || !chunk.length)) { return; }
+
+    var ret = self.push(chunk);
+    if (!ret) {
+      paused = true;
+      stream.pause();
+    }
+  });
+
+  // proxy all the other methods.
+  // important when wrapping filters and duplexes.
+  for (var i in stream) {
+    if (this[i] === undefined && typeof stream[i] === 'function') {
+      this[i] = function (method) {
+        return function () {
+          return stream[method].apply(stream, arguments);
+        };
+      }(i);
+    }
+  }
+
+  // proxy certain important events.
+  for (var n = 0; n < kProxyEvents.length; n++) {
+    stream.on(kProxyEvents[n], self.emit.bind(self, kProxyEvents[n]));
+  }
+
+  // when we try to consume some more bytes, simply unpause the
+  // underlying stream.
+  self._read = function (n) {
+    debug('wrapped _read', n);
+    if (paused) {
+      paused = false;
+      stream.resume();
+    }
+  };
+
+  return self;
+};
+
+// exposed for testing purposes only.
+Readable._fromList = fromList;
+
+// Pluck off n bytes from an array of buffers.
+// Length is the combined lengths of all the buffers in the list.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function fromList(n, state) {
+  // nothing buffered
+  if (state.length === 0) { return null; }
+
+  var ret;
+  if (state.objectMode) { ret = state.buffer.shift(); }else if (!n || n >= state.length) {
+    // read it all, truncate the list
+    if (state.decoder) { ret = state.buffer.join(''); }else if (state.buffer.length === 1) { ret = state.buffer.head.data; }else { ret = state.buffer.concat(state.length); }
+    state.buffer.clear();
+  } else {
+    // read part of list
+    ret = fromListPartial(n, state.buffer, state.decoder);
+  }
+
+  return ret;
+}
+
+// Extracts only enough buffered data to satisfy the amount requested.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function fromListPartial(n, list, hasStrings) {
+  var ret;
+  if (n < list.head.data.length) {
+    // slice is the same for buffers and strings
+    ret = list.head.data.slice(0, n);
+    list.head.data = list.head.data.slice(n);
+  } else if (n === list.head.data.length) {
+    // first chunk is a perfect match
+    ret = list.shift();
+  } else {
+    // result spans more than one buffer
+    ret = hasStrings ? copyFromBufferString(n, list) : copyFromBuffer(n, list);
+  }
+  return ret;
+}
+
+// Copies a specified amount of characters from the list of buffered data
+// chunks.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function copyFromBufferString(n, list) {
+  var p = list.head;
+  var c = 1;
+  var ret = p.data;
+  n -= ret.length;
+  while (p = p.next) {
+    var str = p.data;
+    var nb = n > str.length ? str.length : n;
+    if (nb === str.length) { ret += str; }else { ret += str.slice(0, n); }
+    n -= nb;
+    if (n === 0) {
+      if (nb === str.length) {
+        ++c;
+        if (p.next) { list.head = p.next; }else { list.head = list.tail = null; }
+      } else {
+        list.head = p;
+        p.data = str.slice(nb);
+      }
+      break;
+    }
+    ++c;
+  }
+  list.length -= c;
+  return ret;
+}
+
+// Copies a specified amount of bytes from the list of buffered data chunks.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function copyFromBuffer(n, list) {
+  var ret = Buffer.allocUnsafe(n);
+  var p = list.head;
+  var c = 1;
+  p.data.copy(ret);
+  n -= p.data.length;
+  while (p = p.next) {
+    var buf = p.data;
+    var nb = n > buf.length ? buf.length : n;
+    buf.copy(ret, ret.length - n, 0, nb);
+    n -= nb;
+    if (n === 0) {
+      if (nb === buf.length) {
+        ++c;
+        if (p.next) { list.head = p.next; }else { list.head = list.tail = null; }
+      } else {
+        list.head = p;
+        p.data = buf.slice(nb);
+      }
+      break;
+    }
+    ++c;
+  }
+  list.length -= c;
+  return ret;
+}
+
+function endReadable(stream) {
+  var state = stream._readableState;
+
+  // If we get here before consuming all the bytes, then that is a
+  // bug in node.  Should never happen.
+  if (state.length > 0) { throw new Error('"endReadable()" called on non-empty stream'); }
+
+  if (!state.endEmitted) {
+    state.ended = true;
+    processNextTick(endReadableNT, state, stream);
+  }
+}
+
+function endReadableNT(state, stream) {
+  // Check that we didn't get one last unshift.
+  if (!state.endEmitted && state.length === 0) {
+    state.endEmitted = true;
+    stream.readable = false;
+    stream.emit('end');
+  }
+}
+
+function indexOf(xs, x) {
+  for (var i = 0, l = xs.length; i < l; i++) {
+    if (xs[i] === x) { return i; }
+  }
+  return -1;
+}
+}).call(this,require('_process'),typeof commonjsGlobal !== "undefined" ? commonjsGlobal : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
+},{"./_stream_duplex":16,"./internal/streams/BufferList":21,"./internal/streams/destroy":22,"./internal/streams/stream":23,"_process":11,"core-util-is":24,"events":8,"inherits":9,"isarray":25,"process-nextick-args":26,"safe-buffer":27,"string_decoder/":34,"util":4}],19:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// a transform stream is a readable/writable stream where you do
+// something with the data.  Sometimes it's called a "filter",
+// but that's not a great name for it, since that implies a thing where
+// some bits pass through, and others are simply ignored.  (That would
+// be a valid example of a transform, of course.)
+//
+// While the output is causally related to the input, it's not a
+// necessarily symmetric or synchronous transformation.  For example,
+// a zlib stream might take multiple plain-text writes(), and then
+// emit a single compressed chunk some time in the future.
+//
+// Here's how this works:
+//
+// The Transform stream has all the aspects of the readable and writable
+// stream classes.  When you write(chunk), that calls _write(chunk,cb)
+// internally, and returns false if there's a lot of pending writes
+// buffered up.  When you call read(), that calls _read(n) until
+// there's enough pending readable data buffered up.
+//
+// In a transform stream, the written data is placed in a buffer.  When
+// _read(n) is called, it transforms the queued up data, calling the
+// buffered _write cb's as it consumes chunks.  If consuming a single
+// written chunk would result in multiple output chunks, then the first
+// outputted bit calls the readcb, and subsequent chunks just go into
+// the read buffer, and will cause it to emit 'readable' if necessary.
+//
+// This way, back-pressure is actually determined by the reading side,
+// since _read has to be called to start processing a new chunk.  However,
+// a pathological inflate type of transform can cause excessive buffering
+// here.  For example, imagine a stream where every byte of input is
+// interpreted as an integer from 0-255, and then results in that many
+// bytes of output.  Writing the 4 bytes {ff,ff,ff,ff} would result in
+// 1kb of data being output.  In this case, you could write a very small
+// amount of input, and end up with a very large amount of output.  In
+// such a pathological inflating mechanism, there'd be no way to tell
+// the system to stop doing the transform.  A single 4MB write could
+// cause the system to run out of memory.
+//
+// However, even in such a pathological case, only a single written chunk
+// would be consumed, and then the rest would wait (un-transformed) until
+// the results of the previous transformed chunk were consumed.
+
+module.exports = Transform;
+
+var Duplex = require('./_stream_duplex');
+
+/*<replacement>*/
+var util = require('core-util-is');
+util.inherits = require('inherits');
+/*</replacement>*/
+
+util.inherits(Transform, Duplex);
+
+function TransformState(stream) {
+  this.afterTransform = function (er, data) {
+    return afterTransform(stream, er, data);
+  };
+
+  this.needTransform = false;
+  this.transforming = false;
+  this.writecb = null;
+  this.writechunk = null;
+  this.writeencoding = null;
+}
+
+function afterTransform(stream, er, data) {
+  var ts = stream._transformState;
+  ts.transforming = false;
+
+  var cb = ts.writecb;
+
+  if (!cb) {
+    return stream.emit('error', new Error('write callback called multiple times'));
+  }
+
+  ts.writechunk = null;
+  ts.writecb = null;
+
+  if (data !== null && data !== undefined) { stream.push(data); }
+
+  cb(er);
+
+  var rs = stream._readableState;
+  rs.reading = false;
+  if (rs.needReadable || rs.length < rs.highWaterMark) {
+    stream._read(rs.highWaterMark);
+  }
+}
+
+function Transform(options) {
+  if (!(this instanceof Transform)) { return new Transform(options); }
+
+  Duplex.call(this, options);
+
+  this._transformState = new TransformState(this);
+
+  var stream = this;
+
+  // start out asking for a readable event once data is transformed.
+  this._readableState.needReadable = true;
+
+  // we have implemented the _read method, and done the other things
+  // that Readable wants before the first _read call, so unset the
+  // sync guard flag.
+  this._readableState.sync = false;
+
+  if (options) {
+    if (typeof options.transform === 'function') { this._transform = options.transform; }
+
+    if (typeof options.flush === 'function') { this._flush = options.flush; }
+  }
+
+  // When the writable side finishes, then flush out anything remaining.
+  this.once('prefinish', function () {
+    if (typeof this._flush === 'function') { this._flush(function (er, data) {
+      done(stream, er, data);
+    }); }else { done(stream); }
+  });
+}
+
+Transform.prototype.push = function (chunk, encoding) {
+  this._transformState.needTransform = false;
+  return Duplex.prototype.push.call(this, chunk, encoding);
+};
+
+// This is the part where you do stuff!
+// override this function in implementation classes.
+// 'chunk' is an input chunk.
+//
+// Call `push(newChunk)` to pass along transformed output
+// to the readable side.  You may call 'push' zero or more times.
+//
+// Call `cb(err)` when you are done with this chunk.  If you pass
+// an error, then that'll put the hurt on the whole operation.  If you
+// never call cb(), then you'll never get another chunk.
+Transform.prototype._transform = function (chunk, encoding, cb) {
+  throw new Error('_transform() is not implemented');
+};
+
+Transform.prototype._write = function (chunk, encoding, cb) {
+  var ts = this._transformState;
+  ts.writecb = cb;
+  ts.writechunk = chunk;
+  ts.writeencoding = encoding;
+  if (!ts.transforming) {
+    var rs = this._readableState;
+    if (ts.needTransform || rs.needReadable || rs.length < rs.highWaterMark) { this._read(rs.highWaterMark); }
+  }
+};
+
+// Doesn't matter what the args are here.
+// _transform does all the work.
+// That we got here means that the readable side wants more data.
+Transform.prototype._read = function (n) {
+  var ts = this._transformState;
+
+  if (ts.writechunk !== null && ts.writecb && !ts.transforming) {
+    ts.transforming = true;
+    this._transform(ts.writechunk, ts.writeencoding, ts.afterTransform);
+  } else {
+    // mark that we need a transform, so that any data that comes in
+    // will get processed, now that we've asked for it.
+    ts.needTransform = true;
+  }
+};
+
+Transform.prototype._destroy = function (err, cb) {
+  var _this = this;
+
+  Duplex.prototype._destroy.call(this, err, function (err2) {
+    cb(err2);
+    _this.emit('close');
+  });
+};
+
+function done(stream, er, data) {
+  if (er) { return stream.emit('error', er); }
+
+  if (data !== null && data !== undefined) { stream.push(data); }
+
+  // if there's nothing in the write buffer, then that means
+  // that nothing more will ever be provided
+  var ws = stream._writableState;
+  var ts = stream._transformState;
+
+  if (ws.length) { throw new Error('Calling transform done when ws.length != 0'); }
+
+  if (ts.transforming) { throw new Error('Calling transform done when still transforming'); }
+
+  return stream.push(null);
+}
+},{"./_stream_duplex":16,"core-util-is":24,"inherits":9}],20:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// A bit simpler than readable streams.
+// Implement an async ._write(chunk, encoding, cb), and it'll handle all
+// the drain event emission and buffering.
+
+var processNextTick = require('process-nextick-args');
+/*</replacement>*/
+
+module.exports = Writable;
+
+/* <replacement> */
+function CorkedRequest(state) {
+  var _this = this;
+
+  this.next = null;
+  this.entry = null;
+  this.finish = function () {
+    onCorkedFinish(_this, state);
+  };
+}
+/* </replacement> */
+
+/*<replacement>*/
+var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : processNextTick;
+/*</replacement>*/
+
+/*<replacement>*/
+var Duplex;
+/*</replacement>*/
+
+Writable.WritableState = WritableState;
+
+/*<replacement>*/
+var util = require('core-util-is');
+util.inherits = require('inherits');
+/*</replacement>*/
+
+/*<replacement>*/
+var internalUtil = {
+  deprecate: require('util-deprecate')
+};
+/*</replacement>*/
+
+/*<replacement>*/
+var Stream = require('./internal/streams/stream');
+/*</replacement>*/
+
+/*<replacement>*/
+var Buffer = require('safe-buffer').Buffer;
+var OurUint8Array = global.Uint8Array || function () {};
+function _uint8ArrayToBuffer(chunk) {
+  return Buffer.from(chunk);
+}
+function _isUint8Array(obj) {
+  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
+}
+/*</replacement>*/
+
+var destroyImpl = require('./internal/streams/destroy');
+
+util.inherits(Writable, Stream);
+
+function nop() {}
+
+function WritableState(options, stream) {
+  Duplex = Duplex || require('./_stream_duplex');
+
+  options = options || {};
+
+  // object stream flag to indicate whether or not this stream
+  // contains buffers or objects.
+  this.objectMode = !!options.objectMode;
+
+  if (stream instanceof Duplex) { this.objectMode = this.objectMode || !!options.writableObjectMode; }
+
+  // the point at which write() starts returning false
+  // Note: 0 is a valid value, means that we always return false if
+  // the entire buffer is not flushed immediately on write()
+  var hwm = options.highWaterMark;
+  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
+  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
+
+  // cast to ints.
+  this.highWaterMark = Math.floor(this.highWaterMark);
+
+  // if _final has been called
+  this.finalCalled = false;
+
+  // drain event flag.
+  this.needDrain = false;
+  // at the start of calling end()
+  this.ending = false;
+  // when end() has been called, and returned
+  this.ended = false;
+  // when 'finish' is emitted
+  this.finished = false;
+
+  // has it been destroyed
+  this.destroyed = false;
+
+  // should we decode strings into buffers before passing to _write?
+  // this is here so that some node-core streams can optimize string
+  // handling at a lower level.
+  var noDecode = options.decodeStrings === false;
+  this.decodeStrings = !noDecode;
+
+  // Crypto is kind of old and crusty.  Historically, its default string
+  // encoding is 'binary' so we have to make this configurable.
+  // Everything else in the universe uses 'utf8', though.
+  this.defaultEncoding = options.defaultEncoding || 'utf8';
+
+  // not an actual buffer we keep track of, but a measurement
+  // of how much we're waiting to get pushed to some underlying
+  // socket or file.
+  this.length = 0;
+
+  // a flag to see when we're in the middle of a write.
+  this.writing = false;
+
+  // when true all writes will be buffered until .uncork() call
+  this.corked = 0;
+
+  // a flag to be able to tell if the onwrite cb is called immediately,
+  // or on a later tick.  We set this to true at first, because any
+  // actions that shouldn't happen until "later" should generally also
+  // not happen before the first write call.
+  this.sync = true;
+
+  // a flag to know if we're processing previously buffered items, which
+  // may call the _write() callback in the same tick, so that we don't
+  // end up in an overlapped onwrite situation.
+  this.bufferProcessing = false;
+
+  // the callback that's passed to _write(chunk,cb)
+  this.onwrite = function (er) {
+    onwrite(stream, er);
+  };
+
+  // the callback that the user supplies to write(chunk,encoding,cb)
+  this.writecb = null;
+
+  // the amount that is being written when _write is called.
+  this.writelen = 0;
+
+  this.bufferedRequest = null;
+  this.lastBufferedRequest = null;
+
+  // number of pending user-supplied write callbacks
+  // this must be 0 before 'finish' can be emitted
+  this.pendingcb = 0;
+
+  // emit prefinish if the only thing we're waiting for is _write cbs
+  // This is relevant for synchronous Transform streams
+  this.prefinished = false;
+
+  // True if the error was already emitted and should not be thrown again
+  this.errorEmitted = false;
+
+  // count buffered requests
+  this.bufferedRequestCount = 0;
+
+  // allocate the first CorkedRequest, there is always
+  // one allocated and free to use, and we maintain at most two
+  this.corkedRequestsFree = new CorkedRequest(this);
+}
+
+WritableState.prototype.getBuffer = function getBuffer() {
+  var current = this.bufferedRequest;
+  var out = [];
+  while (current) {
+    out.push(current);
+    current = current.next;
+  }
+  return out;
 };
 
 (function () {
-  Object.keys(Flickr.methods).forEach(function(method) {
-    var level = method.split(".").slice(1);
-    var e = Flickr.prototype, key;
-    while(level.length > 1) {
-      key = level.splice(0,1)[0];
-      if(!e[key]) { e[key] = {}; }
-      e = e[key];
-    }
-    e[level] = Utils.generateAPIFunction(Flickr.methods[method]);
-  });
-}());
-
- Flickr.prototype.bindOptions = function (flickrOptions) {
-  this.flickrOptions = flickrOptions;
-  (function bindOptions(obj, props) {
-    Object.keys(props).forEach(function(key) {
-      if (key === "flickrOptions") { return; }
-      if (typeof obj[key] === "object") {
-        bindOptions(obj[key], props[key]);
-        obj[key].flickrOptions = flickrOptions;
-      }
+  try {
+    Object.defineProperty(WritableState.prototype, 'buffer', {
+      get: internalUtil.deprecate(function () {
+        return this.getBuffer();
+      }, '_writableState.buffer is deprecated. Use _writableState.getBuffer ' + 'instead.', 'DEP0003')
     });
-  }(this, Flickr.prototype));
-};
+  } catch (_) {}
+})();
 
- window.Flickr = Flickr;
-}());
+// Test _writableState for inheritance to account for Duplex streams,
+// whose prototype chain only points to Readable.
+var realHasInstance;
+if (typeof Symbol === 'function' && Symbol.hasInstance && typeof Function.prototype[Symbol.hasInstance] === 'function') {
+  realHasInstance = Function.prototype[Symbol.hasInstance];
+  Object.defineProperty(Writable, Symbol.hasInstance, {
+    value: function (object) {
+      if (realHasInstance.call(this, object)) { return true; }
 
-/**
- * Since the flickrapi package is neither a module (it sets a global)
- * nor does it export promisified functions, we have our own little
- * wrapper here
- */
-var Flickr = window.Flickr;
-delete window.Flickr;
+      return object && object._writableState instanceof WritableState;
+    }
+  });
+} else {
+  realHasInstance = function (object) {
+    return object instanceof this;
+  };
+}
 
-var ApiKey = 'bbd60ce148c0a1dedcaaffd228a03264';
+function Writable(options) {
+  Duplex = Duplex || require('./_stream_duplex');
 
-var FlickrP = (function (Flickr) {
-  function FlickrP() {
-    var args = [], len = arguments.length;
-    while ( len-- ) args[ len ] = arguments[ len ];
+  // Writable ctor is applied to Duplexes, too.
+  // `realHasInstance` is necessary because using plain `instanceof`
+  // would return false, as no `_writableState` property is attached.
 
-    Flickr.apply(this, args);
+  // Trying to use the custom `instanceof` for Writable here will also break the
+  // Node.js LazyTransform implementation, which has a non-trivial getter for
+  // `_writableState` that would lead to infinite recursion.
+  if (!realHasInstance.call(Writable, this) && !(this instanceof Duplex)) {
+    return new Writable(options);
   }
 
-  if ( Flickr ) FlickrP.__proto__ = Flickr;
-  FlickrP.prototype = Object.create( Flickr && Flickr.prototype );
-  FlickrP.prototype.constructor = FlickrP;
+  this._writableState = new WritableState(options, this);
 
-  return FlickrP;
-}(Flickr));
+  // legacy.
+  this.writable = true;
 
-function recursivePromisify(obj) {
-  var res = {};
-  var loop = function ( prop ) {
-    if (!obj.hasOwnProperty(prop)) {
+  if (options) {
+    if (typeof options.write === 'function') { this._write = options.write; }
+
+    if (typeof options.writev === 'function') { this._writev = options.writev; }
+
+    if (typeof options.destroy === 'function') { this._destroy = options.destroy; }
+
+    if (typeof options.final === 'function') { this._final = options.final; }
+  }
+
+  Stream.call(this);
+}
+
+// Otherwise people can pipe Writable streams, which is just wrong.
+Writable.prototype.pipe = function () {
+  this.emit('error', new Error('Cannot pipe, not readable'));
+};
+
+function writeAfterEnd(stream, cb) {
+  var er = new Error('write after end');
+  // TODO: defer error events consistently everywhere, not just the cb
+  stream.emit('error', er);
+  processNextTick(cb, er);
+}
+
+// Checks that a user-supplied chunk is valid, especially for the particular
+// mode the stream is in. Currently this means that `null` is never accepted
+// and undefined/non-string values are only allowed in object mode.
+function validChunk(stream, state, chunk, cb) {
+  var valid = true;
+  var er = false;
+
+  if (chunk === null) {
+    er = new TypeError('May not write null values to stream');
+  } else if (typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
+    er = new TypeError('Invalid non-string/buffer chunk');
+  }
+  if (er) {
+    stream.emit('error', er);
+    processNextTick(cb, er);
+    valid = false;
+  }
+  return valid;
+}
+
+Writable.prototype.write = function (chunk, encoding, cb) {
+  var state = this._writableState;
+  var ret = false;
+  var isBuf = _isUint8Array(chunk) && !state.objectMode;
+
+  if (isBuf && !Buffer.isBuffer(chunk)) {
+    chunk = _uint8ArrayToBuffer(chunk);
+  }
+
+  if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (isBuf) { encoding = 'buffer'; }else if (!encoding) { encoding = state.defaultEncoding; }
+
+  if (typeof cb !== 'function') { cb = nop; }
+
+  if (state.ended) { writeAfterEnd(this, cb); }else if (isBuf || validChunk(this, state, chunk, cb)) {
+    state.pendingcb++;
+    ret = writeOrBuffer(this, state, isBuf, chunk, encoding, cb);
+  }
+
+  return ret;
+};
+
+Writable.prototype.cork = function () {
+  var state = this._writableState;
+
+  state.corked++;
+};
+
+Writable.prototype.uncork = function () {
+  var state = this._writableState;
+
+  if (state.corked) {
+    state.corked--;
+
+    if (!state.writing && !state.corked && !state.finished && !state.bufferProcessing && state.bufferedRequest) { clearBuffer(this, state); }
+  }
+};
+
+Writable.prototype.setDefaultEncoding = function setDefaultEncoding(encoding) {
+  // node::ParseEncoding() requires lower case.
+  if (typeof encoding === 'string') { encoding = encoding.toLowerCase(); }
+  if (!(['hex', 'utf8', 'utf-8', 'ascii', 'binary', 'base64', 'ucs2', 'ucs-2', 'utf16le', 'utf-16le', 'raw'].indexOf((encoding + '').toLowerCase()) > -1)) { throw new TypeError('Unknown encoding: ' + encoding); }
+  this._writableState.defaultEncoding = encoding;
+  return this;
+};
+
+function decodeChunk(state, chunk, encoding) {
+  if (!state.objectMode && state.decodeStrings !== false && typeof chunk === 'string') {
+    chunk = Buffer.from(chunk, encoding);
+  }
+  return chunk;
+}
+
+// if we're already writing something, then just put this
+// in the queue, and wait our turn.  Otherwise, call _write
+// If we return false, then we need a drain event, so set that flag.
+function writeOrBuffer(stream, state, isBuf, chunk, encoding, cb) {
+  if (!isBuf) {
+    var newChunk = decodeChunk(state, chunk, encoding);
+    if (chunk !== newChunk) {
+      isBuf = true;
+      encoding = 'buffer';
+      chunk = newChunk;
+    }
+  }
+  var len = state.objectMode ? 1 : chunk.length;
+
+  state.length += len;
+
+  var ret = state.length < state.highWaterMark;
+  // we must ensure that previous needDrain will not be reset to false.
+  if (!ret) { state.needDrain = true; }
+
+  if (state.writing || state.corked) {
+    var last = state.lastBufferedRequest;
+    state.lastBufferedRequest = {
+      chunk: chunk,
+      encoding: encoding,
+      isBuf: isBuf,
+      callback: cb,
+      next: null
+    };
+    if (last) {
+      last.next = state.lastBufferedRequest;
+    } else {
+      state.bufferedRequest = state.lastBufferedRequest;
+    }
+    state.bufferedRequestCount += 1;
+  } else {
+    doWrite(stream, state, false, len, chunk, encoding, cb);
+  }
+
+  return ret;
+}
+
+function doWrite(stream, state, writev, len, chunk, encoding, cb) {
+  state.writelen = len;
+  state.writecb = cb;
+  state.writing = true;
+  state.sync = true;
+  if (writev) { stream._writev(chunk, state.onwrite); }else { stream._write(chunk, encoding, state.onwrite); }
+  state.sync = false;
+}
+
+function onwriteError(stream, state, sync, er, cb) {
+  --state.pendingcb;
+
+  if (sync) {
+    // defer the callback if we are being called synchronously
+    // to avoid piling up things on the stack
+    processNextTick(cb, er);
+    // this can emit finish, and it will always happen
+    // after error
+    processNextTick(finishMaybe, stream, state);
+    stream._writableState.errorEmitted = true;
+    stream.emit('error', er);
+  } else {
+    // the caller expect this to happen before if
+    // it is async
+    cb(er);
+    stream._writableState.errorEmitted = true;
+    stream.emit('error', er);
+    // this can emit finish, but finish must
+    // always follow error
+    finishMaybe(stream, state);
+  }
+}
+
+function onwriteStateUpdate(state) {
+  state.writing = false;
+  state.writecb = null;
+  state.length -= state.writelen;
+  state.writelen = 0;
+}
+
+function onwrite(stream, er) {
+  var state = stream._writableState;
+  var sync = state.sync;
+  var cb = state.writecb;
+
+  onwriteStateUpdate(state);
+
+  if (er) { onwriteError(stream, state, sync, er, cb); }else {
+    // Check if we're actually ready to finish, but don't emit yet
+    var finished = needFinish(state);
+
+    if (!finished && !state.corked && !state.bufferProcessing && state.bufferedRequest) {
+      clearBuffer(stream, state);
+    }
+
+    if (sync) {
+      /*<replacement>*/
+      asyncWrite(afterWrite, stream, state, finished, cb);
+      /*</replacement>*/
+    } else {
+      afterWrite(stream, state, finished, cb);
+    }
+  }
+}
+
+function afterWrite(stream, state, finished, cb) {
+  if (!finished) { onwriteDrain(stream, state); }
+  state.pendingcb--;
+  cb();
+  finishMaybe(stream, state);
+}
+
+// Must force callback to be called on nextTick, so that we don't
+// emit 'drain' before the write() consumer gets the 'false' return
+// value, and has a chance to attach a 'drain' listener.
+function onwriteDrain(stream, state) {
+  if (state.length === 0 && state.needDrain) {
+    state.needDrain = false;
+    stream.emit('drain');
+  }
+}
+
+// if there's something in the buffer waiting, then process it
+function clearBuffer(stream, state) {
+  state.bufferProcessing = true;
+  var entry = state.bufferedRequest;
+
+  if (stream._writev && entry && entry.next) {
+    // Fast case, write everything using _writev()
+    var l = state.bufferedRequestCount;
+    var buffer = new Array(l);
+    var holder = state.corkedRequestsFree;
+    holder.entry = entry;
+
+    var count = 0;
+    var allBuffers = true;
+    while (entry) {
+      buffer[count] = entry;
+      if (!entry.isBuf) { allBuffers = false; }
+      entry = entry.next;
+      count += 1;
+    }
+    buffer.allBuffers = allBuffers;
+
+    doWrite(stream, state, true, state.length, buffer, '', holder.finish);
+
+    // doWrite is almost always async, defer these to save a bit of time
+    // as the hot path ends with doWrite
+    state.pendingcb++;
+    state.lastBufferedRequest = null;
+    if (holder.next) {
+      state.corkedRequestsFree = holder.next;
+      holder.next = null;
+    } else {
+      state.corkedRequestsFree = new CorkedRequest(state);
+    }
+  } else {
+    // Slow case, write chunks one-by-one
+    while (entry) {
+      var chunk = entry.chunk;
+      var encoding = entry.encoding;
+      var cb = entry.callback;
+      var len = state.objectMode ? 1 : chunk.length;
+
+      doWrite(stream, state, false, len, chunk, encoding, cb);
+      entry = entry.next;
+      // if we didn't call the onwrite immediately, then
+      // it means that we need to wait until it does.
+      // also, that means that the chunk and cb are currently
+      // being processed, so move the buffer counter past them.
+      if (state.writing) {
+        break;
+      }
+    }
+
+    if (entry === null) { state.lastBufferedRequest = null; }
+  }
+
+  state.bufferedRequestCount = 0;
+  state.bufferedRequest = entry;
+  state.bufferProcessing = false;
+}
+
+Writable.prototype._write = function (chunk, encoding, cb) {
+  cb(new Error('_write() is not implemented'));
+};
+
+Writable.prototype._writev = null;
+
+Writable.prototype.end = function (chunk, encoding, cb) {
+  var state = this._writableState;
+
+  if (typeof chunk === 'function') {
+    cb = chunk;
+    chunk = null;
+    encoding = null;
+  } else if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (chunk !== null && chunk !== undefined) { this.write(chunk, encoding); }
+
+  // .end() fully uncorks
+  if (state.corked) {
+    state.corked = 1;
+    this.uncork();
+  }
+
+  // ignore unnecessary end() calls.
+  if (!state.ending && !state.finished) { endWritable(this, state, cb); }
+};
+
+function needFinish(state) {
+  return state.ending && state.length === 0 && state.bufferedRequest === null && !state.finished && !state.writing;
+}
+function callFinal(stream, state) {
+  stream._final(function (err) {
+    state.pendingcb--;
+    if (err) {
+      stream.emit('error', err);
+    }
+    state.prefinished = true;
+    stream.emit('prefinish');
+    finishMaybe(stream, state);
+  });
+}
+function prefinish(stream, state) {
+  if (!state.prefinished && !state.finalCalled) {
+    if (typeof stream._final === 'function') {
+      state.pendingcb++;
+      state.finalCalled = true;
+      processNextTick(callFinal, stream, state);
+    } else {
+      state.prefinished = true;
+      stream.emit('prefinish');
+    }
+  }
+}
+
+function finishMaybe(stream, state) {
+  var need = needFinish(state);
+  if (need) {
+    prefinish(stream, state);
+    if (state.pendingcb === 0) {
+      state.finished = true;
+      stream.emit('finish');
+    }
+  }
+  return need;
+}
+
+function endWritable(stream, state, cb) {
+  state.ending = true;
+  finishMaybe(stream, state);
+  if (cb) {
+    if (state.finished) { processNextTick(cb); }else { stream.once('finish', cb); }
+  }
+  state.ended = true;
+  stream.writable = false;
+}
+
+function onCorkedFinish(corkReq, state, err) {
+  var entry = corkReq.entry;
+  corkReq.entry = null;
+  while (entry) {
+    var cb = entry.callback;
+    state.pendingcb--;
+    cb(err);
+    entry = entry.next;
+  }
+  if (state.corkedRequestsFree) {
+    state.corkedRequestsFree.next = corkReq;
+  } else {
+    state.corkedRequestsFree = corkReq;
+  }
+}
+
+Object.defineProperty(Writable.prototype, 'destroyed', {
+  get: function () {
+    if (this._writableState === undefined) {
+      return false;
+    }
+    return this._writableState.destroyed;
+  },
+  set: function (value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (!this._writableState) {
       return;
     }
-    if (typeof obj[prop] === 'function') {
-      res[prop] = function() {
-        var this$1 = this;
-        var args = [], len = arguments.length;
-        while ( len-- ) args[ len ] = arguments[ len ];
 
-        return new Promise(function (res, rej) {
-          (ref = obj[prop]).call.apply(ref, [ this$1 ].concat( args,[function (error, response) {
-            if (error) {
-              rej(error);
-            } else {
-              res(response);
-            }
-          }] ));
-          var ref;
-        });
-      };
-    } else if (typeof obj[prop] === 'object') {
-      res[prop] = recursivePromisify(obj[prop]);
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._writableState.destroyed = value;
+  }
+});
+
+Writable.prototype.destroy = destroyImpl.destroy;
+Writable.prototype._undestroy = destroyImpl.undestroy;
+Writable.prototype._destroy = function (err, cb) {
+  this.end();
+  cb(err);
+};
+}).call(this,require('_process'),typeof commonjsGlobal !== "undefined" ? commonjsGlobal : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
+},{"./_stream_duplex":16,"./internal/streams/destroy":22,"./internal/streams/stream":23,"_process":11,"core-util-is":24,"inherits":9,"process-nextick-args":26,"safe-buffer":27,"util-deprecate":28}],21:[function(require,module,exports){
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Buffer = require('safe-buffer').Buffer;
+/*</replacement>*/
+
+function copyBuffer(src, target, offset) {
+  src.copy(target, offset);
+}
+
+module.exports = function () {
+  function BufferList() {
+    _classCallCheck(this, BufferList);
+
+    this.head = null;
+    this.tail = null;
+    this.length = 0;
+  }
+
+  BufferList.prototype.push = function push(v) {
+    var entry = { data: v, next: null };
+    if (this.length > 0) { this.tail.next = entry; }else { this.head = entry; }
+    this.tail = entry;
+    ++this.length;
+  };
+
+  BufferList.prototype.unshift = function unshift(v) {
+    var entry = { data: v, next: this.head };
+    if (this.length === 0) { this.tail = entry; }
+    this.head = entry;
+    ++this.length;
+  };
+
+  BufferList.prototype.shift = function shift() {
+    if (this.length === 0) { return; }
+    var ret = this.head.data;
+    if (this.length === 1) { this.head = this.tail = null; }else { this.head = this.head.next; }
+    --this.length;
+    return ret;
+  };
+
+  BufferList.prototype.clear = function clear() {
+    this.head = this.tail = null;
+    this.length = 0;
+  };
+
+  BufferList.prototype.join = function join(s) {
+    if (this.length === 0) { return ''; }
+    var p = this.head;
+    var ret = '' + p.data;
+    while (p = p.next) {
+      ret += s + p.data;
+    }return ret;
+  };
+
+  BufferList.prototype.concat = function concat(n) {
+    if (this.length === 0) { return Buffer.alloc(0); }
+    if (this.length === 1) { return this.head.data; }
+    var ret = Buffer.allocUnsafe(n >>> 0);
+    var p = this.head;
+    var i = 0;
+    while (p) {
+      copyBuffer(p.data, ret, i);
+      i += p.data.length;
+      p = p.next;
+    }
+    return ret;
+  };
+
+  return BufferList;
+}();
+},{"safe-buffer":27}],22:[function(require,module,exports){
+var processNextTick = require('process-nextick-args');
+/*</replacement>*/
+
+// undocumented cb() API, needed for core, not for public API
+function destroy(err, cb) {
+  var _this = this;
+
+  var readableDestroyed = this._readableState && this._readableState.destroyed;
+  var writableDestroyed = this._writableState && this._writableState.destroyed;
+
+  if (readableDestroyed || writableDestroyed) {
+    if (cb) {
+      cb(err);
+    } else if (err && (!this._writableState || !this._writableState.errorEmitted)) {
+      processNextTick(emitErrorNT, this, err);
+    }
+    return;
+  }
+
+  // we set destroyed to true before firing error callbacks in order
+  // to make it re-entrance safe in case destroy() is called within callbacks
+
+  if (this._readableState) {
+    this._readableState.destroyed = true;
+  }
+
+  // if this is a duplex stream mark the writable part as destroyed as well
+  if (this._writableState) {
+    this._writableState.destroyed = true;
+  }
+
+  this._destroy(err || null, function (err) {
+    if (!cb && err) {
+      processNextTick(emitErrorNT, _this, err);
+      if (_this._writableState) {
+        _this._writableState.errorEmitted = true;
+      }
+    } else if (cb) {
+      cb(err);
+    }
+  });
+}
+
+function undestroy() {
+  if (this._readableState) {
+    this._readableState.destroyed = false;
+    this._readableState.reading = false;
+    this._readableState.ended = false;
+    this._readableState.endEmitted = false;
+  }
+
+  if (this._writableState) {
+    this._writableState.destroyed = false;
+    this._writableState.ended = false;
+    this._writableState.ending = false;
+    this._writableState.finished = false;
+    this._writableState.errorEmitted = false;
+  }
+}
+
+function emitErrorNT(self, err) {
+  self.emit('error', err);
+}
+
+module.exports = {
+  destroy: destroy,
+  undestroy: undestroy
+};
+},{"process-nextick-args":26}],23:[function(require,module,exports){
+module.exports = require('events').EventEmitter;
+
+},{"events":8}],24:[function(require,module,exports){
+(function (Buffer){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+
+function isArray(arg) {
+  if (Array.isArray) {
+    return Array.isArray(arg);
+  }
+  return objectToString(arg) === '[object Array]';
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = Buffer.isBuffer;
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+}).call(this,{"isBuffer":require("../../../../insert-module-globals/node_modules/is-buffer/index.js")});
+},{"../../../../insert-module-globals/node_modules/is-buffer/index.js":10}],25:[function(require,module,exports){
+var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
+
+},{}],26:[function(require,module,exports){
+(function (process){
+if (!process.version ||
+    process.version.indexOf('v0.') === 0 ||
+    process.version.indexOf('v1.') === 0 && process.version.indexOf('v1.8.') !== 0) {
+  module.exports = nextTick;
+} else {
+  module.exports = process.nextTick;
+}
+
+function nextTick(fn, arg1, arg2, arg3) {
+  var arguments$1 = arguments;
+
+  if (typeof fn !== 'function') {
+    throw new TypeError('"callback" argument must be a function');
+  }
+  var len = arguments.length;
+  var args, i;
+  switch (len) {
+  case 0:
+  case 1:
+    return process.nextTick(fn);
+  case 2:
+    return process.nextTick(function afterTickOne() {
+      fn.call(null, arg1);
+    });
+  case 3:
+    return process.nextTick(function afterTickTwo() {
+      fn.call(null, arg1, arg2);
+    });
+  case 4:
+    return process.nextTick(function afterTickThree() {
+      fn.call(null, arg1, arg2, arg3);
+    });
+  default:
+    args = new Array(len - 1);
+    i = 0;
+    while (i < args.length) {
+      args[i++] = arguments$1[i];
+    }
+    return process.nextTick(function afterTick() {
+      fn.apply(null, args);
+    });
+  }
+}
+
+}).call(this,require('_process'));
+},{"_process":11}],27:[function(require,module,exports){
+/* eslint-disable node/no-deprecated-api */
+var buffer = require('buffer');
+var Buffer = buffer.Buffer;
+
+// alternative to using Object.keys for old browsers
+function copyProps (src, dst) {
+  for (var key in src) {
+    dst[key] = src[key];
+  }
+}
+if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
+  module.exports = buffer;
+} else {
+  // Copy properties from require('buffer')
+  copyProps(buffer, exports);
+  exports.Buffer = SafeBuffer;
+}
+
+function SafeBuffer (arg, encodingOrOffset, length) {
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+// Copy static methods from Buffer
+copyProps(Buffer, SafeBuffer);
+
+SafeBuffer.from = function (arg, encodingOrOffset, length) {
+  if (typeof arg === 'number') {
+    throw new TypeError('Argument must not be a number')
+  }
+  return Buffer(arg, encodingOrOffset, length)
+};
+
+SafeBuffer.alloc = function (size, fill, encoding) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  var buf = Buffer(size);
+  if (fill !== undefined) {
+    if (typeof encoding === 'string') {
+      buf.fill(fill, encoding);
     } else {
-      res[prop] = obj[prop];
+      buf.fill(fill);
+    }
+  } else {
+    buf.fill(0);
+  }
+  return buf
+};
+
+SafeBuffer.allocUnsafe = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return Buffer(size)
+};
+
+SafeBuffer.allocUnsafeSlow = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return buffer.SlowBuffer(size)
+};
+
+},{"buffer":5}],28:[function(require,module,exports){
+(function (global){
+
+/**
+ * Module exports.
+ */
+
+module.exports = deprecate;
+
+/**
+ * Mark that a method should not be used.
+ * Returns a modified function which warns once by default.
+ *
+ * If `localStorage.noDeprecation = true` is set, then it is a no-op.
+ *
+ * If `localStorage.throwDeprecation = true` is set, then deprecated functions
+ * will throw an Error when invoked.
+ *
+ * If `localStorage.traceDeprecation = true` is set, then deprecated functions
+ * will invoke `console.trace()` instead of `console.error()`.
+ *
+ * @param {Function} fn - the function to deprecate
+ * @param {String} msg - the string to print to the console when `fn` is invoked
+ * @returns {Function} a new "deprecated" version of `fn`
+ * @api public
+ */
+
+function deprecate (fn, msg) {
+  if (config('noDeprecation')) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (config('throwDeprecation')) {
+        throw new Error(msg);
+      } else if (config('traceDeprecation')) {
+        console.trace(msg);
+      } else {
+        console.warn(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+}
+
+/**
+ * Checks `localStorage` for boolean values for the given `name`.
+ *
+ * @param {String} name
+ * @returns {Boolean}
+ * @api private
+ */
+
+function config (name) {
+  // accessing global.localStorage can trigger a DOMException in sandboxed iframes
+  try {
+    if (!global.localStorage) { return false; }
+  } catch (_) {
+    return false;
+  }
+  var val = global.localStorage[name];
+  if (null == val) { return false; }
+  return String(val).toLowerCase() === 'true';
+}
+
+}).call(this,typeof commonjsGlobal !== "undefined" ? commonjsGlobal : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
+},{}],29:[function(require,module,exports){
+module.exports = require('./readable').PassThrough;
+
+},{"./readable":30}],30:[function(require,module,exports){
+exports = module.exports = require('./lib/_stream_readable.js');
+exports.Stream = exports;
+exports.Readable = exports;
+exports.Writable = require('./lib/_stream_writable.js');
+exports.Duplex = require('./lib/_stream_duplex.js');
+exports.Transform = require('./lib/_stream_transform.js');
+exports.PassThrough = require('./lib/_stream_passthrough.js');
+
+},{"./lib/_stream_duplex.js":16,"./lib/_stream_passthrough.js":17,"./lib/_stream_readable.js":18,"./lib/_stream_transform.js":19,"./lib/_stream_writable.js":20}],31:[function(require,module,exports){
+module.exports = require('./readable').Transform;
+
+},{"./readable":30}],32:[function(require,module,exports){
+module.exports = require('./lib/_stream_writable.js');
+
+},{"./lib/_stream_writable.js":20}],33:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+module.exports = Stream;
+
+var EE = require('events').EventEmitter;
+var inherits = require('inherits');
+
+inherits(Stream, EE);
+Stream.Readable = require('readable-stream/readable.js');
+Stream.Writable = require('readable-stream/writable.js');
+Stream.Duplex = require('readable-stream/duplex.js');
+Stream.Transform = require('readable-stream/transform.js');
+Stream.PassThrough = require('readable-stream/passthrough.js');
+
+// Backwards-compat with node 0.4.x
+Stream.Stream = Stream;
+
+
+
+// old-style streams.  Note that the pipe method (the only relevant
+// part of this class) is overridden in the Readable class.
+
+function Stream() {
+  EE.call(this);
+}
+
+Stream.prototype.pipe = function(dest, options) {
+  var source = this;
+
+  function ondata(chunk) {
+    if (dest.writable) {
+      if (false === dest.write(chunk) && source.pause) {
+        source.pause();
+      }
+    }
+  }
+
+  source.on('data', ondata);
+
+  function ondrain() {
+    if (source.readable && source.resume) {
+      source.resume();
+    }
+  }
+
+  dest.on('drain', ondrain);
+
+  // If the 'end' option is not supplied, dest.end() will be called when
+  // source gets the 'end' or 'close' events.  Only dest.end() once.
+  if (!dest._isStdio && (!options || options.end !== false)) {
+    source.on('end', onend);
+    source.on('close', onclose);
+  }
+
+  var didOnEnd = false;
+  function onend() {
+    if (didOnEnd) { return; }
+    didOnEnd = true;
+
+    dest.end();
+  }
+
+
+  function onclose() {
+    if (didOnEnd) { return; }
+    didOnEnd = true;
+
+    if (typeof dest.destroy === 'function') { dest.destroy(); }
+  }
+
+  // don't leave dangling pipes when there are errors.
+  function onerror(er) {
+    cleanup();
+    if (EE.listenerCount(this, 'error') === 0) {
+      throw er; // Unhandled stream error in pipe.
+    }
+  }
+
+  source.on('error', onerror);
+  dest.on('error', onerror);
+
+  // remove all the event listeners that were added.
+  function cleanup() {
+    source.removeListener('data', ondata);
+    dest.removeListener('drain', ondrain);
+
+    source.removeListener('end', onend);
+    source.removeListener('close', onclose);
+
+    source.removeListener('error', onerror);
+    dest.removeListener('error', onerror);
+
+    source.removeListener('end', cleanup);
+    source.removeListener('close', cleanup);
+
+    dest.removeListener('close', cleanup);
+  }
+
+  source.on('end', cleanup);
+  source.on('close', cleanup);
+
+  dest.on('close', cleanup);
+
+  dest.emit('pipe', source);
+
+  // Allow for unix-like usage: A.pipe(B).pipe(C)
+  return dest;
+};
+
+},{"events":8,"inherits":9,"readable-stream/duplex.js":15,"readable-stream/passthrough.js":29,"readable-stream/readable.js":30,"readable-stream/transform.js":31,"readable-stream/writable.js":32}],34:[function(require,module,exports){
+var Buffer = require('safe-buffer').Buffer;
+
+var isEncoding = Buffer.isEncoding || function (encoding) {
+  encoding = '' + encoding;
+  switch (encoding && encoding.toLowerCase()) {
+    case 'hex':case 'utf8':case 'utf-8':case 'ascii':case 'binary':case 'base64':case 'ucs2':case 'ucs-2':case 'utf16le':case 'utf-16le':case 'raw':
+      return true;
+    default:
+      return false;
+  }
+};
+
+function _normalizeEncoding(enc) {
+  if (!enc) { return 'utf8'; }
+  var retried;
+  while (true) {
+    switch (enc) {
+      case 'utf8':
+      case 'utf-8':
+        return 'utf8';
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return 'utf16le';
+      case 'latin1':
+      case 'binary':
+        return 'latin1';
+      case 'base64':
+      case 'ascii':
+      case 'hex':
+        return enc;
+      default:
+        if (retried) { return; } // undefined
+        enc = ('' + enc).toLowerCase();
+        retried = true;
+    }
+  }
+}
+
+// Do not cache `Buffer.isEncoding` when checking encoding names as some
+// modules monkey-patch it to support additional encodings
+function normalizeEncoding(enc) {
+  var nenc = _normalizeEncoding(enc);
+  if (typeof nenc !== 'string' && (Buffer.isEncoding === isEncoding || !isEncoding(enc))) { throw new Error('Unknown encoding: ' + enc); }
+  return nenc || enc;
+}
+
+// StringDecoder provides an interface for efficiently splitting a series of
+// buffers into a series of JS strings without breaking apart multi-byte
+// characters.
+exports.StringDecoder = StringDecoder;
+function StringDecoder(encoding) {
+  this.encoding = normalizeEncoding(encoding);
+  var nb;
+  switch (this.encoding) {
+    case 'utf16le':
+      this.text = utf16Text;
+      this.end = utf16End;
+      nb = 4;
+      break;
+    case 'utf8':
+      this.fillLast = utf8FillLast;
+      nb = 4;
+      break;
+    case 'base64':
+      this.text = base64Text;
+      this.end = base64End;
+      nb = 3;
+      break;
+    default:
+      this.write = simpleWrite;
+      this.end = simpleEnd;
+      return;
+  }
+  this.lastNeed = 0;
+  this.lastTotal = 0;
+  this.lastChar = Buffer.allocUnsafe(nb);
+}
+
+StringDecoder.prototype.write = function (buf) {
+  if (buf.length === 0) { return ''; }
+  var r;
+  var i;
+  if (this.lastNeed) {
+    r = this.fillLast(buf);
+    if (r === undefined) { return ''; }
+    i = this.lastNeed;
+    this.lastNeed = 0;
+  } else {
+    i = 0;
+  }
+  if (i < buf.length) { return r ? r + this.text(buf, i) : this.text(buf, i); }
+  return r || '';
+};
+
+StringDecoder.prototype.end = utf8End;
+
+// Returns only complete characters in a Buffer
+StringDecoder.prototype.text = utf8Text;
+
+// Attempts to complete a partial non-UTF-8 character using bytes from a Buffer
+StringDecoder.prototype.fillLast = function (buf) {
+  if (this.lastNeed <= buf.length) {
+    buf.copy(this.lastChar, this.lastTotal - this.lastNeed, 0, this.lastNeed);
+    return this.lastChar.toString(this.encoding, 0, this.lastTotal);
+  }
+  buf.copy(this.lastChar, this.lastTotal - this.lastNeed, 0, buf.length);
+  this.lastNeed -= buf.length;
+};
+
+// Checks the type of a UTF-8 byte, whether it's ASCII, a leading byte, or a
+// continuation byte.
+function utf8CheckByte(byte) {
+  if (byte <= 0x7F) { return 0; }else if (byte >> 5 === 0x06) { return 2; }else if (byte >> 4 === 0x0E) { return 3; }else if (byte >> 3 === 0x1E) { return 4; }
+  return -1;
+}
+
+// Checks at most 3 bytes at the end of a Buffer in order to detect an
+// incomplete multi-byte UTF-8 character. The total number of bytes (2, 3, or 4)
+// needed to complete the UTF-8 character (if applicable) are returned.
+function utf8CheckIncomplete(self, buf, i) {
+  var j = buf.length - 1;
+  if (j < i) { return 0; }
+  var nb = utf8CheckByte(buf[j]);
+  if (nb >= 0) {
+    if (nb > 0) { self.lastNeed = nb - 1; }
+    return nb;
+  }
+  if (--j < i) { return 0; }
+  nb = utf8CheckByte(buf[j]);
+  if (nb >= 0) {
+    if (nb > 0) { self.lastNeed = nb - 2; }
+    return nb;
+  }
+  if (--j < i) { return 0; }
+  nb = utf8CheckByte(buf[j]);
+  if (nb >= 0) {
+    if (nb > 0) {
+      if (nb === 2) { nb = 0; }else { self.lastNeed = nb - 3; }
+    }
+    return nb;
+  }
+  return 0;
+}
+
+// Validates as many continuation bytes for a multi-byte UTF-8 character as
+// needed or are available. If we see a non-continuation byte where we expect
+// one, we "replace" the validated continuation bytes we've seen so far with
+// UTF-8 replacement characters ('\ufffd'), to match v8's UTF-8 decoding
+// behavior. The continuation byte check is included three times in the case
+// where all of the continuation bytes for a character exist in the same buffer.
+// It is also done this way as a slight performance increase instead of using a
+// loop.
+function utf8CheckExtraBytes(self, buf, p) {
+  if ((buf[0] & 0xC0) !== 0x80) {
+    self.lastNeed = 0;
+    return '\ufffd'.repeat(p);
+  }
+  if (self.lastNeed > 1 && buf.length > 1) {
+    if ((buf[1] & 0xC0) !== 0x80) {
+      self.lastNeed = 1;
+      return '\ufffd'.repeat(p + 1);
+    }
+    if (self.lastNeed > 2 && buf.length > 2) {
+      if ((buf[2] & 0xC0) !== 0x80) {
+        self.lastNeed = 2;
+        return '\ufffd'.repeat(p + 2);
+      }
+    }
+  }
+}
+
+// Attempts to complete a multi-byte UTF-8 character using bytes from a Buffer.
+function utf8FillLast(buf) {
+  var p = this.lastTotal - this.lastNeed;
+  var r = utf8CheckExtraBytes(this, buf, p);
+  if (r !== undefined) { return r; }
+  if (this.lastNeed <= buf.length) {
+    buf.copy(this.lastChar, p, 0, this.lastNeed);
+    return this.lastChar.toString(this.encoding, 0, this.lastTotal);
+  }
+  buf.copy(this.lastChar, p, 0, buf.length);
+  this.lastNeed -= buf.length;
+}
+
+// Returns all complete UTF-8 characters in a Buffer. If the Buffer ended on a
+// partial character, the character's bytes are buffered until the required
+// number of bytes are available.
+function utf8Text(buf, i) {
+  var total = utf8CheckIncomplete(this, buf, i);
+  if (!this.lastNeed) { return buf.toString('utf8', i); }
+  this.lastTotal = total;
+  var end = buf.length - (total - this.lastNeed);
+  buf.copy(this.lastChar, 0, end);
+  return buf.toString('utf8', i, end);
+}
+
+// For UTF-8, a replacement character for each buffered byte of a (partial)
+// character needs to be added to the output.
+function utf8End(buf) {
+  var r = buf && buf.length ? this.write(buf) : '';
+  if (this.lastNeed) { return r + '\ufffd'.repeat(this.lastTotal - this.lastNeed); }
+  return r;
+}
+
+// UTF-16LE typically needs two bytes per character, but even if we have an even
+// number of bytes available, we need to check if we end on a leading/high
+// surrogate. In that case, we need to wait for the next two bytes in order to
+// decode the last character properly.
+function utf16Text(buf, i) {
+  if ((buf.length - i) % 2 === 0) {
+    var r = buf.toString('utf16le', i);
+    if (r) {
+      var c = r.charCodeAt(r.length - 1);
+      if (c >= 0xD800 && c <= 0xDBFF) {
+        this.lastNeed = 2;
+        this.lastTotal = 4;
+        this.lastChar[0] = buf[buf.length - 2];
+        this.lastChar[1] = buf[buf.length - 1];
+        return r.slice(0, -1);
+      }
+    }
+    return r;
+  }
+  this.lastNeed = 1;
+  this.lastTotal = 2;
+  this.lastChar[0] = buf[buf.length - 1];
+  return buf.toString('utf16le', i, buf.length - 1);
+}
+
+// For UTF-16LE we do not explicitly append special replacement characters if we
+// end on a partial character, we simply let v8 handle that.
+function utf16End(buf) {
+  var r = buf && buf.length ? this.write(buf) : '';
+  if (this.lastNeed) {
+    var end = this.lastTotal - this.lastNeed;
+    return r + this.lastChar.toString('utf16le', 0, end);
+  }
+  return r;
+}
+
+function base64Text(buf, i) {
+  var n = (buf.length - i) % 3;
+  if (n === 0) { return buf.toString('base64', i); }
+  this.lastNeed = 3 - n;
+  this.lastTotal = 3;
+  if (n === 1) {
+    this.lastChar[0] = buf[buf.length - 1];
+  } else {
+    this.lastChar[0] = buf[buf.length - 2];
+    this.lastChar[1] = buf[buf.length - 1];
+  }
+  return buf.toString('base64', i, buf.length - n);
+}
+
+function base64End(buf) {
+  var r = buf && buf.length ? this.write(buf) : '';
+  if (this.lastNeed) { return r + this.lastChar.toString('base64', 0, 3 - this.lastNeed); }
+  return r;
+}
+
+// Pass bytes on through for single-byte encodings (e.g. ascii, latin1, hex)
+function simpleWrite(buf) {
+  return buf.toString(this.encoding);
+}
+
+function simpleEnd(buf) {
+  return buf && buf.length ? this.write(buf) : '';
+}
+},{"safe-buffer":35}],35:[function(require,module,exports){
+arguments[4][27][0].apply(exports,arguments);
+},{"buffer":5,"dup":27}],36:[function(require,module,exports){
+var nextTick = require('process/browser.js').nextTick;
+var apply = Function.prototype.apply;
+var slice = Array.prototype.slice;
+var immediateIds = {};
+var nextImmediateId = 0;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) { timeout.close(); };
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(window, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        { item._onTimeout(); }
+    }, msecs);
+  }
+};
+
+// That's not how node.js implements it but the exposed api is the same.
+exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
+  var id = nextImmediateId++;
+  var args = arguments.length < 2 ? false : slice.call(arguments, 1);
+
+  immediateIds[id] = true;
+
+  nextTick(function onNextTick() {
+    if (immediateIds[id]) {
+      // fn.call() is faster so we optimize for the common use-case
+      // @see http://jsperf.com/call-apply-segu
+      if (args) {
+        fn.apply(null, args);
+      } else {
+        fn.call(null);
+      }
+      // Prevent ids from leaking
+      exports.clearImmediate(id);
+    }
+  });
+
+  return id;
+};
+
+exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
+  delete immediateIds[id];
+};
+},{"process/browser.js":11}],37:[function(require,module,exports){
+function Agent() {
+  this._defaults = [];
+}
+
+["use", "on", "once", "set", "query", "type", "accept", "auth", "withCredentials", "sortQuery", "retry", "ok", "redirects",
+ "timeout", "buffer", "serialize", "parse", "ca", "key", "pfx", "cert"].forEach(function(fn) {
+  /** Default setting for all requests from this agent */
+  Agent.prototype[fn] = function(/*varargs*/) {
+    this._defaults.push({fn:fn, arguments:arguments});
+    return this;
+  };
+});
+
+Agent.prototype._setDefaults = function(req) {
+    this._defaults.forEach(function(def) {
+      req[def.fn].apply(req, def.arguments);
+    });
+};
+
+module.exports = Agent;
+
+},{}],38:[function(require,module,exports){
+/**
+ * Root reference for iframes.
+ */
+
+var root;
+if (typeof window !== 'undefined') { // Browser window
+  root = window;
+} else if (typeof self !== 'undefined') { // Web Worker
+  root = self;
+} else { // Other environments
+  console.warn("Using browser-only version of superagent in non-browser environment");
+  root = this;
+}
+
+var Emitter = require('component-emitter');
+var RequestBase = require('./request-base');
+var isObject = require('./is-object');
+var ResponseBase = require('./response-base');
+var Agent = require('./agent-base');
+
+/**
+ * Noop.
+ */
+
+function noop(){}
+
+/**
+ * Expose `request`.
+ */
+
+var request = exports = module.exports = function(method, url) {
+  // callback
+  if ('function' == typeof url) {
+    return new exports.Request('GET', method).end(url);
+  }
+
+  // url first
+  if (1 == arguments.length) {
+    return new exports.Request('GET', method);
+  }
+
+  return new exports.Request(method, url);
+};
+
+exports.Request = Request;
+
+/**
+ * Determine XHR.
+ */
+
+request.getXHR = function () {
+  if (root.XMLHttpRequest
+      && (!root.location || 'file:' != root.location.protocol
+          || !root.ActiveXObject)) {
+    return new XMLHttpRequest;
+  } else {
+    try { return new ActiveXObject('Microsoft.XMLHTTP'); } catch(e) {}
+    try { return new ActiveXObject('Msxml2.XMLHTTP.6.0'); } catch(e) {}
+    try { return new ActiveXObject('Msxml2.XMLHTTP.3.0'); } catch(e) {}
+    try { return new ActiveXObject('Msxml2.XMLHTTP'); } catch(e) {}
+  }
+  throw Error("Browser-only version of superagent could not find XHR");
+};
+
+/**
+ * Removes leading and trailing whitespace, added to support IE.
+ *
+ * @param {String} s
+ * @return {String}
+ * @api private
+ */
+
+var trim = ''.trim
+  ? function(s) { return s.trim(); }
+  : function(s) { return s.replace(/(^\s*|\s*$)/g, ''); };
+
+/**
+ * Serialize the given `obj`.
+ *
+ * @param {Object} obj
+ * @return {String}
+ * @api private
+ */
+
+function serialize(obj) {
+  if (!isObject(obj)) { return obj; }
+  var pairs = [];
+  for (var key in obj) {
+    pushEncodedKeyValuePair(pairs, key, obj[key]);
+  }
+  return pairs.join('&');
+}
+
+/**
+ * Helps 'serialize' with serializing arrays.
+ * Mutates the pairs array.
+ *
+ * @param {Array} pairs
+ * @param {String} key
+ * @param {Mixed} val
+ */
+
+function pushEncodedKeyValuePair(pairs, key, val) {
+  if (val != null) {
+    if (Array.isArray(val)) {
+      val.forEach(function(v) {
+        pushEncodedKeyValuePair(pairs, key, v);
+      });
+    } else if (isObject(val)) {
+      for(var subkey in val) {
+        pushEncodedKeyValuePair(pairs, key + '[' + subkey + ']', val[subkey]);
+      }
+    } else {
+      pairs.push(encodeURIComponent(key)
+        + '=' + encodeURIComponent(val));
+    }
+  } else if (val === null) {
+    pairs.push(encodeURIComponent(key));
+  }
+}
+
+/**
+ * Expose serialization method.
+ */
+
+request.serializeObject = serialize;
+
+/**
+  * Parse the given x-www-form-urlencoded `str`.
+  *
+  * @param {String} str
+  * @return {Object}
+  * @api private
+  */
+
+function parseString(str) {
+  var obj = {};
+  var pairs = str.split('&');
+  var pair;
+  var pos;
+
+  for (var i = 0, len = pairs.length; i < len; ++i) {
+    pair = pairs[i];
+    pos = pair.indexOf('=');
+    if (pos == -1) {
+      obj[decodeURIComponent(pair)] = '';
+    } else {
+      obj[decodeURIComponent(pair.slice(0, pos))] =
+        decodeURIComponent(pair.slice(pos + 1));
+    }
+  }
+
+  return obj;
+}
+
+/**
+ * Expose parser.
+ */
+
+request.parseString = parseString;
+
+/**
+ * Default MIME type map.
+ *
+ *     superagent.types.xml = 'application/xml';
+ *
+ */
+
+request.types = {
+  html: 'text/html',
+  json: 'application/json',
+  xml: 'text/xml',
+  urlencoded: 'application/x-www-form-urlencoded',
+  'form': 'application/x-www-form-urlencoded',
+  'form-data': 'application/x-www-form-urlencoded'
+};
+
+/**
+ * Default serialization map.
+ *
+ *     superagent.serialize['application/xml'] = function(obj){
+ *       return 'generated xml here';
+ *     };
+ *
+ */
+
+request.serialize = {
+  'application/x-www-form-urlencoded': serialize,
+  'application/json': JSON.stringify,
+};
+
+/**
+  * Default parsers.
+  *
+  *     superagent.parse['application/xml'] = function(str){
+  *       return { object parsed from str };
+  *     };
+  *
+  */
+
+request.parse = {
+  'application/x-www-form-urlencoded': parseString,
+  'application/json': JSON.parse,
+};
+
+/**
+ * Parse the given header `str` into
+ * an object containing the mapped fields.
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
+
+function parseHeader(str) {
+  var lines = str.split(/\r?\n/);
+  var fields = {};
+  var index;
+  var line;
+  var field;
+  var val;
+
+  for (var i = 0, len = lines.length; i < len; ++i) {
+    line = lines[i];
+    index = line.indexOf(':');
+    if (index === -1) { // could be empty line, just skip it
+      continue;
+    }
+    field = line.slice(0, index).toLowerCase();
+    val = trim(line.slice(index + 1));
+    fields[field] = val;
+  }
+
+  return fields;
+}
+
+/**
+ * Check if `mime` is json or has +json structured syntax suffix.
+ *
+ * @param {String} mime
+ * @return {Boolean}
+ * @api private
+ */
+
+function isJSON(mime) {
+  return /[\/+]json\b/.test(mime);
+}
+
+/**
+ * Initialize a new `Response` with the given `xhr`.
+ *
+ *  - set flags (.ok, .error, etc)
+ *  - parse header
+ *
+ * Examples:
+ *
+ *  Aliasing `superagent` as `request` is nice:
+ *
+ *      request = superagent;
+ *
+ *  We can use the promise-like API, or pass callbacks:
+ *
+ *      request.get('/').end(function(res){});
+ *      request.get('/', function(res){});
+ *
+ *  Sending data can be chained:
+ *
+ *      request
+ *        .post('/user')
+ *        .send({ name: 'tj' })
+ *        .end(function(res){});
+ *
+ *  Or passed to `.send()`:
+ *
+ *      request
+ *        .post('/user')
+ *        .send({ name: 'tj' }, function(res){});
+ *
+ *  Or passed to `.post()`:
+ *
+ *      request
+ *        .post('/user', { name: 'tj' })
+ *        .end(function(res){});
+ *
+ * Or further reduced to a single call for simple cases:
+ *
+ *      request
+ *        .post('/user', { name: 'tj' }, function(res){});
+ *
+ * @param {XMLHTTPRequest} xhr
+ * @param {Object} options
+ * @api private
+ */
+
+function Response(req) {
+  this.req = req;
+  this.xhr = this.req.xhr;
+  // responseText is accessible only if responseType is '' or 'text' and on older browsers
+  this.text = ((this.req.method !='HEAD' && (this.xhr.responseType === '' || this.xhr.responseType === 'text')) || typeof this.xhr.responseType === 'undefined')
+     ? this.xhr.responseText
+     : null;
+  this.statusText = this.req.xhr.statusText;
+  var status = this.xhr.status;
+  // handle IE9 bug: http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
+  if (status === 1223) {
+    status = 204;
+  }
+  this._setStatusProperties(status);
+  this.header = this.headers = parseHeader(this.xhr.getAllResponseHeaders());
+  // getAllResponseHeaders sometimes falsely returns "" for CORS requests, but
+  // getResponseHeader still works. so we get content-type even if getting
+  // other headers fails.
+  this.header['content-type'] = this.xhr.getResponseHeader('content-type');
+  this._setHeaderProperties(this.header);
+
+  if (null === this.text && req._responseType) {
+    this.body = this.xhr.response;
+  } else {
+    this.body = this.req.method != 'HEAD'
+      ? this._parseBody(this.text ? this.text : this.xhr.response)
+      : null;
+  }
+}
+
+ResponseBase(Response.prototype);
+
+/**
+ * Parse the given body `str`.
+ *
+ * Used for auto-parsing of bodies. Parsers
+ * are defined on the `superagent.parse` object.
+ *
+ * @param {String} str
+ * @return {Mixed}
+ * @api private
+ */
+
+Response.prototype._parseBody = function(str) {
+  var parse = request.parse[this.type];
+  if (this.req._parser) {
+    return this.req._parser(this, str);
+  }
+  if (!parse && isJSON(this.type)) {
+    parse = request.parse['application/json'];
+  }
+  return parse && str && (str.length || str instanceof Object)
+    ? parse(str)
+    : null;
+};
+
+/**
+ * Return an `Error` representative of this response.
+ *
+ * @return {Error}
+ * @api public
+ */
+
+Response.prototype.toError = function(){
+  var req = this.req;
+  var method = req.method;
+  var url = req.url;
+
+  var msg = 'cannot ' + method + ' ' + url + ' (' + this.status + ')';
+  var err = new Error(msg);
+  err.status = this.status;
+  err.method = method;
+  err.url = url;
+
+  return err;
+};
+
+/**
+ * Expose `Response`.
+ */
+
+request.Response = Response;
+
+/**
+ * Initialize a new `Request` with the given `method` and `url`.
+ *
+ * @param {String} method
+ * @param {String} url
+ * @api public
+ */
+
+function Request(method, url) {
+  var self = this;
+  this._query = this._query || [];
+  this.method = method;
+  this.url = url;
+  this.header = {}; // preserves header name case
+  this._header = {}; // coerces header names to lowercase
+  this.on('end', function(){
+    var err = null;
+    var res = null;
+
+    try {
+      res = new Response(self);
+    } catch(e) {
+      err = new Error('Parser is unable to parse the response');
+      err.parse = true;
+      err.original = e;
+      // issue #675: return the raw response if the response parsing fails
+      if (self.xhr) {
+        // ie9 doesn't have 'response' property
+        err.rawResponse = typeof self.xhr.responseType == 'undefined' ? self.xhr.responseText : self.xhr.response;
+        // issue #876: return the http status code if the response parsing fails
+        err.status = self.xhr.status ? self.xhr.status : null;
+        err.statusCode = err.status; // backwards-compat only
+      } else {
+        err.rawResponse = null;
+        err.status = null;
+      }
+
+      return self.callback(err);
+    }
+
+    self.emit('response', res);
+
+    var new_err;
+    try {
+      if (!self._isResponseOK(res)) {
+        new_err = new Error(res.statusText || 'Unsuccessful HTTP response');
+      }
+    } catch(custom_err) {
+      new_err = custom_err; // ok() callback can throw
+    }
+
+    // #1000 don't catch errors from the callback to avoid double calling it
+    if (new_err) {
+      new_err.original = err;
+      new_err.response = res;
+      new_err.status = res.status;
+      self.callback(new_err, res);
+    } else {
+      self.callback(null, res);
+    }
+  });
+}
+
+/**
+ * Mixin `Emitter` and `RequestBase`.
+ */
+
+Emitter(Request.prototype);
+RequestBase(Request.prototype);
+
+/**
+ * Set Content-Type to `type`, mapping values from `request.types`.
+ *
+ * Examples:
+ *
+ *      superagent.types.xml = 'application/xml';
+ *
+ *      request.post('/')
+ *        .type('xml')
+ *        .send(xmlstring)
+ *        .end(callback);
+ *
+ *      request.post('/')
+ *        .type('application/xml')
+ *        .send(xmlstring)
+ *        .end(callback);
+ *
+ * @param {String} type
+ * @return {Request} for chaining
+ * @api public
+ */
+
+Request.prototype.type = function(type){
+  this.set('Content-Type', request.types[type] || type);
+  return this;
+};
+
+/**
+ * Set Accept to `type`, mapping values from `request.types`.
+ *
+ * Examples:
+ *
+ *      superagent.types.json = 'application/json';
+ *
+ *      request.get('/agent')
+ *        .accept('json')
+ *        .end(callback);
+ *
+ *      request.get('/agent')
+ *        .accept('application/json')
+ *        .end(callback);
+ *
+ * @param {String} accept
+ * @return {Request} for chaining
+ * @api public
+ */
+
+Request.prototype.accept = function(type){
+  this.set('Accept', request.types[type] || type);
+  return this;
+};
+
+/**
+ * Set Authorization field value with `user` and `pass`.
+ *
+ * @param {String} user
+ * @param {String} [pass] optional in case of using 'bearer' as type
+ * @param {Object} options with 'type' property 'auto', 'basic' or 'bearer' (default 'basic')
+ * @return {Request} for chaining
+ * @api public
+ */
+
+Request.prototype.auth = function(user, pass, options){
+  if (1 === arguments.length) { pass = ''; }
+  if (typeof pass === 'object' && pass !== null) { // pass is optional and can be replaced with options
+    options = pass;
+    pass = '';
+  }
+  if (!options) {
+    options = {
+      type: 'function' === typeof btoa ? 'basic' : 'auto',
+    };
+  }
+
+  var encoder = function(string) {
+    if ('function' === typeof btoa) {
+      return btoa(string);
+    }
+    throw new Error('Cannot use basic auth, btoa is not a function');
+  };
+
+  return this._auth(user, pass, options, encoder);
+};
+
+/**
+ * Add query-string `val`.
+ *
+ * Examples:
+ *
+ *   request.get('/shoes')
+ *     .query('size=10')
+ *     .query({ color: 'blue' })
+ *
+ * @param {Object|String} val
+ * @return {Request} for chaining
+ * @api public
+ */
+
+Request.prototype.query = function(val){
+  if ('string' != typeof val) { val = serialize(val); }
+  if (val) { this._query.push(val); }
+  return this;
+};
+
+/**
+ * Queue the given `file` as an attachment to the specified `field`,
+ * with optional `options` (or filename).
+ *
+ * ``` js
+ * request.post('/upload')
+ *   .attach('content', new Blob(['<a id="a"><b id="b">hey!</b></a>'], { type: "text/html"}))
+ *   .end(callback);
+ * ```
+ *
+ * @param {String} field
+ * @param {Blob|File} file
+ * @param {String|Object} options
+ * @return {Request} for chaining
+ * @api public
+ */
+
+Request.prototype.attach = function(field, file, options){
+  if (file) {
+    if (this._data) {
+      throw Error("superagent can't mix .send() and .attach()");
+    }
+
+    this._getFormData().append(field, file, options || file.name);
+  }
+  return this;
+};
+
+Request.prototype._getFormData = function(){
+  if (!this._formData) {
+    this._formData = new root.FormData();
+  }
+  return this._formData;
+};
+
+/**
+ * Invoke the callback with `err` and `res`
+ * and handle arity check.
+ *
+ * @param {Error} err
+ * @param {Response} res
+ * @api private
+ */
+
+Request.prototype.callback = function(err, res){
+  if (this._shouldRetry(err, res)) {
+    return this._retry();
+  }
+
+  var fn = this._callback;
+  this.clearTimeout();
+
+  if (err) {
+    if (this._maxRetries) { err.retries = this._retries - 1; }
+    this.emit('error', err);
+  }
+
+  fn(err, res);
+};
+
+/**
+ * Invoke callback with x-domain error.
+ *
+ * @api private
+ */
+
+Request.prototype.crossDomainError = function(){
+  var err = new Error('Request has been terminated\nPossible causes: the network is offline, Origin is not allowed by Access-Control-Allow-Origin, the page is being unloaded, etc.');
+  err.crossDomain = true;
+
+  err.status = this.status;
+  err.method = this.method;
+  err.url = this.url;
+
+  this.callback(err);
+};
+
+// This only warns, because the request is still likely to work
+Request.prototype.buffer = Request.prototype.ca = Request.prototype.agent = function(){
+  console.warn("This is not supported in browser version of superagent");
+  return this;
+};
+
+// This throws, because it can't send/receive data as expected
+Request.prototype.pipe = Request.prototype.write = function(){
+  throw Error("Streaming is not supported in browser version of superagent");
+};
+
+/**
+ * Check if `obj` is a host object,
+ * we don't want to serialize these :)
+ *
+ * @param {Object} obj
+ * @return {Boolean}
+ * @api private
+ */
+Request.prototype._isHost = function _isHost(obj) {
+  // Native objects stringify to [object File], [object Blob], [object FormData], etc.
+  return obj && 'object' === typeof obj && !Array.isArray(obj) && Object.prototype.toString.call(obj) !== '[object Object]';
+};
+
+/**
+ * Initiate request, invoking callback `fn(res)`
+ * with an instanceof `Response`.
+ *
+ * @param {Function} fn
+ * @return {Request} for chaining
+ * @api public
+ */
+
+Request.prototype.end = function(fn){
+  if (this._endCalled) {
+    console.warn("Warning: .end() was called twice. This is not supported in superagent");
+  }
+  this._endCalled = true;
+
+  // store callback
+  this._callback = fn || noop;
+
+  // querystring
+  this._finalizeQueryString();
+
+  return this._end();
+};
+
+Request.prototype._end = function() {
+  var self = this;
+  var xhr = (this.xhr = request.getXHR());
+  var data = this._formData || this._data;
+
+  this._setTimeouts();
+
+  // state change
+  xhr.onreadystatechange = function(){
+    var readyState = xhr.readyState;
+    if (readyState >= 2 && self._responseTimeoutTimer) {
+      clearTimeout(self._responseTimeoutTimer);
+    }
+    if (4 != readyState) {
+      return;
+    }
+
+    // In IE9, reads to any property (e.g. status) off of an aborted XHR will
+    // result in the error "Could not complete the operation due to error c00c023f"
+    var status;
+    try { status = xhr.status; } catch(e) { status = 0; }
+
+    if (!status) {
+      if (self.timedout || self._aborted) { return; }
+      return self.crossDomainError();
+    }
+    self.emit('end');
+  };
+
+  // progress
+  var handleProgress = function(direction, e) {
+    if (e.total > 0) {
+      e.percent = e.loaded / e.total * 100;
+    }
+    e.direction = direction;
+    self.emit('progress', e);
+  };
+  if (this.hasListeners('progress')) {
+    try {
+      xhr.onprogress = handleProgress.bind(null, 'download');
+      if (xhr.upload) {
+        xhr.upload.onprogress = handleProgress.bind(null, 'upload');
+      }
+    } catch(e) {
+      // Accessing xhr.upload fails in IE from a web worker, so just pretend it doesn't exist.
+      // Reported here:
+      // https://connect.microsoft.com/IE/feedback/details/837245/xmlhttprequest-upload-throws-invalid-argument-when-used-from-web-worker-context
+    }
+  }
+
+  // initiate request
+  try {
+    if (this.username && this.password) {
+      xhr.open(this.method, this.url, true, this.username, this.password);
+    } else {
+      xhr.open(this.method, this.url, true);
+    }
+  } catch (err) {
+    // see #1149
+    return this.callback(err);
+  }
+
+  // CORS
+  if (this._withCredentials) { xhr.withCredentials = true; }
+
+  // body
+  if (!this._formData && 'GET' != this.method && 'HEAD' != this.method && 'string' != typeof data && !this._isHost(data)) {
+    // serialize stuff
+    var contentType = this._header['content-type'];
+    var serialize = this._serializer || request.serialize[contentType ? contentType.split(';')[0] : ''];
+    if (!serialize && isJSON(contentType)) {
+      serialize = request.serialize['application/json'];
+    }
+    if (serialize) { data = serialize(data); }
+  }
+
+  // set header fields
+  for (var field in this.header) {
+    if (null == this.header[field]) { continue; }
+
+    if (this.header.hasOwnProperty(field))
+      { xhr.setRequestHeader(field, this.header[field]); }
+  }
+
+  if (this._responseType) {
+    xhr.responseType = this._responseType;
+  }
+
+  // send stuff
+  this.emit('request', this);
+
+  // IE11 xhr.send(undefined) sends 'undefined' string as POST payload (instead of nothing)
+  // We need null here if data is undefined
+  xhr.send(typeof data !== 'undefined' ? data : null);
+  return this;
+};
+
+request.agent = function() {
+  return new Agent();
+};
+
+["GET", "POST", "OPTIONS", "PATCH", "PUT", "DELETE"].forEach(function(method) {
+  Agent.prototype[method.toLowerCase()] = function(url, fn) {
+    var req = new request.Request(method, url);
+    this._setDefaults(req);
+    if (fn) {
+      req.end(fn);
+    }
+    return req;
+  };
+});
+
+Agent.prototype.del = Agent.prototype['delete'];
+
+/**
+ * GET `url` with optional callback `fn(res)`.
+ *
+ * @param {String} url
+ * @param {Mixed|Function} [data] or fn
+ * @param {Function} [fn]
+ * @return {Request}
+ * @api public
+ */
+
+request.get = function(url, data, fn) {
+  var req = request('GET', url);
+  if ('function' == typeof data) { fn = data, data = null; }
+  if (data) { req.query(data); }
+  if (fn) { req.end(fn); }
+  return req;
+};
+
+/**
+ * HEAD `url` with optional callback `fn(res)`.
+ *
+ * @param {String} url
+ * @param {Mixed|Function} [data] or fn
+ * @param {Function} [fn]
+ * @return {Request}
+ * @api public
+ */
+
+request.head = function(url, data, fn) {
+  var req = request('HEAD', url);
+  if ('function' == typeof data) { fn = data, data = null; }
+  if (data) { req.query(data); }
+  if (fn) { req.end(fn); }
+  return req;
+};
+
+/**
+ * OPTIONS query to `url` with optional callback `fn(res)`.
+ *
+ * @param {String} url
+ * @param {Mixed|Function} [data] or fn
+ * @param {Function} [fn]
+ * @return {Request}
+ * @api public
+ */
+
+request.options = function(url, data, fn) {
+  var req = request('OPTIONS', url);
+  if ('function' == typeof data) { fn = data, data = null; }
+  if (data) { req.send(data); }
+  if (fn) { req.end(fn); }
+  return req;
+};
+
+/**
+ * DELETE `url` with optional `data` and callback `fn(res)`.
+ *
+ * @param {String} url
+ * @param {Mixed} [data]
+ * @param {Function} [fn]
+ * @return {Request}
+ * @api public
+ */
+
+function del(url, data, fn) {
+  var req = request('DELETE', url);
+  if ('function' == typeof data) { fn = data, data = null; }
+  if (data) { req.send(data); }
+  if (fn) { req.end(fn); }
+  return req;
+}
+
+request['del'] = del;
+request['delete'] = del;
+
+/**
+ * PATCH `url` with optional `data` and callback `fn(res)`.
+ *
+ * @param {String} url
+ * @param {Mixed} [data]
+ * @param {Function} [fn]
+ * @return {Request}
+ * @api public
+ */
+
+request.patch = function(url, data, fn) {
+  var req = request('PATCH', url);
+  if ('function' == typeof data) { fn = data, data = null; }
+  if (data) { req.send(data); }
+  if (fn) { req.end(fn); }
+  return req;
+};
+
+/**
+ * POST `url` with optional `data` and callback `fn(res)`.
+ *
+ * @param {String} url
+ * @param {Mixed} [data]
+ * @param {Function} [fn]
+ * @return {Request}
+ * @api public
+ */
+
+request.post = function(url, data, fn) {
+  var req = request('POST', url);
+  if ('function' == typeof data) { fn = data, data = null; }
+  if (data) { req.send(data); }
+  if (fn) { req.end(fn); }
+  return req;
+};
+
+/**
+ * PUT `url` with optional `data` and callback `fn(res)`.
+ *
+ * @param {String} url
+ * @param {Mixed|Function} [data] or fn
+ * @param {Function} [fn]
+ * @return {Request}
+ * @api public
+ */
+
+request.put = function(url, data, fn) {
+  var req = request('PUT', url);
+  if ('function' == typeof data) { fn = data, data = null; }
+  if (data) { req.send(data); }
+  if (fn) { req.end(fn); }
+  return req;
+};
+
+},{"./agent-base":37,"./is-object":39,"./request-base":40,"./response-base":41,"component-emitter":43}],39:[function(require,module,exports){
+function isObject(obj) {
+  return null !== obj && 'object' === typeof obj;
+}
+
+module.exports = isObject;
+
+},{}],40:[function(require,module,exports){
+var isObject = require('./is-object');
+
+/**
+ * Expose `RequestBase`.
+ */
+
+module.exports = RequestBase;
+
+/**
+ * Initialize a new `RequestBase`.
+ *
+ * @api public
+ */
+
+function RequestBase(obj) {
+  if (obj) { return mixin(obj); }
+}
+
+/**
+ * Mixin the prototype properties.
+ *
+ * @param {Object} obj
+ * @return {Object}
+ * @api private
+ */
+
+function mixin(obj) {
+  for (var key in RequestBase.prototype) {
+    obj[key] = RequestBase.prototype[key];
+  }
+  return obj;
+}
+
+/**
+ * Clear previous timeout.
+ *
+ * @return {Request} for chaining
+ * @api public
+ */
+
+RequestBase.prototype.clearTimeout = function _clearTimeout(){
+  clearTimeout(this._timer);
+  clearTimeout(this._responseTimeoutTimer);
+  delete this._timer;
+  delete this._responseTimeoutTimer;
+  return this;
+};
+
+/**
+ * Override default response body parser
+ *
+ * This function will be called to convert incoming data into request.body
+ *
+ * @param {Function}
+ * @api public
+ */
+
+RequestBase.prototype.parse = function parse(fn){
+  this._parser = fn;
+  return this;
+};
+
+/**
+ * Set format of binary response body.
+ * In browser valid formats are 'blob' and 'arraybuffer',
+ * which return Blob and ArrayBuffer, respectively.
+ *
+ * In Node all values result in Buffer.
+ *
+ * Examples:
+ *
+ *      req.get('/')
+ *        .responseType('blob')
+ *        .end(callback);
+ *
+ * @param {String} val
+ * @return {Request} for chaining
+ * @api public
+ */
+
+RequestBase.prototype.responseType = function(val){
+  this._responseType = val;
+  return this;
+};
+
+/**
+ * Override default request body serializer
+ *
+ * This function will be called to convert data set via .send or .attach into payload to send
+ *
+ * @param {Function}
+ * @api public
+ */
+
+RequestBase.prototype.serialize = function serialize(fn){
+  this._serializer = fn;
+  return this;
+};
+
+/**
+ * Set timeouts.
+ *
+ * - response timeout is time between sending request and receiving the first byte of the response. Includes DNS and connection time.
+ * - deadline is the time from start of the request to receiving response body in full. If the deadline is too short large files may not load at all on slow connections.
+ *
+ * Value of 0 or false means no timeout.
+ *
+ * @param {Number|Object} ms or {response, deadline}
+ * @return {Request} for chaining
+ * @api public
+ */
+
+RequestBase.prototype.timeout = function timeout(options){
+  if (!options || 'object' !== typeof options) {
+    this._timeout = options;
+    this._responseTimeout = 0;
+    return this;
+  }
+
+  for(var option in options) {
+    switch(option) {
+      case 'deadline':
+        this._timeout = options.deadline;
+        break;
+      case 'response':
+        this._responseTimeout = options.response;
+        break;
+      default:
+        console.warn("Unknown timeout option", option);
+    }
+  }
+  return this;
+};
+
+/**
+ * Set number of retry attempts on error.
+ *
+ * Failed requests will be retried 'count' times if timeout or err.code >= 500.
+ *
+ * @param {Number} count
+ * @param {Function} [fn]
+ * @return {Request} for chaining
+ * @api public
+ */
+
+RequestBase.prototype.retry = function retry(count, fn){
+  // Default to 1 if no count passed or true
+  if (arguments.length === 0 || count === true) { count = 1; }
+  if (count <= 0) { count = 0; }
+  this._maxRetries = count;
+  this._retries = 0;
+  this._retryCallback = fn;
+  return this;
+};
+
+var ERROR_CODES = [
+  'ECONNRESET',
+  'ETIMEDOUT',
+  'EADDRINFO',
+  'ESOCKETTIMEDOUT'
+];
+
+/**
+ * Determine if a request should be retried.
+ * (Borrowed from segmentio/superagent-retry)
+ *
+ * @param {Error} err
+ * @param {Response} [res]
+ * @returns {Boolean}
+ */
+RequestBase.prototype._shouldRetry = function(err, res) {
+  if (!this._maxRetries || this._retries++ >= this._maxRetries) {
+    return false;
+  }
+  if (this._retryCallback) {
+    try {
+      var override = this._retryCallback(err, res);
+      if (override === true) { return true; }
+      if (override === false) { return false; }
+      // undefined falls back to defaults
+    } catch(e) {
+      console.error(e);
+    }
+  }
+  if (res && res.status && res.status >= 500 && res.status != 501) { return true; }
+  if (err) {
+    if (err.code && ~ERROR_CODES.indexOf(err.code)) { return true; }
+    // Superagent timeout
+    if (err.timeout && err.code == 'ECONNABORTED') { return true; }
+    if (err.crossDomain) { return true; }
+  }
+  return false;
+};
+
+/**
+ * Retry request
+ *
+ * @return {Request} for chaining
+ * @api private
+ */
+
+RequestBase.prototype._retry = function() {
+
+  this.clearTimeout();
+
+  // node
+  if (this.req) {
+    this.req = null;
+    this.req = this.request();
+  }
+
+  this._aborted = false;
+  this.timedout = false;
+
+  return this._end();
+};
+
+/**
+ * Promise support
+ *
+ * @param {Function} resolve
+ * @param {Function} [reject]
+ * @return {Request}
+ */
+
+RequestBase.prototype.then = function then(resolve, reject) {
+  if (!this._fullfilledPromise) {
+    var self = this;
+    if (this._endCalled) {
+      console.warn("Warning: superagent request was sent twice, because both .end() and .then() were called. Never call .end() if you use promises");
+    }
+    this._fullfilledPromise = new Promise(function(innerResolve, innerReject) {
+      self.end(function(err, res) {
+        if (err) { innerReject(err); }
+        else { innerResolve(res); }
+      });
+    });
+  }
+  return this._fullfilledPromise.then(resolve, reject);
+};
+
+RequestBase.prototype.catch = function(cb) {
+  return this.then(undefined, cb);
+};
+
+/**
+ * Allow for extension
+ */
+
+RequestBase.prototype.use = function use(fn) {
+  fn(this);
+  return this;
+};
+
+RequestBase.prototype.ok = function(cb) {
+  if ('function' !== typeof cb) { throw Error("Callback required"); }
+  this._okCallback = cb;
+  return this;
+};
+
+RequestBase.prototype._isResponseOK = function(res) {
+  if (!res) {
+    return false;
+  }
+
+  if (this._okCallback) {
+    return this._okCallback(res);
+  }
+
+  return res.status >= 200 && res.status < 300;
+};
+
+/**
+ * Get request header `field`.
+ * Case-insensitive.
+ *
+ * @param {String} field
+ * @return {String}
+ * @api public
+ */
+
+RequestBase.prototype.get = function(field){
+  return this._header[field.toLowerCase()];
+};
+
+/**
+ * Get case-insensitive header `field` value.
+ * This is a deprecated internal API. Use `.get(field)` instead.
+ *
+ * (getHeader is no longer used internally by the superagent code base)
+ *
+ * @param {String} field
+ * @return {String}
+ * @api private
+ * @deprecated
+ */
+
+RequestBase.prototype.getHeader = RequestBase.prototype.get;
+
+/**
+ * Set header `field` to `val`, or multiple fields with one object.
+ * Case-insensitive.
+ *
+ * Examples:
+ *
+ *      req.get('/')
+ *        .set('Accept', 'application/json')
+ *        .set('X-API-Key', 'foobar')
+ *        .end(callback);
+ *
+ *      req.get('/')
+ *        .set({ Accept: 'application/json', 'X-API-Key': 'foobar' })
+ *        .end(callback);
+ *
+ * @param {String|Object} field
+ * @param {String} val
+ * @return {Request} for chaining
+ * @api public
+ */
+
+RequestBase.prototype.set = function(field, val){
+  if (isObject(field)) {
+    for (var key in field) {
+      this.set(key, field[key]);
+    }
+    return this;
+  }
+  this._header[field.toLowerCase()] = val;
+  this.header[field] = val;
+  return this;
+};
+
+/**
+ * Remove header `field`.
+ * Case-insensitive.
+ *
+ * Example:
+ *
+ *      req.get('/')
+ *        .unset('User-Agent')
+ *        .end(callback);
+ *
+ * @param {String} field
+ */
+RequestBase.prototype.unset = function(field){
+  delete this._header[field.toLowerCase()];
+  delete this.header[field];
+  return this;
+};
+
+/**
+ * Write the field `name` and `val`, or multiple fields with one object
+ * for "multipart/form-data" request bodies.
+ *
+ * ``` js
+ * request.post('/upload')
+ *   .field('foo', 'bar')
+ *   .end(callback);
+ *
+ * request.post('/upload')
+ *   .field({ foo: 'bar', baz: 'qux' })
+ *   .end(callback);
+ * ```
+ *
+ * @param {String|Object} name
+ * @param {String|Blob|File|Buffer|fs.ReadStream} val
+ * @return {Request} for chaining
+ * @api public
+ */
+RequestBase.prototype.field = function(name, val) {
+  // name should be either a string or an object.
+  if (null === name || undefined === name) {
+    throw new Error('.field(name, val) name can not be empty');
+  }
+
+  if (this._data) {
+    console.error(".field() can't be used if .send() is used. Please use only .send() or only .field() & .attach()");
+  }
+
+  if (isObject(name)) {
+    for (var key in name) {
+      this.field(key, name[key]);
+    }
+    return this;
+  }
+
+  if (Array.isArray(val)) {
+    for (var i in val) {
+      this.field(name, val[i]);
+    }
+    return this;
+  }
+
+  // val should be defined now
+  if (null === val || undefined === val) {
+    throw new Error('.field(name, val) val can not be empty');
+  }
+  if ('boolean' === typeof val) {
+    val = '' + val;
+  }
+  this._getFormData().append(name, val);
+  return this;
+};
+
+/**
+ * Abort the request, and clear potential timeout.
+ *
+ * @return {Request}
+ * @api public
+ */
+RequestBase.prototype.abort = function(){
+  if (this._aborted) {
+    return this;
+  }
+  this._aborted = true;
+  this.xhr && this.xhr.abort(); // browser
+  this.req && this.req.abort(); // node
+  this.clearTimeout();
+  this.emit('abort');
+  return this;
+};
+
+RequestBase.prototype._auth = function(user, pass, options, base64Encoder) {
+  switch (options.type) {
+    case 'basic':
+      this.set('Authorization', 'Basic ' + base64Encoder(user + ':' + pass));
+      break;
+
+    case 'auto':
+      this.username = user;
+      this.password = pass;
+      break;
+
+    case 'bearer': // usage would be .auth(accessToken, { type: 'bearer' })
+      this.set('Authorization', 'Bearer ' + user);
+      break;
+  }
+  return this;
+};
+
+/**
+ * Enable transmission of cookies with x-domain requests.
+ *
+ * Note that for this to work the origin must not be
+ * using "Access-Control-Allow-Origin" with a wildcard,
+ * and also must set "Access-Control-Allow-Credentials"
+ * to "true".
+ *
+ * @api public
+ */
+
+RequestBase.prototype.withCredentials = function(on) {
+  // This is browser-only functionality. Node side is no-op.
+  if (on == undefined) { on = true; }
+  this._withCredentials = on;
+  return this;
+};
+
+/**
+ * Set the max redirects to `n`. Does noting in browser XHR implementation.
+ *
+ * @param {Number} n
+ * @return {Request} for chaining
+ * @api public
+ */
+
+RequestBase.prototype.redirects = function(n){
+  this._maxRedirects = n;
+  return this;
+};
+
+/**
+ * Maximum size of buffered response body, in bytes. Counts uncompressed size.
+ * Default 200MB.
+ *
+ * @param {Number} n
+ * @return {Request} for chaining
+ */
+RequestBase.prototype.maxResponseSize = function(n){
+  if ('number' !== typeof n) {
+    throw TypeError("Invalid argument");
+  }
+  this._maxResponseSize = n;
+  return this;
+};
+
+/**
+ * Convert to a plain javascript object (not JSON string) of scalar properties.
+ * Note as this method is designed to return a useful non-this value,
+ * it cannot be chained.
+ *
+ * @return {Object} describing method, url, and data of this request
+ * @api public
+ */
+
+RequestBase.prototype.toJSON = function() {
+  return {
+    method: this.method,
+    url: this.url,
+    data: this._data,
+    headers: this._header,
+  };
+};
+
+/**
+ * Send `data` as the request body, defaulting the `.type()` to "json" when
+ * an object is given.
+ *
+ * Examples:
+ *
+ *       // manual json
+ *       request.post('/user')
+ *         .type('json')
+ *         .send('{"name":"tj"}')
+ *         .end(callback)
+ *
+ *       // auto json
+ *       request.post('/user')
+ *         .send({ name: 'tj' })
+ *         .end(callback)
+ *
+ *       // manual x-www-form-urlencoded
+ *       request.post('/user')
+ *         .type('form')
+ *         .send('name=tj')
+ *         .end(callback)
+ *
+ *       // auto x-www-form-urlencoded
+ *       request.post('/user')
+ *         .type('form')
+ *         .send({ name: 'tj' })
+ *         .end(callback)
+ *
+ *       // defaults to x-www-form-urlencoded
+ *      request.post('/user')
+ *        .send('name=tobi')
+ *        .send('species=ferret')
+ *        .end(callback)
+ *
+ * @param {String|Object} data
+ * @return {Request} for chaining
+ * @api public
+ */
+
+RequestBase.prototype.send = function(data){
+  var isObj = isObject(data);
+  var type = this._header['content-type'];
+
+  if (this._formData) {
+    console.error(".send() can't be used if .attach() or .field() is used. Please use only .send() or only .field() & .attach()");
+  }
+
+  if (isObj && !this._data) {
+    if (Array.isArray(data)) {
+      this._data = [];
+    } else if (!this._isHost(data)) {
+      this._data = {};
+    }
+  } else if (data && this._data && this._isHost(this._data)) {
+    throw Error("Can't merge these send calls");
+  }
+
+  // merge
+  if (isObj && isObject(this._data)) {
+    for (var key in data) {
+      this._data[key] = data[key];
+    }
+  } else if ('string' == typeof data) {
+    // default to x-www-form-urlencoded
+    if (!type) { this.type('form'); }
+    type = this._header['content-type'];
+    if ('application/x-www-form-urlencoded' == type) {
+      this._data = this._data
+        ? this._data + '&' + data
+        : data;
+    } else {
+      this._data = (this._data || '') + data;
+    }
+  } else {
+    this._data = data;
+  }
+
+  if (!isObj || this._isHost(data)) {
+    return this;
+  }
+
+  // default to json
+  if (!type) { this.type('json'); }
+  return this;
+};
+
+/**
+ * Sort `querystring` by the sort function
+ *
+ *
+ * Examples:
+ *
+ *       // default order
+ *       request.get('/user')
+ *         .query('name=Nick')
+ *         .query('search=Manny')
+ *         .sortQuery()
+ *         .end(callback)
+ *
+ *       // customized sort function
+ *       request.get('/user')
+ *         .query('name=Nick')
+ *         .query('search=Manny')
+ *         .sortQuery(function(a, b){
+ *           return a.length - b.length;
+ *         })
+ *         .end(callback)
+ *
+ *
+ * @param {Function} sort
+ * @return {Request} for chaining
+ * @api public
+ */
+
+RequestBase.prototype.sortQuery = function(sort) {
+  // _sort default to true but otherwise can be a function or boolean
+  this._sort = typeof sort === 'undefined' ? true : sort;
+  return this;
+};
+
+/**
+ * Compose querystring to append to req.url
+ *
+ * @api private
+ */
+RequestBase.prototype._finalizeQueryString = function(){
+  var query = this._query.join('&');
+  if (query) {
+    this.url += (this.url.indexOf('?') >= 0 ? '&' : '?') + query;
+  }
+  this._query.length = 0; // Makes the call idempotent
+
+  if (this._sort) {
+    var index = this.url.indexOf('?');
+    if (index >= 0) {
+      var queryArr = this.url.substring(index + 1).split('&');
+      if ('function' === typeof this._sort) {
+        queryArr.sort(this._sort);
+      } else {
+        queryArr.sort();
+      }
+      this.url = this.url.substring(0, index) + '?' + queryArr.join('&');
+    }
+  }
+};
+
+// For backwards compat only
+RequestBase.prototype._appendQueryString = function() {console.trace("Unsupported");};
+
+/**
+ * Invoke callback with timeout error.
+ *
+ * @api private
+ */
+
+RequestBase.prototype._timeoutError = function(reason, timeout, errno){
+  if (this._aborted) {
+    return;
+  }
+  var err = new Error(reason + timeout + 'ms exceeded');
+  err.timeout = timeout;
+  err.code = 'ECONNABORTED';
+  err.errno = errno;
+  this.timedout = true;
+  this.abort();
+  this.callback(err);
+};
+
+RequestBase.prototype._setTimeouts = function() {
+  var self = this;
+
+  // deadline
+  if (this._timeout && !this._timer) {
+    this._timer = setTimeout(function(){
+      self._timeoutError('Timeout of ', self._timeout, 'ETIME');
+    }, this._timeout);
+  }
+  // response timeout
+  if (this._responseTimeout && !this._responseTimeoutTimer) {
+    this._responseTimeoutTimer = setTimeout(function(){
+      self._timeoutError('Response timeout of ', self._responseTimeout, 'ETIMEDOUT');
+    }, this._responseTimeout);
+  }
+};
+
+},{"./is-object":39}],41:[function(require,module,exports){
+var utils = require('./utils');
+
+/**
+ * Expose `ResponseBase`.
+ */
+
+module.exports = ResponseBase;
+
+/**
+ * Initialize a new `ResponseBase`.
+ *
+ * @api public
+ */
+
+function ResponseBase(obj) {
+  if (obj) { return mixin(obj); }
+}
+
+/**
+ * Mixin the prototype properties.
+ *
+ * @param {Object} obj
+ * @return {Object}
+ * @api private
+ */
+
+function mixin(obj) {
+  for (var key in ResponseBase.prototype) {
+    obj[key] = ResponseBase.prototype[key];
+  }
+  return obj;
+}
+
+/**
+ * Get case-insensitive `field` value.
+ *
+ * @param {String} field
+ * @return {String}
+ * @api public
+ */
+
+ResponseBase.prototype.get = function(field) {
+  return this.header[field.toLowerCase()];
+};
+
+/**
+ * Set header related properties:
+ *
+ *   - `.type` the content type without params
+ *
+ * A response of "Content-Type: text/plain; charset=utf-8"
+ * will provide you with a `.type` of "text/plain".
+ *
+ * @param {Object} header
+ * @api private
+ */
+
+ResponseBase.prototype._setHeaderProperties = function(header){
+    // TODO: moar!
+    // TODO: make this a util
+
+    // content-type
+    var ct = header['content-type'] || '';
+    this.type = utils.type(ct);
+
+    // params
+    var params = utils.params(ct);
+    for (var key in params) { this[key] = params[key]; }
+
+    this.links = {};
+
+    // links
+    try {
+        if (header.link) {
+            this.links = utils.parseLinks(header.link);
+        }
+    } catch (err) {
+        // ignore
+    }
+};
+
+/**
+ * Set flags such as `.ok` based on `status`.
+ *
+ * For example a 2xx response will give you a `.ok` of __true__
+ * whereas 5xx will be __false__ and `.error` will be __true__. The
+ * `.clientError` and `.serverError` are also available to be more
+ * specific, and `.statusType` is the class of error ranging from 1..5
+ * sometimes useful for mapping respond colors etc.
+ *
+ * "sugar" properties are also defined for common cases. Currently providing:
+ *
+ *   - .noContent
+ *   - .badRequest
+ *   - .unauthorized
+ *   - .notAcceptable
+ *   - .notFound
+ *
+ * @param {Number} status
+ * @api private
+ */
+
+ResponseBase.prototype._setStatusProperties = function(status){
+    var type = status / 100 | 0;
+
+    // status / class
+    this.status = this.statusCode = status;
+    this.statusType = type;
+
+    // basics
+    this.info = 1 == type;
+    this.ok = 2 == type;
+    this.redirect = 3 == type;
+    this.clientError = 4 == type;
+    this.serverError = 5 == type;
+    this.error = (4 == type || 5 == type)
+        ? this.toError()
+        : false;
+
+    // sugar
+    this.accepted = 202 == status;
+    this.noContent = 204 == status;
+    this.badRequest = 400 == status;
+    this.unauthorized = 401 == status;
+    this.notAcceptable = 406 == status;
+    this.forbidden = 403 == status;
+    this.notFound = 404 == status;
+};
+
+},{"./utils":42}],42:[function(require,module,exports){
+exports.type = function(str){
+  return str.split(/ *; */).shift();
+};
+
+/**
+ * Return header field parameters.
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
+
+exports.params = function(str){
+  return str.split(/ *; */).reduce(function(obj, str){
+    var parts = str.split(/ *= */);
+    var key = parts.shift();
+    var val = parts.shift();
+
+    if (key && val) { obj[key] = val; }
+    return obj;
+  }, {});
+};
+
+/**
+ * Parse Link header fields.
+ *
+ * @param {String} str
+ * @return {Object}
+ * @api private
+ */
+
+exports.parseLinks = function(str){
+  return str.split(/ *, */).reduce(function(obj, str){
+    var parts = str.split(/ *; */);
+    var url = parts[0].slice(1, -1);
+    var rel = parts[1].split(/ *= */)[1].slice(1, -1);
+    obj[rel] = url;
+    return obj;
+  }, {});
+};
+
+/**
+ * Strip content related fields from `header`.
+ *
+ * @param {Object} header
+ * @return {Object} header
+ * @api private
+ */
+
+exports.cleanHeader = function(header, shouldStripCookie){
+  delete header['content-type'];
+  delete header['content-length'];
+  delete header['transfer-encoding'];
+  delete header['host'];
+  if (shouldStripCookie) {
+    delete header['cookie'];
+  }
+  return header;
+};
+
+},{}],43:[function(require,module,exports){
+
+/**
+ * Expose `Emitter`.
+ */
+
+if (typeof module !== 'undefined') {
+  module.exports = Emitter;
+}
+
+/**
+ * Initialize a new `Emitter`.
+ *
+ * @api public
+ */
+
+function Emitter(obj) {
+  if (obj) { return mixin(obj); }
+}
+
+/**
+ * Mixin the emitter properties.
+ *
+ * @param {Object} obj
+ * @return {Object}
+ * @api private
+ */
+
+function mixin(obj) {
+  for (var key in Emitter.prototype) {
+    obj[key] = Emitter.prototype[key];
+  }
+  return obj;
+}
+
+/**
+ * Listen on the given `event` with `fn`.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.on =
+Emitter.prototype.addEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
+    .push(fn);
+  return this;
+};
+
+/**
+ * Adds an `event` listener that will be invoked a single
+ * time then automatically removed.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.once = function(event, fn){
+  function on() {
+    this.off(event, on);
+    fn.apply(this, arguments);
+  }
+
+  on.fn = fn;
+  this.on(event, on);
+  return this;
+};
+
+/**
+ * Remove the given callback for `event` or all
+ * registered callbacks.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.off =
+Emitter.prototype.removeListener =
+Emitter.prototype.removeAllListeners =
+Emitter.prototype.removeEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+
+  // all
+  if (0 == arguments.length) {
+    this._callbacks = {};
+    return this;
+  }
+
+  // specific event
+  var callbacks = this._callbacks['$' + event];
+  if (!callbacks) { return this; }
+
+  // remove all handlers
+  if (1 == arguments.length) {
+    delete this._callbacks['$' + event];
+    return this;
+  }
+
+  // remove specific handler
+  var cb;
+  for (var i = 0; i < callbacks.length; i++) {
+    cb = callbacks[i];
+    if (cb === fn || cb.fn === fn) {
+      callbacks.splice(i, 1);
+      break;
+    }
+  }
+  return this;
+};
+
+/**
+ * Emit `event` with the given args.
+ *
+ * @param {String} event
+ * @param {Mixed} ...
+ * @return {Emitter}
+ */
+
+Emitter.prototype.emit = function(event){
+  this._callbacks = this._callbacks || {};
+  var args = [].slice.call(arguments, 1)
+    , callbacks = this._callbacks['$' + event];
+
+  if (callbacks) {
+    callbacks = callbacks.slice(0);
+    for (var i = 0, len = callbacks.length; i < len; ++i) {
+      callbacks[i].apply(this, args);
+    }
+  }
+
+  return this;
+};
+
+/**
+ * Return array of callbacks for `event`.
+ *
+ * @param {String} event
+ * @return {Array}
+ * @api public
+ */
+
+Emitter.prototype.listeners = function(event){
+  this._callbacks = this._callbacks || {};
+  return this._callbacks['$' + event] || [];
+};
+
+/**
+ * Check if this emitter has `event` handlers.
+ *
+ * @param {String} event
+ * @return {Boolean}
+ * @api public
+ */
+
+Emitter.prototype.hasListeners = function(event){
+  return !! this.listeners(event).length;
+};
+
+},{}],44:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.7
+(function() {
+  exports.stripBOM = function(str) {
+    if (str[0] === '\uFEFF') {
+      return str.substring(1);
+    } else {
+      return str;
     }
   };
 
-  for (var prop in obj) loop( prop );
-  return res;
+}).call(this);
+
+},{}],45:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.7
+(function() {
+  var builder, defaults, escapeCDATA, requiresCDATA, wrapCDATA,
+    hasProp = {}.hasOwnProperty;
+
+  builder = require('xmlbuilder');
+
+  defaults = require('./defaults').defaults;
+
+  requiresCDATA = function(entry) {
+    return typeof entry === "string" && (entry.indexOf('&') >= 0 || entry.indexOf('>') >= 0 || entry.indexOf('<') >= 0);
+  };
+
+  wrapCDATA = function(entry) {
+    return "<![CDATA[" + (escapeCDATA(entry)) + "]]>";
+  };
+
+  escapeCDATA = function(entry) {
+    return entry.replace(']]>', ']]]]><![CDATA[>');
+  };
+
+  exports.Builder = (function() {
+    function Builder(opts) {
+      var key, ref, value;
+      this.options = {};
+      ref = defaults["0.2"];
+      for (key in ref) {
+        if (!hasProp.call(ref, key)) { continue; }
+        value = ref[key];
+        this.options[key] = value;
+      }
+      for (key in opts) {
+        if (!hasProp.call(opts, key)) { continue; }
+        value = opts[key];
+        this.options[key] = value;
+      }
+    }
+
+    Builder.prototype.buildObject = function(rootObj) {
+      var attrkey, charkey, render, rootElement, rootName;
+      attrkey = this.options.attrkey;
+      charkey = this.options.charkey;
+      if ((Object.keys(rootObj).length === 1) && (this.options.rootName === defaults['0.2'].rootName)) {
+        rootName = Object.keys(rootObj)[0];
+        rootObj = rootObj[rootName];
+      } else {
+        rootName = this.options.rootName;
+      }
+      render = (function(_this) {
+        return function(element, obj) {
+          var attr, child, entry, index, key, value;
+          if (typeof obj !== 'object') {
+            if (_this.options.cdata && requiresCDATA(obj)) {
+              element.raw(wrapCDATA(obj));
+            } else {
+              element.txt(obj);
+            }
+          } else if (Array.isArray(obj)) {
+            for (index in obj) {
+              if (!hasProp.call(obj, index)) { continue; }
+              child = obj[index];
+              for (key in child) {
+                entry = child[key];
+                element = render(element.ele(key), entry).up();
+              }
+            }
+          } else {
+            for (key in obj) {
+              if (!hasProp.call(obj, key)) { continue; }
+              child = obj[key];
+              if (key === attrkey) {
+                if (typeof child === "object") {
+                  for (attr in child) {
+                    value = child[attr];
+                    element = element.att(attr, value);
+                  }
+                }
+              } else if (key === charkey) {
+                if (_this.options.cdata && requiresCDATA(child)) {
+                  element = element.raw(wrapCDATA(child));
+                } else {
+                  element = element.txt(child);
+                }
+              } else if (Array.isArray(child)) {
+                for (index in child) {
+                  if (!hasProp.call(child, index)) { continue; }
+                  entry = child[index];
+                  if (typeof entry === 'string') {
+                    if (_this.options.cdata && requiresCDATA(entry)) {
+                      element = element.ele(key).raw(wrapCDATA(entry)).up();
+                    } else {
+                      element = element.ele(key, entry).up();
+                    }
+                  } else {
+                    element = render(element.ele(key), entry).up();
+                  }
+                }
+              } else if (typeof child === "object") {
+                element = render(element.ele(key), child).up();
+              } else {
+                if (typeof child === 'string' && _this.options.cdata && requiresCDATA(child)) {
+                  element = element.ele(key).raw(wrapCDATA(child)).up();
+                } else {
+                  if (child == null) {
+                    child = '';
+                  }
+                  element = element.ele(key, child.toString()).up();
+                }
+              }
+            }
+          }
+          return element;
+        };
+      })(this);
+      rootElement = builder.create(rootName, this.options.xmldec, this.options.doctype, {
+        headless: this.options.headless,
+        allowSurrogateChars: this.options.allowSurrogateChars
+      });
+      return render(rootElement, rootObj).end(this.options.renderOpts);
+    };
+
+    return Builder;
+
+  })();
+
+}).call(this);
+
+},{"./defaults":46,"xmlbuilder":72}],46:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.7
+(function() {
+  exports.defaults = {
+    "0.1": {
+      explicitCharkey: false,
+      trim: true,
+      normalize: true,
+      normalizeTags: false,
+      attrkey: "@",
+      charkey: "#",
+      explicitArray: false,
+      ignoreAttrs: false,
+      mergeAttrs: false,
+      explicitRoot: false,
+      validator: null,
+      xmlns: false,
+      explicitChildren: false,
+      childkey: '@@',
+      charsAsChildren: false,
+      includeWhiteChars: false,
+      async: false,
+      strict: true,
+      attrNameProcessors: null,
+      attrValueProcessors: null,
+      tagNameProcessors: null,
+      valueProcessors: null,
+      emptyTag: ''
+    },
+    "0.2": {
+      explicitCharkey: false,
+      trim: false,
+      normalize: false,
+      normalizeTags: false,
+      attrkey: "$",
+      charkey: "_",
+      explicitArray: true,
+      ignoreAttrs: false,
+      mergeAttrs: false,
+      explicitRoot: true,
+      validator: null,
+      xmlns: false,
+      explicitChildren: false,
+      preserveChildrenOrder: false,
+      childkey: '$$',
+      charsAsChildren: false,
+      includeWhiteChars: false,
+      async: false,
+      strict: true,
+      attrNameProcessors: null,
+      attrValueProcessors: null,
+      tagNameProcessors: null,
+      valueProcessors: null,
+      rootName: 'root',
+      xmldec: {
+        'version': '1.0',
+        'encoding': 'UTF-8',
+        'standalone': true
+      },
+      doctype: null,
+      renderOpts: {
+        'pretty': true,
+        'indent': '  ',
+        'newline': '\n'
+      },
+      headless: false,
+      chunkSize: 10000,
+      emptyTag: '',
+      cdata: false
+    }
+  };
+
+}).call(this);
+
+},{}],47:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.7
+(function() {
+  var bom, defaults, events, isEmpty, processItem, processors, sax, setImmediate,
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  sax = require('sax');
+
+  events = require('events');
+
+  bom = require('./bom');
+
+  processors = require('./processors');
+
+  setImmediate = require('timers').setImmediate;
+
+  defaults = require('./defaults').defaults;
+
+  isEmpty = function(thing) {
+    return typeof thing === "object" && (thing != null) && Object.keys(thing).length === 0;
+  };
+
+  processItem = function(processors, item, key) {
+    var i, len, process;
+    for (i = 0, len = processors.length; i < len; i++) {
+      process = processors[i];
+      item = process(item, key);
+    }
+    return item;
+  };
+
+  exports.Parser = (function(superClass) {
+    extend(Parser, superClass);
+
+    function Parser(opts) {
+      this.parseString = bind(this.parseString, this);
+      this.reset = bind(this.reset, this);
+      this.assignOrPush = bind(this.assignOrPush, this);
+      this.processAsync = bind(this.processAsync, this);
+      var key, ref, value;
+      if (!(this instanceof exports.Parser)) {
+        return new exports.Parser(opts);
+      }
+      this.options = {};
+      ref = defaults["0.2"];
+      for (key in ref) {
+        if (!hasProp.call(ref, key)) { continue; }
+        value = ref[key];
+        this.options[key] = value;
+      }
+      for (key in opts) {
+        if (!hasProp.call(opts, key)) { continue; }
+        value = opts[key];
+        this.options[key] = value;
+      }
+      if (this.options.xmlns) {
+        this.options.xmlnskey = this.options.attrkey + "ns";
+      }
+      if (this.options.normalizeTags) {
+        if (!this.options.tagNameProcessors) {
+          this.options.tagNameProcessors = [];
+        }
+        this.options.tagNameProcessors.unshift(processors.normalize);
+      }
+      this.reset();
+    }
+
+    Parser.prototype.processAsync = function() {
+      var chunk, err;
+      try {
+        if (this.remaining.length <= this.options.chunkSize) {
+          chunk = this.remaining;
+          this.remaining = '';
+          this.saxParser = this.saxParser.write(chunk);
+          return this.saxParser.close();
+        } else {
+          chunk = this.remaining.substr(0, this.options.chunkSize);
+          this.remaining = this.remaining.substr(this.options.chunkSize, this.remaining.length);
+          this.saxParser = this.saxParser.write(chunk);
+          return setImmediate(this.processAsync);
+        }
+      } catch (error1) {
+        err = error1;
+        if (!this.saxParser.errThrown) {
+          this.saxParser.errThrown = true;
+          return this.emit(err);
+        }
+      }
+    };
+
+    Parser.prototype.assignOrPush = function(obj, key, newValue) {
+      if (!(key in obj)) {
+        if (!this.options.explicitArray) {
+          return obj[key] = newValue;
+        } else {
+          return obj[key] = [newValue];
+        }
+      } else {
+        if (!(obj[key] instanceof Array)) {
+          obj[key] = [obj[key]];
+        }
+        return obj[key].push(newValue);
+      }
+    };
+
+    Parser.prototype.reset = function() {
+      var attrkey, charkey, ontext, stack;
+      this.removeAllListeners();
+      this.saxParser = sax.parser(this.options.strict, {
+        trim: false,
+        normalize: false,
+        xmlns: this.options.xmlns
+      });
+      this.saxParser.errThrown = false;
+      this.saxParser.onerror = (function(_this) {
+        return function(error) {
+          _this.saxParser.resume();
+          if (!_this.saxParser.errThrown) {
+            _this.saxParser.errThrown = true;
+            return _this.emit("error", error);
+          }
+        };
+      })(this);
+      this.saxParser.onend = (function(_this) {
+        return function() {
+          if (!_this.saxParser.ended) {
+            _this.saxParser.ended = true;
+            return _this.emit("end", _this.resultObject);
+          }
+        };
+      })(this);
+      this.saxParser.ended = false;
+      this.EXPLICIT_CHARKEY = this.options.explicitCharkey;
+      this.resultObject = null;
+      stack = [];
+      attrkey = this.options.attrkey;
+      charkey = this.options.charkey;
+      this.saxParser.onopentag = (function(_this) {
+        return function(node) {
+          var key, newValue, obj, processedKey, ref;
+          obj = {};
+          obj[charkey] = "";
+          if (!_this.options.ignoreAttrs) {
+            ref = node.attributes;
+            for (key in ref) {
+              if (!hasProp.call(ref, key)) { continue; }
+              if (!(attrkey in obj) && !_this.options.mergeAttrs) {
+                obj[attrkey] = {};
+              }
+              newValue = _this.options.attrValueProcessors ? processItem(_this.options.attrValueProcessors, node.attributes[key], key) : node.attributes[key];
+              processedKey = _this.options.attrNameProcessors ? processItem(_this.options.attrNameProcessors, key) : key;
+              if (_this.options.mergeAttrs) {
+                _this.assignOrPush(obj, processedKey, newValue);
+              } else {
+                obj[attrkey][processedKey] = newValue;
+              }
+            }
+          }
+          obj["#name"] = _this.options.tagNameProcessors ? processItem(_this.options.tagNameProcessors, node.name) : node.name;
+          if (_this.options.xmlns) {
+            obj[_this.options.xmlnskey] = {
+              uri: node.uri,
+              local: node.local
+            };
+          }
+          return stack.push(obj);
+        };
+      })(this);
+      this.saxParser.onclosetag = (function(_this) {
+        return function() {
+          var cdata, emptyStr, key, node, nodeName, obj, objClone, old, s, xpath;
+          obj = stack.pop();
+          nodeName = obj["#name"];
+          if (!_this.options.explicitChildren || !_this.options.preserveChildrenOrder) {
+            delete obj["#name"];
+          }
+          if (obj.cdata === true) {
+            cdata = obj.cdata;
+            delete obj.cdata;
+          }
+          s = stack[stack.length - 1];
+          if (obj[charkey].match(/^\s*$/) && !cdata) {
+            emptyStr = obj[charkey];
+            delete obj[charkey];
+          } else {
+            if (_this.options.trim) {
+              obj[charkey] = obj[charkey].trim();
+            }
+            if (_this.options.normalize) {
+              obj[charkey] = obj[charkey].replace(/\s{2,}/g, " ").trim();
+            }
+            obj[charkey] = _this.options.valueProcessors ? processItem(_this.options.valueProcessors, obj[charkey], nodeName) : obj[charkey];
+            if (Object.keys(obj).length === 1 && charkey in obj && !_this.EXPLICIT_CHARKEY) {
+              obj = obj[charkey];
+            }
+          }
+          if (isEmpty(obj)) {
+            obj = _this.options.emptyTag !== '' ? _this.options.emptyTag : emptyStr;
+          }
+          if (_this.options.validator != null) {
+            xpath = "/" + ((function() {
+              var i, len, results;
+              results = [];
+              for (i = 0, len = stack.length; i < len; i++) {
+                node = stack[i];
+                results.push(node["#name"]);
+              }
+              return results;
+            })()).concat(nodeName).join("/");
+            (function() {
+              var err;
+              try {
+                return obj = _this.options.validator(xpath, s && s[nodeName], obj);
+              } catch (error1) {
+                err = error1;
+                return _this.emit("error", err);
+              }
+            })();
+          }
+          if (_this.options.explicitChildren && !_this.options.mergeAttrs && typeof obj === 'object') {
+            if (!_this.options.preserveChildrenOrder) {
+              node = {};
+              if (_this.options.attrkey in obj) {
+                node[_this.options.attrkey] = obj[_this.options.attrkey];
+                delete obj[_this.options.attrkey];
+              }
+              if (!_this.options.charsAsChildren && _this.options.charkey in obj) {
+                node[_this.options.charkey] = obj[_this.options.charkey];
+                delete obj[_this.options.charkey];
+              }
+              if (Object.getOwnPropertyNames(obj).length > 0) {
+                node[_this.options.childkey] = obj;
+              }
+              obj = node;
+            } else if (s) {
+              s[_this.options.childkey] = s[_this.options.childkey] || [];
+              objClone = {};
+              for (key in obj) {
+                if (!hasProp.call(obj, key)) { continue; }
+                objClone[key] = obj[key];
+              }
+              s[_this.options.childkey].push(objClone);
+              delete obj["#name"];
+              if (Object.keys(obj).length === 1 && charkey in obj && !_this.EXPLICIT_CHARKEY) {
+                obj = obj[charkey];
+              }
+            }
+          }
+          if (stack.length > 0) {
+            return _this.assignOrPush(s, nodeName, obj);
+          } else {
+            if (_this.options.explicitRoot) {
+              old = obj;
+              obj = {};
+              obj[nodeName] = old;
+            }
+            _this.resultObject = obj;
+            _this.saxParser.ended = true;
+            return _this.emit("end", _this.resultObject);
+          }
+        };
+      })(this);
+      ontext = (function(_this) {
+        return function(text) {
+          var charChild, s;
+          s = stack[stack.length - 1];
+          if (s) {
+            s[charkey] += text;
+            if (_this.options.explicitChildren && _this.options.preserveChildrenOrder && _this.options.charsAsChildren && (_this.options.includeWhiteChars || text.replace(/\\n/g, '').trim() !== '')) {
+              s[_this.options.childkey] = s[_this.options.childkey] || [];
+              charChild = {
+                '#name': '__text__'
+              };
+              charChild[charkey] = text;
+              if (_this.options.normalize) {
+                charChild[charkey] = charChild[charkey].replace(/\s{2,}/g, " ").trim();
+              }
+              s[_this.options.childkey].push(charChild);
+            }
+            return s;
+          }
+        };
+      })(this);
+      this.saxParser.ontext = ontext;
+      return this.saxParser.oncdata = (function(_this) {
+        return function(text) {
+          var s;
+          s = ontext(text);
+          if (s) {
+            return s.cdata = true;
+          }
+        };
+      })(this);
+    };
+
+    Parser.prototype.parseString = function(str, cb) {
+      var err;
+      if ((cb != null) && typeof cb === "function") {
+        this.on("end", function(result) {
+          this.reset();
+          return cb(null, result);
+        });
+        this.on("error", function(err) {
+          this.reset();
+          return cb(err);
+        });
+      }
+      try {
+        str = str.toString();
+        if (str.trim() === '') {
+          this.emit("end", null);
+          return true;
+        }
+        str = bom.stripBOM(str);
+        if (this.options.async) {
+          this.remaining = str;
+          setImmediate(this.processAsync);
+          return this.saxParser;
+        }
+        return this.saxParser.write(str).close();
+      } catch (error1) {
+        err = error1;
+        if (!(this.saxParser.errThrown || this.saxParser.ended)) {
+          this.emit('error', err);
+          return this.saxParser.errThrown = true;
+        } else if (this.saxParser.ended) {
+          throw err;
+        }
+      }
+    };
+
+    return Parser;
+
+  })(events.EventEmitter);
+
+  exports.parseString = function(str, a, b) {
+    var cb, options, parser;
+    if (b != null) {
+      if (typeof b === 'function') {
+        cb = b;
+      }
+      if (typeof a === 'object') {
+        options = a;
+      }
+    } else {
+      if (typeof a === 'function') {
+        cb = a;
+      }
+      options = {};
+    }
+    parser = new exports.Parser(options);
+    return parser.parseString(str, cb);
+  };
+
+}).call(this);
+
+},{"./bom":44,"./defaults":46,"./processors":48,"events":8,"sax":50,"timers":36}],48:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.7
+(function() {
+  var prefixMatch;
+
+  prefixMatch = new RegExp(/(?!xmlns)^.*:/);
+
+  exports.normalize = function(str) {
+    return str.toLowerCase();
+  };
+
+  exports.firstCharLowerCase = function(str) {
+    return str.charAt(0).toLowerCase() + str.slice(1);
+  };
+
+  exports.stripPrefix = function(str) {
+    return str.replace(prefixMatch, '');
+  };
+
+  exports.parseNumbers = function(str) {
+    if (!isNaN(str)) {
+      str = str % 1 === 0 ? parseInt(str, 10) : parseFloat(str);
+    }
+    return str;
+  };
+
+  exports.parseBooleans = function(str) {
+    if (/^(?:true|false)$/i.test(str)) {
+      str = str.toLowerCase() === 'true';
+    }
+    return str;
+  };
+
+}).call(this);
+
+},{}],49:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.7
+(function() {
+  var builder, defaults, parser, processors,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  defaults = require('./defaults');
+
+  builder = require('./builder');
+
+  parser = require('./parser');
+
+  processors = require('./processors');
+
+  exports.defaults = defaults.defaults;
+
+  exports.processors = processors;
+
+  exports.ValidationError = (function(superClass) {
+    extend(ValidationError, superClass);
+
+    function ValidationError(message) {
+      this.message = message;
+    }
+
+    return ValidationError;
+
+  })(Error);
+
+  exports.Builder = builder.Builder;
+
+  exports.Parser = parser.Parser;
+
+  exports.parseString = parser.parseString;
+
+}).call(this);
+
+},{"./builder":45,"./defaults":46,"./parser":47,"./processors":48}],50:[function(require,module,exports){
+(function (Buffer){
+(function (sax) { // wrapper for non-node envs
+  sax.parser = function (strict, opt) { return new SAXParser(strict, opt) };
+  sax.SAXParser = SAXParser;
+  sax.SAXStream = SAXStream;
+  sax.createStream = createStream;
+
+  // When we pass the MAX_BUFFER_LENGTH position, start checking for buffer overruns.
+  // When we check, schedule the next check for MAX_BUFFER_LENGTH - (max(buffer lengths)),
+  // since that's the earliest that a buffer overrun could occur.  This way, checks are
+  // as rare as required, but as often as necessary to ensure never crossing this bound.
+  // Furthermore, buffers are only tested at most once per write(), so passing a very
+  // large string into write() might have undesirable effects, but this is manageable by
+  // the caller, so it is assumed to be safe.  Thus, a call to write() may, in the extreme
+  // edge case, result in creating at most one complete copy of the string passed in.
+  // Set to Infinity to have unlimited buffers.
+  sax.MAX_BUFFER_LENGTH = 64 * 1024;
+
+  var buffers = [
+    'comment', 'sgmlDecl', 'textNode', 'tagName', 'doctype',
+    'procInstName', 'procInstBody', 'entity', 'attribName',
+    'attribValue', 'cdata', 'script'
+  ];
+
+  sax.EVENTS = [
+    'text',
+    'processinginstruction',
+    'sgmldeclaration',
+    'doctype',
+    'comment',
+    'opentagstart',
+    'attribute',
+    'opentag',
+    'closetag',
+    'opencdata',
+    'cdata',
+    'closecdata',
+    'error',
+    'end',
+    'ready',
+    'script',
+    'opennamespace',
+    'closenamespace'
+  ];
+
+  function SAXParser (strict, opt) {
+    if (!(this instanceof SAXParser)) {
+      return new SAXParser(strict, opt)
+    }
+
+    var parser = this;
+    clearBuffers(parser);
+    parser.q = parser.c = '';
+    parser.bufferCheckPosition = sax.MAX_BUFFER_LENGTH;
+    parser.opt = opt || {};
+    parser.opt.lowercase = parser.opt.lowercase || parser.opt.lowercasetags;
+    parser.looseCase = parser.opt.lowercase ? 'toLowerCase' : 'toUpperCase';
+    parser.tags = [];
+    parser.closed = parser.closedRoot = parser.sawRoot = false;
+    parser.tag = parser.error = null;
+    parser.strict = !!strict;
+    parser.noscript = !!(strict || parser.opt.noscript);
+    parser.state = S.BEGIN;
+    parser.strictEntities = parser.opt.strictEntities;
+    parser.ENTITIES = parser.strictEntities ? Object.create(sax.XML_ENTITIES) : Object.create(sax.ENTITIES);
+    parser.attribList = [];
+
+    // namespaces form a prototype chain.
+    // it always points at the current tag,
+    // which protos to its parent tag.
+    if (parser.opt.xmlns) {
+      parser.ns = Object.create(rootNS);
+    }
+
+    // mostly just for error reporting
+    parser.trackPosition = parser.opt.position !== false;
+    if (parser.trackPosition) {
+      parser.position = parser.line = parser.column = 0;
+    }
+    emit(parser, 'onready');
+  }
+
+  if (!Object.create) {
+    Object.create = function (o) {
+      function F () {}
+      F.prototype = o;
+      var newf = new F();
+      return newf
+    };
+  }
+
+  if (!Object.keys) {
+    Object.keys = function (o) {
+      var a = [];
+      for (var i in o) { if (o.hasOwnProperty(i)) { a.push(i); } }
+      return a
+    };
+  }
+
+  function checkBufferLength (parser) {
+    var maxAllowed = Math.max(sax.MAX_BUFFER_LENGTH, 10);
+    var maxActual = 0;
+    for (var i = 0, l = buffers.length; i < l; i++) {
+      var len = parser[buffers[i]].length;
+      if (len > maxAllowed) {
+        // Text/cdata nodes can get big, and since they're buffered,
+        // we can get here under normal conditions.
+        // Avoid issues by emitting the text node now,
+        // so at least it won't get any bigger.
+        switch (buffers[i]) {
+          case 'textNode':
+            closeText(parser);
+            break
+
+          case 'cdata':
+            emitNode(parser, 'oncdata', parser.cdata);
+            parser.cdata = '';
+            break
+
+          case 'script':
+            emitNode(parser, 'onscript', parser.script);
+            parser.script = '';
+            break
+
+          default:
+            error(parser, 'Max buffer length exceeded: ' + buffers[i]);
+        }
+      }
+      maxActual = Math.max(maxActual, len);
+    }
+    // schedule the next check for the earliest possible buffer overrun.
+    var m = sax.MAX_BUFFER_LENGTH - maxActual;
+    parser.bufferCheckPosition = m + parser.position;
+  }
+
+  function clearBuffers (parser) {
+    for (var i = 0, l = buffers.length; i < l; i++) {
+      parser[buffers[i]] = '';
+    }
+  }
+
+  function flushBuffers (parser) {
+    closeText(parser);
+    if (parser.cdata !== '') {
+      emitNode(parser, 'oncdata', parser.cdata);
+      parser.cdata = '';
+    }
+    if (parser.script !== '') {
+      emitNode(parser, 'onscript', parser.script);
+      parser.script = '';
+    }
+  }
+
+  SAXParser.prototype = {
+    end: function () { end(this); },
+    write: write,
+    resume: function () { this.error = null; return this },
+    close: function () { return this.write(null) },
+    flush: function () { flushBuffers(this); }
+  };
+
+  var Stream;
+  try {
+    Stream = require('stream').Stream;
+  } catch (ex) {
+    Stream = function () {};
+  }
+
+  var streamWraps = sax.EVENTS.filter(function (ev) {
+    return ev !== 'error' && ev !== 'end'
+  });
+
+  function createStream (strict, opt) {
+    return new SAXStream(strict, opt)
+  }
+
+  function SAXStream (strict, opt) {
+    if (!(this instanceof SAXStream)) {
+      return new SAXStream(strict, opt)
+    }
+
+    Stream.apply(this);
+
+    this._parser = new SAXParser(strict, opt);
+    this.writable = true;
+    this.readable = true;
+
+    var me = this;
+
+    this._parser.onend = function () {
+      me.emit('end');
+    };
+
+    this._parser.onerror = function (er) {
+      me.emit('error', er);
+
+      // if didn't throw, then means error was handled.
+      // go ahead and clear error, so we can write again.
+      me._parser.error = null;
+    };
+
+    this._decoder = null;
+
+    streamWraps.forEach(function (ev) {
+      Object.defineProperty(me, 'on' + ev, {
+        get: function () {
+          return me._parser['on' + ev]
+        },
+        set: function (h) {
+          if (!h) {
+            me.removeAllListeners(ev);
+            me._parser['on' + ev] = h;
+            return h
+          }
+          me.on(ev, h);
+        },
+        enumerable: true,
+        configurable: false
+      });
+    });
+  }
+
+  SAXStream.prototype = Object.create(Stream.prototype, {
+    constructor: {
+      value: SAXStream
+    }
+  });
+
+  SAXStream.prototype.write = function (data) {
+    if (typeof Buffer === 'function' &&
+      typeof Buffer.isBuffer === 'function' &&
+      Buffer.isBuffer(data)) {
+      if (!this._decoder) {
+        var SD = require('string_decoder').StringDecoder;
+        this._decoder = new SD('utf8');
+      }
+      data = this._decoder.write(data);
+    }
+
+    this._parser.write(data.toString());
+    this.emit('data', data);
+    return true
+  };
+
+  SAXStream.prototype.end = function (chunk) {
+    if (chunk && chunk.length) {
+      this.write(chunk);
+    }
+    this._parser.end();
+    return true
+  };
+
+  SAXStream.prototype.on = function (ev, handler) {
+    var me = this;
+    if (!me._parser['on' + ev] && streamWraps.indexOf(ev) !== -1) {
+      me._parser['on' + ev] = function () {
+        var args = arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments);
+        args.splice(0, 0, ev);
+        me.emit.apply(me, args);
+      };
+    }
+
+    return Stream.prototype.on.call(me, ev, handler)
+  };
+
+  // this really needs to be replaced with character classes.
+  // XML allows all manner of ridiculous numbers and digits.
+  var CDATA = '[CDATA[';
+  var DOCTYPE = 'DOCTYPE';
+  var XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
+  var XMLNS_NAMESPACE = 'http://www.w3.org/2000/xmlns/';
+  var rootNS = { xml: XML_NAMESPACE, xmlns: XMLNS_NAMESPACE };
+
+  // http://www.w3.org/TR/REC-xml/#NT-NameStartChar
+  // This implementation works on strings, a single character at a time
+  // as such, it cannot ever support astral-plane characters (10000-EFFFF)
+  // without a significant breaking change to either this  parser, or the
+  // JavaScript language.  Implementation of an emoji-capable xml parser
+  // is left as an exercise for the reader.
+  var nameStart = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
+
+  var nameBody = /[:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
+
+  var entityStart = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
+  var entityBody = /[#:_A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u00B7\u0300-\u036F\u203F-\u2040.\d-]/;
+
+  function isWhitespace (c) {
+    return c === ' ' || c === '\n' || c === '\r' || c === '\t'
+  }
+
+  function isQuote (c) {
+    return c === '"' || c === '\''
+  }
+
+  function isAttribEnd (c) {
+    return c === '>' || isWhitespace(c)
+  }
+
+  function isMatch (regex, c) {
+    return regex.test(c)
+  }
+
+  function notMatch (regex, c) {
+    return !isMatch(regex, c)
+  }
+
+  var S = 0;
+  sax.STATE = {
+    BEGIN: S++, // leading byte order mark or whitespace
+    BEGIN_WHITESPACE: S++, // leading whitespace
+    TEXT: S++, // general stuff
+    TEXT_ENTITY: S++, // &amp and such.
+    OPEN_WAKA: S++, // <
+    SGML_DECL: S++, // <!BLARG
+    SGML_DECL_QUOTED: S++, // <!BLARG foo "bar
+    DOCTYPE: S++, // <!DOCTYPE
+    DOCTYPE_QUOTED: S++, // <!DOCTYPE "//blah
+    DOCTYPE_DTD: S++, // <!DOCTYPE "//blah" [ ...
+    DOCTYPE_DTD_QUOTED: S++, // <!DOCTYPE "//blah" [ "foo
+    COMMENT_STARTING: S++, // <!-
+    COMMENT: S++, // <!--
+    COMMENT_ENDING: S++, // <!-- blah -
+    COMMENT_ENDED: S++, // <!-- blah --
+    CDATA: S++, // <![CDATA[ something
+    CDATA_ENDING: S++, // ]
+    CDATA_ENDING_2: S++, // ]]
+    PROC_INST: S++, // <?hi
+    PROC_INST_BODY: S++, // <?hi there
+    PROC_INST_ENDING: S++, // <?hi "there" ?
+    OPEN_TAG: S++, // <strong
+    OPEN_TAG_SLASH: S++, // <strong /
+    ATTRIB: S++, // <a
+    ATTRIB_NAME: S++, // <a foo
+    ATTRIB_NAME_SAW_WHITE: S++, // <a foo _
+    ATTRIB_VALUE: S++, // <a foo=
+    ATTRIB_VALUE_QUOTED: S++, // <a foo="bar
+    ATTRIB_VALUE_CLOSED: S++, // <a foo="bar"
+    ATTRIB_VALUE_UNQUOTED: S++, // <a foo=bar
+    ATTRIB_VALUE_ENTITY_Q: S++, // <foo bar="&quot;"
+    ATTRIB_VALUE_ENTITY_U: S++, // <foo bar=&quot
+    CLOSE_TAG: S++, // </a
+    CLOSE_TAG_SAW_WHITE: S++, // </a   >
+    SCRIPT: S++, // <script> ...
+    SCRIPT_ENDING: S++ // <script> ... <
+  };
+
+  sax.XML_ENTITIES = {
+    'amp': '&',
+    'gt': '>',
+    'lt': '<',
+    'quot': '"',
+    'apos': "'"
+  };
+
+  sax.ENTITIES = {
+    'amp': '&',
+    'gt': '>',
+    'lt': '<',
+    'quot': '"',
+    'apos': "'",
+    'AElig': 198,
+    'Aacute': 193,
+    'Acirc': 194,
+    'Agrave': 192,
+    'Aring': 197,
+    'Atilde': 195,
+    'Auml': 196,
+    'Ccedil': 199,
+    'ETH': 208,
+    'Eacute': 201,
+    'Ecirc': 202,
+    'Egrave': 200,
+    'Euml': 203,
+    'Iacute': 205,
+    'Icirc': 206,
+    'Igrave': 204,
+    'Iuml': 207,
+    'Ntilde': 209,
+    'Oacute': 211,
+    'Ocirc': 212,
+    'Ograve': 210,
+    'Oslash': 216,
+    'Otilde': 213,
+    'Ouml': 214,
+    'THORN': 222,
+    'Uacute': 218,
+    'Ucirc': 219,
+    'Ugrave': 217,
+    'Uuml': 220,
+    'Yacute': 221,
+    'aacute': 225,
+    'acirc': 226,
+    'aelig': 230,
+    'agrave': 224,
+    'aring': 229,
+    'atilde': 227,
+    'auml': 228,
+    'ccedil': 231,
+    'eacute': 233,
+    'ecirc': 234,
+    'egrave': 232,
+    'eth': 240,
+    'euml': 235,
+    'iacute': 237,
+    'icirc': 238,
+    'igrave': 236,
+    'iuml': 239,
+    'ntilde': 241,
+    'oacute': 243,
+    'ocirc': 244,
+    'ograve': 242,
+    'oslash': 248,
+    'otilde': 245,
+    'ouml': 246,
+    'szlig': 223,
+    'thorn': 254,
+    'uacute': 250,
+    'ucirc': 251,
+    'ugrave': 249,
+    'uuml': 252,
+    'yacute': 253,
+    'yuml': 255,
+    'copy': 169,
+    'reg': 174,
+    'nbsp': 160,
+    'iexcl': 161,
+    'cent': 162,
+    'pound': 163,
+    'curren': 164,
+    'yen': 165,
+    'brvbar': 166,
+    'sect': 167,
+    'uml': 168,
+    'ordf': 170,
+    'laquo': 171,
+    'not': 172,
+    'shy': 173,
+    'macr': 175,
+    'deg': 176,
+    'plusmn': 177,
+    'sup1': 185,
+    'sup2': 178,
+    'sup3': 179,
+    'acute': 180,
+    'micro': 181,
+    'para': 182,
+    'middot': 183,
+    'cedil': 184,
+    'ordm': 186,
+    'raquo': 187,
+    'frac14': 188,
+    'frac12': 189,
+    'frac34': 190,
+    'iquest': 191,
+    'times': 215,
+    'divide': 247,
+    'OElig': 338,
+    'oelig': 339,
+    'Scaron': 352,
+    'scaron': 353,
+    'Yuml': 376,
+    'fnof': 402,
+    'circ': 710,
+    'tilde': 732,
+    'Alpha': 913,
+    'Beta': 914,
+    'Gamma': 915,
+    'Delta': 916,
+    'Epsilon': 917,
+    'Zeta': 918,
+    'Eta': 919,
+    'Theta': 920,
+    'Iota': 921,
+    'Kappa': 922,
+    'Lambda': 923,
+    'Mu': 924,
+    'Nu': 925,
+    'Xi': 926,
+    'Omicron': 927,
+    'Pi': 928,
+    'Rho': 929,
+    'Sigma': 931,
+    'Tau': 932,
+    'Upsilon': 933,
+    'Phi': 934,
+    'Chi': 935,
+    'Psi': 936,
+    'Omega': 937,
+    'alpha': 945,
+    'beta': 946,
+    'gamma': 947,
+    'delta': 948,
+    'epsilon': 949,
+    'zeta': 950,
+    'eta': 951,
+    'theta': 952,
+    'iota': 953,
+    'kappa': 954,
+    'lambda': 955,
+    'mu': 956,
+    'nu': 957,
+    'xi': 958,
+    'omicron': 959,
+    'pi': 960,
+    'rho': 961,
+    'sigmaf': 962,
+    'sigma': 963,
+    'tau': 964,
+    'upsilon': 965,
+    'phi': 966,
+    'chi': 967,
+    'psi': 968,
+    'omega': 969,
+    'thetasym': 977,
+    'upsih': 978,
+    'piv': 982,
+    'ensp': 8194,
+    'emsp': 8195,
+    'thinsp': 8201,
+    'zwnj': 8204,
+    'zwj': 8205,
+    'lrm': 8206,
+    'rlm': 8207,
+    'ndash': 8211,
+    'mdash': 8212,
+    'lsquo': 8216,
+    'rsquo': 8217,
+    'sbquo': 8218,
+    'ldquo': 8220,
+    'rdquo': 8221,
+    'bdquo': 8222,
+    'dagger': 8224,
+    'Dagger': 8225,
+    'bull': 8226,
+    'hellip': 8230,
+    'permil': 8240,
+    'prime': 8242,
+    'Prime': 8243,
+    'lsaquo': 8249,
+    'rsaquo': 8250,
+    'oline': 8254,
+    'frasl': 8260,
+    'euro': 8364,
+    'image': 8465,
+    'weierp': 8472,
+    'real': 8476,
+    'trade': 8482,
+    'alefsym': 8501,
+    'larr': 8592,
+    'uarr': 8593,
+    'rarr': 8594,
+    'darr': 8595,
+    'harr': 8596,
+    'crarr': 8629,
+    'lArr': 8656,
+    'uArr': 8657,
+    'rArr': 8658,
+    'dArr': 8659,
+    'hArr': 8660,
+    'forall': 8704,
+    'part': 8706,
+    'exist': 8707,
+    'empty': 8709,
+    'nabla': 8711,
+    'isin': 8712,
+    'notin': 8713,
+    'ni': 8715,
+    'prod': 8719,
+    'sum': 8721,
+    'minus': 8722,
+    'lowast': 8727,
+    'radic': 8730,
+    'prop': 8733,
+    'infin': 8734,
+    'ang': 8736,
+    'and': 8743,
+    'or': 8744,
+    'cap': 8745,
+    'cup': 8746,
+    'int': 8747,
+    'there4': 8756,
+    'sim': 8764,
+    'cong': 8773,
+    'asymp': 8776,
+    'ne': 8800,
+    'equiv': 8801,
+    'le': 8804,
+    'ge': 8805,
+    'sub': 8834,
+    'sup': 8835,
+    'nsub': 8836,
+    'sube': 8838,
+    'supe': 8839,
+    'oplus': 8853,
+    'otimes': 8855,
+    'perp': 8869,
+    'sdot': 8901,
+    'lceil': 8968,
+    'rceil': 8969,
+    'lfloor': 8970,
+    'rfloor': 8971,
+    'lang': 9001,
+    'rang': 9002,
+    'loz': 9674,
+    'spades': 9824,
+    'clubs': 9827,
+    'hearts': 9829,
+    'diams': 9830
+  };
+
+  Object.keys(sax.ENTITIES).forEach(function (key) {
+    var e = sax.ENTITIES[key];
+    var s = typeof e === 'number' ? String.fromCharCode(e) : e;
+    sax.ENTITIES[key] = s;
+  });
+
+  for (var s in sax.STATE) {
+    sax.STATE[sax.STATE[s]] = s;
+  }
+
+  // shorthand
+  S = sax.STATE;
+
+  function emit (parser, event, data) {
+    parser[event] && parser[event](data);
+  }
+
+  function emitNode (parser, nodeType, data) {
+    if (parser.textNode) { closeText(parser); }
+    emit(parser, nodeType, data);
+  }
+
+  function closeText (parser) {
+    parser.textNode = textopts(parser.opt, parser.textNode);
+    if (parser.textNode) { emit(parser, 'ontext', parser.textNode); }
+    parser.textNode = '';
+  }
+
+  function textopts (opt, text) {
+    if (opt.trim) { text = text.trim(); }
+    if (opt.normalize) { text = text.replace(/\s+/g, ' '); }
+    return text
+  }
+
+  function error (parser, er) {
+    closeText(parser);
+    if (parser.trackPosition) {
+      er += '\nLine: ' + parser.line +
+        '\nColumn: ' + parser.column +
+        '\nChar: ' + parser.c;
+    }
+    er = new Error(er);
+    parser.error = er;
+    emit(parser, 'onerror', er);
+    return parser
+  }
+
+  function end (parser) {
+    if (parser.sawRoot && !parser.closedRoot) { strictFail(parser, 'Unclosed root tag'); }
+    if ((parser.state !== S.BEGIN) &&
+      (parser.state !== S.BEGIN_WHITESPACE) &&
+      (parser.state !== S.TEXT)) {
+      error(parser, 'Unexpected end');
+    }
+    closeText(parser);
+    parser.c = '';
+    parser.closed = true;
+    emit(parser, 'onend');
+    SAXParser.call(parser, parser.strict, parser.opt);
+    return parser
+  }
+
+  function strictFail (parser, message) {
+    if (typeof parser !== 'object' || !(parser instanceof SAXParser)) {
+      throw new Error('bad call to strictFail')
+    }
+    if (parser.strict) {
+      error(parser, message);
+    }
+  }
+
+  function newTag (parser) {
+    if (!parser.strict) { parser.tagName = parser.tagName[parser.looseCase](); }
+    var parent = parser.tags[parser.tags.length - 1] || parser;
+    var tag = parser.tag = { name: parser.tagName, attributes: {} };
+
+    // will be overridden if tag contails an xmlns="foo" or xmlns:foo="bar"
+    if (parser.opt.xmlns) {
+      tag.ns = parent.ns;
+    }
+    parser.attribList.length = 0;
+    emitNode(parser, 'onopentagstart', tag);
+  }
+
+  function qname (name, attribute) {
+    var i = name.indexOf(':');
+    var qualName = i < 0 ? [ '', name ] : name.split(':');
+    var prefix = qualName[0];
+    var local = qualName[1];
+
+    // <x "xmlns"="http://foo">
+    if (attribute && name === 'xmlns') {
+      prefix = 'xmlns';
+      local = '';
+    }
+
+    return { prefix: prefix, local: local }
+  }
+
+  function attrib (parser) {
+    if (!parser.strict) {
+      parser.attribName = parser.attribName[parser.looseCase]();
+    }
+
+    if (parser.attribList.indexOf(parser.attribName) !== -1 ||
+      parser.tag.attributes.hasOwnProperty(parser.attribName)) {
+      parser.attribName = parser.attribValue = '';
+      return
+    }
+
+    if (parser.opt.xmlns) {
+      var qn = qname(parser.attribName, true);
+      var prefix = qn.prefix;
+      var local = qn.local;
+
+      if (prefix === 'xmlns') {
+        // namespace binding attribute. push the binding into scope
+        if (local === 'xml' && parser.attribValue !== XML_NAMESPACE) {
+          strictFail(parser,
+            'xml: prefix must be bound to ' + XML_NAMESPACE + '\n' +
+            'Actual: ' + parser.attribValue);
+        } else if (local === 'xmlns' && parser.attribValue !== XMLNS_NAMESPACE) {
+          strictFail(parser,
+            'xmlns: prefix must be bound to ' + XMLNS_NAMESPACE + '\n' +
+            'Actual: ' + parser.attribValue);
+        } else {
+          var tag = parser.tag;
+          var parent = parser.tags[parser.tags.length - 1] || parser;
+          if (tag.ns === parent.ns) {
+            tag.ns = Object.create(parent.ns);
+          }
+          tag.ns[local] = parser.attribValue;
+        }
+      }
+
+      // defer onattribute events until all attributes have been seen
+      // so any new bindings can take effect. preserve attribute order
+      // so deferred events can be emitted in document order
+      parser.attribList.push([parser.attribName, parser.attribValue]);
+    } else {
+      // in non-xmlns mode, we can emit the event right away
+      parser.tag.attributes[parser.attribName] = parser.attribValue;
+      emitNode(parser, 'onattribute', {
+        name: parser.attribName,
+        value: parser.attribValue
+      });
+    }
+
+    parser.attribName = parser.attribValue = '';
+  }
+
+  function openTag (parser, selfClosing) {
+    if (parser.opt.xmlns) {
+      // emit namespace binding events
+      var tag = parser.tag;
+
+      // add namespace info to tag
+      var qn = qname(parser.tagName);
+      tag.prefix = qn.prefix;
+      tag.local = qn.local;
+      tag.uri = tag.ns[qn.prefix] || '';
+
+      if (tag.prefix && !tag.uri) {
+        strictFail(parser, 'Unbound namespace prefix: ' +
+          JSON.stringify(parser.tagName));
+        tag.uri = qn.prefix;
+      }
+
+      var parent = parser.tags[parser.tags.length - 1] || parser;
+      if (tag.ns && parent.ns !== tag.ns) {
+        Object.keys(tag.ns).forEach(function (p) {
+          emitNode(parser, 'onopennamespace', {
+            prefix: p,
+            uri: tag.ns[p]
+          });
+        });
+      }
+
+      // handle deferred onattribute events
+      // Note: do not apply default ns to attributes:
+      //   http://www.w3.org/TR/REC-xml-names/#defaulting
+      for (var i = 0, l = parser.attribList.length; i < l; i++) {
+        var nv = parser.attribList[i];
+        var name = nv[0];
+        var value = nv[1];
+        var qualName = qname(name, true);
+        var prefix = qualName.prefix;
+        var local = qualName.local;
+        var uri = prefix === '' ? '' : (tag.ns[prefix] || '');
+        var a = {
+          name: name,
+          value: value,
+          prefix: prefix,
+          local: local,
+          uri: uri
+        };
+
+        // if there's any attributes with an undefined namespace,
+        // then fail on them now.
+        if (prefix && prefix !== 'xmlns' && !uri) {
+          strictFail(parser, 'Unbound namespace prefix: ' +
+            JSON.stringify(prefix));
+          a.uri = prefix;
+        }
+        parser.tag.attributes[name] = a;
+        emitNode(parser, 'onattribute', a);
+      }
+      parser.attribList.length = 0;
+    }
+
+    parser.tag.isSelfClosing = !!selfClosing;
+
+    // process the tag
+    parser.sawRoot = true;
+    parser.tags.push(parser.tag);
+    emitNode(parser, 'onopentag', parser.tag);
+    if (!selfClosing) {
+      // special case for <script> in non-strict mode.
+      if (!parser.noscript && parser.tagName.toLowerCase() === 'script') {
+        parser.state = S.SCRIPT;
+      } else {
+        parser.state = S.TEXT;
+      }
+      parser.tag = null;
+      parser.tagName = '';
+    }
+    parser.attribName = parser.attribValue = '';
+    parser.attribList.length = 0;
+  }
+
+  function closeTag (parser) {
+    if (!parser.tagName) {
+      strictFail(parser, 'Weird empty close tag.');
+      parser.textNode += '</>';
+      parser.state = S.TEXT;
+      return
+    }
+
+    if (parser.script) {
+      if (parser.tagName !== 'script') {
+        parser.script += '</' + parser.tagName + '>';
+        parser.tagName = '';
+        parser.state = S.SCRIPT;
+        return
+      }
+      emitNode(parser, 'onscript', parser.script);
+      parser.script = '';
+    }
+
+    // first make sure that the closing tag actually exists.
+    // <a><b></c></b></a> will close everything, otherwise.
+    var t = parser.tags.length;
+    var tagName = parser.tagName;
+    if (!parser.strict) {
+      tagName = tagName[parser.looseCase]();
+    }
+    var closeTo = tagName;
+    while (t--) {
+      var close = parser.tags[t];
+      if (close.name !== closeTo) {
+        // fail the first time in strict mode
+        strictFail(parser, 'Unexpected close tag');
+      } else {
+        break
+      }
+    }
+
+    // didn't find it.  we already failed for strict, so just abort.
+    if (t < 0) {
+      strictFail(parser, 'Unmatched closing tag: ' + parser.tagName);
+      parser.textNode += '</' + parser.tagName + '>';
+      parser.state = S.TEXT;
+      return
+    }
+    parser.tagName = tagName;
+    var s = parser.tags.length;
+    while (s-- > t) {
+      var tag = parser.tag = parser.tags.pop();
+      parser.tagName = parser.tag.name;
+      emitNode(parser, 'onclosetag', parser.tagName);
+
+      var x = {};
+      for (var i in tag.ns) {
+        x[i] = tag.ns[i];
+      }
+
+      var parent = parser.tags[parser.tags.length - 1] || parser;
+      if (parser.opt.xmlns && tag.ns !== parent.ns) {
+        // remove namespace bindings introduced by tag
+        Object.keys(tag.ns).forEach(function (p) {
+          var n = tag.ns[p];
+          emitNode(parser, 'onclosenamespace', { prefix: p, uri: n });
+        });
+      }
+    }
+    if (t === 0) { parser.closedRoot = true; }
+    parser.tagName = parser.attribValue = parser.attribName = '';
+    parser.attribList.length = 0;
+    parser.state = S.TEXT;
+  }
+
+  function parseEntity (parser) {
+    var entity = parser.entity;
+    var entityLC = entity.toLowerCase();
+    var num;
+    var numStr = '';
+
+    if (parser.ENTITIES[entity]) {
+      return parser.ENTITIES[entity]
+    }
+    if (parser.ENTITIES[entityLC]) {
+      return parser.ENTITIES[entityLC]
+    }
+    entity = entityLC;
+    if (entity.charAt(0) === '#') {
+      if (entity.charAt(1) === 'x') {
+        entity = entity.slice(2);
+        num = parseInt(entity, 16);
+        numStr = num.toString(16);
+      } else {
+        entity = entity.slice(1);
+        num = parseInt(entity, 10);
+        numStr = num.toString(10);
+      }
+    }
+    entity = entity.replace(/^0+/, '');
+    if (isNaN(num) || numStr.toLowerCase() !== entity) {
+      strictFail(parser, 'Invalid character entity');
+      return '&' + parser.entity + ';'
+    }
+
+    return String.fromCodePoint(num)
+  }
+
+  function beginWhiteSpace (parser, c) {
+    if (c === '<') {
+      parser.state = S.OPEN_WAKA;
+      parser.startTagPosition = parser.position;
+    } else if (!isWhitespace(c)) {
+      // have to process this as a text node.
+      // weird, but happens.
+      strictFail(parser, 'Non-whitespace before first tag.');
+      parser.textNode = c;
+      parser.state = S.TEXT;
+    }
+  }
+
+  function charAt (chunk, i) {
+    var result = '';
+    if (i < chunk.length) {
+      result = chunk.charAt(i);
+    }
+    return result
+  }
+
+  function write (chunk) {
+    var parser = this;
+    if (this.error) {
+      throw this.error
+    }
+    if (parser.closed) {
+      return error(parser,
+        'Cannot write after close. Assign an onready handler.')
+    }
+    if (chunk === null) {
+      return end(parser)
+    }
+    if (typeof chunk === 'object') {
+      chunk = chunk.toString();
+    }
+    var i = 0;
+    var c = '';
+    while (true) {
+      c = charAt(chunk, i++);
+      parser.c = c;
+
+      if (!c) {
+        break
+      }
+
+      if (parser.trackPosition) {
+        parser.position++;
+        if (c === '\n') {
+          parser.line++;
+          parser.column = 0;
+        } else {
+          parser.column++;
+        }
+      }
+
+      switch (parser.state) {
+        case S.BEGIN:
+          parser.state = S.BEGIN_WHITESPACE;
+          if (c === '\uFEFF') {
+            continue
+          }
+          beginWhiteSpace(parser, c);
+          continue
+
+        case S.BEGIN_WHITESPACE:
+          beginWhiteSpace(parser, c);
+          continue
+
+        case S.TEXT:
+          if (parser.sawRoot && !parser.closedRoot) {
+            var starti = i - 1;
+            while (c && c !== '<' && c !== '&') {
+              c = charAt(chunk, i++);
+              if (c && parser.trackPosition) {
+                parser.position++;
+                if (c === '\n') {
+                  parser.line++;
+                  parser.column = 0;
+                } else {
+                  parser.column++;
+                }
+              }
+            }
+            parser.textNode += chunk.substring(starti, i - 1);
+          }
+          if (c === '<' && !(parser.sawRoot && parser.closedRoot && !parser.strict)) {
+            parser.state = S.OPEN_WAKA;
+            parser.startTagPosition = parser.position;
+          } else {
+            if (!isWhitespace(c) && (!parser.sawRoot || parser.closedRoot)) {
+              strictFail(parser, 'Text data outside of root node.');
+            }
+            if (c === '&') {
+              parser.state = S.TEXT_ENTITY;
+            } else {
+              parser.textNode += c;
+            }
+          }
+          continue
+
+        case S.SCRIPT:
+          // only non-strict
+          if (c === '<') {
+            parser.state = S.SCRIPT_ENDING;
+          } else {
+            parser.script += c;
+          }
+          continue
+
+        case S.SCRIPT_ENDING:
+          if (c === '/') {
+            parser.state = S.CLOSE_TAG;
+          } else {
+            parser.script += '<' + c;
+            parser.state = S.SCRIPT;
+          }
+          continue
+
+        case S.OPEN_WAKA:
+          // either a /, ?, !, or text is coming next.
+          if (c === '!') {
+            parser.state = S.SGML_DECL;
+            parser.sgmlDecl = '';
+          } else if (isWhitespace(c)) {
+            // wait for it...
+          } else if (isMatch(nameStart, c)) {
+            parser.state = S.OPEN_TAG;
+            parser.tagName = c;
+          } else if (c === '/') {
+            parser.state = S.CLOSE_TAG;
+            parser.tagName = '';
+          } else if (c === '?') {
+            parser.state = S.PROC_INST;
+            parser.procInstName = parser.procInstBody = '';
+          } else {
+            strictFail(parser, 'Unencoded <');
+            // if there was some whitespace, then add that in.
+            if (parser.startTagPosition + 1 < parser.position) {
+              var pad = parser.position - parser.startTagPosition;
+              c = new Array(pad).join(' ') + c;
+            }
+            parser.textNode += '<' + c;
+            parser.state = S.TEXT;
+          }
+          continue
+
+        case S.SGML_DECL:
+          if ((parser.sgmlDecl + c).toUpperCase() === CDATA) {
+            emitNode(parser, 'onopencdata');
+            parser.state = S.CDATA;
+            parser.sgmlDecl = '';
+            parser.cdata = '';
+          } else if (parser.sgmlDecl + c === '--') {
+            parser.state = S.COMMENT;
+            parser.comment = '';
+            parser.sgmlDecl = '';
+          } else if ((parser.sgmlDecl + c).toUpperCase() === DOCTYPE) {
+            parser.state = S.DOCTYPE;
+            if (parser.doctype || parser.sawRoot) {
+              strictFail(parser,
+                'Inappropriately located doctype declaration');
+            }
+            parser.doctype = '';
+            parser.sgmlDecl = '';
+          } else if (c === '>') {
+            emitNode(parser, 'onsgmldeclaration', parser.sgmlDecl);
+            parser.sgmlDecl = '';
+            parser.state = S.TEXT;
+          } else if (isQuote(c)) {
+            parser.state = S.SGML_DECL_QUOTED;
+            parser.sgmlDecl += c;
+          } else {
+            parser.sgmlDecl += c;
+          }
+          continue
+
+        case S.SGML_DECL_QUOTED:
+          if (c === parser.q) {
+            parser.state = S.SGML_DECL;
+            parser.q = '';
+          }
+          parser.sgmlDecl += c;
+          continue
+
+        case S.DOCTYPE:
+          if (c === '>') {
+            parser.state = S.TEXT;
+            emitNode(parser, 'ondoctype', parser.doctype);
+            parser.doctype = true; // just remember that we saw it.
+          } else {
+            parser.doctype += c;
+            if (c === '[') {
+              parser.state = S.DOCTYPE_DTD;
+            } else if (isQuote(c)) {
+              parser.state = S.DOCTYPE_QUOTED;
+              parser.q = c;
+            }
+          }
+          continue
+
+        case S.DOCTYPE_QUOTED:
+          parser.doctype += c;
+          if (c === parser.q) {
+            parser.q = '';
+            parser.state = S.DOCTYPE;
+          }
+          continue
+
+        case S.DOCTYPE_DTD:
+          parser.doctype += c;
+          if (c === ']') {
+            parser.state = S.DOCTYPE;
+          } else if (isQuote(c)) {
+            parser.state = S.DOCTYPE_DTD_QUOTED;
+            parser.q = c;
+          }
+          continue
+
+        case S.DOCTYPE_DTD_QUOTED:
+          parser.doctype += c;
+          if (c === parser.q) {
+            parser.state = S.DOCTYPE_DTD;
+            parser.q = '';
+          }
+          continue
+
+        case S.COMMENT:
+          if (c === '-') {
+            parser.state = S.COMMENT_ENDING;
+          } else {
+            parser.comment += c;
+          }
+          continue
+
+        case S.COMMENT_ENDING:
+          if (c === '-') {
+            parser.state = S.COMMENT_ENDED;
+            parser.comment = textopts(parser.opt, parser.comment);
+            if (parser.comment) {
+              emitNode(parser, 'oncomment', parser.comment);
+            }
+            parser.comment = '';
+          } else {
+            parser.comment += '-' + c;
+            parser.state = S.COMMENT;
+          }
+          continue
+
+        case S.COMMENT_ENDED:
+          if (c !== '>') {
+            strictFail(parser, 'Malformed comment');
+            // allow <!-- blah -- bloo --> in non-strict mode,
+            // which is a comment of " blah -- bloo "
+            parser.comment += '--' + c;
+            parser.state = S.COMMENT;
+          } else {
+            parser.state = S.TEXT;
+          }
+          continue
+
+        case S.CDATA:
+          if (c === ']') {
+            parser.state = S.CDATA_ENDING;
+          } else {
+            parser.cdata += c;
+          }
+          continue
+
+        case S.CDATA_ENDING:
+          if (c === ']') {
+            parser.state = S.CDATA_ENDING_2;
+          } else {
+            parser.cdata += ']' + c;
+            parser.state = S.CDATA;
+          }
+          continue
+
+        case S.CDATA_ENDING_2:
+          if (c === '>') {
+            if (parser.cdata) {
+              emitNode(parser, 'oncdata', parser.cdata);
+            }
+            emitNode(parser, 'onclosecdata');
+            parser.cdata = '';
+            parser.state = S.TEXT;
+          } else if (c === ']') {
+            parser.cdata += ']';
+          } else {
+            parser.cdata += ']]' + c;
+            parser.state = S.CDATA;
+          }
+          continue
+
+        case S.PROC_INST:
+          if (c === '?') {
+            parser.state = S.PROC_INST_ENDING;
+          } else if (isWhitespace(c)) {
+            parser.state = S.PROC_INST_BODY;
+          } else {
+            parser.procInstName += c;
+          }
+          continue
+
+        case S.PROC_INST_BODY:
+          if (!parser.procInstBody && isWhitespace(c)) {
+            continue
+          } else if (c === '?') {
+            parser.state = S.PROC_INST_ENDING;
+          } else {
+            parser.procInstBody += c;
+          }
+          continue
+
+        case S.PROC_INST_ENDING:
+          if (c === '>') {
+            emitNode(parser, 'onprocessinginstruction', {
+              name: parser.procInstName,
+              body: parser.procInstBody
+            });
+            parser.procInstName = parser.procInstBody = '';
+            parser.state = S.TEXT;
+          } else {
+            parser.procInstBody += '?' + c;
+            parser.state = S.PROC_INST_BODY;
+          }
+          continue
+
+        case S.OPEN_TAG:
+          if (isMatch(nameBody, c)) {
+            parser.tagName += c;
+          } else {
+            newTag(parser);
+            if (c === '>') {
+              openTag(parser);
+            } else if (c === '/') {
+              parser.state = S.OPEN_TAG_SLASH;
+            } else {
+              if (!isWhitespace(c)) {
+                strictFail(parser, 'Invalid character in tag name');
+              }
+              parser.state = S.ATTRIB;
+            }
+          }
+          continue
+
+        case S.OPEN_TAG_SLASH:
+          if (c === '>') {
+            openTag(parser, true);
+            closeTag(parser);
+          } else {
+            strictFail(parser, 'Forward-slash in opening tag not followed by >');
+            parser.state = S.ATTRIB;
+          }
+          continue
+
+        case S.ATTRIB:
+          // haven't read the attribute name yet.
+          if (isWhitespace(c)) {
+            continue
+          } else if (c === '>') {
+            openTag(parser);
+          } else if (c === '/') {
+            parser.state = S.OPEN_TAG_SLASH;
+          } else if (isMatch(nameStart, c)) {
+            parser.attribName = c;
+            parser.attribValue = '';
+            parser.state = S.ATTRIB_NAME;
+          } else {
+            strictFail(parser, 'Invalid attribute name');
+          }
+          continue
+
+        case S.ATTRIB_NAME:
+          if (c === '=') {
+            parser.state = S.ATTRIB_VALUE;
+          } else if (c === '>') {
+            strictFail(parser, 'Attribute without value');
+            parser.attribValue = parser.attribName;
+            attrib(parser);
+            openTag(parser);
+          } else if (isWhitespace(c)) {
+            parser.state = S.ATTRIB_NAME_SAW_WHITE;
+          } else if (isMatch(nameBody, c)) {
+            parser.attribName += c;
+          } else {
+            strictFail(parser, 'Invalid attribute name');
+          }
+          continue
+
+        case S.ATTRIB_NAME_SAW_WHITE:
+          if (c === '=') {
+            parser.state = S.ATTRIB_VALUE;
+          } else if (isWhitespace(c)) {
+            continue
+          } else {
+            strictFail(parser, 'Attribute without value');
+            parser.tag.attributes[parser.attribName] = '';
+            parser.attribValue = '';
+            emitNode(parser, 'onattribute', {
+              name: parser.attribName,
+              value: ''
+            });
+            parser.attribName = '';
+            if (c === '>') {
+              openTag(parser);
+            } else if (isMatch(nameStart, c)) {
+              parser.attribName = c;
+              parser.state = S.ATTRIB_NAME;
+            } else {
+              strictFail(parser, 'Invalid attribute name');
+              parser.state = S.ATTRIB;
+            }
+          }
+          continue
+
+        case S.ATTRIB_VALUE:
+          if (isWhitespace(c)) {
+            continue
+          } else if (isQuote(c)) {
+            parser.q = c;
+            parser.state = S.ATTRIB_VALUE_QUOTED;
+          } else {
+            strictFail(parser, 'Unquoted attribute value');
+            parser.state = S.ATTRIB_VALUE_UNQUOTED;
+            parser.attribValue = c;
+          }
+          continue
+
+        case S.ATTRIB_VALUE_QUOTED:
+          if (c !== parser.q) {
+            if (c === '&') {
+              parser.state = S.ATTRIB_VALUE_ENTITY_Q;
+            } else {
+              parser.attribValue += c;
+            }
+            continue
+          }
+          attrib(parser);
+          parser.q = '';
+          parser.state = S.ATTRIB_VALUE_CLOSED;
+          continue
+
+        case S.ATTRIB_VALUE_CLOSED:
+          if (isWhitespace(c)) {
+            parser.state = S.ATTRIB;
+          } else if (c === '>') {
+            openTag(parser);
+          } else if (c === '/') {
+            parser.state = S.OPEN_TAG_SLASH;
+          } else if (isMatch(nameStart, c)) {
+            strictFail(parser, 'No whitespace between attributes');
+            parser.attribName = c;
+            parser.attribValue = '';
+            parser.state = S.ATTRIB_NAME;
+          } else {
+            strictFail(parser, 'Invalid attribute name');
+          }
+          continue
+
+        case S.ATTRIB_VALUE_UNQUOTED:
+          if (!isAttribEnd(c)) {
+            if (c === '&') {
+              parser.state = S.ATTRIB_VALUE_ENTITY_U;
+            } else {
+              parser.attribValue += c;
+            }
+            continue
+          }
+          attrib(parser);
+          if (c === '>') {
+            openTag(parser);
+          } else {
+            parser.state = S.ATTRIB;
+          }
+          continue
+
+        case S.CLOSE_TAG:
+          if (!parser.tagName) {
+            if (isWhitespace(c)) {
+              continue
+            } else if (notMatch(nameStart, c)) {
+              if (parser.script) {
+                parser.script += '</' + c;
+                parser.state = S.SCRIPT;
+              } else {
+                strictFail(parser, 'Invalid tagname in closing tag.');
+              }
+            } else {
+              parser.tagName = c;
+            }
+          } else if (c === '>') {
+            closeTag(parser);
+          } else if (isMatch(nameBody, c)) {
+            parser.tagName += c;
+          } else if (parser.script) {
+            parser.script += '</' + parser.tagName;
+            parser.tagName = '';
+            parser.state = S.SCRIPT;
+          } else {
+            if (!isWhitespace(c)) {
+              strictFail(parser, 'Invalid tagname in closing tag');
+            }
+            parser.state = S.CLOSE_TAG_SAW_WHITE;
+          }
+          continue
+
+        case S.CLOSE_TAG_SAW_WHITE:
+          if (isWhitespace(c)) {
+            continue
+          }
+          if (c === '>') {
+            closeTag(parser);
+          } else {
+            strictFail(parser, 'Invalid characters in closing tag');
+          }
+          continue
+
+        case S.TEXT_ENTITY:
+        case S.ATTRIB_VALUE_ENTITY_Q:
+        case S.ATTRIB_VALUE_ENTITY_U:
+          var returnState;
+          var buffer;
+          switch (parser.state) {
+            case S.TEXT_ENTITY:
+              returnState = S.TEXT;
+              buffer = 'textNode';
+              break
+
+            case S.ATTRIB_VALUE_ENTITY_Q:
+              returnState = S.ATTRIB_VALUE_QUOTED;
+              buffer = 'attribValue';
+              break
+
+            case S.ATTRIB_VALUE_ENTITY_U:
+              returnState = S.ATTRIB_VALUE_UNQUOTED;
+              buffer = 'attribValue';
+              break
+          }
+
+          if (c === ';') {
+            parser[buffer] += parseEntity(parser);
+            parser.entity = '';
+            parser.state = returnState;
+          } else if (isMatch(parser.entity.length ? entityBody : entityStart, c)) {
+            parser.entity += c;
+          } else {
+            strictFail(parser, 'Invalid character in entity name');
+            parser[buffer] += '&' + parser.entity + c;
+            parser.entity = '';
+            parser.state = returnState;
+          }
+
+          continue
+
+        default:
+          throw new Error(parser, 'Unknown state: ' + parser.state)
+      }
+    } // while
+
+    if (parser.position >= parser.bufferCheckPosition) {
+      checkBufferLength(parser);
+    }
+    return parser
+  }
+
+  /*! http://mths.be/fromcodepoint v0.1.0 by @mathias */
+  /* istanbul ignore next */
+  if (!String.fromCodePoint) {
+    (function () {
+      var stringFromCharCode = String.fromCharCode;
+      var floor = Math.floor;
+      var fromCodePoint = function () {
+        var arguments$1 = arguments;
+
+        var MAX_SIZE = 0x4000;
+        var codeUnits = [];
+        var highSurrogate;
+        var lowSurrogate;
+        var index = -1;
+        var length = arguments.length;
+        if (!length) {
+          return ''
+        }
+        var result = '';
+        while (++index < length) {
+          var codePoint = Number(arguments$1[index]);
+          if (
+            !isFinite(codePoint) || // `NaN`, `+Infinity`, or `-Infinity`
+            codePoint < 0 || // not a valid Unicode code point
+            codePoint > 0x10FFFF || // not a valid Unicode code point
+            floor(codePoint) !== codePoint // not an integer
+          ) {
+            throw RangeError('Invalid code point: ' + codePoint)
+          }
+          if (codePoint <= 0xFFFF) { // BMP code point
+            codeUnits.push(codePoint);
+          } else { // Astral code point; split in surrogate halves
+            // http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+            codePoint -= 0x10000;
+            highSurrogate = (codePoint >> 10) + 0xD800;
+            lowSurrogate = (codePoint % 0x400) + 0xDC00;
+            codeUnits.push(highSurrogate, lowSurrogate);
+          }
+          if (index + 1 === length || codeUnits.length > MAX_SIZE) {
+            result += stringFromCharCode.apply(null, codeUnits);
+            codeUnits.length = 0;
+          }
+        }
+        return result
+      };
+      /* istanbul ignore next */
+      if (Object.defineProperty) {
+        Object.defineProperty(String, 'fromCodePoint', {
+          value: fromCodePoint,
+          configurable: true,
+          writable: true
+        });
+      } else {
+        String.fromCodePoint = fromCodePoint;
+      }
+    }());
+  }
+})(typeof exports === 'undefined' ? this.sax = {} : exports);
+
+}).call(this,require("buffer").Buffer);
+},{"buffer":5,"stream":33,"string_decoder":34}],51:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var assign, isArray, isEmpty, isFunction, isObject, isPlainObject,
+    slice = [].slice,
+    hasProp = {}.hasOwnProperty;
+
+  assign = function() {
+    var i, key, len, source, sources, target;
+    target = arguments[0], sources = 2 <= arguments.length ? slice.call(arguments, 1) : [];
+    if (isFunction(Object.assign)) {
+      Object.assign.apply(null, arguments);
+    } else {
+      for (i = 0, len = sources.length; i < len; i++) {
+        source = sources[i];
+        if (source != null) {
+          for (key in source) {
+            if (!hasProp.call(source, key)) { continue; }
+            target[key] = source[key];
+          }
+        }
+      }
+    }
+    return target;
+  };
+
+  isFunction = function(val) {
+    return !!val && Object.prototype.toString.call(val) === '[object Function]';
+  };
+
+  isObject = function(val) {
+    var ref;
+    return !!val && ((ref = typeof val) === 'function' || ref === 'object');
+  };
+
+  isArray = function(val) {
+    if (isFunction(Array.isArray)) {
+      return Array.isArray(val);
+    } else {
+      return Object.prototype.toString.call(val) === '[object Array]';
+    }
+  };
+
+  isEmpty = function(val) {
+    var key;
+    if (isArray(val)) {
+      return !val.length;
+    } else {
+      for (key in val) {
+        if (!hasProp.call(val, key)) { continue; }
+        return false;
+      }
+      return true;
+    }
+  };
+
+  isPlainObject = function(val) {
+    var ctor, proto;
+    return isObject(val) && (proto = Object.getPrototypeOf(val)) && (ctor = proto.constructor) && (typeof ctor === 'function') && (ctor instanceof ctor) && (Function.prototype.toString.call(ctor) === Function.prototype.toString.call(Object));
+  };
+
+  module.exports.assign = assign;
+
+  module.exports.isFunction = isFunction;
+
+  module.exports.isObject = isObject;
+
+  module.exports.isArray = isArray;
+
+  module.exports.isEmpty = isEmpty;
+
+  module.exports.isPlainObject = isPlainObject;
+
+}).call(this);
+
+},{}],52:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLAttribute;
+
+  module.exports = XMLAttribute = (function() {
+    function XMLAttribute(parent, name, value) {
+      this.options = parent.options;
+      this.stringify = parent.stringify;
+      if (name == null) {
+        throw new Error("Missing attribute name of element " + parent.name);
+      }
+      if (value == null) {
+        throw new Error("Missing attribute value for attribute " + name + " of element " + parent.name);
+      }
+      this.name = this.stringify.attName(name);
+      this.value = this.stringify.attValue(value);
+    }
+
+    XMLAttribute.prototype.clone = function() {
+      return Object.create(this);
+    };
+
+    XMLAttribute.prototype.toString = function(options) {
+      return this.options.writer.set(options).attribute(this);
+    };
+
+    return XMLAttribute;
+
+  })();
+
+}).call(this);
+
+},{}],53:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLCData, XMLNode,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  XMLNode = require('./XMLNode');
+
+  module.exports = XMLCData = (function(superClass) {
+    extend(XMLCData, superClass);
+
+    function XMLCData(parent, text) {
+      XMLCData.__super__.constructor.call(this, parent);
+      if (text == null) {
+        throw new Error("Missing CDATA text");
+      }
+      this.text = this.stringify.cdata(text);
+    }
+
+    XMLCData.prototype.clone = function() {
+      return Object.create(this);
+    };
+
+    XMLCData.prototype.toString = function(options) {
+      return this.options.writer.set(options).cdata(this);
+    };
+
+    return XMLCData;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./XMLNode":64}],54:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLComment, XMLNode,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  XMLNode = require('./XMLNode');
+
+  module.exports = XMLComment = (function(superClass) {
+    extend(XMLComment, superClass);
+
+    function XMLComment(parent, text) {
+      XMLComment.__super__.constructor.call(this, parent);
+      if (text == null) {
+        throw new Error("Missing comment text");
+      }
+      this.text = this.stringify.comment(text);
+    }
+
+    XMLComment.prototype.clone = function() {
+      return Object.create(this);
+    };
+
+    XMLComment.prototype.toString = function(options) {
+      return this.options.writer.set(options).comment(this);
+    };
+
+    return XMLComment;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./XMLNode":64}],55:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLDTDAttList, XMLNode,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  XMLNode = require('./XMLNode');
+
+  module.exports = XMLDTDAttList = (function(superClass) {
+    extend(XMLDTDAttList, superClass);
+
+    function XMLDTDAttList(parent, elementName, attributeName, attributeType, defaultValueType, defaultValue) {
+      XMLDTDAttList.__super__.constructor.call(this, parent);
+      if (elementName == null) {
+        throw new Error("Missing DTD element name");
+      }
+      if (attributeName == null) {
+        throw new Error("Missing DTD attribute name");
+      }
+      if (!attributeType) {
+        throw new Error("Missing DTD attribute type");
+      }
+      if (!defaultValueType) {
+        throw new Error("Missing DTD attribute default");
+      }
+      if (defaultValueType.indexOf('#') !== 0) {
+        defaultValueType = '#' + defaultValueType;
+      }
+      if (!defaultValueType.match(/^(#REQUIRED|#IMPLIED|#FIXED|#DEFAULT)$/)) {
+        throw new Error("Invalid default value type; expected: #REQUIRED, #IMPLIED, #FIXED or #DEFAULT");
+      }
+      if (defaultValue && !defaultValueType.match(/^(#FIXED|#DEFAULT)$/)) {
+        throw new Error("Default value only applies to #FIXED or #DEFAULT");
+      }
+      this.elementName = this.stringify.eleName(elementName);
+      this.attributeName = this.stringify.attName(attributeName);
+      this.attributeType = this.stringify.dtdAttType(attributeType);
+      this.defaultValue = this.stringify.dtdAttDefault(defaultValue);
+      this.defaultValueType = defaultValueType;
+    }
+
+    XMLDTDAttList.prototype.toString = function(options) {
+      return this.options.writer.set(options).dtdAttList(this);
+    };
+
+    return XMLDTDAttList;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./XMLNode":64}],56:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLDTDElement, XMLNode,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  XMLNode = require('./XMLNode');
+
+  module.exports = XMLDTDElement = (function(superClass) {
+    extend(XMLDTDElement, superClass);
+
+    function XMLDTDElement(parent, name, value) {
+      XMLDTDElement.__super__.constructor.call(this, parent);
+      if (name == null) {
+        throw new Error("Missing DTD element name");
+      }
+      if (!value) {
+        value = '(#PCDATA)';
+      }
+      if (Array.isArray(value)) {
+        value = '(' + value.join(',') + ')';
+      }
+      this.name = this.stringify.eleName(name);
+      this.value = this.stringify.dtdElementValue(value);
+    }
+
+    XMLDTDElement.prototype.toString = function(options) {
+      return this.options.writer.set(options).dtdElement(this);
+    };
+
+    return XMLDTDElement;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./XMLNode":64}],57:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLDTDEntity, XMLNode, isObject,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  isObject = require('./Utility').isObject;
+
+  XMLNode = require('./XMLNode');
+
+  module.exports = XMLDTDEntity = (function(superClass) {
+    extend(XMLDTDEntity, superClass);
+
+    function XMLDTDEntity(parent, pe, name, value) {
+      XMLDTDEntity.__super__.constructor.call(this, parent);
+      if (name == null) {
+        throw new Error("Missing entity name");
+      }
+      if (value == null) {
+        throw new Error("Missing entity value");
+      }
+      this.pe = !!pe;
+      this.name = this.stringify.eleName(name);
+      if (!isObject(value)) {
+        this.value = this.stringify.dtdEntityValue(value);
+      } else {
+        if (!value.pubID && !value.sysID) {
+          throw new Error("Public and/or system identifiers are required for an external entity");
+        }
+        if (value.pubID && !value.sysID) {
+          throw new Error("System identifier is required for a public external entity");
+        }
+        if (value.pubID != null) {
+          this.pubID = this.stringify.dtdPubID(value.pubID);
+        }
+        if (value.sysID != null) {
+          this.sysID = this.stringify.dtdSysID(value.sysID);
+        }
+        if (value.nData != null) {
+          this.nData = this.stringify.dtdNData(value.nData);
+        }
+        if (this.pe && this.nData) {
+          throw new Error("Notation declaration is not allowed in a parameter entity");
+        }
+      }
+    }
+
+    XMLDTDEntity.prototype.toString = function(options) {
+      return this.options.writer.set(options).dtdEntity(this);
+    };
+
+    return XMLDTDEntity;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./Utility":51,"./XMLNode":64}],58:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLDTDNotation, XMLNode,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  XMLNode = require('./XMLNode');
+
+  module.exports = XMLDTDNotation = (function(superClass) {
+    extend(XMLDTDNotation, superClass);
+
+    function XMLDTDNotation(parent, name, value) {
+      XMLDTDNotation.__super__.constructor.call(this, parent);
+      if (name == null) {
+        throw new Error("Missing notation name");
+      }
+      if (!value.pubID && !value.sysID) {
+        throw new Error("Public or system identifiers are required for an external entity");
+      }
+      this.name = this.stringify.eleName(name);
+      if (value.pubID != null) {
+        this.pubID = this.stringify.dtdPubID(value.pubID);
+      }
+      if (value.sysID != null) {
+        this.sysID = this.stringify.dtdSysID(value.sysID);
+      }
+    }
+
+    XMLDTDNotation.prototype.toString = function(options) {
+      return this.options.writer.set(options).dtdNotation(this);
+    };
+
+    return XMLDTDNotation;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./XMLNode":64}],59:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLDeclaration, XMLNode, isObject,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  isObject = require('./Utility').isObject;
+
+  XMLNode = require('./XMLNode');
+
+  module.exports = XMLDeclaration = (function(superClass) {
+    extend(XMLDeclaration, superClass);
+
+    function XMLDeclaration(parent, version, encoding, standalone) {
+      var ref;
+      XMLDeclaration.__super__.constructor.call(this, parent);
+      if (isObject(version)) {
+        ref = version, version = ref.version, encoding = ref.encoding, standalone = ref.standalone;
+      }
+      if (!version) {
+        version = '1.0';
+      }
+      this.version = this.stringify.xmlVersion(version);
+      if (encoding != null) {
+        this.encoding = this.stringify.xmlEncoding(encoding);
+      }
+      if (standalone != null) {
+        this.standalone = this.stringify.xmlStandalone(standalone);
+      }
+    }
+
+    XMLDeclaration.prototype.toString = function(options) {
+      return this.options.writer.set(options).declaration(this);
+    };
+
+    return XMLDeclaration;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./Utility":51,"./XMLNode":64}],60:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLDTDAttList, XMLDTDElement, XMLDTDEntity, XMLDTDNotation, XMLDocType, XMLNode, isObject,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  isObject = require('./Utility').isObject;
+
+  XMLNode = require('./XMLNode');
+
+  XMLDTDAttList = require('./XMLDTDAttList');
+
+  XMLDTDEntity = require('./XMLDTDEntity');
+
+  XMLDTDElement = require('./XMLDTDElement');
+
+  XMLDTDNotation = require('./XMLDTDNotation');
+
+  module.exports = XMLDocType = (function(superClass) {
+    extend(XMLDocType, superClass);
+
+    function XMLDocType(parent, pubID, sysID) {
+      var ref, ref1;
+      XMLDocType.__super__.constructor.call(this, parent);
+      this.documentObject = parent;
+      if (isObject(pubID)) {
+        ref = pubID, pubID = ref.pubID, sysID = ref.sysID;
+      }
+      if (sysID == null) {
+        ref1 = [pubID, sysID], sysID = ref1[0], pubID = ref1[1];
+      }
+      if (pubID != null) {
+        this.pubID = this.stringify.dtdPubID(pubID);
+      }
+      if (sysID != null) {
+        this.sysID = this.stringify.dtdSysID(sysID);
+      }
+    }
+
+    XMLDocType.prototype.element = function(name, value) {
+      var child;
+      child = new XMLDTDElement(this, name, value);
+      this.children.push(child);
+      return this;
+    };
+
+    XMLDocType.prototype.attList = function(elementName, attributeName, attributeType, defaultValueType, defaultValue) {
+      var child;
+      child = new XMLDTDAttList(this, elementName, attributeName, attributeType, defaultValueType, defaultValue);
+      this.children.push(child);
+      return this;
+    };
+
+    XMLDocType.prototype.entity = function(name, value) {
+      var child;
+      child = new XMLDTDEntity(this, false, name, value);
+      this.children.push(child);
+      return this;
+    };
+
+    XMLDocType.prototype.pEntity = function(name, value) {
+      var child;
+      child = new XMLDTDEntity(this, true, name, value);
+      this.children.push(child);
+      return this;
+    };
+
+    XMLDocType.prototype.notation = function(name, value) {
+      var child;
+      child = new XMLDTDNotation(this, name, value);
+      this.children.push(child);
+      return this;
+    };
+
+    XMLDocType.prototype.toString = function(options) {
+      return this.options.writer.set(options).docType(this);
+    };
+
+    XMLDocType.prototype.ele = function(name, value) {
+      return this.element(name, value);
+    };
+
+    XMLDocType.prototype.att = function(elementName, attributeName, attributeType, defaultValueType, defaultValue) {
+      return this.attList(elementName, attributeName, attributeType, defaultValueType, defaultValue);
+    };
+
+    XMLDocType.prototype.ent = function(name, value) {
+      return this.entity(name, value);
+    };
+
+    XMLDocType.prototype.pent = function(name, value) {
+      return this.pEntity(name, value);
+    };
+
+    XMLDocType.prototype.not = function(name, value) {
+      return this.notation(name, value);
+    };
+
+    XMLDocType.prototype.up = function() {
+      return this.root() || this.documentObject;
+    };
+
+    return XMLDocType;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./Utility":51,"./XMLDTDAttList":55,"./XMLDTDElement":56,"./XMLDTDEntity":57,"./XMLDTDNotation":58,"./XMLNode":64}],61:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLDocument, XMLNode, XMLStringWriter, XMLStringifier, isPlainObject,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  isPlainObject = require('./Utility').isPlainObject;
+
+  XMLNode = require('./XMLNode');
+
+  XMLStringifier = require('./XMLStringifier');
+
+  XMLStringWriter = require('./XMLStringWriter');
+
+  module.exports = XMLDocument = (function(superClass) {
+    extend(XMLDocument, superClass);
+
+    function XMLDocument(options) {
+      XMLDocument.__super__.constructor.call(this, null);
+      options || (options = {});
+      if (!options.writer) {
+        options.writer = new XMLStringWriter();
+      }
+      this.options = options;
+      this.stringify = new XMLStringifier(options);
+      this.isDocument = true;
+    }
+
+    XMLDocument.prototype.end = function(writer) {
+      var writerOptions;
+      if (!writer) {
+        writer = this.options.writer;
+      } else if (isPlainObject(writer)) {
+        writerOptions = writer;
+        writer = this.options.writer.set(writerOptions);
+      }
+      return writer.document(this);
+    };
+
+    XMLDocument.prototype.toString = function(options) {
+      return this.options.writer.set(options).document(this);
+    };
+
+    return XMLDocument;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./Utility":51,"./XMLNode":64,"./XMLStringWriter":68,"./XMLStringifier":69}],62:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLAttribute, XMLCData, XMLComment, XMLDTDAttList, XMLDTDElement, XMLDTDEntity, XMLDTDNotation, XMLDeclaration, XMLDocType, XMLDocumentCB, XMLElement, XMLProcessingInstruction, XMLRaw, XMLStringWriter, XMLStringifier, XMLText, isFunction, isObject, isPlainObject, ref,
+    hasProp = {}.hasOwnProperty;
+
+  ref = require('./Utility'), isObject = ref.isObject, isFunction = ref.isFunction, isPlainObject = ref.isPlainObject;
+
+  XMLElement = require('./XMLElement');
+
+  XMLCData = require('./XMLCData');
+
+  XMLComment = require('./XMLComment');
+
+  XMLRaw = require('./XMLRaw');
+
+  XMLText = require('./XMLText');
+
+  XMLProcessingInstruction = require('./XMLProcessingInstruction');
+
+  XMLDeclaration = require('./XMLDeclaration');
+
+  XMLDocType = require('./XMLDocType');
+
+  XMLDTDAttList = require('./XMLDTDAttList');
+
+  XMLDTDEntity = require('./XMLDTDEntity');
+
+  XMLDTDElement = require('./XMLDTDElement');
+
+  XMLDTDNotation = require('./XMLDTDNotation');
+
+  XMLAttribute = require('./XMLAttribute');
+
+  XMLStringifier = require('./XMLStringifier');
+
+  XMLStringWriter = require('./XMLStringWriter');
+
+  module.exports = XMLDocumentCB = (function() {
+    function XMLDocumentCB(options, onData, onEnd) {
+      var writerOptions;
+      options || (options = {});
+      if (!options.writer) {
+        options.writer = new XMLStringWriter(options);
+      } else if (isPlainObject(options.writer)) {
+        writerOptions = options.writer;
+        options.writer = new XMLStringWriter(writerOptions);
+      }
+      this.options = options;
+      this.writer = options.writer;
+      this.stringify = new XMLStringifier(options);
+      this.onDataCallback = onData || function() {};
+      this.onEndCallback = onEnd || function() {};
+      this.currentNode = null;
+      this.currentLevel = -1;
+      this.openTags = {};
+      this.documentStarted = false;
+      this.documentCompleted = false;
+      this.root = null;
+    }
+
+    XMLDocumentCB.prototype.node = function(name, attributes, text) {
+      var ref1;
+      if (name == null) {
+        throw new Error("Missing node name");
+      }
+      if (this.root && this.currentLevel === -1) {
+        throw new Error("Document can only have one root node");
+      }
+      this.openCurrent();
+      name = name.valueOf();
+      if (attributes == null) {
+        attributes = {};
+      }
+      attributes = attributes.valueOf();
+      if (!isObject(attributes)) {
+        ref1 = [attributes, text], text = ref1[0], attributes = ref1[1];
+      }
+      this.currentNode = new XMLElement(this, name, attributes);
+      this.currentNode.children = false;
+      this.currentLevel++;
+      this.openTags[this.currentLevel] = this.currentNode;
+      if (text != null) {
+        this.text(text);
+      }
+      return this;
+    };
+
+    XMLDocumentCB.prototype.element = function(name, attributes, text) {
+      if (this.currentNode && this.currentNode instanceof XMLDocType) {
+        return this.dtdElement.apply(this, arguments);
+      } else {
+        return this.node(name, attributes, text);
+      }
+    };
+
+    XMLDocumentCB.prototype.attribute = function(name, value) {
+      var attName, attValue;
+      if (!this.currentNode || this.currentNode.children) {
+        throw new Error("att() can only be used immediately after an ele() call in callback mode");
+      }
+      if (name != null) {
+        name = name.valueOf();
+      }
+      if (isObject(name)) {
+        for (attName in name) {
+          if (!hasProp.call(name, attName)) { continue; }
+          attValue = name[attName];
+          this.attribute(attName, attValue);
+        }
+      } else {
+        if (isFunction(value)) {
+          value = value.apply();
+        }
+        if (!this.options.skipNullAttributes || (value != null)) {
+          this.currentNode.attributes[name] = new XMLAttribute(this, name, value);
+        }
+      }
+      return this;
+    };
+
+    XMLDocumentCB.prototype.text = function(value) {
+      var node;
+      this.openCurrent();
+      node = new XMLText(this, value);
+      this.onData(this.writer.text(node, this.currentLevel + 1));
+      return this;
+    };
+
+    XMLDocumentCB.prototype.cdata = function(value) {
+      var node;
+      this.openCurrent();
+      node = new XMLCData(this, value);
+      this.onData(this.writer.cdata(node, this.currentLevel + 1));
+      return this;
+    };
+
+    XMLDocumentCB.prototype.comment = function(value) {
+      var node;
+      this.openCurrent();
+      node = new XMLComment(this, value);
+      this.onData(this.writer.comment(node, this.currentLevel + 1));
+      return this;
+    };
+
+    XMLDocumentCB.prototype.raw = function(value) {
+      var node;
+      this.openCurrent();
+      node = new XMLRaw(this, value);
+      this.onData(this.writer.raw(node, this.currentLevel + 1));
+      return this;
+    };
+
+    XMLDocumentCB.prototype.instruction = function(target, value) {
+      var i, insTarget, insValue, len, node;
+      this.openCurrent();
+      if (target != null) {
+        target = target.valueOf();
+      }
+      if (value != null) {
+        value = value.valueOf();
+      }
+      if (Array.isArray(target)) {
+        for (i = 0, len = target.length; i < len; i++) {
+          insTarget = target[i];
+          this.instruction(insTarget);
+        }
+      } else if (isObject(target)) {
+        for (insTarget in target) {
+          if (!hasProp.call(target, insTarget)) { continue; }
+          insValue = target[insTarget];
+          this.instruction(insTarget, insValue);
+        }
+      } else {
+        if (isFunction(value)) {
+          value = value.apply();
+        }
+        node = new XMLProcessingInstruction(this, target, value);
+        this.onData(this.writer.processingInstruction(node, this.currentLevel + 1));
+      }
+      return this;
+    };
+
+    XMLDocumentCB.prototype.declaration = function(version, encoding, standalone) {
+      var node;
+      this.openCurrent();
+      if (this.documentStarted) {
+        throw new Error("declaration() must be the first node");
+      }
+      node = new XMLDeclaration(this, version, encoding, standalone);
+      this.onData(this.writer.declaration(node, this.currentLevel + 1));
+      return this;
+    };
+
+    XMLDocumentCB.prototype.doctype = function(root, pubID, sysID) {
+      this.openCurrent();
+      if (root == null) {
+        throw new Error("Missing root node name");
+      }
+      if (this.root) {
+        throw new Error("dtd() must come before the root node");
+      }
+      this.currentNode = new XMLDocType(this, pubID, sysID);
+      this.currentNode.rootNodeName = root;
+      this.currentNode.children = false;
+      this.currentLevel++;
+      this.openTags[this.currentLevel] = this.currentNode;
+      return this;
+    };
+
+    XMLDocumentCB.prototype.dtdElement = function(name, value) {
+      var node;
+      this.openCurrent();
+      node = new XMLDTDElement(this, name, value);
+      this.onData(this.writer.dtdElement(node, this.currentLevel + 1));
+      return this;
+    };
+
+    XMLDocumentCB.prototype.attList = function(elementName, attributeName, attributeType, defaultValueType, defaultValue) {
+      var node;
+      this.openCurrent();
+      node = new XMLDTDAttList(this, elementName, attributeName, attributeType, defaultValueType, defaultValue);
+      this.onData(this.writer.dtdAttList(node, this.currentLevel + 1));
+      return this;
+    };
+
+    XMLDocumentCB.prototype.entity = function(name, value) {
+      var node;
+      this.openCurrent();
+      node = new XMLDTDEntity(this, false, name, value);
+      this.onData(this.writer.dtdEntity(node, this.currentLevel + 1));
+      return this;
+    };
+
+    XMLDocumentCB.prototype.pEntity = function(name, value) {
+      var node;
+      this.openCurrent();
+      node = new XMLDTDEntity(this, true, name, value);
+      this.onData(this.writer.dtdEntity(node, this.currentLevel + 1));
+      return this;
+    };
+
+    XMLDocumentCB.prototype.notation = function(name, value) {
+      var node;
+      this.openCurrent();
+      node = new XMLDTDNotation(this, name, value);
+      this.onData(this.writer.dtdNotation(node, this.currentLevel + 1));
+      return this;
+    };
+
+    XMLDocumentCB.prototype.up = function() {
+      if (this.currentLevel < 0) {
+        throw new Error("The document node has no parent");
+      }
+      if (this.currentNode) {
+        if (this.currentNode.children) {
+          this.closeNode(this.currentNode);
+        } else {
+          this.openNode(this.currentNode);
+        }
+        this.currentNode = null;
+      } else {
+        this.closeNode(this.openTags[this.currentLevel]);
+      }
+      delete this.openTags[this.currentLevel];
+      this.currentLevel--;
+      return this;
+    };
+
+    XMLDocumentCB.prototype.end = function() {
+      while (this.currentLevel >= 0) {
+        this.up();
+      }
+      return this.onEnd();
+    };
+
+    XMLDocumentCB.prototype.openCurrent = function() {
+      if (this.currentNode) {
+        this.currentNode.children = true;
+        return this.openNode(this.currentNode);
+      }
+    };
+
+    XMLDocumentCB.prototype.openNode = function(node) {
+      if (!node.isOpen) {
+        if (!this.root && this.currentLevel === 0 && node instanceof XMLElement) {
+          this.root = node;
+        }
+        this.onData(this.writer.openNode(node, this.currentLevel));
+        return node.isOpen = true;
+      }
+    };
+
+    XMLDocumentCB.prototype.closeNode = function(node) {
+      if (!node.isClosed) {
+        this.onData(this.writer.closeNode(node, this.currentLevel));
+        return node.isClosed = true;
+      }
+    };
+
+    XMLDocumentCB.prototype.onData = function(chunk) {
+      this.documentStarted = true;
+      return this.onDataCallback(chunk);
+    };
+
+    XMLDocumentCB.prototype.onEnd = function() {
+      this.documentCompleted = true;
+      return this.onEndCallback();
+    };
+
+    XMLDocumentCB.prototype.ele = function() {
+      return this.element.apply(this, arguments);
+    };
+
+    XMLDocumentCB.prototype.nod = function(name, attributes, text) {
+      return this.node(name, attributes, text);
+    };
+
+    XMLDocumentCB.prototype.txt = function(value) {
+      return this.text(value);
+    };
+
+    XMLDocumentCB.prototype.dat = function(value) {
+      return this.cdata(value);
+    };
+
+    XMLDocumentCB.prototype.com = function(value) {
+      return this.comment(value);
+    };
+
+    XMLDocumentCB.prototype.ins = function(target, value) {
+      return this.instruction(target, value);
+    };
+
+    XMLDocumentCB.prototype.dec = function(version, encoding, standalone) {
+      return this.declaration(version, encoding, standalone);
+    };
+
+    XMLDocumentCB.prototype.dtd = function(root, pubID, sysID) {
+      return this.doctype(root, pubID, sysID);
+    };
+
+    XMLDocumentCB.prototype.e = function(name, attributes, text) {
+      return this.element(name, attributes, text);
+    };
+
+    XMLDocumentCB.prototype.n = function(name, attributes, text) {
+      return this.node(name, attributes, text);
+    };
+
+    XMLDocumentCB.prototype.t = function(value) {
+      return this.text(value);
+    };
+
+    XMLDocumentCB.prototype.d = function(value) {
+      return this.cdata(value);
+    };
+
+    XMLDocumentCB.prototype.c = function(value) {
+      return this.comment(value);
+    };
+
+    XMLDocumentCB.prototype.r = function(value) {
+      return this.raw(value);
+    };
+
+    XMLDocumentCB.prototype.i = function(target, value) {
+      return this.instruction(target, value);
+    };
+
+    XMLDocumentCB.prototype.att = function() {
+      if (this.currentNode && this.currentNode instanceof XMLDocType) {
+        return this.attList.apply(this, arguments);
+      } else {
+        return this.attribute.apply(this, arguments);
+      }
+    };
+
+    XMLDocumentCB.prototype.a = function() {
+      if (this.currentNode && this.currentNode instanceof XMLDocType) {
+        return this.attList.apply(this, arguments);
+      } else {
+        return this.attribute.apply(this, arguments);
+      }
+    };
+
+    XMLDocumentCB.prototype.ent = function(name, value) {
+      return this.entity(name, value);
+    };
+
+    XMLDocumentCB.prototype.pent = function(name, value) {
+      return this.pEntity(name, value);
+    };
+
+    XMLDocumentCB.prototype.not = function(name, value) {
+      return this.notation(name, value);
+    };
+
+    return XMLDocumentCB;
+
+  })();
+
+}).call(this);
+
+},{"./Utility":51,"./XMLAttribute":52,"./XMLCData":53,"./XMLComment":54,"./XMLDTDAttList":55,"./XMLDTDElement":56,"./XMLDTDEntity":57,"./XMLDTDNotation":58,"./XMLDeclaration":59,"./XMLDocType":60,"./XMLElement":63,"./XMLProcessingInstruction":65,"./XMLRaw":66,"./XMLStringWriter":68,"./XMLStringifier":69,"./XMLText":70}],63:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLAttribute, XMLElement, XMLNode, isFunction, isObject, ref,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  ref = require('./Utility'), isObject = ref.isObject, isFunction = ref.isFunction;
+
+  XMLNode = require('./XMLNode');
+
+  XMLAttribute = require('./XMLAttribute');
+
+  module.exports = XMLElement = (function(superClass) {
+    extend(XMLElement, superClass);
+
+    function XMLElement(parent, name, attributes) {
+      XMLElement.__super__.constructor.call(this, parent);
+      if (name == null) {
+        throw new Error("Missing element name");
+      }
+      this.name = this.stringify.eleName(name);
+      this.attributes = {};
+      if (attributes != null) {
+        this.attribute(attributes);
+      }
+      if (parent.isDocument) {
+        this.isRoot = true;
+        this.documentObject = parent;
+        parent.rootObject = this;
+      }
+    }
+
+    XMLElement.prototype.clone = function() {
+      var att, attName, clonedSelf, ref1;
+      clonedSelf = Object.create(this);
+      if (clonedSelf.isRoot) {
+        clonedSelf.documentObject = null;
+      }
+      clonedSelf.attributes = {};
+      ref1 = this.attributes;
+      for (attName in ref1) {
+        if (!hasProp.call(ref1, attName)) { continue; }
+        att = ref1[attName];
+        clonedSelf.attributes[attName] = att.clone();
+      }
+      clonedSelf.children = [];
+      this.children.forEach(function(child) {
+        var clonedChild;
+        clonedChild = child.clone();
+        clonedChild.parent = clonedSelf;
+        return clonedSelf.children.push(clonedChild);
+      });
+      return clonedSelf;
+    };
+
+    XMLElement.prototype.attribute = function(name, value) {
+      var attName, attValue;
+      if (name != null) {
+        name = name.valueOf();
+      }
+      if (isObject(name)) {
+        for (attName in name) {
+          if (!hasProp.call(name, attName)) { continue; }
+          attValue = name[attName];
+          this.attribute(attName, attValue);
+        }
+      } else {
+        if (isFunction(value)) {
+          value = value.apply();
+        }
+        if (!this.options.skipNullAttributes || (value != null)) {
+          this.attributes[name] = new XMLAttribute(this, name, value);
+        }
+      }
+      return this;
+    };
+
+    XMLElement.prototype.removeAttribute = function(name) {
+      var attName, i, len;
+      if (name == null) {
+        throw new Error("Missing attribute name");
+      }
+      name = name.valueOf();
+      if (Array.isArray(name)) {
+        for (i = 0, len = name.length; i < len; i++) {
+          attName = name[i];
+          delete this.attributes[attName];
+        }
+      } else {
+        delete this.attributes[name];
+      }
+      return this;
+    };
+
+    XMLElement.prototype.toString = function(options) {
+      return this.options.writer.set(options).element(this);
+    };
+
+    XMLElement.prototype.att = function(name, value) {
+      return this.attribute(name, value);
+    };
+
+    XMLElement.prototype.a = function(name, value) {
+      return this.attribute(name, value);
+    };
+
+    return XMLElement;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./Utility":51,"./XMLAttribute":52,"./XMLNode":64}],64:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLCData, XMLComment, XMLDeclaration, XMLDocType, XMLElement, XMLNode, XMLProcessingInstruction, XMLRaw, XMLText, isEmpty, isFunction, isObject, ref,
+    hasProp = {}.hasOwnProperty;
+
+  ref = require('./Utility'), isObject = ref.isObject, isFunction = ref.isFunction, isEmpty = ref.isEmpty;
+
+  XMLElement = null;
+
+  XMLCData = null;
+
+  XMLComment = null;
+
+  XMLDeclaration = null;
+
+  XMLDocType = null;
+
+  XMLRaw = null;
+
+  XMLText = null;
+
+  XMLProcessingInstruction = null;
+
+  module.exports = XMLNode = (function() {
+    function XMLNode(parent) {
+      this.parent = parent;
+      if (this.parent) {
+        this.options = this.parent.options;
+        this.stringify = this.parent.stringify;
+      }
+      this.children = [];
+      if (!XMLElement) {
+        XMLElement = require('./XMLElement');
+        XMLCData = require('./XMLCData');
+        XMLComment = require('./XMLComment');
+        XMLDeclaration = require('./XMLDeclaration');
+        XMLDocType = require('./XMLDocType');
+        XMLRaw = require('./XMLRaw');
+        XMLText = require('./XMLText');
+        XMLProcessingInstruction = require('./XMLProcessingInstruction');
+      }
+    }
+
+    XMLNode.prototype.element = function(name, attributes, text) {
+      var childNode, item, j, k, key, lastChild, len, len1, ref1, val;
+      lastChild = null;
+      if (attributes == null) {
+        attributes = {};
+      }
+      attributes = attributes.valueOf();
+      if (!isObject(attributes)) {
+        ref1 = [attributes, text], text = ref1[0], attributes = ref1[1];
+      }
+      if (name != null) {
+        name = name.valueOf();
+      }
+      if (Array.isArray(name)) {
+        for (j = 0, len = name.length; j < len; j++) {
+          item = name[j];
+          lastChild = this.element(item);
+        }
+      } else if (isFunction(name)) {
+        lastChild = this.element(name.apply());
+      } else if (isObject(name)) {
+        for (key in name) {
+          if (!hasProp.call(name, key)) { continue; }
+          val = name[key];
+          if (isFunction(val)) {
+            val = val.apply();
+          }
+          if ((isObject(val)) && (isEmpty(val))) {
+            val = null;
+          }
+          if (!this.options.ignoreDecorators && this.stringify.convertAttKey && key.indexOf(this.stringify.convertAttKey) === 0) {
+            lastChild = this.attribute(key.substr(this.stringify.convertAttKey.length), val);
+          } else if (!this.options.separateArrayItems && Array.isArray(val)) {
+            for (k = 0, len1 = val.length; k < len1; k++) {
+              item = val[k];
+              childNode = {};
+              childNode[key] = item;
+              lastChild = this.element(childNode);
+            }
+          } else if (isObject(val)) {
+            lastChild = this.element(key);
+            lastChild.element(val);
+          } else {
+            lastChild = this.element(key, val);
+          }
+        }
+      } else {
+        if (!this.options.ignoreDecorators && this.stringify.convertTextKey && name.indexOf(this.stringify.convertTextKey) === 0) {
+          lastChild = this.text(text);
+        } else if (!this.options.ignoreDecorators && this.stringify.convertCDataKey && name.indexOf(this.stringify.convertCDataKey) === 0) {
+          lastChild = this.cdata(text);
+        } else if (!this.options.ignoreDecorators && this.stringify.convertCommentKey && name.indexOf(this.stringify.convertCommentKey) === 0) {
+          lastChild = this.comment(text);
+        } else if (!this.options.ignoreDecorators && this.stringify.convertRawKey && name.indexOf(this.stringify.convertRawKey) === 0) {
+          lastChild = this.raw(text);
+        } else if (!this.options.ignoreDecorators && this.stringify.convertPIKey && name.indexOf(this.stringify.convertPIKey) === 0) {
+          lastChild = this.instruction(name.substr(this.stringify.convertPIKey.length), text);
+        } else {
+          lastChild = this.node(name, attributes, text);
+        }
+      }
+      if (lastChild == null) {
+        throw new Error("Could not create any elements with: " + name);
+      }
+      return lastChild;
+    };
+
+    XMLNode.prototype.insertBefore = function(name, attributes, text) {
+      var child, i, removed;
+      if (this.isRoot) {
+        throw new Error("Cannot insert elements at root level");
+      }
+      i = this.parent.children.indexOf(this);
+      removed = this.parent.children.splice(i);
+      child = this.parent.element(name, attributes, text);
+      Array.prototype.push.apply(this.parent.children, removed);
+      return child;
+    };
+
+    XMLNode.prototype.insertAfter = function(name, attributes, text) {
+      var child, i, removed;
+      if (this.isRoot) {
+        throw new Error("Cannot insert elements at root level");
+      }
+      i = this.parent.children.indexOf(this);
+      removed = this.parent.children.splice(i + 1);
+      child = this.parent.element(name, attributes, text);
+      Array.prototype.push.apply(this.parent.children, removed);
+      return child;
+    };
+
+    XMLNode.prototype.remove = function() {
+      var i, ref1;
+      if (this.isRoot) {
+        throw new Error("Cannot remove the root element");
+      }
+      i = this.parent.children.indexOf(this);
+      [].splice.apply(this.parent.children, [i, i - i + 1].concat(ref1 = [])), ref1;
+      return this.parent;
+    };
+
+    XMLNode.prototype.node = function(name, attributes, text) {
+      var child, ref1;
+      if (name != null) {
+        name = name.valueOf();
+      }
+      attributes || (attributes = {});
+      attributes = attributes.valueOf();
+      if (!isObject(attributes)) {
+        ref1 = [attributes, text], text = ref1[0], attributes = ref1[1];
+      }
+      child = new XMLElement(this, name, attributes);
+      if (text != null) {
+        child.text(text);
+      }
+      this.children.push(child);
+      return child;
+    };
+
+    XMLNode.prototype.text = function(value) {
+      var child;
+      child = new XMLText(this, value);
+      this.children.push(child);
+      return this;
+    };
+
+    XMLNode.prototype.cdata = function(value) {
+      var child;
+      child = new XMLCData(this, value);
+      this.children.push(child);
+      return this;
+    };
+
+    XMLNode.prototype.comment = function(value) {
+      var child;
+      child = new XMLComment(this, value);
+      this.children.push(child);
+      return this;
+    };
+
+    XMLNode.prototype.commentBefore = function(value) {
+      var child, i, removed;
+      i = this.parent.children.indexOf(this);
+      removed = this.parent.children.splice(i);
+      child = this.parent.comment(value);
+      Array.prototype.push.apply(this.parent.children, removed);
+      return this;
+    };
+
+    XMLNode.prototype.commentAfter = function(value) {
+      var child, i, removed;
+      i = this.parent.children.indexOf(this);
+      removed = this.parent.children.splice(i + 1);
+      child = this.parent.comment(value);
+      Array.prototype.push.apply(this.parent.children, removed);
+      return this;
+    };
+
+    XMLNode.prototype.raw = function(value) {
+      var child;
+      child = new XMLRaw(this, value);
+      this.children.push(child);
+      return this;
+    };
+
+    XMLNode.prototype.instruction = function(target, value) {
+      var insTarget, insValue, instruction, j, len;
+      if (target != null) {
+        target = target.valueOf();
+      }
+      if (value != null) {
+        value = value.valueOf();
+      }
+      if (Array.isArray(target)) {
+        for (j = 0, len = target.length; j < len; j++) {
+          insTarget = target[j];
+          this.instruction(insTarget);
+        }
+      } else if (isObject(target)) {
+        for (insTarget in target) {
+          if (!hasProp.call(target, insTarget)) { continue; }
+          insValue = target[insTarget];
+          this.instruction(insTarget, insValue);
+        }
+      } else {
+        if (isFunction(value)) {
+          value = value.apply();
+        }
+        instruction = new XMLProcessingInstruction(this, target, value);
+        this.children.push(instruction);
+      }
+      return this;
+    };
+
+    XMLNode.prototype.instructionBefore = function(target, value) {
+      var child, i, removed;
+      i = this.parent.children.indexOf(this);
+      removed = this.parent.children.splice(i);
+      child = this.parent.instruction(target, value);
+      Array.prototype.push.apply(this.parent.children, removed);
+      return this;
+    };
+
+    XMLNode.prototype.instructionAfter = function(target, value) {
+      var child, i, removed;
+      i = this.parent.children.indexOf(this);
+      removed = this.parent.children.splice(i + 1);
+      child = this.parent.instruction(target, value);
+      Array.prototype.push.apply(this.parent.children, removed);
+      return this;
+    };
+
+    XMLNode.prototype.declaration = function(version, encoding, standalone) {
+      var doc, xmldec;
+      doc = this.document();
+      xmldec = new XMLDeclaration(doc, version, encoding, standalone);
+      if (doc.children[0] instanceof XMLDeclaration) {
+        doc.children[0] = xmldec;
+      } else {
+        doc.children.unshift(xmldec);
+      }
+      return doc.root() || doc;
+    };
+
+    XMLNode.prototype.doctype = function(pubID, sysID) {
+      var child, doc, doctype, i, j, k, len, len1, ref1, ref2;
+      doc = this.document();
+      doctype = new XMLDocType(doc, pubID, sysID);
+      ref1 = doc.children;
+      for (i = j = 0, len = ref1.length; j < len; i = ++j) {
+        child = ref1[i];
+        if (child instanceof XMLDocType) {
+          doc.children[i] = doctype;
+          return doctype;
+        }
+      }
+      ref2 = doc.children;
+      for (i = k = 0, len1 = ref2.length; k < len1; i = ++k) {
+        child = ref2[i];
+        if (child.isRoot) {
+          doc.children.splice(i, 0, doctype);
+          return doctype;
+        }
+      }
+      doc.children.push(doctype);
+      return doctype;
+    };
+
+    XMLNode.prototype.up = function() {
+      if (this.isRoot) {
+        throw new Error("The root node has no parent. Use doc() if you need to get the document object.");
+      }
+      return this.parent;
+    };
+
+    XMLNode.prototype.root = function() {
+      var node;
+      node = this;
+      while (node) {
+        if (node.isDocument) {
+          return node.rootObject;
+        } else if (node.isRoot) {
+          return node;
+        } else {
+          node = node.parent;
+        }
+      }
+    };
+
+    XMLNode.prototype.document = function() {
+      var node;
+      node = this;
+      while (node) {
+        if (node.isDocument) {
+          return node;
+        } else {
+          node = node.parent;
+        }
+      }
+    };
+
+    XMLNode.prototype.end = function(options) {
+      return this.document().end(options);
+    };
+
+    XMLNode.prototype.prev = function() {
+      var i;
+      i = this.parent.children.indexOf(this);
+      if (i < 1) {
+        throw new Error("Already at the first node");
+      }
+      return this.parent.children[i - 1];
+    };
+
+    XMLNode.prototype.next = function() {
+      var i;
+      i = this.parent.children.indexOf(this);
+      if (i === -1 || i === this.parent.children.length - 1) {
+        throw new Error("Already at the last node");
+      }
+      return this.parent.children[i + 1];
+    };
+
+    XMLNode.prototype.importDocument = function(doc) {
+      var clonedRoot;
+      clonedRoot = doc.root().clone();
+      clonedRoot.parent = this;
+      clonedRoot.isRoot = false;
+      this.children.push(clonedRoot);
+      return this;
+    };
+
+    XMLNode.prototype.ele = function(name, attributes, text) {
+      return this.element(name, attributes, text);
+    };
+
+    XMLNode.prototype.nod = function(name, attributes, text) {
+      return this.node(name, attributes, text);
+    };
+
+    XMLNode.prototype.txt = function(value) {
+      return this.text(value);
+    };
+
+    XMLNode.prototype.dat = function(value) {
+      return this.cdata(value);
+    };
+
+    XMLNode.prototype.com = function(value) {
+      return this.comment(value);
+    };
+
+    XMLNode.prototype.ins = function(target, value) {
+      return this.instruction(target, value);
+    };
+
+    XMLNode.prototype.doc = function() {
+      return this.document();
+    };
+
+    XMLNode.prototype.dec = function(version, encoding, standalone) {
+      return this.declaration(version, encoding, standalone);
+    };
+
+    XMLNode.prototype.dtd = function(pubID, sysID) {
+      return this.doctype(pubID, sysID);
+    };
+
+    XMLNode.prototype.e = function(name, attributes, text) {
+      return this.element(name, attributes, text);
+    };
+
+    XMLNode.prototype.n = function(name, attributes, text) {
+      return this.node(name, attributes, text);
+    };
+
+    XMLNode.prototype.t = function(value) {
+      return this.text(value);
+    };
+
+    XMLNode.prototype.d = function(value) {
+      return this.cdata(value);
+    };
+
+    XMLNode.prototype.c = function(value) {
+      return this.comment(value);
+    };
+
+    XMLNode.prototype.r = function(value) {
+      return this.raw(value);
+    };
+
+    XMLNode.prototype.i = function(target, value) {
+      return this.instruction(target, value);
+    };
+
+    XMLNode.prototype.u = function() {
+      return this.up();
+    };
+
+    XMLNode.prototype.importXMLBuilder = function(doc) {
+      return this.importDocument(doc);
+    };
+
+    return XMLNode;
+
+  })();
+
+}).call(this);
+
+},{"./Utility":51,"./XMLCData":53,"./XMLComment":54,"./XMLDeclaration":59,"./XMLDocType":60,"./XMLElement":63,"./XMLProcessingInstruction":65,"./XMLRaw":66,"./XMLText":70}],65:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLNode, XMLProcessingInstruction,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  XMLNode = require('./XMLNode');
+
+  module.exports = XMLProcessingInstruction = (function(superClass) {
+    extend(XMLProcessingInstruction, superClass);
+
+    function XMLProcessingInstruction(parent, target, value) {
+      XMLProcessingInstruction.__super__.constructor.call(this, parent);
+      if (target == null) {
+        throw new Error("Missing instruction target");
+      }
+      this.target = this.stringify.insTarget(target);
+      if (value) {
+        this.value = this.stringify.insValue(value);
+      }
+    }
+
+    XMLProcessingInstruction.prototype.clone = function() {
+      return Object.create(this);
+    };
+
+    XMLProcessingInstruction.prototype.toString = function(options) {
+      return this.options.writer.set(options).processingInstruction(this);
+    };
+
+    return XMLProcessingInstruction;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./XMLNode":64}],66:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLNode, XMLRaw,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  XMLNode = require('./XMLNode');
+
+  module.exports = XMLRaw = (function(superClass) {
+    extend(XMLRaw, superClass);
+
+    function XMLRaw(parent, text) {
+      XMLRaw.__super__.constructor.call(this, parent);
+      if (text == null) {
+        throw new Error("Missing raw text");
+      }
+      this.value = this.stringify.raw(text);
+    }
+
+    XMLRaw.prototype.clone = function() {
+      return Object.create(this);
+    };
+
+    XMLRaw.prototype.toString = function(options) {
+      return this.options.writer.set(options).raw(this);
+    };
+
+    return XMLRaw;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./XMLNode":64}],67:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLCData, XMLComment, XMLDTDAttList, XMLDTDElement, XMLDTDEntity, XMLDTDNotation, XMLDeclaration, XMLDocType, XMLElement, XMLProcessingInstruction, XMLRaw, XMLStreamWriter, XMLText, XMLWriterBase,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  XMLDeclaration = require('./XMLDeclaration');
+
+  XMLDocType = require('./XMLDocType');
+
+  XMLCData = require('./XMLCData');
+
+  XMLComment = require('./XMLComment');
+
+  XMLElement = require('./XMLElement');
+
+  XMLRaw = require('./XMLRaw');
+
+  XMLText = require('./XMLText');
+
+  XMLProcessingInstruction = require('./XMLProcessingInstruction');
+
+  XMLDTDAttList = require('./XMLDTDAttList');
+
+  XMLDTDElement = require('./XMLDTDElement');
+
+  XMLDTDEntity = require('./XMLDTDEntity');
+
+  XMLDTDNotation = require('./XMLDTDNotation');
+
+  XMLWriterBase = require('./XMLWriterBase');
+
+  module.exports = XMLStreamWriter = (function(superClass) {
+    extend(XMLStreamWriter, superClass);
+
+    function XMLStreamWriter(stream, options) {
+      this.stream = stream;
+      XMLStreamWriter.__super__.constructor.call(this, options);
+    }
+
+    XMLStreamWriter.prototype.document = function(doc) {
+      var child, i, j, len, len1, ref, ref1, results;
+      ref = doc.children;
+      for (i = 0, len = ref.length; i < len; i++) {
+        child = ref[i];
+        child.isLastRootNode = false;
+      }
+      doc.children[doc.children.length - 1].isLastRootNode = true;
+      ref1 = doc.children;
+      results = [];
+      for (j = 0, len1 = ref1.length; j < len1; j++) {
+        child = ref1[j];
+        switch (false) {
+          case !(child instanceof XMLDeclaration):
+            results.push(this.declaration(child));
+            break;
+          case !(child instanceof XMLDocType):
+            results.push(this.docType(child));
+            break;
+          case !(child instanceof XMLComment):
+            results.push(this.comment(child));
+            break;
+          case !(child instanceof XMLProcessingInstruction):
+            results.push(this.processingInstruction(child));
+            break;
+          default:
+            results.push(this.element(child));
+        }
+      }
+      return results;
+    };
+
+    XMLStreamWriter.prototype.attribute = function(att) {
+      return this.stream.write(' ' + att.name + '="' + att.value + '"');
+    };
+
+    XMLStreamWriter.prototype.cdata = function(node, level) {
+      return this.stream.write(this.space(level) + '<![CDATA[' + node.text + ']]>' + this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.comment = function(node, level) {
+      return this.stream.write(this.space(level) + '<!-- ' + node.text + ' -->' + this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.declaration = function(node, level) {
+      this.stream.write(this.space(level));
+      this.stream.write('<?xml version="' + node.version + '"');
+      if (node.encoding != null) {
+        this.stream.write(' encoding="' + node.encoding + '"');
+      }
+      if (node.standalone != null) {
+        this.stream.write(' standalone="' + node.standalone + '"');
+      }
+      this.stream.write(this.spacebeforeslash + '?>');
+      return this.stream.write(this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.docType = function(node, level) {
+      var child, i, len, ref;
+      level || (level = 0);
+      this.stream.write(this.space(level));
+      this.stream.write('<!DOCTYPE ' + node.root().name);
+      if (node.pubID && node.sysID) {
+        this.stream.write(' PUBLIC "' + node.pubID + '" "' + node.sysID + '"');
+      } else if (node.sysID) {
+        this.stream.write(' SYSTEM "' + node.sysID + '"');
+      }
+      if (node.children.length > 0) {
+        this.stream.write(' [');
+        this.stream.write(this.endline(node));
+        ref = node.children;
+        for (i = 0, len = ref.length; i < len; i++) {
+          child = ref[i];
+          switch (false) {
+            case !(child instanceof XMLDTDAttList):
+              this.dtdAttList(child, level + 1);
+              break;
+            case !(child instanceof XMLDTDElement):
+              this.dtdElement(child, level + 1);
+              break;
+            case !(child instanceof XMLDTDEntity):
+              this.dtdEntity(child, level + 1);
+              break;
+            case !(child instanceof XMLDTDNotation):
+              this.dtdNotation(child, level + 1);
+              break;
+            case !(child instanceof XMLCData):
+              this.cdata(child, level + 1);
+              break;
+            case !(child instanceof XMLComment):
+              this.comment(child, level + 1);
+              break;
+            case !(child instanceof XMLProcessingInstruction):
+              this.processingInstruction(child, level + 1);
+              break;
+            default:
+              throw new Error("Unknown DTD node type: " + child.constructor.name);
+          }
+        }
+        this.stream.write(']');
+      }
+      this.stream.write(this.spacebeforeslash + '>');
+      return this.stream.write(this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.element = function(node, level) {
+      var att, child, i, len, name, ref, ref1, space;
+      level || (level = 0);
+      space = this.space(level);
+      this.stream.write(space + '<' + node.name);
+      ref = node.attributes;
+      for (name in ref) {
+        if (!hasProp.call(ref, name)) { continue; }
+        att = ref[name];
+        this.attribute(att);
+      }
+      if (node.children.length === 0 || node.children.every(function(e) {
+        return e.value === '';
+      })) {
+        if (this.allowEmpty) {
+          this.stream.write('></' + node.name + '>');
+        } else {
+          this.stream.write(this.spacebeforeslash + '/>');
+        }
+      } else if (this.pretty && node.children.length === 1 && (node.children[0].value != null)) {
+        this.stream.write('>');
+        this.stream.write(node.children[0].value);
+        this.stream.write('</' + node.name + '>');
+      } else {
+        this.stream.write('>' + this.newline);
+        ref1 = node.children;
+        for (i = 0, len = ref1.length; i < len; i++) {
+          child = ref1[i];
+          switch (false) {
+            case !(child instanceof XMLCData):
+              this.cdata(child, level + 1);
+              break;
+            case !(child instanceof XMLComment):
+              this.comment(child, level + 1);
+              break;
+            case !(child instanceof XMLElement):
+              this.element(child, level + 1);
+              break;
+            case !(child instanceof XMLRaw):
+              this.raw(child, level + 1);
+              break;
+            case !(child instanceof XMLText):
+              this.text(child, level + 1);
+              break;
+            case !(child instanceof XMLProcessingInstruction):
+              this.processingInstruction(child, level + 1);
+              break;
+            default:
+              throw new Error("Unknown XML node type: " + child.constructor.name);
+          }
+        }
+        this.stream.write(space + '</' + node.name + '>');
+      }
+      return this.stream.write(this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.processingInstruction = function(node, level) {
+      this.stream.write(this.space(level) + '<?' + node.target);
+      if (node.value) {
+        this.stream.write(' ' + node.value);
+      }
+      return this.stream.write(this.spacebeforeslash + '?>' + this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.raw = function(node, level) {
+      return this.stream.write(this.space(level) + node.value + this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.text = function(node, level) {
+      return this.stream.write(this.space(level) + node.value + this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.dtdAttList = function(node, level) {
+      this.stream.write(this.space(level) + '<!ATTLIST ' + node.elementName + ' ' + node.attributeName + ' ' + node.attributeType);
+      if (node.defaultValueType !== '#DEFAULT') {
+        this.stream.write(' ' + node.defaultValueType);
+      }
+      if (node.defaultValue) {
+        this.stream.write(' "' + node.defaultValue + '"');
+      }
+      return this.stream.write(this.spacebeforeslash + '>' + this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.dtdElement = function(node, level) {
+      this.stream.write(this.space(level) + '<!ELEMENT ' + node.name + ' ' + node.value);
+      return this.stream.write(this.spacebeforeslash + '>' + this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.dtdEntity = function(node, level) {
+      this.stream.write(this.space(level) + '<!ENTITY');
+      if (node.pe) {
+        this.stream.write(' %');
+      }
+      this.stream.write(' ' + node.name);
+      if (node.value) {
+        this.stream.write(' "' + node.value + '"');
+      } else {
+        if (node.pubID && node.sysID) {
+          this.stream.write(' PUBLIC "' + node.pubID + '" "' + node.sysID + '"');
+        } else if (node.sysID) {
+          this.stream.write(' SYSTEM "' + node.sysID + '"');
+        }
+        if (node.nData) {
+          this.stream.write(' NDATA ' + node.nData);
+        }
+      }
+      return this.stream.write(this.spacebeforeslash + '>' + this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.dtdNotation = function(node, level) {
+      this.stream.write(this.space(level) + '<!NOTATION ' + node.name);
+      if (node.pubID && node.sysID) {
+        this.stream.write(' PUBLIC "' + node.pubID + '" "' + node.sysID + '"');
+      } else if (node.pubID) {
+        this.stream.write(' PUBLIC "' + node.pubID + '"');
+      } else if (node.sysID) {
+        this.stream.write(' SYSTEM "' + node.sysID + '"');
+      }
+      return this.stream.write(this.spacebeforeslash + '>' + this.endline(node));
+    };
+
+    XMLStreamWriter.prototype.endline = function(node) {
+      if (!node.isLastRootNode) {
+        return this.newline;
+      } else {
+        return '';
+      }
+    };
+
+    return XMLStreamWriter;
+
+  })(XMLWriterBase);
+
+}).call(this);
+
+},{"./XMLCData":53,"./XMLComment":54,"./XMLDTDAttList":55,"./XMLDTDElement":56,"./XMLDTDEntity":57,"./XMLDTDNotation":58,"./XMLDeclaration":59,"./XMLDocType":60,"./XMLElement":63,"./XMLProcessingInstruction":65,"./XMLRaw":66,"./XMLText":70,"./XMLWriterBase":71}],68:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLCData, XMLComment, XMLDTDAttList, XMLDTDElement, XMLDTDEntity, XMLDTDNotation, XMLDeclaration, XMLDocType, XMLElement, XMLProcessingInstruction, XMLRaw, XMLStringWriter, XMLText, XMLWriterBase,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  XMLDeclaration = require('./XMLDeclaration');
+
+  XMLDocType = require('./XMLDocType');
+
+  XMLCData = require('./XMLCData');
+
+  XMLComment = require('./XMLComment');
+
+  XMLElement = require('./XMLElement');
+
+  XMLRaw = require('./XMLRaw');
+
+  XMLText = require('./XMLText');
+
+  XMLProcessingInstruction = require('./XMLProcessingInstruction');
+
+  XMLDTDAttList = require('./XMLDTDAttList');
+
+  XMLDTDElement = require('./XMLDTDElement');
+
+  XMLDTDEntity = require('./XMLDTDEntity');
+
+  XMLDTDNotation = require('./XMLDTDNotation');
+
+  XMLWriterBase = require('./XMLWriterBase');
+
+  module.exports = XMLStringWriter = (function(superClass) {
+    extend(XMLStringWriter, superClass);
+
+    function XMLStringWriter(options) {
+      XMLStringWriter.__super__.constructor.call(this, options);
+    }
+
+    XMLStringWriter.prototype.document = function(doc) {
+      var child, i, len, r, ref;
+      this.textispresent = false;
+      r = '';
+      ref = doc.children;
+      for (i = 0, len = ref.length; i < len; i++) {
+        child = ref[i];
+        r += (function() {
+          switch (false) {
+            case !(child instanceof XMLDeclaration):
+              return this.declaration(child);
+            case !(child instanceof XMLDocType):
+              return this.docType(child);
+            case !(child instanceof XMLComment):
+              return this.comment(child);
+            case !(child instanceof XMLProcessingInstruction):
+              return this.processingInstruction(child);
+            default:
+              return this.element(child, 0);
+          }
+        }).call(this);
+      }
+      if (this.pretty && r.slice(-this.newline.length) === this.newline) {
+        r = r.slice(0, -this.newline.length);
+      }
+      return r;
+    };
+
+    XMLStringWriter.prototype.attribute = function(att) {
+      return ' ' + att.name + '="' + att.value + '"';
+    };
+
+    XMLStringWriter.prototype.cdata = function(node, level) {
+      return this.space(level) + '<![CDATA[' + node.text + ']]>' + this.newline;
+    };
+
+    XMLStringWriter.prototype.comment = function(node, level) {
+      return this.space(level) + '<!-- ' + node.text + ' -->' + this.newline;
+    };
+
+    XMLStringWriter.prototype.declaration = function(node, level) {
+      var r;
+      r = this.space(level);
+      r += '<?xml version="' + node.version + '"';
+      if (node.encoding != null) {
+        r += ' encoding="' + node.encoding + '"';
+      }
+      if (node.standalone != null) {
+        r += ' standalone="' + node.standalone + '"';
+      }
+      r += this.spacebeforeslash + '?>';
+      r += this.newline;
+      return r;
+    };
+
+    XMLStringWriter.prototype.docType = function(node, level) {
+      var child, i, len, r, ref;
+      level || (level = 0);
+      r = this.space(level);
+      r += '<!DOCTYPE ' + node.root().name;
+      if (node.pubID && node.sysID) {
+        r += ' PUBLIC "' + node.pubID + '" "' + node.sysID + '"';
+      } else if (node.sysID) {
+        r += ' SYSTEM "' + node.sysID + '"';
+      }
+      if (node.children.length > 0) {
+        r += ' [';
+        r += this.newline;
+        ref = node.children;
+        for (i = 0, len = ref.length; i < len; i++) {
+          child = ref[i];
+          r += (function() {
+            switch (false) {
+              case !(child instanceof XMLDTDAttList):
+                return this.dtdAttList(child, level + 1);
+              case !(child instanceof XMLDTDElement):
+                return this.dtdElement(child, level + 1);
+              case !(child instanceof XMLDTDEntity):
+                return this.dtdEntity(child, level + 1);
+              case !(child instanceof XMLDTDNotation):
+                return this.dtdNotation(child, level + 1);
+              case !(child instanceof XMLCData):
+                return this.cdata(child, level + 1);
+              case !(child instanceof XMLComment):
+                return this.comment(child, level + 1);
+              case !(child instanceof XMLProcessingInstruction):
+                return this.processingInstruction(child, level + 1);
+              default:
+                throw new Error("Unknown DTD node type: " + child.constructor.name);
+            }
+          }).call(this);
+        }
+        r += ']';
+      }
+      r += this.spacebeforeslash + '>';
+      r += this.newline;
+      return r;
+    };
+
+    XMLStringWriter.prototype.element = function(node, level) {
+      var att, child, i, j, len, len1, name, r, ref, ref1, ref2, space, textispresentwasset;
+      level || (level = 0);
+      textispresentwasset = false;
+      if (this.textispresent) {
+        this.newline = '';
+        this.pretty = false;
+      } else {
+        this.newline = this.newlinedefault;
+        this.pretty = this.prettydefault;
+      }
+      space = this.space(level);
+      r = '';
+      r += space + '<' + node.name;
+      ref = node.attributes;
+      for (name in ref) {
+        if (!hasProp.call(ref, name)) { continue; }
+        att = ref[name];
+        r += this.attribute(att);
+      }
+      if (node.children.length === 0 || node.children.every(function(e) {
+        return e.value === '';
+      })) {
+        if (this.allowEmpty) {
+          r += '></' + node.name + '>' + this.newline;
+        } else {
+          r += this.spacebeforeslash + '/>' + this.newline;
+        }
+      } else if (this.pretty && node.children.length === 1 && (node.children[0].value != null)) {
+        r += '>';
+        r += node.children[0].value;
+        r += '</' + node.name + '>' + this.newline;
+      } else {
+        if (this.dontprettytextnodes) {
+          ref1 = node.children;
+          for (i = 0, len = ref1.length; i < len; i++) {
+            child = ref1[i];
+            if (child.value != null) {
+              this.textispresent++;
+              textispresentwasset = true;
+              break;
+            }
+          }
+        }
+        if (this.textispresent) {
+          this.newline = '';
+          this.pretty = false;
+          space = this.space(level);
+        }
+        r += '>' + this.newline;
+        ref2 = node.children;
+        for (j = 0, len1 = ref2.length; j < len1; j++) {
+          child = ref2[j];
+          r += (function() {
+            switch (false) {
+              case !(child instanceof XMLCData):
+                return this.cdata(child, level + 1);
+              case !(child instanceof XMLComment):
+                return this.comment(child, level + 1);
+              case !(child instanceof XMLElement):
+                return this.element(child, level + 1);
+              case !(child instanceof XMLRaw):
+                return this.raw(child, level + 1);
+              case !(child instanceof XMLText):
+                return this.text(child, level + 1);
+              case !(child instanceof XMLProcessingInstruction):
+                return this.processingInstruction(child, level + 1);
+              default:
+                throw new Error("Unknown XML node type: " + child.constructor.name);
+            }
+          }).call(this);
+        }
+        if (textispresentwasset) {
+          this.textispresent--;
+        }
+        if (!this.textispresent) {
+          this.newline = this.newlinedefault;
+          this.pretty = this.prettydefault;
+        }
+        r += space + '</' + node.name + '>' + this.newline;
+      }
+      return r;
+    };
+
+    XMLStringWriter.prototype.processingInstruction = function(node, level) {
+      var r;
+      r = this.space(level) + '<?' + node.target;
+      if (node.value) {
+        r += ' ' + node.value;
+      }
+      r += this.spacebeforeslash + '?>' + this.newline;
+      return r;
+    };
+
+    XMLStringWriter.prototype.raw = function(node, level) {
+      return this.space(level) + node.value + this.newline;
+    };
+
+    XMLStringWriter.prototype.text = function(node, level) {
+      return this.space(level) + node.value + this.newline;
+    };
+
+    XMLStringWriter.prototype.dtdAttList = function(node, level) {
+      var r;
+      r = this.space(level) + '<!ATTLIST ' + node.elementName + ' ' + node.attributeName + ' ' + node.attributeType;
+      if (node.defaultValueType !== '#DEFAULT') {
+        r += ' ' + node.defaultValueType;
+      }
+      if (node.defaultValue) {
+        r += ' "' + node.defaultValue + '"';
+      }
+      r += this.spacebeforeslash + '>' + this.newline;
+      return r;
+    };
+
+    XMLStringWriter.prototype.dtdElement = function(node, level) {
+      return this.space(level) + '<!ELEMENT ' + node.name + ' ' + node.value + this.spacebeforeslash + '>' + this.newline;
+    };
+
+    XMLStringWriter.prototype.dtdEntity = function(node, level) {
+      var r;
+      r = this.space(level) + '<!ENTITY';
+      if (node.pe) {
+        r += ' %';
+      }
+      r += ' ' + node.name;
+      if (node.value) {
+        r += ' "' + node.value + '"';
+      } else {
+        if (node.pubID && node.sysID) {
+          r += ' PUBLIC "' + node.pubID + '" "' + node.sysID + '"';
+        } else if (node.sysID) {
+          r += ' SYSTEM "' + node.sysID + '"';
+        }
+        if (node.nData) {
+          r += ' NDATA ' + node.nData;
+        }
+      }
+      r += this.spacebeforeslash + '>' + this.newline;
+      return r;
+    };
+
+    XMLStringWriter.prototype.dtdNotation = function(node, level) {
+      var r;
+      r = this.space(level) + '<!NOTATION ' + node.name;
+      if (node.pubID && node.sysID) {
+        r += ' PUBLIC "' + node.pubID + '" "' + node.sysID + '"';
+      } else if (node.pubID) {
+        r += ' PUBLIC "' + node.pubID + '"';
+      } else if (node.sysID) {
+        r += ' SYSTEM "' + node.sysID + '"';
+      }
+      r += this.spacebeforeslash + '>' + this.newline;
+      return r;
+    };
+
+    XMLStringWriter.prototype.openNode = function(node, level) {
+      var att, name, r, ref;
+      level || (level = 0);
+      if (node instanceof XMLElement) {
+        r = this.space(level) + '<' + node.name;
+        ref = node.attributes;
+        for (name in ref) {
+          if (!hasProp.call(ref, name)) { continue; }
+          att = ref[name];
+          r += this.attribute(att);
+        }
+        r += (node.children ? '>' : '/>') + this.newline;
+        return r;
+      } else {
+        r = this.space(level) + '<!DOCTYPE ' + node.rootNodeName;
+        if (node.pubID && node.sysID) {
+          r += ' PUBLIC "' + node.pubID + '" "' + node.sysID + '"';
+        } else if (node.sysID) {
+          r += ' SYSTEM "' + node.sysID + '"';
+        }
+        r += (node.children ? ' [' : '>') + this.newline;
+        return r;
+      }
+    };
+
+    XMLStringWriter.prototype.closeNode = function(node, level) {
+      level || (level = 0);
+      switch (false) {
+        case !(node instanceof XMLElement):
+          return this.space(level) + '</' + node.name + '>' + this.newline;
+        case !(node instanceof XMLDocType):
+          return this.space(level) + ']>' + this.newline;
+      }
+    };
+
+    return XMLStringWriter;
+
+  })(XMLWriterBase);
+
+}).call(this);
+
+},{"./XMLCData":53,"./XMLComment":54,"./XMLDTDAttList":55,"./XMLDTDElement":56,"./XMLDTDEntity":57,"./XMLDTDNotation":58,"./XMLDeclaration":59,"./XMLDocType":60,"./XMLElement":63,"./XMLProcessingInstruction":65,"./XMLRaw":66,"./XMLText":70,"./XMLWriterBase":71}],69:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLStringifier,
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    hasProp = {}.hasOwnProperty;
+
+  module.exports = XMLStringifier = (function() {
+    function XMLStringifier(options) {
+      this.assertLegalChar = bind(this.assertLegalChar, this);
+      var key, ref, value;
+      options || (options = {});
+      this.noDoubleEncoding = options.noDoubleEncoding;
+      ref = options.stringify || {};
+      for (key in ref) {
+        if (!hasProp.call(ref, key)) { continue; }
+        value = ref[key];
+        this[key] = value;
+      }
+    }
+
+    XMLStringifier.prototype.eleName = function(val) {
+      val = '' + val || '';
+      return this.assertLegalChar(val);
+    };
+
+    XMLStringifier.prototype.eleText = function(val) {
+      val = '' + val || '';
+      return this.assertLegalChar(this.elEscape(val));
+    };
+
+    XMLStringifier.prototype.cdata = function(val) {
+      val = '' + val || '';
+      val = val.replace(']]>', ']]]]><![CDATA[>');
+      return this.assertLegalChar(val);
+    };
+
+    XMLStringifier.prototype.comment = function(val) {
+      val = '' + val || '';
+      if (val.match(/--/)) {
+        throw new Error("Comment text cannot contain double-hypen: " + val);
+      }
+      return this.assertLegalChar(val);
+    };
+
+    XMLStringifier.prototype.raw = function(val) {
+      return '' + val || '';
+    };
+
+    XMLStringifier.prototype.attName = function(val) {
+      return val = '' + val || '';
+    };
+
+    XMLStringifier.prototype.attValue = function(val) {
+      val = '' + val || '';
+      return this.attEscape(val);
+    };
+
+    XMLStringifier.prototype.insTarget = function(val) {
+      return '' + val || '';
+    };
+
+    XMLStringifier.prototype.insValue = function(val) {
+      val = '' + val || '';
+      if (val.match(/\?>/)) {
+        throw new Error("Invalid processing instruction value: " + val);
+      }
+      return val;
+    };
+
+    XMLStringifier.prototype.xmlVersion = function(val) {
+      val = '' + val || '';
+      if (!val.match(/1\.[0-9]+/)) {
+        throw new Error("Invalid version number: " + val);
+      }
+      return val;
+    };
+
+    XMLStringifier.prototype.xmlEncoding = function(val) {
+      val = '' + val || '';
+      if (!val.match(/^[A-Za-z](?:[A-Za-z0-9._-]|-)*$/)) {
+        throw new Error("Invalid encoding: " + val);
+      }
+      return val;
+    };
+
+    XMLStringifier.prototype.xmlStandalone = function(val) {
+      if (val) {
+        return "yes";
+      } else {
+        return "no";
+      }
+    };
+
+    XMLStringifier.prototype.dtdPubID = function(val) {
+      return '' + val || '';
+    };
+
+    XMLStringifier.prototype.dtdSysID = function(val) {
+      return '' + val || '';
+    };
+
+    XMLStringifier.prototype.dtdElementValue = function(val) {
+      return '' + val || '';
+    };
+
+    XMLStringifier.prototype.dtdAttType = function(val) {
+      return '' + val || '';
+    };
+
+    XMLStringifier.prototype.dtdAttDefault = function(val) {
+      if (val != null) {
+        return '' + val || '';
+      } else {
+        return val;
+      }
+    };
+
+    XMLStringifier.prototype.dtdEntityValue = function(val) {
+      return '' + val || '';
+    };
+
+    XMLStringifier.prototype.dtdNData = function(val) {
+      return '' + val || '';
+    };
+
+    XMLStringifier.prototype.convertAttKey = '@';
+
+    XMLStringifier.prototype.convertPIKey = '?';
+
+    XMLStringifier.prototype.convertTextKey = '#text';
+
+    XMLStringifier.prototype.convertCDataKey = '#cdata';
+
+    XMLStringifier.prototype.convertCommentKey = '#comment';
+
+    XMLStringifier.prototype.convertRawKey = '#raw';
+
+    XMLStringifier.prototype.assertLegalChar = function(str) {
+      var res;
+      res = str.match(/[\0\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/);
+      if (res) {
+        throw new Error("Invalid character in string: " + str + " at index " + res.index);
+      }
+      return str;
+    };
+
+    XMLStringifier.prototype.elEscape = function(str) {
+      var ampregex;
+      ampregex = this.noDoubleEncoding ? /(?!&\S+;)&/g : /&/g;
+      return str.replace(ampregex, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\r/g, '&#xD;');
+    };
+
+    XMLStringifier.prototype.attEscape = function(str) {
+      var ampregex;
+      ampregex = this.noDoubleEncoding ? /(?!&\S+;)&/g : /&/g;
+      return str.replace(ampregex, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/\t/g, '&#x9;').replace(/\n/g, '&#xA;').replace(/\r/g, '&#xD;');
+    };
+
+    return XMLStringifier;
+
+  })();
+
+}).call(this);
+
+},{}],70:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLNode, XMLText,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) { child[key] = parent[key]; } } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  XMLNode = require('./XMLNode');
+
+  module.exports = XMLText = (function(superClass) {
+    extend(XMLText, superClass);
+
+    function XMLText(parent, text) {
+      XMLText.__super__.constructor.call(this, parent);
+      if (text == null) {
+        throw new Error("Missing element text");
+      }
+      this.value = this.stringify.eleText(text);
+    }
+
+    XMLText.prototype.clone = function() {
+      return Object.create(this);
+    };
+
+    XMLText.prototype.toString = function(options) {
+      return this.options.writer.set(options).text(this);
+    };
+
+    return XMLText;
+
+  })(XMLNode);
+
+}).call(this);
+
+},{"./XMLNode":64}],71:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLWriterBase,
+    hasProp = {}.hasOwnProperty;
+
+  module.exports = XMLWriterBase = (function() {
+    function XMLWriterBase(options) {
+      var key, ref, ref1, ref2, ref3, ref4, ref5, ref6, value;
+      options || (options = {});
+      this.pretty = options.pretty || false;
+      this.allowEmpty = (ref = options.allowEmpty) != null ? ref : false;
+      if (this.pretty) {
+        this.indent = (ref1 = options.indent) != null ? ref1 : '  ';
+        this.newline = (ref2 = options.newline) != null ? ref2 : '\n';
+        this.offset = (ref3 = options.offset) != null ? ref3 : 0;
+        this.dontprettytextnodes = (ref4 = options.dontprettytextnodes) != null ? ref4 : 0;
+      } else {
+        this.indent = '';
+        this.newline = '';
+        this.offset = 0;
+        this.dontprettytextnodes = 0;
+      }
+      this.spacebeforeslash = (ref5 = options.spacebeforeslash) != null ? ref5 : '';
+      if (this.spacebeforeslash === true) {
+        this.spacebeforeslash = ' ';
+      }
+      this.newlinedefault = this.newline;
+      this.prettydefault = this.pretty;
+      ref6 = options.writer || {};
+      for (key in ref6) {
+        if (!hasProp.call(ref6, key)) { continue; }
+        value = ref6[key];
+        this[key] = value;
+      }
+    }
+
+    XMLWriterBase.prototype.set = function(options) {
+      var key, ref, value;
+      options || (options = {});
+      if ("pretty" in options) {
+        this.pretty = options.pretty;
+      }
+      if ("allowEmpty" in options) {
+        this.allowEmpty = options.allowEmpty;
+      }
+      if (this.pretty) {
+        this.indent = "indent" in options ? options.indent : '  ';
+        this.newline = "newline" in options ? options.newline : '\n';
+        this.offset = "offset" in options ? options.offset : 0;
+        this.dontprettytextnodes = "dontprettytextnodes" in options ? options.dontprettytextnodes : 0;
+      } else {
+        this.indent = '';
+        this.newline = '';
+        this.offset = 0;
+        this.dontprettytextnodes = 0;
+      }
+      this.spacebeforeslash = "spacebeforeslash" in options ? options.spacebeforeslash : '';
+      if (this.spacebeforeslash === true) {
+        this.spacebeforeslash = ' ';
+      }
+      this.newlinedefault = this.newline;
+      this.prettydefault = this.pretty;
+      ref = options.writer || {};
+      for (key in ref) {
+        if (!hasProp.call(ref, key)) { continue; }
+        value = ref[key];
+        this[key] = value;
+      }
+      return this;
+    };
+
+    XMLWriterBase.prototype.space = function(level) {
+      var indent;
+      if (this.pretty) {
+        indent = (level || 0) + this.offset + 1;
+        if (indent > 0) {
+          return new Array(indent).join(this.indent);
+        } else {
+          return '';
+        }
+      } else {
+        return '';
+      }
+    };
+
+    return XMLWriterBase;
+
+  })();
+
+}).call(this);
+
+},{}],72:[function(require,module,exports){
+// Generated by CoffeeScript 1.12.6
+(function() {
+  var XMLDocument, XMLDocumentCB, XMLStreamWriter, XMLStringWriter, assign, isFunction, ref;
+
+  ref = require('./Utility'), assign = ref.assign, isFunction = ref.isFunction;
+
+  XMLDocument = require('./XMLDocument');
+
+  XMLDocumentCB = require('./XMLDocumentCB');
+
+  XMLStringWriter = require('./XMLStringWriter');
+
+  XMLStreamWriter = require('./XMLStreamWriter');
+
+  module.exports.create = function(name, xmldec, doctype, options) {
+    var doc, root;
+    if (name == null) {
+      throw new Error("Root element needs a name");
+    }
+    options = assign({}, xmldec, doctype, options);
+    doc = new XMLDocument(options);
+    root = doc.element(name);
+    if (!options.headless) {
+      doc.declaration(options);
+      if ((options.pubID != null) || (options.sysID != null)) {
+        doc.doctype(options);
+      }
+    }
+    return root;
+  };
+
+  module.exports.begin = function(options, onData, onEnd) {
+    var ref1;
+    if (isFunction(options)) {
+      ref1 = [options, onData], onData = ref1[0], onEnd = ref1[1];
+      options = {};
+    }
+    if (onData) {
+      return new XMLDocumentCB(options, onData, onEnd);
+    } else {
+      return new XMLDocument(options);
+    }
+  };
+
+  module.exports.stringWriter = function(options) {
+    return new XMLStringWriter(options);
+  };
+
+  module.exports.streamWriter = function(stream, options) {
+    return new XMLStreamWriter(stream, options);
+  };
+
+}).call(this);
+
+},{"./Utility":51,"./XMLDocument":61,"./XMLDocumentCB":62,"./XMLStreamWriter":67,"./XMLStringWriter":68}],73:[function(require,module,exports){
+/*!
+ * Copyright 2017 Yahoo Holdings.
+ * Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
+ */
+
+/**
+ * Custom response parser routine to handle Flickr API-style
+ * error responses. The Flickr API has a whole bunch of client
+ * error codes, but they all come back as HTTP 200 responses.
+ * Here, we add in additional logic to accommodate this and check
+ * for a Flickr API error. If we find one, craft a new error
+ * out of that and throw it.
+ * @param {Response} res
+ * @returns {Boolean}
+ * @throws {Error}
+ */
+
+function parseFlickr(res) {
+	var body = res.body;
+	var err;
+
+	if (body && body.stat === 'fail') {
+		err = new Error(body.message);
+		err.stat = body.stat;
+		err.code = body.code;
+
+		throw err;
+	}
+
+	return res.status >= 200 && res.status < 300;
 }
-FlickrP.prototype = recursivePromisify(Flickr.prototype);
+
+/**
+ * Superagent plugin-style function to request and parse
+ * JSON responses from the Flickr REST API. We need to
+ * specify content-type: text/plain here to appease CORS
+ * since the API does not accept application/json.
+ * @param {Request} req
+ * @returns {undefined}
+ */
+
+module.exports = function (req) {
+	req.query({ format: 'json' });
+	req.query({ nojsoncallback: 1 });
+	req.type('text/plain');
+	req.ok(parseFlickr);
+};
+
+},{}],74:[function(require,module,exports){
+/*!
+ * Copyright 2017 Yahoo Holdings.
+ * Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
+ */
+
+var xml2js = require('xml2js');
+
+/**
+ * Custom response parse for parsing XML responses from Flickr.
+ * Currently, the Upload and Replace APIs don't support JSON
+ * as a response format. Until we fix this on the API side,
+ * we need to parse the XML response so that the end user
+ * can at least do something with it.
+ * @param {Response} res
+ * @param {Function} fn
+ * @returns {null}
+ */
+
+function parseXML(res, fn) {
+	// palmtree pray box this approach from superagent's JSON parser
+	res.text = '';
+	res.setEncoding('utf8');
+
+	// collect all the response text
+	res.on('data', function (chunk) {
+		res.text += chunk;
+	});
+
+	res.on('end', function () {
+		xml2js.parseString(res.text, {
+			mergeAttrs: true,
+			explicitArray: false,
+			explicitRoot: false,
+			explicitCharkey: true,
+			charkey: '_content'
+		}, function (err, body) {
+
+			if (err) {
+				return fn(new SyntaxError(err.message), body);
+			}
+
+			if (body.stat === 'fail' && body.err) {
+				err = new Error(body.err.msg);
+				err.stat = body.stat;
+				err.code = body.err.code;
+			}
+
+			fn(err, body);
+		});
+	});
+}
+
+/**
+ * Superagent plugin-style function to request and parse
+ * XML responses from the Flickr Upload and Replace APIs.
+ * @param {Request} req
+ * @returns {undefined}
+ */
+
+module.exports = function (req) {
+	req.parse(parseXML);
+};
+
+},{"xml2js":49}],75:[function(require,module,exports){
+/*!
+ * Copyright 2017 Yahoo Holdings.
+ * Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
+ */
+
+var request = require('../lib/request');
+var validate = require('../lib/validate');
+
+/**
+ * Creates a new Feeds service instance. You can use this instance
+ * to explore and retrieve public Flickr API data.
+ *
+ * @constructor
+ * @param {Object} [args] Arguments that will be passed along with every feed request
+ * @param {String} [args.format=json] The feed response format
+ * @param {String} [args.lang=en-us] The language to request for the feed
+ * @memberof Flickr
+ *
+ * @example
+ *
+ * var feeds = new Flickr.Feeds();
+ */
+
+function Feeds(args) {
+
+	// allow creating a client without `new`
+	if (!(this instanceof Feeds)) {
+		return new Feeds(args);
+	}
+
+	// default arguments
+	this._args = Object.assign({ format: 'json', nojsoncallback: 1 }, args);
+}
+
+/**
+ * Factory method to create a new request for a feed.
+ * @param {String} feed
+ * @param {Object} [args]
+ * @returns {Request}
+ * @private
+ */
+
+Feeds.prototype._ = function (feed, args) {
+	return request('GET', 'https://www.flickr.com/services/feeds/' + feed + '.gne')
+		.query(this._args)
+		.query(args);
+};
+
+/**
+ * Returns a list of public content matching some criteria.
+ *
+ * @param {Object} [args]
+ * @returns {Request}
+ * @see https://www.flickr.com/services/feeds/docs/photos_public/
+ */
+
+Feeds.prototype.publicPhotos = function (args) {
+	return this._('photos_public', args);
+};
+
+/**
+ * Returns a list of public content from the contacts, friends & family of a given person.
+ *
+ * @param {Object} args
+ * @param {Number|String} args.user_id The user ID of the user to fetch friends' photos and videos for.
+ * @returns {Request}
+ * @see https://www.flickr.com/services/feeds/docs/photos_friends/
+ */
+
+Feeds.prototype.friendsPhotos = function (args) {
+	validate(args, 'user_id');
+
+	return this._('photos_friends', args);
+};
+
+/**
+ * Returns a list of public favorites for a given user.
+ *
+ * @param {Object} args
+ * @param {Number|String} args.id A single user ID. This specifies a user to fetch for.
+ * @returns {Request}
+ * @see https://www.flickr.com/services/feeds/docs/photos_faves/
+ */
+
+Feeds.prototype.favePhotos = function (args) {
+	// This feed launched with support for id, but was
+	// later changed to support `nsid`. This allows us to
+	// check both, and fail if neither is specified
+	validate(args, ['id', 'nsid']);
+
+	return this._('photos_faves', args);
+};
+
+/**
+ * Returns a list of recent discussions in a given group.
+ *
+ * @param {Object} args
+ * @param {Number} args.id The ID of the group to fetch discussions for.
+ * @returns {Request}
+ * @see https://www.flickr.com/services/feeds/docs/groups_discuss/
+ */
+
+Feeds.prototype.groupDiscussions = function (args) {
+	validate(args, 'id');
+
+	return this._('groups_discuss', args);
+};
+
+/**
+ * Returns a list of things recently added to the pool of a given group.
+ *
+ * @param {Object} args
+ * @param {Number} args.id The ID of the group to fetch for.
+ * @returns {Request}
+ * @see https://www.flickr.com/services/feeds/docs/groups_pool/
+ */
+
+Feeds.prototype.groupPool = function (args) {
+	validate(args, 'id');
+
+	return this._('groups_pool', args);
+};
+
+/**
+ * Returns a list of recent topics from the forum.
+ *
+ * @param {Object} [args]
+ * @returns {Request}
+ * @see https://www.flickr.com/services/feeds/docs/forums/
+ */
+
+Feeds.prototype.forum = function (args) {
+	return this._('forums', args);
+};
+
+/**
+ * Returns a list of recent comments on photostream and sets belonging to a given user.
+ *
+ * @param {Object} args
+ * @param {Number|String} args.user_id The user ID to fetch recent activity for.
+ * @returns {Request}
+ * @see https://www.flickr.com/services/feeds/docs/activity/
+ */
+
+Feeds.prototype.recentActivity = function (args) {
+	validate(args, 'user_id');
+
+	return this._('activity', args);
+};
+
+/**
+ * Returns a list of recent comments that have been commented on by a given person.
+ *
+ * @param {Object} args
+ * @param {Number|String} args.user_id The user ID to fetch recent comments for.
+ * @returns {Request}
+ * @see https://www.flickr.com/services/feeds/docs/photos_comments/
+ */
+
+Feeds.prototype.recentComments = function (args) {
+	validate(args, 'user_id');
+
+	return this._('photos_comments', args);
+};
+
+module.exports = Feeds;
+
+},{"../lib/request":2,"../lib/validate":3}],76:[function(require,module,exports){
+/*!
+ * Copyright 2017 Yahoo Holdings.
+ * Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
+ */
+
+/**
+ * OAuth 1.0 requires your consumer secret to sign calls,
+ * and you should never expose secrets to the browser.
+ * @constructor
+ * @throws {Error}
+ */
+
+function OAuth() {
+	throw new Error('OAuth 1.0 is not supported in the browser');
+}
+
+// also throw for static methods
+OAuth.createPlugin = OAuth;
+
+module.exports = OAuth;
+
+},{}],77:[function(require,module,exports){
+/*!
+ * Copyright 2017 Yahoo Holdings.
+ * Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
+ */
+
+var Request = require('../lib/request').Request;
+var xml = require('../plugins/xml');
+
+/**
+ * Creates a new Replace service instance. Since the Replace API only
+ * does one thing (replace files), an Replace instance is simply
+ * a Request subclass.
+ *
+ * The Replace endpoint requires authentication. You should pass a configured
+ * instance of the [OAuth plugin]{@link Flickr.OAuth.createPlugin} to replace
+ * photos on behalf of another user.
+ *
+ * @param {Function} auth
+ * @param {Number|String} photoID The ID of the photo to replace
+ * @param {String|fs.ReadStream|Buffer} file
+ * @param {Object} [args]
+ * @constructor
+ * @extends Request
+ * @memberof Flickr
+ *
+ * @example
+ *
+ * var replace = new Flickr.Replace(auth, 41234567890, 'replace.png', {
+ *   title: 'Now in pink!'
+ * });
+ *
+ * replace.then(function (res) {
+ *   console.log('yay!', res.body);
+ * }).catch(function (err) {
+ *   console.error('bonk', err);
+ * });
+ *
+ * @see https://www.flickr.com/services/api/replace.api.html
+ */
+
+function Replace(auth, photoID, file, args) {
+
+	// allow creating a client without `new`
+	if (!(this instanceof Replace)) {
+		return new Replace(auth, photoID, file, args);
+	}
+
+	Request.call(this, 'POST', 'https://up.flickr.com/services/replace');
+
+	if (typeof auth !== 'function') {
+		throw new Error('Missing required argument "auth"');
+	}
+
+	if (typeof photoID === 'undefined') {
+		throw new Error('Missing required argument "photoID"');
+	}
+
+	if (typeof args === 'undefined') {
+		args = {};
+	}
+
+	this.attach('photo', file);
+	this.field('photo_id', photoID);
+	this.field(args);
+	this.use(xml);
+	this.use(auth);
+}
+
+Replace.prototype = Object.create(Request.prototype);
+
+module.exports = Replace;
+
+},{"../lib/request":2,"../plugins/xml":74}],78:[function(require,module,exports){
+/*!
+ * Copyright 2017 Yahoo Holdings.
+ * Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
+ */
+
+var request = require('../lib/request');
+var validate = require('../lib/validate');
+var json = require('../plugins/json');
+
+/**
+ * Creates a superagent plugin that simply adds api_key to
+ * the query string of every request.
+ * @param {String} str
+ * @returns {Function}
+ * @private
+ */
+
+function createAPIKeyPlugin(str) {
+	return function (req) {
+		return req.query({ api_key: str });
+	};
+}
+
+/**
+ * Creates a new Flickr API client. This "client" is a factory
+ * method that creates a new superagent request pre-configured
+ * for talking to the Flickr API. You must pass an "auth"
+ * supergent plugin.
+ * @param {Function} auth
+ * @returns {Function}
+ * @private
+ * @see https://github.com/visionmedia/superagent
+ */
+
+function createClient(auth, opts) {
+	var host;
+
+	// allow passing just an api key instead of a function
+	if (typeof auth === 'string') {
+		auth = createAPIKeyPlugin(auth);
+	}
+
+	if (typeof auth !== 'function') {
+		throw new Error('Missing required argument "auth"');
+	}
+
+	// options
+	opts = opts || {};
+	host = opts.host || 'api.flickr.com';
+
+	return function (verb, method, args) {
+		if (typeof args === 'undefined') {
+			args = {};
+		}
+
+		// the API expects the "extras" param to be a
+		// comma-separated list, so if we are given an
+		// array we should join it
+		if (Array.isArray(args.extras)) {
+			args.extras = args.extras.join(',');
+		} else if (args.extras instanceof Set) {
+			args.extras = Array.from(args.extras).join(',');
+		}
+
+		return request(verb, 'https://' + host + '/services/rest')
+			.query({ method: method })
+			.query(args)
+			.use(json)
+			.use(auth);
+	};
+
+}
+
+/**
+ * Creates a new Flickr REST API client.
+ *
+ * You **must** pass a superagent plugin or your API key as the first
+ * parameter. For methods that don't require authentication, you can simply
+ * provide your API key. For methods that do require authentication,
+ * use the [OAuth plugin]{@link Flickr.OAuth.createPlugin}.
+ *
+ * @constructor
+ * @param {Function|String} auth An authentication plugin function or an API key
+ *
+ * @example <caption>Get info about a public photo with your API key</caption>
+ *
+ * var flickr = new Flickr(process.env.FLICKR_API_KEY);
+ *
+ * flickr.photos.getInfo({
+ *   photo_id: 25825763 // sorry, @dokas
+ * }).then(function (res) {
+ *   console.log('yay!', res.body);
+ * }).catch(function (err) {
+ *   console.error('bonk', err);
+ * });
+ *
+ * @example <caption>Searching for public photos with your API key</caption>
+ *
+ * var flickr = new Flickr(process.env.FLICKR_API_KEY);
+ *
+ * flickr.photos.search({
+ *   text: 'doggo'
+ * }).then(function (res) {
+ *   console.log('yay!', res.body);
+ * }).catch(function (err) {
+ *   console.error('bonk', err);
+ * });
+ *
+ * @example <caption>Authenticate as a user with the OAuth plugin</caption>
+ *
+ * var flickr = new Flickr(Flickr.OAuth.createPlugin(
+ *   process.env.FLICKR_CONSUMER_KEY,
+ *   process.env.FLICKR_CONSUMER_SECRET,
+ *   process.env.FLICKR_OAUTH_TOKEN,
+ *   process.env.FLICKR_OAUTH_TOKEN_SECRET
+ * ));
+ *
+ * flickr.test.login().then(function (res) {
+ *   console.log('yay!', res.body);
+ * }).catch(function (err) {
+ *   console.error('bonk', err);
+ * });
+ *
+ * @classdesc
+ *
+ * All of the [REST API][services/api] methods are available on the
+ * [Flickr]{@link Flickr} prototype. Each method accepts a single parameter
+ * which is an optional hash of arguments. Refer to the [REST API][services/api]
+ * docs for the full list of methods and their supported arguments.
+ *
+ * | Method | Permissions | Required Arguments |
+ * | --- | --- | --- |
+ * | [flickr.activity.userComments](https://www.flickr.com/services/api/flickr.activity.userComments.html) | `read` :eyes: |  |
+ * | [flickr.activity.userPhotos](https://www.flickr.com/services/api/flickr.activity.userPhotos.html) | `read` :eyes: |  |
+ * | [flickr.auth.checkToken](https://www.flickr.com/services/api/flickr.auth.checkToken.html) | `none`  | `auth_token` |
+ * | [flickr.auth.getFrob](https://www.flickr.com/services/api/flickr.auth.getFrob.html) | `none`  |  |
+ * | [flickr.auth.getFullToken](https://www.flickr.com/services/api/flickr.auth.getFullToken.html) | `none`  | `mini_token` |
+ * | [flickr.auth.getToken](https://www.flickr.com/services/api/flickr.auth.getToken.html) | `none`  | `frob` |
+ * | [flickr.auth.oauth.checkToken](https://www.flickr.com/services/api/flickr.auth.oauth.checkToken.html) | `none`  | `oauth_token` |
+ * | [flickr.auth.oauth.getAccessToken](https://www.flickr.com/services/api/flickr.auth.oauth.getAccessToken.html) | `none`  |  |
+ * | [flickr.blogs.getList](https://www.flickr.com/services/api/flickr.blogs.getList.html) | `read` :eyes: |  |
+ * | [flickr.blogs.getServices](https://www.flickr.com/services/api/flickr.blogs.getServices.html) | `none`  |  |
+ * | [flickr.blogs.postPhoto](https://www.flickr.com/services/api/flickr.blogs.postPhoto.html) | `write` :pencil2: | `photo_id`, `title`, `description` |
+ * | [flickr.cameras.getBrandModels](https://www.flickr.com/services/api/flickr.cameras.getBrandModels.html) | `none`  | `brand` |
+ * | [flickr.cameras.getBrands](https://www.flickr.com/services/api/flickr.cameras.getBrands.html) | `none`  |  |
+ * | [flickr.collections.getInfo](https://www.flickr.com/services/api/flickr.collections.getInfo.html) | `read` :eyes: | `collection_id` |
+ * | [flickr.collections.getTree](https://www.flickr.com/services/api/flickr.collections.getTree.html) | `none`  |  |
+ * | [flickr.commons.getInstitutions](https://www.flickr.com/services/api/flickr.commons.getInstitutions.html) | `none`  |  |
+ * | [flickr.contacts.getList](https://www.flickr.com/services/api/flickr.contacts.getList.html) | `read` :eyes: |  |
+ * | [flickr.contacts.getListRecentlyUploaded](https://www.flickr.com/services/api/flickr.contacts.getListRecentlyUploaded.html) | `read` :eyes: |  |
+ * | [flickr.contacts.getPublicList](https://www.flickr.com/services/api/flickr.contacts.getPublicList.html) | `none`  | `user_id` |
+ * | [flickr.contacts.getTaggingSuggestions](https://www.flickr.com/services/api/flickr.contacts.getTaggingSuggestions.html) | `read` :eyes: |  |
+ * | [flickr.favorites.add](https://www.flickr.com/services/api/flickr.favorites.add.html) | `write` :pencil2: | `photo_id` |
+ * | [flickr.favorites.getContext](https://www.flickr.com/services/api/flickr.favorites.getContext.html) | `none`  | `photo_id`, `user_id` |
+ * | [flickr.favorites.getList](https://www.flickr.com/services/api/flickr.favorites.getList.html) | `none`  |  |
+ * | [flickr.favorites.getPublicList](https://www.flickr.com/services/api/flickr.favorites.getPublicList.html) | `none`  | `user_id` |
+ * | [flickr.favorites.remove](https://www.flickr.com/services/api/flickr.favorites.remove.html) | `write` :pencil2: | `photo_id` |
+ * | [flickr.galleries.addPhoto](https://www.flickr.com/services/api/flickr.galleries.addPhoto.html) | `write` :pencil2: | `gallery_id`, `photo_id` |
+ * | [flickr.galleries.create](https://www.flickr.com/services/api/flickr.galleries.create.html) | `write` :pencil2: | `title`, `description` |
+ * | [flickr.galleries.editMeta](https://www.flickr.com/services/api/flickr.galleries.editMeta.html) | `write` :pencil2: | `gallery_id`, `title` |
+ * | [flickr.galleries.editPhoto](https://www.flickr.com/services/api/flickr.galleries.editPhoto.html) | `write` :pencil2: | `gallery_id`, `photo_id`, `comment` |
+ * | [flickr.galleries.editPhotos](https://www.flickr.com/services/api/flickr.galleries.editPhotos.html) | `write` :pencil2: | `gallery_id`, `primary_photo_id`, `photo_ids` |
+ * | [flickr.galleries.getInfo](https://www.flickr.com/services/api/flickr.galleries.getInfo.html) | `none`  | `gallery_id` |
+ * | [flickr.galleries.getList](https://www.flickr.com/services/api/flickr.galleries.getList.html) | `none`  | `user_id` |
+ * | [flickr.galleries.getListForPhoto](https://www.flickr.com/services/api/flickr.galleries.getListForPhoto.html) | `none`  | `photo_id` |
+ * | [flickr.galleries.getPhotos](https://www.flickr.com/services/api/flickr.galleries.getPhotos.html) | `none`  | `gallery_id` |
+ * | [flickr.groups.browse](https://www.flickr.com/services/api/flickr.groups.browse.html) | `read` :eyes: |  |
+ * | [flickr.groups.getInfo](https://www.flickr.com/services/api/flickr.groups.getInfo.html) | `none`  | `group_id` |
+ * | [flickr.groups.join](https://www.flickr.com/services/api/flickr.groups.join.html) | `write` :pencil2: | `group_id` |
+ * | [flickr.groups.joinRequest](https://www.flickr.com/services/api/flickr.groups.joinRequest.html) | `write` :pencil2: | `group_id`, `message`, `accept_rules` |
+ * | [flickr.groups.leave](https://www.flickr.com/services/api/flickr.groups.leave.html) | `delete` :boom: | `group_id` |
+ * | [flickr.groups.search](https://www.flickr.com/services/api/flickr.groups.search.html) | `none`  | `text` |
+ * | [flickr.groups.discuss.replies.add](https://www.flickr.com/services/api/flickr.groups.discuss.replies.add.html) | `write` :pencil2: | `group_id`, `topic_id`, `message` |
+ * | [flickr.groups.discuss.replies.delete](https://www.flickr.com/services/api/flickr.groups.discuss.replies.delete.html) | `delete` :boom: | `group_id`, `topic_id`, `reply_id` |
+ * | [flickr.groups.discuss.replies.edit](https://www.flickr.com/services/api/flickr.groups.discuss.replies.edit.html) | `write` :pencil2: | `group_id`, `topic_id`, `reply_id`, `message` |
+ * | [flickr.groups.discuss.replies.getInfo](https://www.flickr.com/services/api/flickr.groups.discuss.replies.getInfo.html) | `none`  | `group_id`, `topic_id`, `reply_id` |
+ * | [flickr.groups.discuss.replies.getList](https://www.flickr.com/services/api/flickr.groups.discuss.replies.getList.html) | `none`  | `group_id`, `topic_id`, `per_page` |
+ * | [flickr.groups.discuss.topics.add](https://www.flickr.com/services/api/flickr.groups.discuss.topics.add.html) | `write` :pencil2: | `group_id`, `subject`, `message` |
+ * | [flickr.groups.discuss.topics.getInfo](https://www.flickr.com/services/api/flickr.groups.discuss.topics.getInfo.html) | `none`  | `group_id`, `topic_id` |
+ * | [flickr.groups.discuss.topics.getList](https://www.flickr.com/services/api/flickr.groups.discuss.topics.getList.html) | `none`  | `group_id` |
+ * | [flickr.groups.members.getList](https://www.flickr.com/services/api/flickr.groups.members.getList.html) | `read` :eyes: | `group_id` |
+ * | [flickr.groups.pools.add](https://www.flickr.com/services/api/flickr.groups.pools.add.html) | `write` :pencil2: | `photo_id`, `group_id` |
+ * | [flickr.groups.pools.getContext](https://www.flickr.com/services/api/flickr.groups.pools.getContext.html) | `none`  | `photo_id`, `group_id` |
+ * | [flickr.groups.pools.getGroups](https://www.flickr.com/services/api/flickr.groups.pools.getGroups.html) | `read` :eyes: |  |
+ * | [flickr.groups.pools.getPhotos](https://www.flickr.com/services/api/flickr.groups.pools.getPhotos.html) | `none`  | `group_id` |
+ * | [flickr.groups.pools.remove](https://www.flickr.com/services/api/flickr.groups.pools.remove.html) | `write` :pencil2: | `photo_id`, `group_id` |
+ * | [flickr.interestingness.getList](https://www.flickr.com/services/api/flickr.interestingness.getList.html) | `none`  |  |
+ * | [flickr.machinetags.getNamespaces](https://www.flickr.com/services/api/flickr.machinetags.getNamespaces.html) | `none`  |  |
+ * | [flickr.machinetags.getPairs](https://www.flickr.com/services/api/flickr.machinetags.getPairs.html) | `none`  |  |
+ * | [flickr.machinetags.getPredicates](https://www.flickr.com/services/api/flickr.machinetags.getPredicates.html) | `none`  |  |
+ * | [flickr.machinetags.getRecentValues](https://www.flickr.com/services/api/flickr.machinetags.getRecentValues.html) | `none`  |  |
+ * | [flickr.machinetags.getValues](https://www.flickr.com/services/api/flickr.machinetags.getValues.html) | `none`  | `namespace`, `predicate` |
+ * | [flickr.panda.getList](https://www.flickr.com/services/api/flickr.panda.getList.html) | `none`  |  |
+ * | [flickr.panda.getPhotos](https://www.flickr.com/services/api/flickr.panda.getPhotos.html) | `none`  | `panda_name` |
+ * | [flickr.people.findByEmail](https://www.flickr.com/services/api/flickr.people.findByEmail.html) | `none`  | `find_email` |
+ * | [flickr.people.findByUsername](https://www.flickr.com/services/api/flickr.people.findByUsername.html) | `none`  | `username` |
+ * | [flickr.people.getGroups](https://www.flickr.com/services/api/flickr.people.getGroups.html) | `read` :eyes: | `user_id` |
+ * | [flickr.people.getInfo](https://www.flickr.com/services/api/flickr.people.getInfo.html) | `none`  | `user_id` |
+ * | [flickr.people.getLimits](https://www.flickr.com/services/api/flickr.people.getLimits.html) | `read` :eyes: |  |
+ * | [flickr.people.getPhotos](https://www.flickr.com/services/api/flickr.people.getPhotos.html) | `none`  | `user_id` |
+ * | [flickr.people.getPhotosOf](https://www.flickr.com/services/api/flickr.people.getPhotosOf.html) | `none`  | `user_id` |
+ * | [flickr.people.getPublicGroups](https://www.flickr.com/services/api/flickr.people.getPublicGroups.html) | `none`  | `user_id` |
+ * | [flickr.people.getPublicPhotos](https://www.flickr.com/services/api/flickr.people.getPublicPhotos.html) | `none`  | `user_id` |
+ * | [flickr.people.getUploadStatus](https://www.flickr.com/services/api/flickr.people.getUploadStatus.html) | `read` :eyes: |  |
+ * | [flickr.photos.addTags](https://www.flickr.com/services/api/flickr.photos.addTags.html) | `write` :pencil2: | `photo_id`, `tags` |
+ * | [flickr.photos.delete](https://www.flickr.com/services/api/flickr.photos.delete.html) | `delete` :boom: | `photo_id` |
+ * | [flickr.photos.getAllContexts](https://www.flickr.com/services/api/flickr.photos.getAllContexts.html) | `none`  | `photo_id` |
+ * | [flickr.photos.getContactsPhotos](https://www.flickr.com/services/api/flickr.photos.getContactsPhotos.html) | `read` :eyes: |  |
+ * | [flickr.photos.getContactsPublicPhotos](https://www.flickr.com/services/api/flickr.photos.getContactsPublicPhotos.html) | `none`  | `user_id` |
+ * | [flickr.photos.getContext](https://www.flickr.com/services/api/flickr.photos.getContext.html) | `none`  | `photo_id` |
+ * | [flickr.photos.getCounts](https://www.flickr.com/services/api/flickr.photos.getCounts.html) | `read` :eyes: |  |
+ * | [flickr.photos.getExif](https://www.flickr.com/services/api/flickr.photos.getExif.html) | `none`  | `photo_id` |
+ * | [flickr.photos.getFavorites](https://www.flickr.com/services/api/flickr.photos.getFavorites.html) | `none`  | `photo_id` |
+ * | [flickr.photos.getInfo](https://www.flickr.com/services/api/flickr.photos.getInfo.html) | `none`  | `photo_id` |
+ * | [flickr.photos.getNotInSet](https://www.flickr.com/services/api/flickr.photos.getNotInSet.html) | `read` :eyes: |  |
+ * | [flickr.photos.getPerms](https://www.flickr.com/services/api/flickr.photos.getPerms.html) | `read` :eyes: | `photo_id` |
+ * | [flickr.photos.getPopular](https://www.flickr.com/services/api/flickr.photos.getPopular.html) | `none`  |  |
+ * | [flickr.photos.getRecent](https://www.flickr.com/services/api/flickr.photos.getRecent.html) | `none`  |  |
+ * | [flickr.photos.getSizes](https://www.flickr.com/services/api/flickr.photos.getSizes.html) | `none`  | `photo_id` |
+ * | [flickr.photos.getUntagged](https://www.flickr.com/services/api/flickr.photos.getUntagged.html) | `read` :eyes: |  |
+ * | [flickr.photos.getWithGeoData](https://www.flickr.com/services/api/flickr.photos.getWithGeoData.html) | `read` :eyes: |  |
+ * | [flickr.photos.getWithoutGeoData](https://www.flickr.com/services/api/flickr.photos.getWithoutGeoData.html) | `read` :eyes: |  |
+ * | [flickr.photos.recentlyUpdated](https://www.flickr.com/services/api/flickr.photos.recentlyUpdated.html) | `read` :eyes: | `min_date` |
+ * | [flickr.photos.removeTag](https://www.flickr.com/services/api/flickr.photos.removeTag.html) | `write` :pencil2: | `tag_id` |
+ * | [flickr.photos.search](https://www.flickr.com/services/api/flickr.photos.search.html) | `none`  |  |
+ * | [flickr.photos.setContentType](https://www.flickr.com/services/api/flickr.photos.setContentType.html) | `write` :pencil2: | `photo_id`, `content_type` |
+ * | [flickr.photos.setDates](https://www.flickr.com/services/api/flickr.photos.setDates.html) | `write` :pencil2: | `photo_id` |
+ * | [flickr.photos.setMeta](https://www.flickr.com/services/api/flickr.photos.setMeta.html) | `write` :pencil2: | `photo_id` |
+ * | [flickr.photos.setPerms](https://www.flickr.com/services/api/flickr.photos.setPerms.html) | `write` :pencil2: | `photo_id`, `is_public`, `is_friend`, `is_family` |
+ * | [flickr.photos.setSafetyLevel](https://www.flickr.com/services/api/flickr.photos.setSafetyLevel.html) | `write` :pencil2: | `photo_id` |
+ * | [flickr.photos.setTags](https://www.flickr.com/services/api/flickr.photos.setTags.html) | `write` :pencil2: | `photo_id`, `tags` |
+ * | [flickr.photos.comments.addComment](https://www.flickr.com/services/api/flickr.photos.comments.addComment.html) | `write` :pencil2: | `photo_id`, `comment_text` |
+ * | [flickr.photos.comments.deleteComment](https://www.flickr.com/services/api/flickr.photos.comments.deleteComment.html) | `write` :pencil2: | `comment_id` |
+ * | [flickr.photos.comments.editComment](https://www.flickr.com/services/api/flickr.photos.comments.editComment.html) | `write` :pencil2: | `comment_id`, `comment_text` |
+ * | [flickr.photos.comments.getList](https://www.flickr.com/services/api/flickr.photos.comments.getList.html) | `none`  | `photo_id` |
+ * | [flickr.photos.comments.getRecentForContacts](https://www.flickr.com/services/api/flickr.photos.comments.getRecentForContacts.html) | `read` :eyes: |  |
+ * | [flickr.photos.geo.batchCorrectLocation](https://www.flickr.com/services/api/flickr.photos.geo.batchCorrectLocation.html) | `write` :pencil2: | `lat`, `lon`, `accuracy` |
+ * | [flickr.photos.geo.correctLocation](https://www.flickr.com/services/api/flickr.photos.geo.correctLocation.html) | `write` :pencil2: | `photo_id`, `foursquare_id` |
+ * | [flickr.photos.geo.getLocation](https://www.flickr.com/services/api/flickr.photos.geo.getLocation.html) | `none`  | `photo_id` |
+ * | [flickr.photos.geo.getPerms](https://www.flickr.com/services/api/flickr.photos.geo.getPerms.html) | `read` :eyes: | `photo_id` |
+ * | [flickr.photos.geo.photosForLocation](https://www.flickr.com/services/api/flickr.photos.geo.photosForLocation.html) | `read` :eyes: | `lat`, `lon` |
+ * | [flickr.photos.geo.removeLocation](https://www.flickr.com/services/api/flickr.photos.geo.removeLocation.html) | `write` :pencil2: | `photo_id` |
+ * | [flickr.photos.geo.setContext](https://www.flickr.com/services/api/flickr.photos.geo.setContext.html) | `write` :pencil2: | `photo_id`, `context` |
+ * | [flickr.photos.geo.setLocation](https://www.flickr.com/services/api/flickr.photos.geo.setLocation.html) | `write` :pencil2: | `photo_id`, `lat`, `lon` |
+ * | [flickr.photos.geo.setPerms](https://www.flickr.com/services/api/flickr.photos.geo.setPerms.html) | `write` :pencil2: | `is_public`, `is_contact`, `is_friend`, `is_family`, `photo_id` |
+ * | [flickr.photos.licenses.getInfo](https://www.flickr.com/services/api/flickr.photos.licenses.getInfo.html) | `none`  |  |
+ * | [flickr.photos.licenses.setLicense](https://www.flickr.com/services/api/flickr.photos.licenses.setLicense.html) | `write` :pencil2: | `photo_id`, `license_id` |
+ * | [flickr.photos.notes.add](https://www.flickr.com/services/api/flickr.photos.notes.add.html) | `write` :pencil2: | `photo_id`, `note_x`, `note_y`, `note_w`, `note_h`, `note_text` |
+ * | [flickr.photos.notes.delete](https://www.flickr.com/services/api/flickr.photos.notes.delete.html) | `write` :pencil2: | `note_id` |
+ * | [flickr.photos.notes.edit](https://www.flickr.com/services/api/flickr.photos.notes.edit.html) | `write` :pencil2: | `note_id`, `note_x`, `note_y`, `note_w`, `note_h`, `note_text` |
+ * | [flickr.photos.people.add](https://www.flickr.com/services/api/flickr.photos.people.add.html) | `write` :pencil2: | `photo_id`, `user_id` |
+ * | [flickr.photos.people.delete](https://www.flickr.com/services/api/flickr.photos.people.delete.html) | `write` :pencil2: | `photo_id`, `user_id` |
+ * | [flickr.photos.people.deleteCoords](https://www.flickr.com/services/api/flickr.photos.people.deleteCoords.html) | `write` :pencil2: | `photo_id`, `user_id` |
+ * | [flickr.photos.people.editCoords](https://www.flickr.com/services/api/flickr.photos.people.editCoords.html) | `write` :pencil2: | `photo_id`, `user_id`, `person_x`, `person_y`, `person_w`, `person_h` |
+ * | [flickr.photos.people.getList](https://www.flickr.com/services/api/flickr.photos.people.getList.html) | `none`  | `photo_id` |
+ * | [flickr.photos.suggestions.approveSuggestion](https://www.flickr.com/services/api/flickr.photos.suggestions.approveSuggestion.html) | `write` :pencil2: | `suggestion_id` |
+ * | [flickr.photos.suggestions.getList](https://www.flickr.com/services/api/flickr.photos.suggestions.getList.html) | `read` :eyes: |  |
+ * | [flickr.photos.suggestions.rejectSuggestion](https://www.flickr.com/services/api/flickr.photos.suggestions.rejectSuggestion.html) | `write` :pencil2: | `suggestion_id` |
+ * | [flickr.photos.suggestions.removeSuggestion](https://www.flickr.com/services/api/flickr.photos.suggestions.removeSuggestion.html) | `write` :pencil2: | `suggestion_id` |
+ * | [flickr.photos.suggestions.suggestLocation](https://www.flickr.com/services/api/flickr.photos.suggestions.suggestLocation.html) | `write` :pencil2: | `photo_id`, `lat`, `lon` |
+ * | [flickr.photos.transform.rotate](https://www.flickr.com/services/api/flickr.photos.transform.rotate.html) | `write` :pencil2: | `photo_id`, `degrees` |
+ * | [flickr.photos.upload.checkTickets](https://www.flickr.com/services/api/flickr.photos.upload.checkTickets.html) | `none`  | `tickets` |
+ * | [flickr.photosets.addPhoto](https://www.flickr.com/services/api/flickr.photosets.addPhoto.html) | `write` :pencil2: | `photoset_id`, `photo_id` |
+ * | [flickr.photosets.create](https://www.flickr.com/services/api/flickr.photosets.create.html) | `write` :pencil2: | `title`, `primary_photo_id` |
+ * | [flickr.photosets.delete](https://www.flickr.com/services/api/flickr.photosets.delete.html) | `write` :pencil2: | `photoset_id` |
+ * | [flickr.photosets.editMeta](https://www.flickr.com/services/api/flickr.photosets.editMeta.html) | `write` :pencil2: | `photoset_id`, `title` |
+ * | [flickr.photosets.editPhotos](https://www.flickr.com/services/api/flickr.photosets.editPhotos.html) | `write` :pencil2: | `photoset_id`, `primary_photo_id`, `photo_ids` |
+ * | [flickr.photosets.getContext](https://www.flickr.com/services/api/flickr.photosets.getContext.html) | `none`  | `photo_id`, `photoset_id` |
+ * | [flickr.photosets.getInfo](https://www.flickr.com/services/api/flickr.photosets.getInfo.html) | `none`  | `photoset_id`, `user_id` |
+ * | [flickr.photosets.getList](https://www.flickr.com/services/api/flickr.photosets.getList.html) | `none`  |  |
+ * | [flickr.photosets.getPhotos](https://www.flickr.com/services/api/flickr.photosets.getPhotos.html) | `none`  | `photoset_id`, `user_id` |
+ * | [flickr.photosets.orderSets](https://www.flickr.com/services/api/flickr.photosets.orderSets.html) | `write` :pencil2: | `photoset_ids` |
+ * | [flickr.photosets.removePhoto](https://www.flickr.com/services/api/flickr.photosets.removePhoto.html) | `write` :pencil2: | `photoset_id`, `photo_id` |
+ * | [flickr.photosets.removePhotos](https://www.flickr.com/services/api/flickr.photosets.removePhotos.html) | `write` :pencil2: | `photoset_id`, `photo_ids` |
+ * | [flickr.photosets.reorderPhotos](https://www.flickr.com/services/api/flickr.photosets.reorderPhotos.html) | `write` :pencil2: | `photoset_id`, `photo_ids` |
+ * | [flickr.photosets.setPrimaryPhoto](https://www.flickr.com/services/api/flickr.photosets.setPrimaryPhoto.html) | `write` :pencil2: | `photoset_id`, `photo_id` |
+ * | [flickr.photosets.comments.addComment](https://www.flickr.com/services/api/flickr.photosets.comments.addComment.html) | `write` :pencil2: | `photoset_id`, `comment_text` |
+ * | [flickr.photosets.comments.deleteComment](https://www.flickr.com/services/api/flickr.photosets.comments.deleteComment.html) | `write` :pencil2: | `comment_id` |
+ * | [flickr.photosets.comments.editComment](https://www.flickr.com/services/api/flickr.photosets.comments.editComment.html) | `write` :pencil2: | `comment_id`, `comment_text` |
+ * | [flickr.photosets.comments.getList](https://www.flickr.com/services/api/flickr.photosets.comments.getList.html) | `none`  | `photoset_id` |
+ * | [flickr.places.find](https://www.flickr.com/services/api/flickr.places.find.html) | `none`  | `query` |
+ * | [flickr.places.findByLatLon](https://www.flickr.com/services/api/flickr.places.findByLatLon.html) | `none`  | `lat`, `lon` |
+ * | [flickr.places.getChildrenWithPhotosPublic](https://www.flickr.com/services/api/flickr.places.getChildrenWithPhotosPublic.html) | `none`  |  |
+ * | [flickr.places.getInfo](https://www.flickr.com/services/api/flickr.places.getInfo.html) | `none`  |  |
+ * | [flickr.places.getInfoByUrl](https://www.flickr.com/services/api/flickr.places.getInfoByUrl.html) | `none`  | `url` |
+ * | [flickr.places.getPlaceTypes](https://www.flickr.com/services/api/flickr.places.getPlaceTypes.html) | `none`  |  |
+ * | [flickr.places.getShapeHistory](https://www.flickr.com/services/api/flickr.places.getShapeHistory.html) | `none`  |  |
+ * | [flickr.places.getTopPlacesList](https://www.flickr.com/services/api/flickr.places.getTopPlacesList.html) | `none`  | `place_type_id` |
+ * | [flickr.places.placesForBoundingBox](https://www.flickr.com/services/api/flickr.places.placesForBoundingBox.html) | `none`  | `bbox` |
+ * | [flickr.places.placesForContacts](https://www.flickr.com/services/api/flickr.places.placesForContacts.html) | `read` :eyes: |  |
+ * | [flickr.places.placesForTags](https://www.flickr.com/services/api/flickr.places.placesForTags.html) | `none`  | `place_type_id` |
+ * | [flickr.places.placesForUser](https://www.flickr.com/services/api/flickr.places.placesForUser.html) | `read` :eyes: |  |
+ * | [flickr.places.resolvePlaceId](https://www.flickr.com/services/api/flickr.places.resolvePlaceId.html) | `none`  | `place_id` |
+ * | [flickr.places.resolvePlaceURL](https://www.flickr.com/services/api/flickr.places.resolvePlaceURL.html) | `none`  | `url` |
+ * | [flickr.places.tagsForPlace](https://www.flickr.com/services/api/flickr.places.tagsForPlace.html) | `none`  |  |
+ * | [flickr.prefs.getContentType](https://www.flickr.com/services/api/flickr.prefs.getContentType.html) | `read` :eyes: |  |
+ * | [flickr.prefs.getGeoPerms](https://www.flickr.com/services/api/flickr.prefs.getGeoPerms.html) | `read` :eyes: |  |
+ * | [flickr.prefs.getHidden](https://www.flickr.com/services/api/flickr.prefs.getHidden.html) | `read` :eyes: |  |
+ * | [flickr.prefs.getPrivacy](https://www.flickr.com/services/api/flickr.prefs.getPrivacy.html) | `read` :eyes: |  |
+ * | [flickr.prefs.getSafetyLevel](https://www.flickr.com/services/api/flickr.prefs.getSafetyLevel.html) | `read` :eyes: |  |
+ * | [flickr.profile.getProfile](https://www.flickr.com/services/api/flickr.profile.getProfile.html) | `none`  | `user_id` |
+ * | [flickr.push.getSubscriptions](https://www.flickr.com/services/api/flickr.push.getSubscriptions.html) | `read` :eyes: |  |
+ * | [flickr.push.getTopics](https://www.flickr.com/services/api/flickr.push.getTopics.html) | `none`  |  |
+ * | [flickr.push.subscribe](https://www.flickr.com/services/api/flickr.push.subscribe.html) | `read` :eyes: | `topic`, `callback`, `verify` |
+ * | [flickr.push.unsubscribe](https://www.flickr.com/services/api/flickr.push.unsubscribe.html) | `read` :eyes: | `topic`, `callback`, `verify` |
+ * | [flickr.reflection.getMethodInfo](https://www.flickr.com/services/api/flickr.reflection.getMethodInfo.html) | `none`  | `method_name` |
+ * | [flickr.reflection.getMethods](https://www.flickr.com/services/api/flickr.reflection.getMethods.html) | `none`  |  |
+ * | [flickr.stats.getCSVFiles](https://www.flickr.com/services/api/flickr.stats.getCSVFiles.html) | `read` :eyes: |  |
+ * | [flickr.stats.getCollectionDomains](https://www.flickr.com/services/api/flickr.stats.getCollectionDomains.html) | `read` :eyes: | `date` |
+ * | [flickr.stats.getCollectionReferrers](https://www.flickr.com/services/api/flickr.stats.getCollectionReferrers.html) | `read` :eyes: | `date`, `domain` |
+ * | [flickr.stats.getCollectionStats](https://www.flickr.com/services/api/flickr.stats.getCollectionStats.html) | `read` :eyes: | `date`, `collection_id` |
+ * | [flickr.stats.getPhotoDomains](https://www.flickr.com/services/api/flickr.stats.getPhotoDomains.html) | `read` :eyes: | `date` |
+ * | [flickr.stats.getPhotoReferrers](https://www.flickr.com/services/api/flickr.stats.getPhotoReferrers.html) | `read` :eyes: | `date`, `domain` |
+ * | [flickr.stats.getPhotoStats](https://www.flickr.com/services/api/flickr.stats.getPhotoStats.html) | `read` :eyes: | `date`, `photo_id` |
+ * | [flickr.stats.getPhotosetDomains](https://www.flickr.com/services/api/flickr.stats.getPhotosetDomains.html) | `read` :eyes: | `date` |
+ * | [flickr.stats.getPhotosetReferrers](https://www.flickr.com/services/api/flickr.stats.getPhotosetReferrers.html) | `read` :eyes: | `date`, `domain` |
+ * | [flickr.stats.getPhotosetStats](https://www.flickr.com/services/api/flickr.stats.getPhotosetStats.html) | `read` :eyes: | `date`, `photoset_id` |
+ * | [flickr.stats.getPhotostreamDomains](https://www.flickr.com/services/api/flickr.stats.getPhotostreamDomains.html) | `read` :eyes: | `date` |
+ * | [flickr.stats.getPhotostreamReferrers](https://www.flickr.com/services/api/flickr.stats.getPhotostreamReferrers.html) | `read` :eyes: | `date`, `domain` |
+ * | [flickr.stats.getPhotostreamStats](https://www.flickr.com/services/api/flickr.stats.getPhotostreamStats.html) | `read` :eyes: | `date` |
+ * | [flickr.stats.getPopularPhotos](https://www.flickr.com/services/api/flickr.stats.getPopularPhotos.html) | `read` :eyes: |  |
+ * | [flickr.stats.getTotalViews](https://www.flickr.com/services/api/flickr.stats.getTotalViews.html) | `read` :eyes: |  |
+ * | [flickr.tags.getClusterPhotos](https://www.flickr.com/services/api/flickr.tags.getClusterPhotos.html) | `none`  | `tag`, `cluster_id` |
+ * | [flickr.tags.getClusters](https://www.flickr.com/services/api/flickr.tags.getClusters.html) | `none`  | `tag` |
+ * | [flickr.tags.getHotList](https://www.flickr.com/services/api/flickr.tags.getHotList.html) | `none`  |  |
+ * | [flickr.tags.getListPhoto](https://www.flickr.com/services/api/flickr.tags.getListPhoto.html) | `none`  | `photo_id` |
+ * | [flickr.tags.getListUser](https://www.flickr.com/services/api/flickr.tags.getListUser.html) | `none`  |  |
+ * | [flickr.tags.getListUserPopular](https://www.flickr.com/services/api/flickr.tags.getListUserPopular.html) | `none`  |  |
+ * | [flickr.tags.getListUserRaw](https://www.flickr.com/services/api/flickr.tags.getListUserRaw.html) | `none`  |  |
+ * | [flickr.tags.getMostFrequentlyUsed](https://www.flickr.com/services/api/flickr.tags.getMostFrequentlyUsed.html) | `read` :eyes: |  |
+ * | [flickr.tags.getRelated](https://www.flickr.com/services/api/flickr.tags.getRelated.html) | `none`  | `tag` |
+ * | [flickr.test.echo](https://www.flickr.com/services/api/flickr.test.echo.html) | `none`  |  |
+ * | [flickr.test.login](https://www.flickr.com/services/api/flickr.test.login.html) | `read` :eyes: |  |
+ * | [flickr.test.null](https://www.flickr.com/services/api/flickr.test.null.html) | `read` :eyes: |  |
+ * | [flickr.testimonials.addTestimonial](https://www.flickr.com/services/api/flickr.testimonials.addTestimonial.html) | `write` :pencil2: | `user_id`, `testimonial_text` |
+ * | [flickr.testimonials.approveTestimonial](https://www.flickr.com/services/api/flickr.testimonials.approveTestimonial.html) | `write` :pencil2: | `testimonial_id` |
+ * | [flickr.testimonials.deleteTestimonial](https://www.flickr.com/services/api/flickr.testimonials.deleteTestimonial.html) | `write` :pencil2: | `testimonial_id` |
+ * | [flickr.testimonials.editTestimonial](https://www.flickr.com/services/api/flickr.testimonials.editTestimonial.html) | `write` :pencil2: | `user_id`, `testimonial_id`, `testimonial_text` |
+ * | [flickr.testimonials.getAllTestimonialsAbout](https://www.flickr.com/services/api/flickr.testimonials.getAllTestimonialsAbout.html) | `read` :eyes: |  |
+ * | [flickr.testimonials.getAllTestimonialsAboutBy](https://www.flickr.com/services/api/flickr.testimonials.getAllTestimonialsAboutBy.html) | `read` :eyes: | `user_id` |
+ * | [flickr.testimonials.getAllTestimonialsBy](https://www.flickr.com/services/api/flickr.testimonials.getAllTestimonialsBy.html) | `read` :eyes: |  |
+ * | [flickr.testimonials.getPendingTestimonialsAbout](https://www.flickr.com/services/api/flickr.testimonials.getPendingTestimonialsAbout.html) | `read` :eyes: |  |
+ * | [flickr.testimonials.getPendingTestimonialsAboutBy](https://www.flickr.com/services/api/flickr.testimonials.getPendingTestimonialsAboutBy.html) | `read` :eyes: | `user_id` |
+ * | [flickr.testimonials.getPendingTestimonialsBy](https://www.flickr.com/services/api/flickr.testimonials.getPendingTestimonialsBy.html) | `read` :eyes: |  |
+ * | [flickr.testimonials.getTestimonialsAbout](https://www.flickr.com/services/api/flickr.testimonials.getTestimonialsAbout.html) | `none`  | `user_id` |
+ * | [flickr.testimonials.getTestimonialsAboutBy](https://www.flickr.com/services/api/flickr.testimonials.getTestimonialsAboutBy.html) | `read` :eyes: | `user_id` |
+ * | [flickr.testimonials.getTestimonialsBy](https://www.flickr.com/services/api/flickr.testimonials.getTestimonialsBy.html) | `none`  | `user_id` |
+ * | [flickr.urls.getGroup](https://www.flickr.com/services/api/flickr.urls.getGroup.html) | `none`  | `group_id` |
+ * | [flickr.urls.getUserPhotos](https://www.flickr.com/services/api/flickr.urls.getUserPhotos.html) | `none`  |  |
+ * | [flickr.urls.getUserProfile](https://www.flickr.com/services/api/flickr.urls.getUserProfile.html) | `none`  |  |
+ * | [flickr.urls.lookupGallery](https://www.flickr.com/services/api/flickr.urls.lookupGallery.html) | `none`  | `url` |
+ * | [flickr.urls.lookupGroup](https://www.flickr.com/services/api/flickr.urls.lookupGroup.html) | `none`  | `url` |
+ * | [flickr.urls.lookupUser](https://www.flickr.com/services/api/flickr.urls.lookupUser.html) | `none`  | `url` |
+ */
+
+function Flickr(auth, opts) {
+
+	// allow creating a client without `new`
+	if (!(this instanceof Flickr)) {
+		return new Flickr(auth);
+	}
+
+	// create a new client and assign it to all of our namespaces
+	this.activity._ =
+	this.auth._ =
+	this.auth.oauth._ =
+	this.blogs._ =
+	this.cameras._ =
+	this.collections._ =
+	this.commons._ =
+	this.contacts._ =
+	this.favorites._ =
+	this.galleries._ =
+	this.groups._ =
+	this.groups.discuss._ =
+	this.groups.discuss.replies._ =
+	this.groups.discuss.topics._ =
+	this.groups.members._ =
+	this.groups.pools._ =
+	this.interestingness._ =
+	this.machinetags._ =
+	this.panda._ =
+	this.people._ =
+	this.photos._ =
+	this.photos.comments._ =
+	this.photos.geo._ =
+	this.photos.licenses._ =
+	this.photos.notes._ =
+	this.photos.people._ =
+	this.photos.suggestions._ =
+	this.photos.transform._ =
+	this.photos.upload._ =
+	this.photosets._ =
+	this.photosets.comments._ =
+	this.places._ =
+	this.prefs._ =
+	this.profile._ =
+	this.push._ =
+	this.reflection._ =
+	this.stats._ =
+	this.tags._ =
+	this.test._ =
+	this.testimonials._ =
+	this.urls._ =
+	this._ = // create passthrough for future/undocumented endpoints
+		createClient(auth, opts);
+}
+
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.activity = {};
+
+/**
+ * flickr.activity.userComments
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.activity.userComments.html
+ */
+
+Flickr.prototype.activity.userComments = function (args) {
+	return this._('GET', 'flickr.activity.userComments', args);
+};
+
+/**
+ * flickr.activity.userPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.activity.userPhotos.html
+ */
+
+Flickr.prototype.activity.userPhotos = function (args) {
+	return this._('GET', 'flickr.activity.userPhotos', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.auth = {};
+
+/**
+ * flickr.auth.checkToken
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.auth.checkToken.html
+ */
+
+Flickr.prototype.auth.checkToken = function (args) {
+	validate(args, 'auth_token');
+	return this._('GET', 'flickr.auth.checkToken', args);
+};
+
+/**
+ * flickr.auth.getFrob
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.auth.getFrob.html
+ */
+
+Flickr.prototype.auth.getFrob = function (args) {
+	return this._('GET', 'flickr.auth.getFrob', args);
+};
+
+/**
+ * flickr.auth.getFullToken
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.auth.getFullToken.html
+ */
+
+Flickr.prototype.auth.getFullToken = function (args) {
+	validate(args, 'mini_token');
+	return this._('GET', 'flickr.auth.getFullToken', args);
+};
+
+/**
+ * flickr.auth.getToken
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.auth.getToken.html
+ */
+
+Flickr.prototype.auth.getToken = function (args) {
+	validate(args, 'frob');
+	return this._('GET', 'flickr.auth.getToken', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.auth.oauth = {};
+
+/**
+ * flickr.auth.oauth.checkToken
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.auth.oauth.checkToken.html
+ */
+
+Flickr.prototype.auth.oauth.checkToken = function (args) {
+	validate(args, 'oauth_token');
+	return this._('GET', 'flickr.auth.oauth.checkToken', args);
+};
+
+/**
+ * flickr.auth.oauth.getAccessToken
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.auth.oauth.getAccessToken.html
+ */
+
+Flickr.prototype.auth.oauth.getAccessToken = function (args) {
+	return this._('GET', 'flickr.auth.oauth.getAccessToken', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.blogs = {};
+
+/**
+ * flickr.blogs.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.blogs.getList.html
+ */
+
+Flickr.prototype.blogs.getList = function (args) {
+	return this._('GET', 'flickr.blogs.getList', args);
+};
+
+/**
+ * flickr.blogs.getServices
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.blogs.getServices.html
+ */
+
+Flickr.prototype.blogs.getServices = function (args) {
+	return this._('GET', 'flickr.blogs.getServices', args);
+};
+
+/**
+ * flickr.blogs.postPhoto
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.blogs.postPhoto.html
+ */
+
+Flickr.prototype.blogs.postPhoto = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'title');
+	validate(args, 'description');
+	return this._('POST', 'flickr.blogs.postPhoto', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.cameras = {};
+
+/**
+ * flickr.cameras.getBrandModels
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.cameras.getBrandModels.html
+ */
+
+Flickr.prototype.cameras.getBrandModels = function (args) {
+	validate(args, 'brand');
+	return this._('GET', 'flickr.cameras.getBrandModels', args);
+};
+
+/**
+ * flickr.cameras.getBrands
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.cameras.getBrands.html
+ */
+
+Flickr.prototype.cameras.getBrands = function (args) {
+	return this._('GET', 'flickr.cameras.getBrands', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.collections = {};
+
+/**
+ * flickr.collections.getInfo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.collections.getInfo.html
+ */
+
+Flickr.prototype.collections.getInfo = function (args) {
+	validate(args, 'collection_id');
+	return this._('GET', 'flickr.collections.getInfo', args);
+};
+
+/**
+ * flickr.collections.getTree
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.collections.getTree.html
+ */
+
+Flickr.prototype.collections.getTree = function (args) {
+	return this._('GET', 'flickr.collections.getTree', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.commons = {};
+
+/**
+ * flickr.commons.getInstitutions
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.commons.getInstitutions.html
+ */
+
+Flickr.prototype.commons.getInstitutions = function (args) {
+	return this._('GET', 'flickr.commons.getInstitutions', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.contacts = {};
+
+/**
+ * flickr.contacts.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.contacts.getList.html
+ */
+
+Flickr.prototype.contacts.getList = function (args) {
+	return this._('GET', 'flickr.contacts.getList', args);
+};
+
+/**
+ * flickr.contacts.getListRecentlyUploaded
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.contacts.getListRecentlyUploaded.html
+ */
+
+Flickr.prototype.contacts.getListRecentlyUploaded = function (args) {
+	return this._('GET', 'flickr.contacts.getListRecentlyUploaded', args);
+};
+
+/**
+ * flickr.contacts.getPublicList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.contacts.getPublicList.html
+ */
+
+Flickr.prototype.contacts.getPublicList = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.contacts.getPublicList', args);
+};
+
+/**
+ * flickr.contacts.getTaggingSuggestions
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.contacts.getTaggingSuggestions.html
+ */
+
+Flickr.prototype.contacts.getTaggingSuggestions = function (args) {
+	return this._('GET', 'flickr.contacts.getTaggingSuggestions', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.favorites = {};
+
+/**
+ * flickr.favorites.add
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.favorites.add.html
+ */
+
+Flickr.prototype.favorites.add = function (args) {
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.favorites.add', args);
+};
+
+/**
+ * flickr.favorites.getContext
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.favorites.getContext.html
+ */
+
+Flickr.prototype.favorites.getContext = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.favorites.getContext', args);
+};
+
+/**
+ * flickr.favorites.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.favorites.getList.html
+ */
+
+Flickr.prototype.favorites.getList = function (args) {
+	return this._('GET', 'flickr.favorites.getList', args);
+};
+
+/**
+ * flickr.favorites.getPublicList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.favorites.getPublicList.html
+ */
+
+Flickr.prototype.favorites.getPublicList = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.favorites.getPublicList', args);
+};
+
+/**
+ * flickr.favorites.remove
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.favorites.remove.html
+ */
+
+Flickr.prototype.favorites.remove = function (args) {
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.favorites.remove', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.galleries = {};
+
+/**
+ * flickr.galleries.addPhoto
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.galleries.addPhoto.html
+ */
+
+Flickr.prototype.galleries.addPhoto = function (args) {
+	validate(args, 'gallery_id');
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.galleries.addPhoto', args);
+};
+
+/**
+ * flickr.galleries.create
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.galleries.create.html
+ */
+
+Flickr.prototype.galleries.create = function (args) {
+	validate(args, 'title');
+	validate(args, 'description');
+	return this._('POST', 'flickr.galleries.create', args);
+};
+
+/**
+ * flickr.galleries.editMeta
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.galleries.editMeta.html
+ */
+
+Flickr.prototype.galleries.editMeta = function (args) {
+	validate(args, 'gallery_id');
+	validate(args, 'title');
+	return this._('POST', 'flickr.galleries.editMeta', args);
+};
+
+/**
+ * flickr.galleries.editPhoto
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.galleries.editPhoto.html
+ */
+
+Flickr.prototype.galleries.editPhoto = function (args) {
+	validate(args, 'gallery_id');
+	validate(args, 'photo_id');
+	validate(args, 'comment');
+	return this._('POST', 'flickr.galleries.editPhoto', args);
+};
+
+/**
+ * flickr.galleries.editPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.galleries.editPhotos.html
+ */
+
+Flickr.prototype.galleries.editPhotos = function (args) {
+	validate(args, 'gallery_id');
+	validate(args, 'primary_photo_id');
+	validate(args, 'photo_ids');
+	return this._('POST', 'flickr.galleries.editPhotos', args);
+};
+
+/**
+ * flickr.galleries.getInfo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.galleries.getInfo.html
+ */
+
+Flickr.prototype.galleries.getInfo = function (args) {
+	validate(args, 'gallery_id');
+	return this._('GET', 'flickr.galleries.getInfo', args);
+};
+
+/**
+ * flickr.galleries.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.galleries.getList.html
+ */
+
+Flickr.prototype.galleries.getList = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.galleries.getList', args);
+};
+
+/**
+ * flickr.galleries.getListForPhoto
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.galleries.getListForPhoto.html
+ */
+
+Flickr.prototype.galleries.getListForPhoto = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.galleries.getListForPhoto', args);
+};
+
+/**
+ * flickr.galleries.getPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.galleries.getPhotos.html
+ */
+
+Flickr.prototype.galleries.getPhotos = function (args) {
+	validate(args, 'gallery_id');
+	return this._('GET', 'flickr.galleries.getPhotos', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.groups = {};
+
+/**
+ * flickr.groups.browse
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.browse.html
+ */
+
+Flickr.prototype.groups.browse = function (args) {
+	return this._('GET', 'flickr.groups.browse', args);
+};
+
+/**
+ * flickr.groups.getInfo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.getInfo.html
+ */
+
+Flickr.prototype.groups.getInfo = function (args) {
+	validate(args, 'group_id');
+	return this._('GET', 'flickr.groups.getInfo', args);
+};
+
+/**
+ * flickr.groups.join
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.join.html
+ */
+
+Flickr.prototype.groups.join = function (args) {
+	validate(args, 'group_id');
+	return this._('POST', 'flickr.groups.join', args);
+};
+
+/**
+ * flickr.groups.joinRequest
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.joinRequest.html
+ */
+
+Flickr.prototype.groups.joinRequest = function (args) {
+	validate(args, 'group_id');
+	validate(args, 'message');
+	validate(args, 'accept_rules');
+	return this._('POST', 'flickr.groups.joinRequest', args);
+};
+
+/**
+ * flickr.groups.leave
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.leave.html
+ */
+
+Flickr.prototype.groups.leave = function (args) {
+	validate(args, 'group_id');
+	return this._('POST', 'flickr.groups.leave', args);
+};
+
+/**
+ * flickr.groups.search
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.search.html
+ */
+
+Flickr.prototype.groups.search = function (args) {
+	validate(args, 'text');
+	return this._('GET', 'flickr.groups.search', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.groups.discuss = {};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.groups.discuss.replies = {};
+
+/**
+ * flickr.groups.discuss.replies.add
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.discuss.replies.add.html
+ */
+
+Flickr.prototype.groups.discuss.replies.add = function (args) {
+	validate(args, 'group_id');
+	validate(args, 'topic_id');
+	validate(args, 'message');
+	return this._('POST', 'flickr.groups.discuss.replies.add', args);
+};
+
+/**
+ * flickr.groups.discuss.replies.delete
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.discuss.replies.delete.html
+ */
+
+Flickr.prototype.groups.discuss.replies.delete = function (args) {
+	validate(args, 'group_id');
+	validate(args, 'topic_id');
+	validate(args, 'reply_id');
+	return this._('POST', 'flickr.groups.discuss.replies.delete', args);
+};
+
+/**
+ * flickr.groups.discuss.replies.edit
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.discuss.replies.edit.html
+ */
+
+Flickr.prototype.groups.discuss.replies.edit = function (args) {
+	validate(args, 'group_id');
+	validate(args, 'topic_id');
+	validate(args, 'reply_id');
+	validate(args, 'message');
+	return this._('POST', 'flickr.groups.discuss.replies.edit', args);
+};
+
+/**
+ * flickr.groups.discuss.replies.getInfo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.discuss.replies.getInfo.html
+ */
+
+Flickr.prototype.groups.discuss.replies.getInfo = function (args) {
+	validate(args, 'group_id');
+	validate(args, 'topic_id');
+	validate(args, 'reply_id');
+	return this._('GET', 'flickr.groups.discuss.replies.getInfo', args);
+};
+
+/**
+ * flickr.groups.discuss.replies.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.discuss.replies.getList.html
+ */
+
+Flickr.prototype.groups.discuss.replies.getList = function (args) {
+	validate(args, 'group_id');
+	validate(args, 'topic_id');
+	validate(args, 'per_page');
+	return this._('GET', 'flickr.groups.discuss.replies.getList', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.groups.discuss.topics = {};
+
+/**
+ * flickr.groups.discuss.topics.add
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.discuss.topics.add.html
+ */
+
+Flickr.prototype.groups.discuss.topics.add = function (args) {
+	validate(args, 'group_id');
+	validate(args, 'subject');
+	validate(args, 'message');
+	return this._('POST', 'flickr.groups.discuss.topics.add', args);
+};
+
+/**
+ * flickr.groups.discuss.topics.getInfo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.discuss.topics.getInfo.html
+ */
+
+Flickr.prototype.groups.discuss.topics.getInfo = function (args) {
+	validate(args, 'group_id');
+	validate(args, 'topic_id');
+	return this._('GET', 'flickr.groups.discuss.topics.getInfo', args);
+};
+
+/**
+ * flickr.groups.discuss.topics.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.discuss.topics.getList.html
+ */
+
+Flickr.prototype.groups.discuss.topics.getList = function (args) {
+	validate(args, 'group_id');
+	return this._('GET', 'flickr.groups.discuss.topics.getList', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.groups.members = {};
+
+/**
+ * flickr.groups.members.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.members.getList.html
+ */
+
+Flickr.prototype.groups.members.getList = function (args) {
+	validate(args, 'group_id');
+	return this._('GET', 'flickr.groups.members.getList', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.groups.pools = {};
+
+/**
+ * flickr.groups.pools.add
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.pools.add.html
+ */
+
+Flickr.prototype.groups.pools.add = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'group_id');
+	return this._('POST', 'flickr.groups.pools.add', args);
+};
+
+/**
+ * flickr.groups.pools.getContext
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.pools.getContext.html
+ */
+
+Flickr.prototype.groups.pools.getContext = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'group_id');
+	return this._('GET', 'flickr.groups.pools.getContext', args);
+};
+
+/**
+ * flickr.groups.pools.getGroups
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.pools.getGroups.html
+ */
+
+Flickr.prototype.groups.pools.getGroups = function (args) {
+	return this._('GET', 'flickr.groups.pools.getGroups', args);
+};
+
+/**
+ * flickr.groups.pools.getPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.pools.getPhotos.html
+ */
+
+Flickr.prototype.groups.pools.getPhotos = function (args) {
+	validate(args, 'group_id');
+	return this._('GET', 'flickr.groups.pools.getPhotos', args);
+};
+
+/**
+ * flickr.groups.pools.remove
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.groups.pools.remove.html
+ */
+
+Flickr.prototype.groups.pools.remove = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'group_id');
+	return this._('POST', 'flickr.groups.pools.remove', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.interestingness = {};
+
+/**
+ * flickr.interestingness.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.interestingness.getList.html
+ */
+
+Flickr.prototype.interestingness.getList = function (args) {
+	return this._('GET', 'flickr.interestingness.getList', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.machinetags = {};
+
+/**
+ * flickr.machinetags.getNamespaces
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.machinetags.getNamespaces.html
+ */
+
+Flickr.prototype.machinetags.getNamespaces = function (args) {
+	return this._('GET', 'flickr.machinetags.getNamespaces', args);
+};
+
+/**
+ * flickr.machinetags.getPairs
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.machinetags.getPairs.html
+ */
+
+Flickr.prototype.machinetags.getPairs = function (args) {
+	return this._('GET', 'flickr.machinetags.getPairs', args);
+};
+
+/**
+ * flickr.machinetags.getPredicates
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.machinetags.getPredicates.html
+ */
+
+Flickr.prototype.machinetags.getPredicates = function (args) {
+	return this._('GET', 'flickr.machinetags.getPredicates', args);
+};
+
+/**
+ * flickr.machinetags.getRecentValues
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.machinetags.getRecentValues.html
+ */
+
+Flickr.prototype.machinetags.getRecentValues = function (args) {
+	return this._('GET', 'flickr.machinetags.getRecentValues', args);
+};
+
+/**
+ * flickr.machinetags.getValues
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.machinetags.getValues.html
+ */
+
+Flickr.prototype.machinetags.getValues = function (args) {
+	validate(args, 'namespace');
+	validate(args, 'predicate');
+	return this._('GET', 'flickr.machinetags.getValues', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.panda = {};
+
+/**
+ * flickr.panda.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.panda.getList.html
+ */
+
+Flickr.prototype.panda.getList = function (args) {
+	return this._('GET', 'flickr.panda.getList', args);
+};
+
+/**
+ * flickr.panda.getPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.panda.getPhotos.html
+ */
+
+Flickr.prototype.panda.getPhotos = function (args) {
+	validate(args, 'panda_name');
+	return this._('GET', 'flickr.panda.getPhotos', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.people = {};
+
+/**
+ * flickr.people.findByEmail
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.people.findByEmail.html
+ */
+
+Flickr.prototype.people.findByEmail = function (args) {
+	validate(args, 'find_email');
+	return this._('GET', 'flickr.people.findByEmail', args);
+};
+
+/**
+ * flickr.people.findByUsername
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.people.findByUsername.html
+ */
+
+Flickr.prototype.people.findByUsername = function (args) {
+	validate(args, 'username');
+	return this._('GET', 'flickr.people.findByUsername', args);
+};
+
+/**
+ * flickr.people.getGroups
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.people.getGroups.html
+ */
+
+Flickr.prototype.people.getGroups = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.people.getGroups', args);
+};
+
+/**
+ * flickr.people.getInfo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.people.getInfo.html
+ */
+
+Flickr.prototype.people.getInfo = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.people.getInfo', args);
+};
+
+/**
+ * flickr.people.getLimits
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.people.getLimits.html
+ */
+
+Flickr.prototype.people.getLimits = function (args) {
+	return this._('GET', 'flickr.people.getLimits', args);
+};
+
+/**
+ * flickr.people.getPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.people.getPhotos.html
+ */
+
+Flickr.prototype.people.getPhotos = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.people.getPhotos', args);
+};
+
+/**
+ * flickr.people.getPhotosOf
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.people.getPhotosOf.html
+ */
+
+Flickr.prototype.people.getPhotosOf = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.people.getPhotosOf', args);
+};
+
+/**
+ * flickr.people.getPublicGroups
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.people.getPublicGroups.html
+ */
+
+Flickr.prototype.people.getPublicGroups = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.people.getPublicGroups', args);
+};
+
+/**
+ * flickr.people.getPublicPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.people.getPublicPhotos.html
+ */
+
+Flickr.prototype.people.getPublicPhotos = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.people.getPublicPhotos', args);
+};
+
+/**
+ * flickr.people.getUploadStatus
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.people.getUploadStatus.html
+ */
+
+Flickr.prototype.people.getUploadStatus = function (args) {
+	return this._('GET', 'flickr.people.getUploadStatus', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.photos = {};
+
+/**
+ * flickr.photos.addTags
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.addTags.html
+ */
+
+Flickr.prototype.photos.addTags = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'tags');
+	return this._('POST', 'flickr.photos.addTags', args);
+};
+
+/**
+ * flickr.photos.delete
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.delete.html
+ */
+
+Flickr.prototype.photos.delete = function (args) {
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.photos.delete', args);
+};
+
+/**
+ * flickr.photos.getAllContexts
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getAllContexts.html
+ */
+
+Flickr.prototype.photos.getAllContexts = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.photos.getAllContexts', args);
+};
+
+/**
+ * flickr.photos.getContactsPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getContactsPhotos.html
+ */
+
+Flickr.prototype.photos.getContactsPhotos = function (args) {
+	return this._('GET', 'flickr.photos.getContactsPhotos', args);
+};
+
+/**
+ * flickr.photos.getContactsPublicPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getContactsPublicPhotos.html
+ */
+
+Flickr.prototype.photos.getContactsPublicPhotos = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.photos.getContactsPublicPhotos', args);
+};
+
+/**
+ * flickr.photos.getContext
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getContext.html
+ */
+
+Flickr.prototype.photos.getContext = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.photos.getContext', args);
+};
+
+/**
+ * flickr.photos.getCounts
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getCounts.html
+ */
+
+Flickr.prototype.photos.getCounts = function (args) {
+	return this._('GET', 'flickr.photos.getCounts', args);
+};
+
+/**
+ * flickr.photos.getExif
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getExif.html
+ */
+
+Flickr.prototype.photos.getExif = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.photos.getExif', args);
+};
+
+/**
+ * flickr.photos.getFavorites
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getFavorites.html
+ */
+
+Flickr.prototype.photos.getFavorites = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.photos.getFavorites', args);
+};
+
+/**
+ * flickr.photos.getInfo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getInfo.html
+ */
+
+Flickr.prototype.photos.getInfo = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.photos.getInfo', args);
+};
+
+/**
+ * flickr.photos.getNotInSet
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getNotInSet.html
+ */
+
+Flickr.prototype.photos.getNotInSet = function (args) {
+	return this._('GET', 'flickr.photos.getNotInSet', args);
+};
+
+/**
+ * flickr.photos.getPerms
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getPerms.html
+ */
+
+Flickr.prototype.photos.getPerms = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.photos.getPerms', args);
+};
+
+/**
+ * flickr.photos.getPopular
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getPopular.html
+ */
+
+Flickr.prototype.photos.getPopular = function (args) {
+	return this._('GET', 'flickr.photos.getPopular', args);
+};
+
+/**
+ * flickr.photos.getRecent
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getRecent.html
+ */
+
+Flickr.prototype.photos.getRecent = function (args) {
+	return this._('GET', 'flickr.photos.getRecent', args);
+};
+
+/**
+ * flickr.photos.getSizes
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getSizes.html
+ */
+
+Flickr.prototype.photos.getSizes = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.photos.getSizes', args);
+};
+
+/**
+ * flickr.photos.getUntagged
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getUntagged.html
+ */
+
+Flickr.prototype.photos.getUntagged = function (args) {
+	return this._('GET', 'flickr.photos.getUntagged', args);
+};
+
+/**
+ * flickr.photos.getWithGeoData
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getWithGeoData.html
+ */
+
+Flickr.prototype.photos.getWithGeoData = function (args) {
+	return this._('GET', 'flickr.photos.getWithGeoData', args);
+};
+
+/**
+ * flickr.photos.getWithoutGeoData
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.getWithoutGeoData.html
+ */
+
+Flickr.prototype.photos.getWithoutGeoData = function (args) {
+	return this._('GET', 'flickr.photos.getWithoutGeoData', args);
+};
+
+/**
+ * flickr.photos.recentlyUpdated
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.recentlyUpdated.html
+ */
+
+Flickr.prototype.photos.recentlyUpdated = function (args) {
+	validate(args, 'min_date');
+	return this._('GET', 'flickr.photos.recentlyUpdated', args);
+};
+
+/**
+ * flickr.photos.removeTag
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.removeTag.html
+ */
+
+Flickr.prototype.photos.removeTag = function (args) {
+	validate(args, 'tag_id');
+	return this._('POST', 'flickr.photos.removeTag', args);
+};
+
+/**
+ * flickr.photos.search
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.search.html
+ */
+
+Flickr.prototype.photos.search = function (args) {
+	return this._('GET', 'flickr.photos.search', args);
+};
+
+/**
+ * flickr.photos.setContentType
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.setContentType.html
+ */
+
+Flickr.prototype.photos.setContentType = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'content_type');
+	return this._('POST', 'flickr.photos.setContentType', args);
+};
+
+/**
+ * flickr.photos.setDates
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.setDates.html
+ */
+
+Flickr.prototype.photos.setDates = function (args) {
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.photos.setDates', args);
+};
+
+/**
+ * flickr.photos.setMeta
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.setMeta.html
+ */
+
+Flickr.prototype.photos.setMeta = function (args) {
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.photos.setMeta', args);
+};
+
+/**
+ * flickr.photos.setPerms
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.setPerms.html
+ */
+
+Flickr.prototype.photos.setPerms = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'is_public');
+	validate(args, 'is_friend');
+	validate(args, 'is_family');
+	return this._('POST', 'flickr.photos.setPerms', args);
+};
+
+/**
+ * flickr.photos.setSafetyLevel
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.setSafetyLevel.html
+ */
+
+Flickr.prototype.photos.setSafetyLevel = function (args) {
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.photos.setSafetyLevel', args);
+};
+
+/**
+ * flickr.photos.setTags
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.setTags.html
+ */
+
+Flickr.prototype.photos.setTags = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'tags');
+	return this._('POST', 'flickr.photos.setTags', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.photos.comments = {};
+
+/**
+ * flickr.photos.comments.addComment
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.comments.addComment.html
+ */
+
+Flickr.prototype.photos.comments.addComment = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'comment_text');
+	return this._('POST', 'flickr.photos.comments.addComment', args);
+};
+
+/**
+ * flickr.photos.comments.deleteComment
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.comments.deleteComment.html
+ */
+
+Flickr.prototype.photos.comments.deleteComment = function (args) {
+	validate(args, 'comment_id');
+	return this._('POST', 'flickr.photos.comments.deleteComment', args);
+};
+
+/**
+ * flickr.photos.comments.editComment
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.comments.editComment.html
+ */
+
+Flickr.prototype.photos.comments.editComment = function (args) {
+	validate(args, 'comment_id');
+	validate(args, 'comment_text');
+	return this._('POST', 'flickr.photos.comments.editComment', args);
+};
+
+/**
+ * flickr.photos.comments.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.comments.getList.html
+ */
+
+Flickr.prototype.photos.comments.getList = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.photos.comments.getList', args);
+};
+
+/**
+ * flickr.photos.comments.getRecentForContacts
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.comments.getRecentForContacts.html
+ */
+
+Flickr.prototype.photos.comments.getRecentForContacts = function (args) {
+	return this._('GET', 'flickr.photos.comments.getRecentForContacts', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.photos.geo = {};
+
+/**
+ * flickr.photos.geo.batchCorrectLocation
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.geo.batchCorrectLocation.html
+ */
+
+Flickr.prototype.photos.geo.batchCorrectLocation = function (args) {
+	validate(args, 'lat');
+	validate(args, 'lon');
+	validate(args, 'accuracy');
+	return this._('POST', 'flickr.photos.geo.batchCorrectLocation', args);
+};
+
+/**
+ * flickr.photos.geo.correctLocation
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.geo.correctLocation.html
+ */
+
+Flickr.prototype.photos.geo.correctLocation = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'foursquare_id');
+	return this._('POST', 'flickr.photos.geo.correctLocation', args);
+};
+
+/**
+ * flickr.photos.geo.getLocation
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.geo.getLocation.html
+ */
+
+Flickr.prototype.photos.geo.getLocation = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.photos.geo.getLocation', args);
+};
+
+/**
+ * flickr.photos.geo.getPerms
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.geo.getPerms.html
+ */
+
+Flickr.prototype.photos.geo.getPerms = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.photos.geo.getPerms', args);
+};
+
+/**
+ * flickr.photos.geo.photosForLocation
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.geo.photosForLocation.html
+ */
+
+Flickr.prototype.photos.geo.photosForLocation = function (args) {
+	validate(args, 'lat');
+	validate(args, 'lon');
+	return this._('GET', 'flickr.photos.geo.photosForLocation', args);
+};
+
+/**
+ * flickr.photos.geo.removeLocation
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.geo.removeLocation.html
+ */
+
+Flickr.prototype.photos.geo.removeLocation = function (args) {
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.photos.geo.removeLocation', args);
+};
+
+/**
+ * flickr.photos.geo.setContext
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.geo.setContext.html
+ */
+
+Flickr.prototype.photos.geo.setContext = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'context');
+	return this._('POST', 'flickr.photos.geo.setContext', args);
+};
+
+/**
+ * flickr.photos.geo.setLocation
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.geo.setLocation.html
+ */
+
+Flickr.prototype.photos.geo.setLocation = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'lat');
+	validate(args, 'lon');
+	return this._('POST', 'flickr.photos.geo.setLocation', args);
+};
+
+/**
+ * flickr.photos.geo.setPerms
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.geo.setPerms.html
+ */
+
+Flickr.prototype.photos.geo.setPerms = function (args) {
+	validate(args, 'is_public');
+	validate(args, 'is_contact');
+	validate(args, 'is_friend');
+	validate(args, 'is_family');
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.photos.geo.setPerms', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.photos.licenses = {};
+
+/**
+ * flickr.photos.licenses.getInfo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.licenses.getInfo.html
+ */
+
+Flickr.prototype.photos.licenses.getInfo = function (args) {
+	return this._('GET', 'flickr.photos.licenses.getInfo', args);
+};
+
+/**
+ * flickr.photos.licenses.setLicense
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.licenses.setLicense.html
+ */
+
+Flickr.prototype.photos.licenses.setLicense = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'license_id');
+	return this._('POST', 'flickr.photos.licenses.setLicense', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.photos.notes = {};
+
+/**
+ * flickr.photos.notes.add
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.notes.add.html
+ */
+
+Flickr.prototype.photos.notes.add = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'note_x');
+	validate(args, 'note_y');
+	validate(args, 'note_w');
+	validate(args, 'note_h');
+	validate(args, 'note_text');
+	return this._('POST', 'flickr.photos.notes.add', args);
+};
+
+/**
+ * flickr.photos.notes.delete
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.notes.delete.html
+ */
+
+Flickr.prototype.photos.notes.delete = function (args) {
+	validate(args, 'note_id');
+	return this._('POST', 'flickr.photos.notes.delete', args);
+};
+
+/**
+ * flickr.photos.notes.edit
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.notes.edit.html
+ */
+
+Flickr.prototype.photos.notes.edit = function (args) {
+	validate(args, 'note_id');
+	validate(args, 'note_x');
+	validate(args, 'note_y');
+	validate(args, 'note_w');
+	validate(args, 'note_h');
+	validate(args, 'note_text');
+	return this._('POST', 'flickr.photos.notes.edit', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.photos.people = {};
+
+/**
+ * flickr.photos.people.add
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.people.add.html
+ */
+
+Flickr.prototype.photos.people.add = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'user_id');
+	return this._('POST', 'flickr.photos.people.add', args);
+};
+
+/**
+ * flickr.photos.people.delete
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.people.delete.html
+ */
+
+Flickr.prototype.photos.people.delete = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'user_id');
+	return this._('POST', 'flickr.photos.people.delete', args);
+};
+
+/**
+ * flickr.photos.people.deleteCoords
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.people.deleteCoords.html
+ */
+
+Flickr.prototype.photos.people.deleteCoords = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'user_id');
+	return this._('POST', 'flickr.photos.people.deleteCoords', args);
+};
+
+/**
+ * flickr.photos.people.editCoords
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.people.editCoords.html
+ */
+
+Flickr.prototype.photos.people.editCoords = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'user_id');
+	validate(args, 'person_x');
+	validate(args, 'person_y');
+	validate(args, 'person_w');
+	validate(args, 'person_h');
+	return this._('POST', 'flickr.photos.people.editCoords', args);
+};
+
+/**
+ * flickr.photos.people.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.people.getList.html
+ */
+
+Flickr.prototype.photos.people.getList = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.photos.people.getList', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.photos.suggestions = {};
+
+/**
+ * flickr.photos.suggestions.approveSuggestion
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.suggestions.approveSuggestion.html
+ */
+
+Flickr.prototype.photos.suggestions.approveSuggestion = function (args) {
+	validate(args, 'suggestion_id');
+	return this._('POST', 'flickr.photos.suggestions.approveSuggestion', args);
+};
+
+/**
+ * flickr.photos.suggestions.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.suggestions.getList.html
+ */
+
+Flickr.prototype.photos.suggestions.getList = function (args) {
+	return this._('GET', 'flickr.photos.suggestions.getList', args);
+};
+
+/**
+ * flickr.photos.suggestions.rejectSuggestion
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.suggestions.rejectSuggestion.html
+ */
+
+Flickr.prototype.photos.suggestions.rejectSuggestion = function (args) {
+	validate(args, 'suggestion_id');
+	return this._('POST', 'flickr.photos.suggestions.rejectSuggestion', args);
+};
+
+/**
+ * flickr.photos.suggestions.removeSuggestion
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.suggestions.removeSuggestion.html
+ */
+
+Flickr.prototype.photos.suggestions.removeSuggestion = function (args) {
+	validate(args, 'suggestion_id');
+	return this._('POST', 'flickr.photos.suggestions.removeSuggestion', args);
+};
+
+/**
+ * flickr.photos.suggestions.suggestLocation
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.suggestions.suggestLocation.html
+ */
+
+Flickr.prototype.photos.suggestions.suggestLocation = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'lat');
+	validate(args, 'lon');
+	return this._('POST', 'flickr.photos.suggestions.suggestLocation', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.photos.transform = {};
+
+/**
+ * flickr.photos.transform.rotate
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.transform.rotate.html
+ */
+
+Flickr.prototype.photos.transform.rotate = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'degrees');
+	return this._('POST', 'flickr.photos.transform.rotate', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.photos.upload = {};
+
+/**
+ * flickr.photos.upload.checkTickets
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photos.upload.checkTickets.html
+ */
+
+Flickr.prototype.photos.upload.checkTickets = function (args) {
+	validate(args, 'tickets');
+	return this._('GET', 'flickr.photos.upload.checkTickets', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.photosets = {};
+
+/**
+ * flickr.photosets.addPhoto
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.addPhoto.html
+ */
+
+Flickr.prototype.photosets.addPhoto = function (args) {
+	validate(args, 'photoset_id');
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.photosets.addPhoto', args);
+};
+
+/**
+ * flickr.photosets.create
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.create.html
+ */
+
+Flickr.prototype.photosets.create = function (args) {
+	validate(args, 'title');
+	validate(args, 'primary_photo_id');
+	return this._('POST', 'flickr.photosets.create', args);
+};
+
+/**
+ * flickr.photosets.delete
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.delete.html
+ */
+
+Flickr.prototype.photosets.delete = function (args) {
+	validate(args, 'photoset_id');
+	return this._('POST', 'flickr.photosets.delete', args);
+};
+
+/**
+ * flickr.photosets.editMeta
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.editMeta.html
+ */
+
+Flickr.prototype.photosets.editMeta = function (args) {
+	validate(args, 'photoset_id');
+	validate(args, 'title');
+	return this._('POST', 'flickr.photosets.editMeta', args);
+};
+
+/**
+ * flickr.photosets.editPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.editPhotos.html
+ */
+
+Flickr.prototype.photosets.editPhotos = function (args) {
+	validate(args, 'photoset_id');
+	validate(args, 'primary_photo_id');
+	validate(args, 'photo_ids');
+	return this._('POST', 'flickr.photosets.editPhotos', args);
+};
+
+/**
+ * flickr.photosets.getContext
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.getContext.html
+ */
+
+Flickr.prototype.photosets.getContext = function (args) {
+	validate(args, 'photo_id');
+	validate(args, 'photoset_id');
+	return this._('GET', 'flickr.photosets.getContext', args);
+};
+
+/**
+ * flickr.photosets.getInfo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.getInfo.html
+ */
+
+Flickr.prototype.photosets.getInfo = function (args) {
+	validate(args, 'photoset_id');
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.photosets.getInfo', args);
+};
+
+/**
+ * flickr.photosets.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.getList.html
+ */
+
+Flickr.prototype.photosets.getList = function (args) {
+	return this._('GET', 'flickr.photosets.getList', args);
+};
+
+/**
+ * flickr.photosets.getPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.getPhotos.html
+ */
+
+Flickr.prototype.photosets.getPhotos = function (args) {
+	validate(args, 'photoset_id');
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.photosets.getPhotos', args);
+};
+
+/**
+ * flickr.photosets.orderSets
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.orderSets.html
+ */
+
+Flickr.prototype.photosets.orderSets = function (args) {
+	validate(args, 'photoset_ids');
+	return this._('POST', 'flickr.photosets.orderSets', args);
+};
+
+/**
+ * flickr.photosets.removePhoto
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.removePhoto.html
+ */
+
+Flickr.prototype.photosets.removePhoto = function (args) {
+	validate(args, 'photoset_id');
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.photosets.removePhoto', args);
+};
+
+/**
+ * flickr.photosets.removePhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.removePhotos.html
+ */
+
+Flickr.prototype.photosets.removePhotos = function (args) {
+	validate(args, 'photoset_id');
+	validate(args, 'photo_ids');
+	return this._('POST', 'flickr.photosets.removePhotos', args);
+};
+
+/**
+ * flickr.photosets.reorderPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.reorderPhotos.html
+ */
+
+Flickr.prototype.photosets.reorderPhotos = function (args) {
+	validate(args, 'photoset_id');
+	validate(args, 'photo_ids');
+	return this._('POST', 'flickr.photosets.reorderPhotos', args);
+};
+
+/**
+ * flickr.photosets.setPrimaryPhoto
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.setPrimaryPhoto.html
+ */
+
+Flickr.prototype.photosets.setPrimaryPhoto = function (args) {
+	validate(args, 'photoset_id');
+	validate(args, 'photo_id');
+	return this._('POST', 'flickr.photosets.setPrimaryPhoto', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.photosets.comments = {};
+
+/**
+ * flickr.photosets.comments.addComment
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.comments.addComment.html
+ */
+
+Flickr.prototype.photosets.comments.addComment = function (args) {
+	validate(args, 'photoset_id');
+	validate(args, 'comment_text');
+	return this._('POST', 'flickr.photosets.comments.addComment', args);
+};
+
+/**
+ * flickr.photosets.comments.deleteComment
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.comments.deleteComment.html
+ */
+
+Flickr.prototype.photosets.comments.deleteComment = function (args) {
+	validate(args, 'comment_id');
+	return this._('POST', 'flickr.photosets.comments.deleteComment', args);
+};
+
+/**
+ * flickr.photosets.comments.editComment
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.comments.editComment.html
+ */
+
+Flickr.prototype.photosets.comments.editComment = function (args) {
+	validate(args, 'comment_id');
+	validate(args, 'comment_text');
+	return this._('POST', 'flickr.photosets.comments.editComment', args);
+};
+
+/**
+ * flickr.photosets.comments.getList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.photosets.comments.getList.html
+ */
+
+Flickr.prototype.photosets.comments.getList = function (args) {
+	validate(args, 'photoset_id');
+	return this._('GET', 'flickr.photosets.comments.getList', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.places = {};
+
+/**
+ * flickr.places.find
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.find.html
+ */
+
+Flickr.prototype.places.find = function (args) {
+	validate(args, 'query');
+	return this._('GET', 'flickr.places.find', args);
+};
+
+/**
+ * flickr.places.findByLatLon
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.findByLatLon.html
+ */
+
+Flickr.prototype.places.findByLatLon = function (args) {
+	validate(args, 'lat');
+	validate(args, 'lon');
+	return this._('GET', 'flickr.places.findByLatLon', args);
+};
+
+/**
+ * flickr.places.getChildrenWithPhotosPublic
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.getChildrenWithPhotosPublic.html
+ */
+
+Flickr.prototype.places.getChildrenWithPhotosPublic = function (args) {
+	return this._('GET', 'flickr.places.getChildrenWithPhotosPublic', args);
+};
+
+/**
+ * flickr.places.getInfo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.getInfo.html
+ */
+
+Flickr.prototype.places.getInfo = function (args) {
+	return this._('GET', 'flickr.places.getInfo', args);
+};
+
+/**
+ * flickr.places.getInfoByUrl
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.getInfoByUrl.html
+ */
+
+Flickr.prototype.places.getInfoByUrl = function (args) {
+	validate(args, 'url');
+	return this._('GET', 'flickr.places.getInfoByUrl', args);
+};
+
+/**
+ * flickr.places.getPlaceTypes
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.getPlaceTypes.html
+ */
+
+Flickr.prototype.places.getPlaceTypes = function (args) {
+	return this._('GET', 'flickr.places.getPlaceTypes', args);
+};
+
+/**
+ * flickr.places.getShapeHistory
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.getShapeHistory.html
+ */
+
+Flickr.prototype.places.getShapeHistory = function (args) {
+	return this._('GET', 'flickr.places.getShapeHistory', args);
+};
+
+/**
+ * flickr.places.getTopPlacesList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.getTopPlacesList.html
+ */
+
+Flickr.prototype.places.getTopPlacesList = function (args) {
+	validate(args, 'place_type_id');
+	return this._('GET', 'flickr.places.getTopPlacesList', args);
+};
+
+/**
+ * flickr.places.placesForBoundingBox
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.placesForBoundingBox.html
+ */
+
+Flickr.prototype.places.placesForBoundingBox = function (args) {
+	validate(args, 'bbox');
+	return this._('GET', 'flickr.places.placesForBoundingBox', args);
+};
+
+/**
+ * flickr.places.placesForContacts
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.placesForContacts.html
+ */
+
+Flickr.prototype.places.placesForContacts = function (args) {
+	return this._('GET', 'flickr.places.placesForContacts', args);
+};
+
+/**
+ * flickr.places.placesForTags
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.placesForTags.html
+ */
+
+Flickr.prototype.places.placesForTags = function (args) {
+	validate(args, 'place_type_id');
+	return this._('GET', 'flickr.places.placesForTags', args);
+};
+
+/**
+ * flickr.places.placesForUser
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.placesForUser.html
+ */
+
+Flickr.prototype.places.placesForUser = function (args) {
+	return this._('GET', 'flickr.places.placesForUser', args);
+};
+
+/**
+ * flickr.places.resolvePlaceId
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.resolvePlaceId.html
+ */
+
+Flickr.prototype.places.resolvePlaceId = function (args) {
+	validate(args, 'place_id');
+	return this._('GET', 'flickr.places.resolvePlaceId', args);
+};
+
+/**
+ * flickr.places.resolvePlaceURL
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.resolvePlaceURL.html
+ */
+
+Flickr.prototype.places.resolvePlaceURL = function (args) {
+	validate(args, 'url');
+	return this._('GET', 'flickr.places.resolvePlaceURL', args);
+};
+
+/**
+ * flickr.places.tagsForPlace
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.places.tagsForPlace.html
+ */
+
+Flickr.prototype.places.tagsForPlace = function (args) {
+	return this._('GET', 'flickr.places.tagsForPlace', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.prefs = {};
+
+/**
+ * flickr.prefs.getContentType
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.prefs.getContentType.html
+ */
+
+Flickr.prototype.prefs.getContentType = function (args) {
+	return this._('GET', 'flickr.prefs.getContentType', args);
+};
+
+/**
+ * flickr.prefs.getGeoPerms
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.prefs.getGeoPerms.html
+ */
+
+Flickr.prototype.prefs.getGeoPerms = function (args) {
+	return this._('GET', 'flickr.prefs.getGeoPerms', args);
+};
+
+/**
+ * flickr.prefs.getHidden
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.prefs.getHidden.html
+ */
+
+Flickr.prototype.prefs.getHidden = function (args) {
+	return this._('GET', 'flickr.prefs.getHidden', args);
+};
+
+/**
+ * flickr.prefs.getPrivacy
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.prefs.getPrivacy.html
+ */
+
+Flickr.prototype.prefs.getPrivacy = function (args) {
+	return this._('GET', 'flickr.prefs.getPrivacy', args);
+};
+
+/**
+ * flickr.prefs.getSafetyLevel
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.prefs.getSafetyLevel.html
+ */
+
+Flickr.prototype.prefs.getSafetyLevel = function (args) {
+	return this._('GET', 'flickr.prefs.getSafetyLevel', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.profile = {};
+
+/**
+ * flickr.profile.getProfile
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.profile.getProfile.html
+ */
+
+Flickr.prototype.profile.getProfile = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.profile.getProfile', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.push = {};
+
+/**
+ * flickr.push.getSubscriptions
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.push.getSubscriptions.html
+ */
+
+Flickr.prototype.push.getSubscriptions = function (args) {
+	return this._('GET', 'flickr.push.getSubscriptions', args);
+};
+
+/**
+ * flickr.push.getTopics
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.push.getTopics.html
+ */
+
+Flickr.prototype.push.getTopics = function (args) {
+	return this._('GET', 'flickr.push.getTopics', args);
+};
+
+/**
+ * flickr.push.subscribe
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.push.subscribe.html
+ */
+
+Flickr.prototype.push.subscribe = function (args) {
+	validate(args, 'topic');
+	validate(args, 'callback');
+	validate(args, 'verify');
+	return this._('GET', 'flickr.push.subscribe', args);
+};
+
+/**
+ * flickr.push.unsubscribe
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.push.unsubscribe.html
+ */
+
+Flickr.prototype.push.unsubscribe = function (args) {
+	validate(args, 'topic');
+	validate(args, 'callback');
+	validate(args, 'verify');
+	return this._('GET', 'flickr.push.unsubscribe', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.reflection = {};
+
+/**
+ * flickr.reflection.getMethodInfo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.reflection.getMethodInfo.html
+ */
+
+Flickr.prototype.reflection.getMethodInfo = function (args) {
+	validate(args, 'method_name');
+	return this._('GET', 'flickr.reflection.getMethodInfo', args);
+};
+
+/**
+ * flickr.reflection.getMethods
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.reflection.getMethods.html
+ */
+
+Flickr.prototype.reflection.getMethods = function (args) {
+	return this._('GET', 'flickr.reflection.getMethods', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.stats = {};
+
+/**
+ * flickr.stats.getCSVFiles
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getCSVFiles.html
+ */
+
+Flickr.prototype.stats.getCSVFiles = function (args) {
+	return this._('GET', 'flickr.stats.getCSVFiles', args);
+};
+
+/**
+ * flickr.stats.getCollectionDomains
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getCollectionDomains.html
+ */
+
+Flickr.prototype.stats.getCollectionDomains = function (args) {
+	validate(args, 'date');
+	return this._('GET', 'flickr.stats.getCollectionDomains', args);
+};
+
+/**
+ * flickr.stats.getCollectionReferrers
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getCollectionReferrers.html
+ */
+
+Flickr.prototype.stats.getCollectionReferrers = function (args) {
+	validate(args, 'date');
+	validate(args, 'domain');
+	return this._('GET', 'flickr.stats.getCollectionReferrers', args);
+};
+
+/**
+ * flickr.stats.getCollectionStats
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getCollectionStats.html
+ */
+
+Flickr.prototype.stats.getCollectionStats = function (args) {
+	validate(args, 'date');
+	validate(args, 'collection_id');
+	return this._('GET', 'flickr.stats.getCollectionStats', args);
+};
+
+/**
+ * flickr.stats.getPhotoDomains
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getPhotoDomains.html
+ */
+
+Flickr.prototype.stats.getPhotoDomains = function (args) {
+	validate(args, 'date');
+	return this._('GET', 'flickr.stats.getPhotoDomains', args);
+};
+
+/**
+ * flickr.stats.getPhotoReferrers
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getPhotoReferrers.html
+ */
+
+Flickr.prototype.stats.getPhotoReferrers = function (args) {
+	validate(args, 'date');
+	validate(args, 'domain');
+	return this._('GET', 'flickr.stats.getPhotoReferrers', args);
+};
+
+/**
+ * flickr.stats.getPhotoStats
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getPhotoStats.html
+ */
+
+Flickr.prototype.stats.getPhotoStats = function (args) {
+	validate(args, 'date');
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.stats.getPhotoStats', args);
+};
+
+/**
+ * flickr.stats.getPhotosetDomains
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getPhotosetDomains.html
+ */
+
+Flickr.prototype.stats.getPhotosetDomains = function (args) {
+	validate(args, 'date');
+	return this._('GET', 'flickr.stats.getPhotosetDomains', args);
+};
+
+/**
+ * flickr.stats.getPhotosetReferrers
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getPhotosetReferrers.html
+ */
+
+Flickr.prototype.stats.getPhotosetReferrers = function (args) {
+	validate(args, 'date');
+	validate(args, 'domain');
+	return this._('GET', 'flickr.stats.getPhotosetReferrers', args);
+};
+
+/**
+ * flickr.stats.getPhotosetStats
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getPhotosetStats.html
+ */
+
+Flickr.prototype.stats.getPhotosetStats = function (args) {
+	validate(args, 'date');
+	validate(args, 'photoset_id');
+	return this._('GET', 'flickr.stats.getPhotosetStats', args);
+};
+
+/**
+ * flickr.stats.getPhotostreamDomains
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getPhotostreamDomains.html
+ */
+
+Flickr.prototype.stats.getPhotostreamDomains = function (args) {
+	validate(args, 'date');
+	return this._('GET', 'flickr.stats.getPhotostreamDomains', args);
+};
+
+/**
+ * flickr.stats.getPhotostreamReferrers
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getPhotostreamReferrers.html
+ */
+
+Flickr.prototype.stats.getPhotostreamReferrers = function (args) {
+	validate(args, 'date');
+	validate(args, 'domain');
+	return this._('GET', 'flickr.stats.getPhotostreamReferrers', args);
+};
+
+/**
+ * flickr.stats.getPhotostreamStats
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getPhotostreamStats.html
+ */
+
+Flickr.prototype.stats.getPhotostreamStats = function (args) {
+	validate(args, 'date');
+	return this._('GET', 'flickr.stats.getPhotostreamStats', args);
+};
+
+/**
+ * flickr.stats.getPopularPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getPopularPhotos.html
+ */
+
+Flickr.prototype.stats.getPopularPhotos = function (args) {
+	return this._('GET', 'flickr.stats.getPopularPhotos', args);
+};
+
+/**
+ * flickr.stats.getTotalViews
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.stats.getTotalViews.html
+ */
+
+Flickr.prototype.stats.getTotalViews = function (args) {
+	return this._('GET', 'flickr.stats.getTotalViews', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.tags = {};
+
+/**
+ * flickr.tags.getClusterPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.tags.getClusterPhotos.html
+ */
+
+Flickr.prototype.tags.getClusterPhotos = function (args) {
+	validate(args, 'tag');
+	validate(args, 'cluster_id');
+	return this._('GET', 'flickr.tags.getClusterPhotos', args);
+};
+
+/**
+ * flickr.tags.getClusters
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.tags.getClusters.html
+ */
+
+Flickr.prototype.tags.getClusters = function (args) {
+	validate(args, 'tag');
+	return this._('GET', 'flickr.tags.getClusters', args);
+};
+
+/**
+ * flickr.tags.getHotList
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.tags.getHotList.html
+ */
+
+Flickr.prototype.tags.getHotList = function (args) {
+	return this._('GET', 'flickr.tags.getHotList', args);
+};
+
+/**
+ * flickr.tags.getListPhoto
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.tags.getListPhoto.html
+ */
+
+Flickr.prototype.tags.getListPhoto = function (args) {
+	validate(args, 'photo_id');
+	return this._('GET', 'flickr.tags.getListPhoto', args);
+};
+
+/**
+ * flickr.tags.getListUser
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.tags.getListUser.html
+ */
+
+Flickr.prototype.tags.getListUser = function (args) {
+	return this._('GET', 'flickr.tags.getListUser', args);
+};
+
+/**
+ * flickr.tags.getListUserPopular
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.tags.getListUserPopular.html
+ */
+
+Flickr.prototype.tags.getListUserPopular = function (args) {
+	return this._('GET', 'flickr.tags.getListUserPopular', args);
+};
+
+/**
+ * flickr.tags.getListUserRaw
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.tags.getListUserRaw.html
+ */
+
+Flickr.prototype.tags.getListUserRaw = function (args) {
+	return this._('GET', 'flickr.tags.getListUserRaw', args);
+};
+
+/**
+ * flickr.tags.getMostFrequentlyUsed
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.tags.getMostFrequentlyUsed.html
+ */
+
+Flickr.prototype.tags.getMostFrequentlyUsed = function (args) {
+	return this._('GET', 'flickr.tags.getMostFrequentlyUsed', args);
+};
+
+/**
+ * flickr.tags.getRelated
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.tags.getRelated.html
+ */
+
+Flickr.prototype.tags.getRelated = function (args) {
+	validate(args, 'tag');
+	return this._('GET', 'flickr.tags.getRelated', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.test = {};
+
+/**
+ * flickr.test.echo
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.test.echo.html
+ */
+
+Flickr.prototype.test.echo = function (args) {
+	return this._('GET', 'flickr.test.echo', args);
+};
+
+/**
+ * flickr.test.login
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.test.login.html
+ */
+
+Flickr.prototype.test.login = function (args) {
+	return this._('GET', 'flickr.test.login', args);
+};
+
+/**
+ * flickr.test.null
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.test.null.html
+ */
+
+Flickr.prototype.test.null = function (args) {
+	return this._('GET', 'flickr.test.null', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.testimonials = {};
+
+/**
+ * flickr.testimonials.addTestimonial
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.addTestimonial.html
+ */
+
+Flickr.prototype.testimonials.addTestimonial = function (args) {
+	validate(args, 'user_id');
+	validate(args, 'testimonial_text');
+	return this._('POST', 'flickr.testimonials.addTestimonial', args);
+};
+
+/**
+ * flickr.testimonials.approveTestimonial
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.approveTestimonial.html
+ */
+
+Flickr.prototype.testimonials.approveTestimonial = function (args) {
+	validate(args, 'testimonial_id');
+	return this._('POST', 'flickr.testimonials.approveTestimonial', args);
+};
+
+/**
+ * flickr.testimonials.deleteTestimonial
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.deleteTestimonial.html
+ */
+
+Flickr.prototype.testimonials.deleteTestimonial = function (args) {
+	validate(args, 'testimonial_id');
+	return this._('POST', 'flickr.testimonials.deleteTestimonial', args);
+};
+
+/**
+ * flickr.testimonials.editTestimonial
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.editTestimonial.html
+ */
+
+Flickr.prototype.testimonials.editTestimonial = function (args) {
+	validate(args, 'user_id');
+	validate(args, 'testimonial_id');
+	validate(args, 'testimonial_text');
+	return this._('POST', 'flickr.testimonials.editTestimonial', args);
+};
+
+/**
+ * flickr.testimonials.getAllTestimonialsAbout
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.getAllTestimonialsAbout.html
+ */
+
+Flickr.prototype.testimonials.getAllTestimonialsAbout = function (args) {
+	return this._('GET', 'flickr.testimonials.getAllTestimonialsAbout', args);
+};
+
+/**
+ * flickr.testimonials.getAllTestimonialsAboutBy
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.getAllTestimonialsAboutBy.html
+ */
+
+Flickr.prototype.testimonials.getAllTestimonialsAboutBy = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.testimonials.getAllTestimonialsAboutBy', args);
+};
+
+/**
+ * flickr.testimonials.getAllTestimonialsBy
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.getAllTestimonialsBy.html
+ */
+
+Flickr.prototype.testimonials.getAllTestimonialsBy = function (args) {
+	return this._('GET', 'flickr.testimonials.getAllTestimonialsBy', args);
+};
+
+/**
+ * flickr.testimonials.getPendingTestimonialsAbout
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.getPendingTestimonialsAbout.html
+ */
+
+Flickr.prototype.testimonials.getPendingTestimonialsAbout = function (args) {
+	return this._('GET', 'flickr.testimonials.getPendingTestimonialsAbout', args);
+};
+
+/**
+ * flickr.testimonials.getPendingTestimonialsAboutBy
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.getPendingTestimonialsAboutBy.html
+ */
+
+Flickr.prototype.testimonials.getPendingTestimonialsAboutBy = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.testimonials.getPendingTestimonialsAboutBy', args);
+};
+
+/**
+ * flickr.testimonials.getPendingTestimonialsBy
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.getPendingTestimonialsBy.html
+ */
+
+Flickr.prototype.testimonials.getPendingTestimonialsBy = function (args) {
+	return this._('GET', 'flickr.testimonials.getPendingTestimonialsBy', args);
+};
+
+/**
+ * flickr.testimonials.getTestimonialsAbout
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.getTestimonialsAbout.html
+ */
+
+Flickr.prototype.testimonials.getTestimonialsAbout = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.testimonials.getTestimonialsAbout', args);
+};
+
+/**
+ * flickr.testimonials.getTestimonialsAboutBy
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.getTestimonialsAboutBy.html
+ */
+
+Flickr.prototype.testimonials.getTestimonialsAboutBy = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.testimonials.getTestimonialsAboutBy', args);
+};
+
+/**
+ * flickr.testimonials.getTestimonialsBy
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.testimonials.getTestimonialsBy.html
+ */
+
+Flickr.prototype.testimonials.getTestimonialsBy = function (args) {
+	validate(args, 'user_id');
+	return this._('GET', 'flickr.testimonials.getTestimonialsBy', args);
+};
+
+/**
+ * @type {Object}
+ * @ignore
+ */
+
+Flickr.prototype.urls = {};
+
+/**
+ * flickr.urls.getGroup
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.urls.getGroup.html
+ */
+
+Flickr.prototype.urls.getGroup = function (args) {
+	validate(args, 'group_id');
+	return this._('GET', 'flickr.urls.getGroup', args);
+};
+
+/**
+ * flickr.urls.getUserPhotos
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.urls.getUserPhotos.html
+ */
+
+Flickr.prototype.urls.getUserPhotos = function (args) {
+	return this._('GET', 'flickr.urls.getUserPhotos', args);
+};
+
+/**
+ * flickr.urls.getUserProfile
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.urls.getUserProfile.html
+ */
+
+Flickr.prototype.urls.getUserProfile = function (args) {
+	return this._('GET', 'flickr.urls.getUserProfile', args);
+};
+
+/**
+ * flickr.urls.lookupGallery
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.urls.lookupGallery.html
+ */
+
+Flickr.prototype.urls.lookupGallery = function (args) {
+	validate(args, 'url');
+	return this._('GET', 'flickr.urls.lookupGallery', args);
+};
+
+/**
+ * flickr.urls.lookupGroup
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.urls.lookupGroup.html
+ */
+
+Flickr.prototype.urls.lookupGroup = function (args) {
+	validate(args, 'url');
+	return this._('GET', 'flickr.urls.lookupGroup', args);
+};
+
+/**
+ * flickr.urls.lookupUser
+ * @param {Object} [args]
+ * @returns {Request}
+ * @ignore
+ * @see https://www.flickr.com/services/api/flickr.urls.lookupUser.html
+ */
+
+Flickr.prototype.urls.lookupUser = function (args) {
+	validate(args, 'url');
+	return this._('GET', 'flickr.urls.lookupUser', args);
+};
+
+
+module.exports = Flickr;
+
+},{"../lib/request":2,"../lib/validate":3,"../plugins/json":73}],79:[function(require,module,exports){
+/*!
+ * Copyright 2017 Yahoo Holdings.
+ * Licensed under the terms of the MIT license. Please see LICENSE file in the project root for terms.
+ */
+
+var Request = require('../lib/request').Request;
+var xml = require('../plugins/xml');
+
+/**
+ * Creates a new Upload service instance. Since the Upload API only
+ * does one thing (upload files), an Upload instance is simply
+ * a Request subclass.
+ *
+ * The Upload endpoint requires authentication. You should pass a configured
+ * instance of the [OAuth plugin]{@link Flickr.OAuth.createPlugin} to upload
+ * photos on behalf of another user.
+ *
+ * @param {Function} auth
+ * @param {String|fs.ReadStream|Buffer} file
+ * @param {Object} [args]
+ * @constructor
+ * @extends Request
+ * @memberof Flickr
+ *
+ * @example
+ *
+ * var upload = new Flickr.Upload(auth, 'upload.png', {
+ *   title: 'Works on MY machine!'
+ * });
+ *
+ * upload.then(function (res) {
+ *   console.log('yay!', res.body);
+ * }).catch(function (err) {
+ *   console.error('bonk', err);
+ * });
+ *
+ * @see https://www.flickr.com/services/api/upload.api.html
+ */
+
+function Upload(auth, file, args) {
+
+	// allow creating a client without `new`
+	if (!(this instanceof Upload)) {
+		return new Upload(auth, file, args);
+	}
+
+	Request.call(this, 'POST', 'https://up.flickr.com/services/upload');
+
+	if (typeof auth !== 'function') {
+		throw new Error('Missing required argument "auth"');
+	}
+
+	if (typeof args === 'undefined') {
+		args = {};
+	}
+
+	this.attach('photo', file);
+	this.field(args);
+	this.use(xml);
+	this.use(auth);
+}
+
+Upload.prototype = Object.create(Request.prototype);
+
+module.exports = Upload;
+
+},{"../lib/request":2,"../plugins/xml":74}]},{},[1])(1)
+});
+});
 
 var EffectName$5 = 'Flickr Image';
 var EffectDescription$5 = 'Changes the underlying image to one loaded from Flickr\'s recent images feed';
 var Attribution = 'This product uses the Flickr API but is not endorsed or certified by Flickr.';
+var ApiKey = 'bbd60ce148c0a1dedcaaffd228a03264';
 
-var FlickrImageConfigUI = (function (ConfigUI$$1) {
+var FlickrImageConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function FlickrImageConfigUI() {
     var this$1 = this;
 
@@ -4132,7 +18789,7 @@ var FlickrCacheEntry = function FlickrCacheEntry() {
  * queries for the same search term may be resolved faster.
  */
 var FlickrImageCache = function FlickrImageCache() {
-  this.flickr = new FlickrP({ api_key: ApiKey });
+  this.flickr = new flickrSdk(ApiKey);
   /// a dictionary mapping search queries to FlickrCachEntries
   this.byQuery = {};
 };
@@ -4148,11 +18805,12 @@ FlickrImageCache.prototype.runFlickrQuery = function runFlickrQuery (searchTerm)
   var entry = this.getEntryForSearchTerm(searchTerm);
 
   var onResponse = function (response) {
+    var parsed = JSON.parse(response.text);
     // since page is 1-indexed, a real greater is necessary
-    if (entry.page > response.photos.pages) {
+    if (entry.page > parsed.photos.pages) {
       entry.page = 1;
     }
-    return response;
+    return parsed;
   };
   // Two different flickr apis, depending on search string content
   var query = null;
@@ -4188,11 +18846,9 @@ FlickrImageCache.prototype.runFlickrQuery = function runFlickrQuery (searchTerm)
 ///       will have been resolved or a new image is pushed into the
 ///       image cache.
 FlickrImageCache.prototype.processSearchQueryResponse = function processSearchQueryResponse (response, entry) {
-    var this$1 = this;
-
   var loadQueue = [];
   for (var i = 0; i < response.photos.photo.length; i++) {
-    loadQueue.push(this$1.processPhoto(response.photos.photo[i], entry));
+    loadQueue.push(this.processPhoto(response.photos.photo[i], entry));
   }
   return loadQueue;
 };
@@ -4224,7 +18880,8 @@ FlickrImageCache.prototype.processPhoto = function processPhoto (photo, entry) {
   return this.flickr.photos.getSizes({
     photo_id: photo.id
   }).then(function (sizes) {
-    var original = this$1.selectBestImageVersion(sizes);
+    var parsed = JSON.parse(sizes.text);
+    var original = this$1.selectBestImageVersion(parsed);
     var url = original.source;
     var loader = document.createElement('img');
     loader.crossOrigin = 'Anonymous';
@@ -4287,7 +18944,7 @@ FlickrImageCache.prototype.getImageForSearchTerm = function getImageForSearchTer
   }
 };
 
-var FlickrImageEffect = (function (Effect$$1) {
+var FlickrImageEffect = /*@__PURE__*/(function (Effect$$1) {
   function FlickrImageEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -4450,22 +19107,21 @@ ShaderData.prototype.getNameFor = function getNameFor (entry) {
   }
 };
 ShaderData.prototype.getCompiled = function getCompiled (shader, storage) {
-    var this$1 = this;
     if ( storage === void 0 ) storage = null;
 
   var shaderStr = [];
   for (var i = 0; i < this.data.length; i++) {
-    var entry = this$1.data[i];
-    shaderStr.push(((this$1.type) + " " + (entry.type) + " " + (this$1.getNameFor(entry)) + ";"));
+    var entry = this.data[i];
+    shaderStr.push(((this.type) + " " + (entry.type) + " " + (this.getNameFor(entry)) + ";"));
     if (storage !== null) {
       // eslint-disable-next-line no-param-reassign
-      storage[this$1.getNameFor(entry)] = entry.value;
+      storage[this.getNameFor(entry)] = entry.value;
     }
   }
   return shaderStr.join('\n') + '\n';
 };
 
-var Uniforms = (function (ShaderData) {
+var Uniforms = /*@__PURE__*/(function (ShaderData) {
   function Uniforms(id) {
     ShaderData.call(this, id, 'uniform');
   }
@@ -4486,7 +19142,7 @@ var Uniforms = (function (ShaderData) {
   return Uniforms;
 }(ShaderData));
 
-var Attributes = (function (ShaderData) {
+var Attributes = /*@__PURE__*/(function (ShaderData) {
   function Attributes(id) {
     ShaderData.call(this, id, 'attribute');
   }
@@ -4514,7 +19170,7 @@ AccumulationAgent.prototype.getFragmentCode = function getFragmentCode () {
   throw new Error('Not implemented');
 };
 
-var AccumulationEffect = (function (Effect$$1) {
+var AccumulationEffect = /*@__PURE__*/(function (Effect$$1) {
   function AccumulationEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -4543,7 +19199,7 @@ var AccumulationEffect = (function (Effect$$1) {
 var EffectName$6 = 'Trails';
 var EffectDescription$6 = 'Enables an fading image echo';
 
-var TrailsConfigUI = (function (ConfigUI$$1) {
+var TrailsConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function TrailsConfigUI() {
     var this$1 = this;
 
@@ -4585,7 +19241,7 @@ var TrailsConfigUI = (function (ConfigUI$$1) {
   return TrailsConfigUI;
 }(ConfigUI));
 
-var TrailsAgent = (function (AccumulationAgent$$1) {
+var TrailsAgent = /*@__PURE__*/(function (AccumulationAgent$$1) {
   function TrailsAgent(instance) {
     AccumulationAgent$$1.call(this, instance);
   }
@@ -4600,7 +19256,7 @@ var TrailsAgent = (function (AccumulationAgent$$1) {
   return TrailsAgent;
 }(AccumulationAgent));
 
-var TrailsEffect = (function (AccumulationEffect$$1) {
+var TrailsEffect = /*@__PURE__*/(function (AccumulationEffect$$1) {
   function TrailsEffect () {
     AccumulationEffect$$1.apply(this, arguments);
   }
@@ -4646,7 +19302,7 @@ var TrailsEffect = (function (AccumulationEffect$$1) {
 var EffectName$7 = 'Smooth trails';
 var EffectDescription$7 = 'Enables an smoother fading image echo';
 
-var SmoothTrailsConfigUI = (function (ConfigUI$$1) {
+var SmoothTrailsConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function SmoothTrailsConfigUI() {
     var this$1 = this;
 
@@ -4688,7 +19344,7 @@ var SmoothTrailsConfigUI = (function (ConfigUI$$1) {
   return SmoothTrailsConfigUI;
 }(ConfigUI));
 
-var SmoothTrailsAgent = (function (AccumulationAgent$$1) {
+var SmoothTrailsAgent = /*@__PURE__*/(function (AccumulationAgent$$1) {
   function SmoothTrailsAgent(instance) {
     AccumulationAgent$$1.call(this, instance);
   }
@@ -4707,7 +19363,7 @@ var SmoothTrailsAgent = (function (AccumulationAgent$$1) {
   return SmoothTrailsAgent;
 }(AccumulationAgent));
 
-var SmoothTrailsEffect = (function (AccumulationEffect$$1) {
+var SmoothTrailsEffect = /*@__PURE__*/(function (AccumulationEffect$$1) {
   function SmoothTrailsEffect () {
     AccumulationEffect$$1.apply(this, arguments);
   }
@@ -4753,7 +19409,7 @@ var SmoothTrailsEffect = (function (AccumulationEffect$$1) {
 var EffectName$8 = 'Smear';
 var EffectDescription$8 = 'Smears the image in a circular way';
 
-var SmearConfigUI = (function (ConfigUI$$1) {
+var SmearConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function SmearConfigUI() {
     var this$1 = this;
 
@@ -4795,7 +19451,7 @@ var SmearConfigUI = (function (ConfigUI$$1) {
   return SmearConfigUI;
 }(ConfigUI));
 
-var SmearAgent = (function (AccumulationAgent$$1) {
+var SmearAgent = /*@__PURE__*/(function (AccumulationAgent$$1) {
   function SmearAgent(instance) {
     AccumulationAgent$$1.call(this, instance);
   }
@@ -4813,7 +19469,7 @@ var SmearAgent = (function (AccumulationAgent$$1) {
   return SmearAgent;
 }(AccumulationAgent));
 
-var SmearEffect = (function (AccumulationEffect$$1) {
+var SmearEffect = /*@__PURE__*/(function (AccumulationEffect$$1) {
   function SmearEffect () {
     AccumulationEffect$$1.apply(this, arguments);
   }
@@ -4859,7 +19515,7 @@ var SmearEffect = (function (AccumulationEffect$$1) {
 var EffectName$9 = 'Standing Wave';
 var EffectDescription$9 = 'A standing wave oscillates';
 
-var StandingWaveConfigUI = (function (ConfigUI$$1) {
+var StandingWaveConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function StandingWaveConfigUI() {
     var this$1 = this;
 
@@ -4919,7 +19575,7 @@ var StandingWaveConfigUI = (function (ConfigUI$$1) {
   return StandingWaveConfigUI;
 }(ConfigUI));
 
-var StandingWaveEffect = (function (Effect$$1) {
+var StandingWaveEffect = /*@__PURE__*/(function (Effect$$1) {
   function StandingWaveEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -4997,7 +19653,7 @@ var StandingWaveEffect = (function (Effect$$1) {
 var EffectName$10 = 'Sparkle';
 var EffectDescription$10 = 'Particle size and brightness increase randomly';
 
-var SparkleConfigUI = (function (ConfigUI$$1) {
+var SparkleConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function SparkleConfigUI() {
     var this$1 = this;
 
@@ -5052,7 +19708,7 @@ var SparkleConfigUI = (function (ConfigUI$$1) {
   return SparkleConfigUI;
 }(ConfigUI));
 
-var SparkleEffect = (function (Effect$$1) {
+var SparkleEffect = /*@__PURE__*/(function (Effect$$1) {
   function SparkleEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -5253,7 +19909,7 @@ Ease.setupShaderEasing = function setupShaderEasing (instance, uniforms) {
 var EffectName$11 = 'Particle spacing';
 var EffectDescription$11 = 'Adds or removes space between particles';
 
-var ParticleSpacingConfigUI = (function (ConfigUI$$1) {
+var ParticleSpacingConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function ParticleSpacingConfigUI() {
     var this$1 = this;
 
@@ -5297,7 +19953,7 @@ var ParticleSpacingConfigUI = (function (ConfigUI$$1) {
   return ParticleSpacingConfigUI;
 }(ConfigUI));
 
-var ParticleSpacingEffect = (function (Effect$$1) {
+var ParticleSpacingEffect = /*@__PURE__*/(function (Effect$$1) {
   function ParticleSpacingEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -5373,7 +20029,7 @@ var ParticleSpacingEffect = (function (Effect$$1) {
 var EffectName$12 = 'Displace Particles';
 var EffectDescription$12 = 'Displaces all particles into a certain direction by the same distance';
 
-var ParticleDisplaceConfigUI = (function (ConfigUI$$1) {
+var ParticleDisplaceConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function ParticleDisplaceConfigUI() {
     var this$1 = this;
 
@@ -5423,7 +20079,7 @@ var ParticleDisplaceConfigUI = (function (ConfigUI$$1) {
   return ParticleDisplaceConfigUI;
 }(ConfigUI));
 
-var ParticleDisplaceEffect = (function (Effect$$1) {
+var ParticleDisplaceEffect = /*@__PURE__*/(function (Effect$$1) {
   function ParticleDisplaceEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -5487,7 +20143,7 @@ var ParticleDisplaceEffect = (function (Effect$$1) {
 var EffectName$13 = 'Particle size by hue';
 var EffectDescription$13 = 'Particles will have different sizes depending on their color';
 
-var ParticleSizeByHueConfigUI = (function (ConfigUI$$1) {
+var ParticleSizeByHueConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function ParticleSizeByHueConfigUI() {
     var this$1 = this;
 
@@ -5532,7 +20188,7 @@ var ParticleSizeByHueConfigUI = (function (ConfigUI$$1) {
   return ParticleSizeByHueConfigUI;
 }(ConfigUI));
 
-var ParticleSizeByHueEffect = (function (Effect$$1) {
+var ParticleSizeByHueEffect = /*@__PURE__*/(function (Effect$$1) {
   function ParticleSizeByHueEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -5609,7 +20265,7 @@ var EffectDescription$14 = 'This effect changes the currently active image ' +
                           'back to the default image (i.e. what came from ' +
                           'the server or was uploaded by the user)';
 
-var ResetDefaultImageConfigUI = (function (ConfigUI$$1) {
+var ResetDefaultImageConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function ResetDefaultImageConfigUI() {
     ConfigUI$$1.call(this);
     this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$14 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
@@ -5634,7 +20290,7 @@ var ResetDefaultImageConfigUI = (function (ConfigUI$$1) {
   return ResetDefaultImageConfigUI;
 }(ConfigUI));
 
-var ResetDefaultImageEffect = (function (Effect$$1) {
+var ResetDefaultImageEffect = /*@__PURE__*/(function (Effect$$1) {
   function ResetDefaultImageEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -5645,7 +20301,6 @@ var ResetDefaultImageEffect = (function (Effect$$1) {
 
   ResetDefaultImageEffect.register = function register (instance, props, uniforms, vertexShader) {
     var alive = true;
-    var prevWasChange = false;
     var checkTime = function () {
       if (!alive) {
         return;
@@ -5693,16 +20348,6 @@ var ResetDefaultImageEffect = (function (Effect$$1) {
   return ResetDefaultImageEffect;
 }(Effect));
 
-var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-
-
-
-
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
-
 var imagecapture = createCommonjsModule(function (module, exports) {
 (function (global, factory) {
   if (typeof undefined === "function" && undefined.amd) {
@@ -5711,8 +20356,6 @@ var imagecapture = createCommonjsModule(function (module, exports) {
     factory(exports);
   }
 })(commonjsGlobal, function (exports) {
-  'use strict';
-
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
@@ -5745,7 +20388,7 @@ var imagecapture = createCommonjsModule(function (module, exports) {
    * MediaStream ImageCapture polyfill
    *
    * @license
-   * Copyright 2017 Google Inc.
+   * Copyright 2018 Google Inc.
    *
    * Licensed under the Apache License, Version 2.0 (the "License");
    * you may not use this file except in compliance with the License.
@@ -5771,6 +20414,8 @@ var imagecapture = createCommonjsModule(function (module, exports) {
        * @param {MediaStreamTrack} videoStreamTrack - A MediaStreamTrack of the 'video' kind
        */
       function ImageCapture(videoStreamTrack) {
+        var _this = this;
+
         _classCallCheck(this, ImageCapture);
 
         if (videoStreamTrack.kind !== 'video') { throw new DOMException('NotSupportedError'); }
@@ -5784,9 +20429,17 @@ var imagecapture = createCommonjsModule(function (module, exports) {
         // MediaStream constructor not available until Chrome 55 - https://www.chromestatus.com/feature/5912172546752512
         this._previewStream = new MediaStream([videoStreamTrack]);
         this.videoElement = document.createElement('video');
-        this.videoElement.src = URL.createObjectURL(this._previewStream);
+        this.videoElementPlaying = new Promise(function (resolve) {
+          _this.videoElement.addEventListener('playing', resolve);
+        });
+        if (HTMLMediaElement) {
+          this.videoElement.srcObject = this._previewStream; // Safari 11 doesn't allow use of createObjectURL for MediaStream
+        } else {
+          this.videoElement.src = URL.createObjectURL(this._previewStream);
+        }
         this.videoElement.muted = true;
-        this.videoElement.play(); // required by Firefox
+        this.videoElement.setAttribute('playsinline', ''); // Required by Safari on iOS 11. See https://webkit.org/blog/6784
+        this.videoElement.play();
 
         this.canvasElement = document.createElement('canvas');
         // TODO Firefox has https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas
@@ -5805,7 +20458,9 @@ var imagecapture = createCommonjsModule(function (module, exports) {
 
         /**
          * Implements https://www.w3.org/TR/image-capture/#dom-imagecapture-getphotocapabilities
-         * @return {Promise<PhotoCapabilities>} Fulfilled promise with [PhotoCapabilities](https://www.w3.org/TR/image-capture/#idl-def-photocapabilities) object on success, rejected promise on failure
+         * @return {Promise<PhotoCapabilities>} Fulfilled promise with
+         * [PhotoCapabilities](https://www.w3.org/TR/image-capture/#idl-def-photocapabilities)
+         * object on success, rejected promise on failure
          */
         value: function getPhotoCapabilities() {
           return new Promise(function executorGPC(resolve, reject) {
@@ -5838,8 +20493,6 @@ var imagecapture = createCommonjsModule(function (module, exports) {
       }, {
         key: 'setOptions',
         value: function setOptions() {
-          var photoSettings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
           return new Promise(function executorSO(resolve, reject) {
             // TODO
           });
@@ -5848,7 +20501,8 @@ var imagecapture = createCommonjsModule(function (module, exports) {
         /**
          * TODO
          * Implements https://www.w3.org/TR/image-capture/#dom-imagecapture-takephoto
-         * @return {Promise<Blob>} Fulfilled promise with [Blob](https://www.w3.org/TR/FileAPI/#blob) argument on success; rejected promise on failure
+         * @return {Promise<Blob>} Fulfilled promise with [Blob](https://www.w3.org/TR/FileAPI/#blob)
+         * argument on success; rejected promise on failure
          */
 
       }, {
@@ -5858,31 +20512,27 @@ var imagecapture = createCommonjsModule(function (module, exports) {
           return new Promise(function executorTP(resolve, reject) {
             // `If the readyState of the MediaStreamTrack provided in the constructor is not live,
             // return a promise rejected with a new DOMException whose name is "InvalidStateError".`
-            if (self._videoStreamTrack.readyState === 'live') {
-              // -- however, checking for `live` alone doesn't guarantee the video is ready
-              if (self.videoElement.videoWidth) {
-                try {
-                  self.canvasElement.width = self.videoElement.videoWidth;
-                  self.canvasElement.height = self.videoElement.videoHeight;
-                  self.canvas2dContext.drawImage(self.videoElement, 0, 0);
-                  self.canvasElement.toBlob(function (blob) {
-                    resolve(blob);
-                  });
-                } catch (error) {
-                  reject(new DOMException('UnknownError'));
-                }
-              } else {
+            if (self._videoStreamTrack.readyState !== 'live') {
+              return reject(new DOMException('InvalidStateError'));
+            }
+            self.videoElementPlaying.then(function () {
+              try {
+                self.canvasElement.width = self.videoElement.videoWidth;
+                self.canvasElement.height = self.videoElement.videoHeight;
+                self.canvas2dContext.drawImage(self.videoElement, 0, 0);
+                self.canvasElement.toBlob(resolve);
+              } catch (error) {
                 reject(new DOMException('UnknownError'));
               }
-            } else {
-              reject(new DOMException('InvalidStateError'));
-            }
+            });
           });
         }
 
         /**
          * Implements https://www.w3.org/TR/image-capture/#dom-imagecapture-grabframe
-         * @return {Promise<ImageBitmap>} Fulfilled promise with [ImageBitmap](https://www.w3.org/TR/html51/webappapis.html#webappapis-images) argument on success; rejected promise on failure
+         * @return {Promise<ImageBitmap>} Fulfilled promise with
+         * [ImageBitmap](https://www.w3.org/TR/html51/webappapis.html#webappapis-images)
+         * argument on success; rejected promise on failure
          */
 
       }, {
@@ -5890,25 +20540,22 @@ var imagecapture = createCommonjsModule(function (module, exports) {
         value: function grabFrame() {
           var self = this;
           return new Promise(function executorGF(resolve, reject) {
-            if (self._videoStreamTrack.readyState === 'live') {
-              if (self.videoElement.videoWidth) {
-                try {
-                  // videoWidth is available after videoElement.onloadedmetadata fires
-                  self.canvasElement.width = self.videoElement.videoWidth;
-                  self.canvasElement.height = self.videoElement.videoHeight;
-                  // The video has an image after videoElement.oncanplay triggers
-                  self.canvas2dContext.drawImage(self.videoElement, 0, 0);
-                  // TODO polyfill https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapFactories/createImageBitmap for IE
-                  resolve(window.createImageBitmap(self.canvasElement));
-                } catch (error) {
-                  reject(new DOMException('UnknownError'));
-                }
-              } else {
+            // `If the readyState of the MediaStreamTrack provided in the constructor is not live,
+            // return a promise rejected with a new DOMException whose name is "InvalidStateError".`
+            if (self._videoStreamTrack.readyState !== 'live') {
+              return reject(new DOMException('InvalidStateError'));
+            }
+            self.videoElementPlaying.then(function () {
+              try {
+                self.canvasElement.width = self.videoElement.videoWidth;
+                self.canvasElement.height = self.videoElement.videoHeight;
+                self.canvas2dContext.drawImage(self.videoElement, 0, 0);
+                // TODO polyfill https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmapFactories/createImageBitmap for IE
+                resolve(window.createImageBitmap(self.canvasElement));
+              } catch (error) {
                 reject(new DOMException('UnknownError'));
               }
-            } else {
-              reject(new DOMException('InvalidStateError'));
-            }
+            });
           });
         }
       }, {
@@ -5921,15 +20568,18 @@ var imagecapture = createCommonjsModule(function (module, exports) {
       return ImageCapture;
     }();
   }
+
+  window.ImageCapture = ImageCapture;
 });
 });
 
+unwrapExports(imagecapture);
 var imagecapture_1 = imagecapture.ImageCapture;
 
 var EffectName$15 = 'Webcam';
 var EffectDescription$15 = 'Make use of the user\'s webcam as the particles\' color values';
 
-var WebcamConfigUI = (function (ConfigUI$$1) {
+var WebcamConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function WebcamConfigUI() {
     var this$1 = this;
 
@@ -6154,7 +20804,7 @@ WebcamEffectImpl.prototype.createTrack = function createTrack () {
     .then(function () { return Promise.resolve(videoTrack); }, function (err) { return Promise.reject(err); });
 };
 
-var WebcamEffect = (function (Effect$$1) {
+var WebcamEffect = /*@__PURE__*/(function (Effect$$1) {
   function WebcamEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -6206,7 +20856,7 @@ var WebcamEffect = (function (Effect$$1) {
 var EffectName$16 = 'Reduce Particle Count';
 var EffectDescription$16 = 'Drops the given amount of particles';
 
-var ParticlesReduceConfigUI = (function (ConfigUI$$1) {
+var ParticlesReduceConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function ParticlesReduceConfigUI() {
     var this$1 = this;
 
@@ -6250,7 +20900,7 @@ var ParticlesReduceConfigUI = (function (ConfigUI$$1) {
   return ParticlesReduceConfigUI;
 }(ConfigUI));
 
-var ParticlesReduceEffect = (function (Effect$$1) {
+var ParticlesReduceEffect = /*@__PURE__*/(function (Effect$$1) {
   function ParticlesReduceEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -6324,10 +20974,9 @@ var ParticlesReduceEffect = (function (Effect$$1) {
 var EffectName$17 = 'Vignette';
 var EffectDescription$17 = 'Fade out the edges to make it look like an old crt tv';
 
-var VignetteConfigUI = (function (ConfigUI$$1) {
+var VignetteConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function VignetteConfigUI() {
     ConfigUI$$1.call(this);
-    var classPrefix = 'effect-vignette';
     this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$17 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
     var ui = this.element;
   }
@@ -6350,7 +20999,7 @@ var VignetteConfigUI = (function (ConfigUI$$1) {
   return VignetteConfigUI;
 }(ConfigUI));
 
-var VignetteEffect = (function (Effect$$1) {
+var VignetteEffect = /*@__PURE__*/(function (Effect$$1) {
   function VignetteEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -6393,10 +21042,9 @@ var VignetteEffect = (function (Effect$$1) {
 var EffectName$18 = 'Dummy';
 var EffectDescription$18 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
 
-var DummyConfigUI = (function (ConfigUI$$1) {
+var DummyConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function DummyConfigUI() {
     ConfigUI$$1.call(this);
-    var classPrefix = 'effect-dummy';
     this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$18 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
     var ui = this.element;
   }
@@ -6419,7 +21067,7 @@ var DummyConfigUI = (function (ConfigUI$$1) {
   return DummyConfigUI;
 }(ConfigUI));
 
-var DummyEffect = (function (Effect$$1) {
+var DummyEffect = /*@__PURE__*/(function (Effect$$1) {
   function DummyEffect () {
     Effect$$1.apply(this, arguments);
   }
@@ -6808,11 +21456,9 @@ TimelineTrack.prototype.getTrackElement = function getTrackElement () {
   return this.elements[1];
 };
 TimelineTrack.prototype.renderHtml = function renderHtml () {
-    var this$1 = this;
-
   var lis = document.createDocumentFragment();
   for (var i = 0; i < this.entryList.length; i++) {
-    var entry = this$1.entryList[i];
+    var entry = this.entryList[i];
     var li = entry.getElement();
     lis.appendChild(li);
   }
@@ -6820,11 +21466,9 @@ TimelineTrack.prototype.renderHtml = function renderHtml () {
   this.entryListElm.appendChild(lis);
 };
 TimelineTrack.prototype.renderStyles = function renderStyles () {
-    var this$1 = this;
-
   var maxEnd = 0;
   for (var i = 0; i < this.entryList.length; i++) {
-    var entry = this$1.entryList[i];
+    var entry = this.entryList[i];
     entry.renderStyles();
     maxEnd = Math.max(maxEnd, entry.timeEnd);
   }
@@ -7172,16 +21816,14 @@ var Timeline = function Timeline(menu) {
   });
 };
 Timeline.prototype.loadTimeline = function loadTimeline (trackList) {
-    var this$1 = this;
-
   this.trackList = [];
   for (var i = 0; i < trackList.length; i++) {
-    var track = new TimelineTrack(i + 1, this$1);
-    this$1.trackList.push(track);
+    var track = new TimelineTrack(i + 1, this);
+    this.trackList.push(track);
     for (var j = 0; j < trackList[i].length; j++) {
       var entryDesc = EffectConfig.deserialize(trackList[i][j]);
       try {
-        var entry = new TimelineEntry(entryDesc.getEffectClass(), this$1);
+        var entry = new TimelineEntry(entryDesc.getEffectClass(), this);
         entry.loadState(entryDesc);
         track.addEntry(entry);
       } catch (e) {
@@ -7210,36 +21852,30 @@ Timeline.prototype.renderHtml = function renderHtml () {
     rows.appendChild(row);
   };
 
-    for (var i = 0; i < this.trackList.length; i++) loop( i );
+    for (var i = 0; i < this$1.trackList.length; i++) loop( i );
   clearChildNodes(this.trackListElm);
   this.trackListElm.appendChild(rows);
 };
 Timeline.prototype.renderStyles = function renderStyles () {
-    var this$1 = this;
-
   for (var i = 0; i < this.trackList.length; i++) {
-    var track = this$1.trackList[i];
+    var track = this.trackList[i];
     track.renderStyles();
   }
 };
 Timeline.prototype.forEachEntry = function forEachEntry (callback) {
-    var this$1 = this;
-
   for (var i = 0; i < this.trackList.length; i++) {
     for (var j = 0; j < this.trackList[i].entryList.length; j++) {
-      callback(this$1.trackList[i].entryList[j], this$1.trackList[i], j);
+      callback(this.trackList[i].entryList[j], this.trackList[i], j);
     }
   }
 };
 Timeline.prototype.getEffects = function getEffects () {
-    var this$1 = this;
-
   var configs = [];
   for (var i = 0; i < this.trackList.length; i++) {
     var track = [];
     configs.push(track);
     for (var j = 0; j < this.trackList[i].entryList.length; j++) {
-      track.push(this$1.trackList[i].entryList[j].getConfiguration());
+      track.push(this.trackList[i].entryList[j].getConfiguration());
     }
   }
 
@@ -7287,10 +21923,8 @@ Timeline.prototype.deleteEntry = function deleteEntry (remove) {
   });
 };
 Timeline.prototype.dropNewEffect = function dropNewEffect (effect, clientX, clientY, width, height) {
-    var this$1 = this;
-
   for (var i = 0; i < this.trackList.length; i++) {
-    if (this$1.trackList[i].dropNewEffect(effect, clientX, clientY, width, height)) {
+    if (this.trackList[i].dropNewEffect(effect, clientX, clientY, width, height)) {
       return true;
     }
   }
@@ -7311,6 +21945,23 @@ Timeline.prototype.setLocked = function setLocked (locked) {
       this.element.classList.remove(lockedClass);
     }
   }
+};
+
+/**
+ * Base class of all controls participating in the main menu
+ * This is rather for documenting the common interface than
+ * offering concrete functionality for reuse.
+ */
+var Control = function Control(menu) {
+  this.menu = menu;
+};
+// eslint-disable-next-line class-methods-use-this
+Control.prototype.updateConfig = function updateConfig (/* config */) {
+  throw new Error('Method not implemented');
+};
+// eslint-disable-next-line class-methods-use-this
+Control.prototype.applyConfig = function applyConfig (/* config */) {
+  throw new Error('Method not implemented');
 };
 
 function create() {
@@ -7340,16 +21991,202 @@ function create() {
 }
 
 var schemaVersion = 0;
-var backgroundColor = [0,0,0,1];
+var backgroundColor = [
+	0,
+	0,
+	0,
+	1
+];
 var xParticlesCount = 200;
 var yParticlesCount = 125;
 var defaultImageScaling = "crop-to-viewport";
-var defaultImageCropping = {"x":"crop-both","y":"crop-both"};
+var defaultImageCropping = {
+	x: "crop-both",
+	y: "crop-both"
+};
 var particleScaling = 1;
 var particleShape = "circle";
 var particleFading = "none";
 var particleOverlap = "alpha blend";
-var effects = [[{"id":"HueDisplaceEffect","timeBegin":8592,"timeEnd":10613,"repetitions":1,"config":{"distance":0.7319085067626532,"scaleByValue":0.4112831056504884,"randomDirectionOffset":false,"rotate":0.6353214673534142}}],[{"id":"ConvergePointEffect","timeBegin":2189,"timeEnd":6844,"repetitions":1,"config":{}}],[{"id":"ConvergeCircleEffect","timeBegin":9297,"timeEnd":13311,"repetitions":1,"config":{"rotationSpeed":0.32695472212132115}}],[{"id":"WaveEffect","timeBegin":0,"timeEnd":2015,"repetitions":1,"config":{"multiplier":0.3148697308748081,"amplitude":0.11115075915060912}}],[{"id":"TrailsEffect","timeBegin":7827,"timeEnd":14610,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmoothTrailsEffect","timeBegin":2845,"timeEnd":5692,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"SmearEffect","timeBegin":5041,"timeEnd":13056,"repetitions":1,"config":{"fadein":100,"fadeout":500}}],[{"id":"StandingWaveEffect","timeBegin":9065,"timeEnd":13188,"repetitions":1,"config":{"maxAmplitude":0.11655939598142143,"waveCount":12.072390651463863,"timeInterpolation":"linear","waveFunction":"sine","dimension":"x"}}],[{"id":"SparkleEffect","timeBegin":4482,"timeEnd":10731,"repetitions":1,"config":{"scaleMin":0.685,"scaleMax":2.563,"ratio":0.275,"duration":1485}}],[{"id":"ParticleSpacingEffect","timeBegin":5162,"timeEnd":13696,"repetitions":1,"config":{"xSpread":0.5,"ySpread":1.5,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"sine"}}],[{"id":"ParticleDisplaceEffect","timeBegin":3543,"timeEnd":6774,"repetitions":1,"config":{"direction":224.4457831353151,"directionUnit":"degrees","distance":0.023417750859263453,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"none"}}],[{"id":"ParticleSizeByHueEffect","timeBegin":1877,"timeEnd":11750,"repetitions":1,"config":{"scaling":2.582142277304504,"hueRotation":4.761756559852353,"easeInTime":1000,"easeOutTime":1000,"easeFunc":"linear"}}],[{"id":"WebcamEffect","timeBegin":0,"timeEnd":14610,"repetitions":1,"config":{"maxRetries":3,"retryTimeout":1000,"imageScaling":"crop-to-viewport","imageCropping":{"x":"crop-both","y":"crop-both"}}}],[]];
+var effects = [
+	[
+		{
+			id: "HueDisplaceEffect",
+			timeBegin: 8592,
+			timeEnd: 10613,
+			repetitions: 1,
+			config: {
+				distance: 0.7319085067626532,
+				scaleByValue: 0.4112831056504884,
+				randomDirectionOffset: false,
+				rotate: 0.6353214673534142
+			}
+		}
+	],
+	[
+		{
+			id: "ConvergePointEffect",
+			timeBegin: 2189,
+			timeEnd: 6844,
+			repetitions: 1,
+			config: {
+			}
+		}
+	],
+	[
+		{
+			id: "ConvergeCircleEffect",
+			timeBegin: 9297,
+			timeEnd: 13311,
+			repetitions: 1,
+			config: {
+				rotationSpeed: 0.32695472212132115
+			}
+		}
+	],
+	[
+		{
+			id: "WaveEffect",
+			timeBegin: 0,
+			timeEnd: 2015,
+			repetitions: 1,
+			config: {
+				multiplier: 0.3148697308748081,
+				amplitude: 0.11115075915060912
+			}
+		}
+	],
+	[
+		{
+			id: "TrailsEffect",
+			timeBegin: 7827,
+			timeEnd: 14610,
+			repetitions: 1,
+			config: {
+				fadein: 100,
+				fadeout: 500
+			}
+		}
+	],
+	[
+		{
+			id: "SmoothTrailsEffect",
+			timeBegin: 2845,
+			timeEnd: 5692,
+			repetitions: 1,
+			config: {
+				fadein: 100,
+				fadeout: 500
+			}
+		}
+	],
+	[
+		{
+			id: "SmearEffect",
+			timeBegin: 5041,
+			timeEnd: 13056,
+			repetitions: 1,
+			config: {
+				fadein: 100,
+				fadeout: 500
+			}
+		}
+	],
+	[
+		{
+			id: "StandingWaveEffect",
+			timeBegin: 9065,
+			timeEnd: 13188,
+			repetitions: 1,
+			config: {
+				maxAmplitude: 0.11655939598142143,
+				waveCount: 12.072390651463863,
+				timeInterpolation: "linear",
+				waveFunction: "sine",
+				dimension: "x"
+			}
+		}
+	],
+	[
+		{
+			id: "SparkleEffect",
+			timeBegin: 4482,
+			timeEnd: 10731,
+			repetitions: 1,
+			config: {
+				scaleMin: 0.685,
+				scaleMax: 2.563,
+				ratio: 0.275,
+				duration: 1485
+			}
+		}
+	],
+	[
+		{
+			id: "ParticleSpacingEffect",
+			timeBegin: 5162,
+			timeEnd: 13696,
+			repetitions: 1,
+			config: {
+				xSpread: 0.5,
+				ySpread: 1.5,
+				easeInTime: 1000,
+				easeOutTime: 1000,
+				easeFunc: "sine"
+			}
+		}
+	],
+	[
+		{
+			id: "ParticleDisplaceEffect",
+			timeBegin: 3543,
+			timeEnd: 6774,
+			repetitions: 1,
+			config: {
+				direction: 224.4457831353151,
+				directionUnit: "degrees",
+				distance: 0.023417750859263453,
+				easeInTime: 1000,
+				easeOutTime: 1000,
+				easeFunc: "none"
+			}
+		}
+	],
+	[
+		{
+			id: "ParticleSizeByHueEffect",
+			timeBegin: 1877,
+			timeEnd: 11750,
+			repetitions: 1,
+			config: {
+				scaling: 2.582142277304504,
+				hueRotation: 4.761756559852353,
+				easeInTime: 1000,
+				easeOutTime: 1000,
+				easeFunc: "linear"
+			}
+		}
+	],
+	[
+		{
+			id: "WebcamEffect",
+			timeBegin: 0,
+			timeEnd: 14610,
+			repetitions: 1,
+			config: {
+				maxRetries: 3,
+				retryTimeout: 1000,
+				imageScaling: "crop-to-viewport",
+				imageCropping: {
+					x: "crop-both",
+					y: "crop-both"
+				}
+			}
+		}
+	],
+	[
+	]
+];
 var duration = 14610;
 var Preset1 = {
 	schemaVersion: schemaVersion,
@@ -7367,16 +22204,59 @@ var Preset1 = {
 };
 
 var schemaVersion$1 = 0;
-var backgroundColor$1 = [0,0,0,1];
+var backgroundColor$1 = [
+	0,
+	0,
+	0,
+	1
+];
 var xParticlesCount$1 = 200;
 var yParticlesCount$1 = 125;
 var defaultImageScaling$1 = "crop-to-viewport";
-var defaultImageCropping$1 = {"x":"crop-both","y":"crop-both"};
+var defaultImageCropping$1 = {
+	x: "crop-both",
+	y: "crop-both"
+};
 var particleScaling$1 = 1;
 var particleShape$1 = "circle";
 var particleFading$1 = "none";
 var particleOverlap$1 = "alpha blend";
-var effects$1 = [[{"id":"WebcamEffect","timeBegin":0,"timeEnd":2152,"repetitions":1,"config":{"maxRetries":3,"retryTimeout":1000,"imageScaling":"crop-to-viewport","imageCropping":{"x":"crop-both","y":"crop-both"}}}],[{"id":"StandingWaveEffect","timeBegin":0,"timeEnd":2143,"repetitions":1,"config":{"maxAmplitude":0.05,"waveCount":20,"timeInterpolation":"linear","waveFunction":"sine","dimension":"y"}}],[]];
+var effects$1 = [
+	[
+		{
+			id: "WebcamEffect",
+			timeBegin: 0,
+			timeEnd: 2152,
+			repetitions: 1,
+			config: {
+				maxRetries: 3,
+				retryTimeout: 1000,
+				imageScaling: "crop-to-viewport",
+				imageCropping: {
+					x: "crop-both",
+					y: "crop-both"
+				}
+			}
+		}
+	],
+	[
+		{
+			id: "StandingWaveEffect",
+			timeBegin: 0,
+			timeEnd: 2143,
+			repetitions: 1,
+			config: {
+				maxAmplitude: 0.05,
+				waveCount: 20,
+				timeInterpolation: "linear",
+				waveFunction: "sine",
+				dimension: "y"
+			}
+		}
+	],
+	[
+	]
+];
 var duration$1 = 2152;
 var Preset2 = {
 	schemaVersion: schemaVersion$1,
@@ -7469,30 +22349,13 @@ MenuPresetSelectControl.prototype.applyConfig = function applyConfig (config) {
 };
 
 /**
- * Base class of all controls participating in the main menu
- * This is rather for documenting the common interface than
- * offering concrete functionality for reuse.
- */
-var Control = function Control(menu) {
-  this.menu = menu;
-};
-// eslint-disable-next-line class-methods-use-this
-Control.prototype.updateConfig = function updateConfig (/* config */) {
-  throw new Error('Method not implemented');
-};
-// eslint-disable-next-line class-methods-use-this
-Control.prototype.applyConfig = function applyConfig (/* config */) {
-  throw new Error('Method not implemented');
-};
-
-/**
  *
  */
-var BgColorPicker = (function (Control) {
+var BgColorPicker = /*@__PURE__*/(function (Control$$1) {
   function BgColorPicker(menu) {
     var this$1 = this;
 
-    Control.call(this, menu);
+    Control$$1.call(this, menu);
     this.elm = document.getElementById('menu-bg-color-control');
     this.input = this.elm.querySelector('input[type="color"]');
 
@@ -7501,13 +22364,13 @@ var BgColorPicker = (function (Control) {
     });
   }
 
-  if ( Control ) BgColorPicker.__proto__ = Control;
-  BgColorPicker.prototype = Object.create( Control && Control.prototype );
+  if ( Control$$1 ) BgColorPicker.__proto__ = Control$$1;
+  BgColorPicker.prototype = Object.create( Control$$1 && Control$$1.prototype );
   BgColorPicker.prototype.constructor = BgColorPicker;
 
   BgColorPicker.prototype.updateConfig = function updateConfig (config) {
     // eslint-disable-next-line no-param-reassign
-    config.backgroundColor = index(this.input.value)
+    config.backgroundColor = parseColor(this.input.value)
       .rgba.map(function (val, i) { return (i === 3 ? val : val / 255); });
   };
 
@@ -7517,7 +22380,7 @@ var BgColorPicker = (function (Control) {
     var g = ref[1];
     var b = ref[2];
     var a = ref[3];
-    this.input.value = index(("rgba(" + r + ", " + g + ", " + b + ", " + a + ")")).hex;
+    this.input.value = parseColor(("rgba(" + r + ", " + g + ", " + b + ", " + a + ")")).hex;
   };
 
   return BgColorPicker;
@@ -7526,11 +22389,11 @@ var BgColorPicker = (function (Control) {
 /**
  *
  */
-var ParticleCountControl = (function (Control) {
+var ParticleCountControl = /*@__PURE__*/(function (Control$$1) {
   function ParticleCountControl(menu) {
     var this$1 = this;
 
-    Control.call(this, menu);
+    Control$$1.call(this, menu);
     this.xInput = document.getElementById('menu-particles-x');
     this.yInput = document.getElementById('menu-particles-y');
 
@@ -7542,8 +22405,8 @@ var ParticleCountControl = (function (Control) {
     });
   }
 
-  if ( Control ) ParticleCountControl.__proto__ = Control;
-  ParticleCountControl.prototype = Object.create( Control && Control.prototype );
+  if ( Control$$1 ) ParticleCountControl.__proto__ = Control$$1;
+  ParticleCountControl.prototype = Object.create( Control$$1 && Control$$1.prototype );
   ParticleCountControl.prototype.constructor = ParticleCountControl;
 
   ParticleCountControl.prototype.updateConfig = function updateConfig (config) {
@@ -7565,15 +22428,15 @@ var ParticleCountControl = (function (Control) {
  * This is an invisible menu item with the purpose of storing the default
  * image scaling parameters selected by the user
  */
-var DefaultImageControl = (function (Control) {
+var DefaultImageControl = /*@__PURE__*/(function (Control$$1) {
   function DefaultImageControl(menu) {
-    Control.call(this, menu);
+    Control$$1.call(this, menu);
     this.defaultImageScaling = 'crop-to-viewport';
     this.defaultImageCropping = {x: 'crop-both', y: 'crop-both'};
   }
 
-  if ( Control ) DefaultImageControl.__proto__ = Control;
-  DefaultImageControl.prototype = Object.create( Control && Control.prototype );
+  if ( Control$$1 ) DefaultImageControl.__proto__ = Control$$1;
+  DefaultImageControl.prototype = Object.create( Control$$1 && Control$$1.prototype );
   DefaultImageControl.prototype.constructor = DefaultImageControl;
 
   DefaultImageControl.prototype.updateConfig = function updateConfig (config) {
@@ -7594,11 +22457,11 @@ var DefaultImageControl = (function (Control) {
 /**
  *
  */
-var ParticleSizeControl = (function (Control) {
+var ParticleSizeControl = /*@__PURE__*/(function (Control$$1) {
   function ParticleSizeControl(menu) {
     var this$1 = this;
 
-    Control.call(this, menu);
+    Control$$1.call(this, menu);
     this.elm = document.getElementById('menu-particle-size-control');
     this.input = this.elm.querySelector('input[type="number"]');
 
@@ -7607,8 +22470,8 @@ var ParticleSizeControl = (function (Control) {
     });
   }
 
-  if ( Control ) ParticleSizeControl.__proto__ = Control;
-  ParticleSizeControl.prototype = Object.create( Control && Control.prototype );
+  if ( Control$$1 ) ParticleSizeControl.__proto__ = Control$$1;
+  ParticleSizeControl.prototype = Object.create( Control$$1 && Control$$1.prototype );
   ParticleSizeControl.prototype.constructor = ParticleSizeControl;
 
   ParticleSizeControl.prototype.updateConfig = function updateConfig (config) {
@@ -7626,11 +22489,11 @@ var ParticleSizeControl = (function (Control) {
 /**
  *
  */
-var ParticleShapeControl = (function (Control) {
+var ParticleShapeControl = /*@__PURE__*/(function (Control$$1) {
   function ParticleShapeControl(menu) {
     var this$1 = this;
 
-    Control.call(this, menu);
+    Control$$1.call(this, menu);
     this.elm = document.getElementById('menu-particle-shape-control');
     this.select = this.elm.querySelector('select');
 
@@ -7639,8 +22502,8 @@ var ParticleShapeControl = (function (Control) {
     });
   }
 
-  if ( Control ) ParticleShapeControl.__proto__ = Control;
-  ParticleShapeControl.prototype = Object.create( Control && Control.prototype );
+  if ( Control$$1 ) ParticleShapeControl.__proto__ = Control$$1;
+  ParticleShapeControl.prototype = Object.create( Control$$1 && Control$$1.prototype );
   ParticleShapeControl.prototype.constructor = ParticleShapeControl;
 
   ParticleShapeControl.prototype.updateConfig = function updateConfig (config) {
@@ -7658,11 +22521,11 @@ var ParticleShapeControl = (function (Control) {
 /**
  *
  */
-var ParticleEdgeFadeControl = (function (Control) {
+var ParticleEdgeFadeControl = /*@__PURE__*/(function (Control$$1) {
   function ParticleEdgeFadeControl(menu) {
     var this$1 = this;
 
-    Control.call(this, menu);
+    Control$$1.call(this, menu);
     this.elm = document.getElementById('menu-particle-edge-fade-control');
     this.select = this.elm.querySelector('select');
 
@@ -7671,8 +22534,8 @@ var ParticleEdgeFadeControl = (function (Control) {
     });
   }
 
-  if ( Control ) ParticleEdgeFadeControl.__proto__ = Control;
-  ParticleEdgeFadeControl.prototype = Object.create( Control && Control.prototype );
+  if ( Control$$1 ) ParticleEdgeFadeControl.__proto__ = Control$$1;
+  ParticleEdgeFadeControl.prototype = Object.create( Control$$1 && Control$$1.prototype );
   ParticleEdgeFadeControl.prototype.constructor = ParticleEdgeFadeControl;
 
   ParticleEdgeFadeControl.prototype.updateConfig = function updateConfig (config) {
@@ -7690,11 +22553,11 @@ var ParticleEdgeFadeControl = (function (Control) {
 /**
  *
  */
-var ParticleOverlapControl = (function (Control) {
+var ParticleOverlapControl = /*@__PURE__*/(function (Control$$1) {
   function ParticleOverlapControl(menu) {
     var this$1 = this;
 
-    Control.call(this, menu);
+    Control$$1.call(this, menu);
     this.elm = document.getElementById('menu-particle-overlap-control');
     this.select = this.elm.querySelector('select');
 
@@ -7703,8 +22566,8 @@ var ParticleOverlapControl = (function (Control) {
     });
   }
 
-  if ( Control ) ParticleOverlapControl.__proto__ = Control;
-  ParticleOverlapControl.prototype = Object.create( Control && Control.prototype );
+  if ( Control$$1 ) ParticleOverlapControl.__proto__ = Control$$1;
+  ParticleOverlapControl.prototype = Object.create( Control$$1 && Control$$1.prototype );
   ParticleOverlapControl.prototype.constructor = ParticleOverlapControl;
 
   ParticleOverlapControl.prototype.updateConfig = function updateConfig (config) {
@@ -7722,11 +22585,11 @@ var ParticleOverlapControl = (function (Control) {
 /**
  *
  */
-var ExportAppstateButton = (function (Control) {
+var ExportAppstateButton = /*@__PURE__*/(function (Control$$1) {
   function ExportAppstateButton(menu) {
     var this$1 = this;
 
-    Control.call(this, menu);
+    Control$$1.call(this, menu);
     this.elm = document.getElementById('menu-btn-exportstate');
     this.elm.addEventListener('click', function () {
       var toExport = Object.assign({
@@ -7736,8 +22599,8 @@ var ExportAppstateButton = (function (Control) {
     });
   }
 
-  if ( Control ) ExportAppstateButton.__proto__ = Control;
-  ExportAppstateButton.prototype = Object.create( Control && Control.prototype );
+  if ( Control$$1 ) ExportAppstateButton.__proto__ = Control$$1;
+  ExportAppstateButton.prototype = Object.create( Control$$1 && Control$$1.prototype );
   ExportAppstateButton.prototype.constructor = ExportAppstateButton;
   ExportAppstateButton.saveJson = function saveJson (filename, data) {
     var blob = new Blob([data], { type: 'application/json' });
@@ -7763,11 +22626,11 @@ var ExportAppstateButton = (function (Control) {
 /**
  *
  */
-var ImportAppstateButton = (function (Control) {
+var ImportAppstateButton = /*@__PURE__*/(function (Control$$1) {
   function ImportAppstateButton(menu) {
     var this$1 = this;
 
-    Control.call(this, menu);
+    Control$$1.call(this, menu);
     this.FR = new FileReader();
     this.elm = document.getElementById('menu-btn-importstate');
     this.input = this.elm.querySelector('input[type="file"]');
@@ -7798,8 +22661,8 @@ var ImportAppstateButton = (function (Control) {
     });
   }
 
-  if ( Control ) ImportAppstateButton.__proto__ = Control;
-  ImportAppstateButton.prototype = Object.create( Control && Control.prototype );
+  if ( Control$$1 ) ImportAppstateButton.__proto__ = Control$$1;
+  ImportAppstateButton.prototype = Object.create( Control$$1 && Control$$1.prototype );
   ImportAppstateButton.prototype.constructor = ImportAppstateButton;
   // eslint-disable-next-line class-methods-use-this
   ImportAppstateButton.prototype.updateConfig = function updateConfig (/* config */) {};
@@ -7812,11 +22675,11 @@ var ImportAppstateButton = (function (Control) {
 /**
  *
  */
-var ResetAppstateButton = (function (Control) {
+var ResetAppstateButton = /*@__PURE__*/(function (Control$$1) {
   function ResetAppstateButton(menu) {
     var this$1 = this;
 
-    Control.call(this, menu);
+    Control$$1.call(this, menu);
     this.elm = document.getElementById('menu-btn-resetstate');
     this.elm.addEventListener('click', function () {
       this$1.menu.applyConfig(this$1.menu.defaultConfig);
@@ -7824,8 +22687,8 @@ var ResetAppstateButton = (function (Control) {
     });
   }
 
-  if ( Control ) ResetAppstateButton.__proto__ = Control;
-  ResetAppstateButton.prototype = Object.create( Control && Control.prototype );
+  if ( Control$$1 ) ResetAppstateButton.__proto__ = Control$$1;
+  ResetAppstateButton.prototype = Object.create( Control$$1 && Control$$1.prototype );
   ResetAppstateButton.prototype.constructor = ResetAppstateButton;
   // eslint-disable-next-line class-methods-use-this
   ResetAppstateButton.prototype.updateConfig = function updateConfig (/* config */) {};
@@ -7965,12 +22828,12 @@ var MainMenu = function MainMenu(clock) {
   });
 
   for (var i = 0; i < ControlsList.length; i++) {
-    this$1.addControl(ControlsList[i]);
+    this.addControl(ControlsList[i]);
   }
 
   var effectListElms = document.createDocumentFragment();
   for (var i$1 = 0; i$1 < effectList.length; i$1++) {
-    var elm = new EffectListItem(effectList[i$1], this$1.timeline).getElement();
+    var elm = new EffectListItem(effectList[i$1], this.timeline).getElement();
     effectListElms.appendChild(elm);
   }
   this.effectList.appendChild(effectListElms);
@@ -7997,20 +22860,16 @@ var MainMenu = function MainMenu(clock) {
 };
 
 MainMenu.prototype.applyConfig = function applyConfig (config) {
-    var this$1 = this;
-
   for (var i = 0; i < this.controls.length; i++) {
-    this$1.controls[i].applyConfig(config);
+    this.controls[i].applyConfig(config);
   }
   this.timeline.loadTimeline(config.effects);
 };
 
 MainMenu.prototype.readConfig = function readConfig () {
-    var this$1 = this;
-
   var config = {};
   for (var i = 0; i < this.controls.length; i++) {
-    this$1.controls[i].updateConfig(config);
+    this.controls[i].updateConfig(config);
   }
   config.effects = this.timeline.getEffects();
   config.duration = this.timeline.getTotalDuration();
@@ -8019,12 +22878,10 @@ MainMenu.prototype.readConfig = function readConfig () {
 };
 
 MainMenu.prototype.submit = function submit () {
-    var this$1 = this;
-
   this.applyBtn.disabled = true;
   var config = this.readConfig();
   for (var i = 0; i < this.changeListeners.length; i++) {
-    this$1.changeListeners[i](config);
+    this.changeListeners[i](config);
   }
   this.submittedConfig = config;
 };
@@ -8056,23 +22913,18 @@ MainMenu.prototype.isVisible = function isVisible () {
 var regl = createCommonjsModule(function (module, exports) {
 (function (global, factory) {
 	module.exports = factory();
-}(commonjsGlobal, (function () { 'use strict';
-
-var arrayTypes = {
-	"[object Int8Array]": 5120,
-	"[object Int16Array]": 5122,
-	"[object Int32Array]": 5124,
-	"[object Uint8Array]": 5121,
-	"[object Uint8ClampedArray]": 5121,
-	"[object Uint16Array]": 5123,
-	"[object Uint32Array]": 5125,
-	"[object Float32Array]": 5126,
-	"[object Float64Array]": 5121,
-	"[object ArrayBuffer]": 5121
-};
-
-var isTypedArray = function (x) {
-  return Object.prototype.toString.call(x) in arrayTypes
+}(commonjsGlobal, (function () { var isTypedArray = function (x) {
+  return (
+    x instanceof Uint8Array ||
+    x instanceof Uint16Array ||
+    x instanceof Uint32Array ||
+    x instanceof Int8Array ||
+    x instanceof Int16Array ||
+    x instanceof Int32Array ||
+    x instanceof Float32Array ||
+    x instanceof Float64Array ||
+    x instanceof Uint8ClampedArray
+  )
 };
 
 var extend = function (base, opts) {
@@ -8088,12 +22940,14 @@ var extend = function (base, opts) {
 // Statements for the form `check.someProcedure(...)` get removed by
 // a browserify transform for optimized/minified bundles.
 //
-/* globals btoa */
-// only used for extracting shader names.  if btoa not present, then errors
+/* globals atob */
+var endl = '\n';
+
+// only used for extracting shader names.  if atob not present, then errors
 // will be slightly crappier
 function decodeB64 (str) {
-  if (typeof btoa !== 'undefined') {
-    return btoa(str)
+  if (typeof atob !== 'undefined') {
+    return atob(str)
   }
   return 'base64:' + str
 }
@@ -8340,7 +23194,7 @@ function checkShaderError (gl, shader, source, type, command) {
       file.lines.forEach(function (line) {
         if (line.errors.length > 0) {
           push(leftPad(line.number, 4) + '|  ', 'background-color:yellow; font-weight:bold');
-          push(line.line + '\n', 'color:red; background-color:yellow; font-weight:bold');
+          push(line.line + endl, 'color:red; background-color:yellow; font-weight:bold');
 
           // try to guess token
           var offset = 0;
@@ -8361,17 +23215,17 @@ function checkShaderError (gl, shader, source, type, command) {
             }
 
             push(leftPad('| ', 6));
-            push(leftPad('^^^', offset + 3) + '\n', 'font-weight:bold');
+            push(leftPad('^^^', offset + 3) + endl, 'font-weight:bold');
             push(leftPad('| ', 6));
-            push(message + '\n', 'font-weight:bold');
+            push(message + endl, 'font-weight:bold');
           });
-          push(leftPad('| ', 6) + '\n');
+          push(leftPad('| ', 6) + endl);
         } else {
           push(leftPad(line.number, 4) + '|  ');
-          push(line.line + '\n', 'color:red');
+          push(line.line + endl, 'color:red');
         }
       });
-      if (typeof document !== 'undefined') {
+      if (typeof document !== 'undefined' && !window.chrome) {
         styles[0] = strings.join('%c');
         console.log.apply(console, styles);
       } else {
@@ -8393,11 +23247,11 @@ function checkLinkError (gl, program, fragShader, vertShader, command) {
       vertParse[0].name + '", and fragment shader "' + fragParse[0].name + '"';
 
     if (typeof document !== 'undefined') {
-      console.log('%c' + header + '\n%c' + errLog,
+      console.log('%c' + header + endl + '%c' + errLog,
         'color:red;text-decoration:underline;font-weight:bold',
         'color:red');
     } else {
-      console.log(header + '\n' + errLog);
+      console.log(header + endl + errLog);
     }
     check.raise(header);
   }
@@ -8884,10 +23738,10 @@ function createCanvas (element, onDone, pixelRatio) {
   }
 }
 
-function createContext (canvas, contexAttributes) {
+function createContext (canvas, contextAttributes) {
   function get (name) {
     try {
-      return canvas.getContext(name, contexAttributes)
+      return canvas.getContext(name, contextAttributes)
     } catch (e) {
       return null
     }
@@ -9063,13 +23917,119 @@ function createExtensionCache (gl, config) {
     extensions: extensions,
     restore: function () {
       Object.keys(extensions).forEach(function (name) {
-        if (!tryLoadExtension(name)) {
+        if (extensions[name] && !tryLoadExtension(name)) {
           throw new Error('(regl): error restoring extension ' + name)
         }
       });
     }
   }
 }
+
+function loop (n, f) {
+  var result = Array(n);
+  for (var i = 0; i < n; ++i) {
+    result[i] = f(i);
+  }
+  return result
+}
+
+var GL_BYTE$1 = 5120;
+var GL_UNSIGNED_BYTE$2 = 5121;
+var GL_SHORT$1 = 5122;
+var GL_UNSIGNED_SHORT$1 = 5123;
+var GL_INT$1 = 5124;
+var GL_UNSIGNED_INT$1 = 5125;
+var GL_FLOAT$2 = 5126;
+
+function nextPow16 (v) {
+  for (var i = 16; i <= (1 << 28); i *= 16) {
+    if (v <= i) {
+      return i
+    }
+  }
+  return 0
+}
+
+function log2 (v) {
+  var r, shift;
+  r = (v > 0xFFFF) << 4;
+  v >>>= r;
+  shift = (v > 0xFF) << 3;
+  v >>>= shift; r |= shift;
+  shift = (v > 0xF) << 2;
+  v >>>= shift; r |= shift;
+  shift = (v > 0x3) << 1;
+  v >>>= shift; r |= shift;
+  return r | (v >> 1)
+}
+
+function createPool () {
+  var bufferPool = loop(8, function () {
+    return []
+  });
+
+  function alloc (n) {
+    var sz = nextPow16(n);
+    var bin = bufferPool[log2(sz) >> 2];
+    if (bin.length > 0) {
+      return bin.pop()
+    }
+    return new ArrayBuffer(sz)
+  }
+
+  function free (buf) {
+    bufferPool[log2(buf.byteLength) >> 2].push(buf);
+  }
+
+  function allocType (type, n) {
+    var result = null;
+    switch (type) {
+      case GL_BYTE$1:
+        result = new Int8Array(alloc(n), 0, n);
+        break
+      case GL_UNSIGNED_BYTE$2:
+        result = new Uint8Array(alloc(n), 0, n);
+        break
+      case GL_SHORT$1:
+        result = new Int16Array(alloc(2 * n), 0, n);
+        break
+      case GL_UNSIGNED_SHORT$1:
+        result = new Uint16Array(alloc(2 * n), 0, n);
+        break
+      case GL_INT$1:
+        result = new Int32Array(alloc(4 * n), 0, n);
+        break
+      case GL_UNSIGNED_INT$1:
+        result = new Uint32Array(alloc(4 * n), 0, n);
+        break
+      case GL_FLOAT$2:
+        result = new Float32Array(alloc(4 * n), 0, n);
+        break
+      default:
+        return null
+    }
+    if (result.length !== n) {
+      return result.subarray(0, n)
+    }
+    return result
+  }
+
+  function freeType (array) {
+    free(array.buffer);
+  }
+
+  return {
+    alloc: alloc,
+    free: free,
+    allocType: allocType,
+    freeType: freeType
+  }
+}
+
+var pool = createPool();
+
+// zero pool for initial zero data
+pool.zero = createPool();
 
 var GL_SUBPIXEL_BITS = 0x0D50;
 var GL_RED_BITS = 0x0D52;
@@ -9104,6 +24064,18 @@ var GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FF;
 var GL_MAX_COLOR_ATTACHMENTS_WEBGL = 0x8CDF;
 var GL_MAX_DRAW_BUFFERS_WEBGL = 0x8824;
 
+var GL_TEXTURE_2D = 0x0DE1;
+var GL_TEXTURE_CUBE_MAP = 0x8513;
+var GL_TEXTURE_CUBE_MAP_POSITIVE_X = 0x8515;
+var GL_TEXTURE0 = 0x84C0;
+var GL_RGBA = 0x1908;
+var GL_FLOAT$1 = 0x1406;
+var GL_UNSIGNED_BYTE$1 = 0x1401;
+var GL_FRAMEBUFFER = 0x8D40;
+var GL_FRAMEBUFFER_COMPLETE = 0x8CD5;
+var GL_COLOR_ATTACHMENT0 = 0x8CE0;
+var GL_COLOR_BUFFER_BIT$1 = 0x4000;
+
 var wrapLimits = function (gl, extensions) {
   var maxAnisotropic = 1;
   if (extensions.ext_texture_filter_anisotropic) {
@@ -9116,6 +24088,51 @@ var wrapLimits = function (gl, extensions) {
     maxDrawbuffers = gl.getParameter(GL_MAX_DRAW_BUFFERS_WEBGL);
     maxColorAttachments = gl.getParameter(GL_MAX_COLOR_ATTACHMENTS_WEBGL);
   }
+
+  // detect if reading float textures is available (Safari doesn't support)
+  var readFloat = !!extensions.oes_texture_float;
+  if (readFloat) {
+    var readFloatTexture = gl.createTexture();
+    gl.bindTexture(GL_TEXTURE_2D, readFloatTexture);
+    gl.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_FLOAT$1, null);
+
+    var fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(GL_FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, readFloatTexture, 0);
+    gl.bindTexture(GL_TEXTURE_2D, null);
+
+    if (gl.checkFramebufferStatus(GL_FRAMEBUFFER) !== GL_FRAMEBUFFER_COMPLETE) { readFloat = false; }
+
+    else {
+      gl.viewport(0, 0, 1, 1);
+      gl.clearColor(1.0, 0.0, 0.0, 1.0);
+      gl.clear(GL_COLOR_BUFFER_BIT$1);
+      var pixels = pool.allocType(GL_FLOAT$1, 4);
+      gl.readPixels(0, 0, 1, 1, GL_RGBA, GL_FLOAT$1, pixels);
+
+      if (gl.getError()) { readFloat = false; }
+      else {
+        gl.deleteFramebuffer(fbo);
+        gl.deleteTexture(readFloatTexture);
+
+        readFloat = pixels[0] === 1.0;
+      }
+
+      pool.freeType(pixels);
+    }
+  }
+
+  // detect non power of two cube textures support (IE doesn't support)
+  var npotTextureCube = true;
+  var cubeTexture = gl.createTexture();
+  var data = pool.allocType(GL_UNSIGNED_BYTE$1, 36);
+  gl.activeTexture(GL_TEXTURE0);
+  gl.bindTexture(GL_TEXTURE_CUBE_MAP, cubeTexture);
+  gl.texImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, 3, 3, 0, GL_RGBA, GL_UNSIGNED_BYTE$1, data);
+  pool.freeType(data);
+  gl.bindTexture(GL_TEXTURE_CUBE_MAP, null);
+  gl.deleteTexture(cubeTexture);
+  npotTextureCube = !gl.getError();
 
   return {
     // drawing buffer bit depth
@@ -9160,7 +24177,11 @@ var wrapLimits = function (gl, extensions) {
     glsl: gl.getParameter(GL_SHADING_LANGUAGE_VERSION),
     renderer: gl.getParameter(GL_RENDERER),
     vendor: gl.getParameter(GL_VENDOR),
-    version: gl.getParameter(GL_VERSION)
+    version: gl.getParameter(GL_VERSION),
+
+    // quirks
+    readFloat: readFloat,
+    npotTextureCube: npotTextureCube
   }
 };
 
@@ -9178,105 +24199,6 @@ function isNDArrayLike (obj) {
 
 var values = function (obj) {
   return Object.keys(obj).map(function (key) { return obj[key] })
-};
-
-function loop (n, f) {
-  var result = Array(n);
-  for (var i = 0; i < n; ++i) {
-    result[i] = f(i);
-  }
-  return result
-}
-
-var GL_BYTE$1 = 5120;
-var GL_UNSIGNED_BYTE$2 = 5121;
-var GL_SHORT$1 = 5122;
-var GL_UNSIGNED_SHORT$1 = 5123;
-var GL_INT$1 = 5124;
-var GL_UNSIGNED_INT$1 = 5125;
-var GL_FLOAT$2 = 5126;
-
-var bufferPool = loop(8, function () {
-  return []
-});
-
-function nextPow16 (v) {
-  for (var i = 16; i <= (1 << 28); i *= 16) {
-    if (v <= i) {
-      return i
-    }
-  }
-  return 0
-}
-
-function log2 (v) {
-  var r, shift;
-  r = (v > 0xFFFF) << 4;
-  v >>>= r;
-  shift = (v > 0xFF) << 3;
-  v >>>= shift; r |= shift;
-  shift = (v > 0xF) << 2;
-  v >>>= shift; r |= shift;
-  shift = (v > 0x3) << 1;
-  v >>>= shift; r |= shift;
-  return r | (v >> 1)
-}
-
-function alloc (n) {
-  var sz = nextPow16(n);
-  var bin = bufferPool[log2(sz) >> 2];
-  if (bin.length > 0) {
-    return bin.pop()
-  }
-  return new ArrayBuffer(sz)
-}
-
-function free (buf) {
-  bufferPool[log2(buf.byteLength) >> 2].push(buf);
-}
-
-function allocType (type, n) {
-  var result = null;
-  switch (type) {
-    case GL_BYTE$1:
-      result = new Int8Array(alloc(n), 0, n);
-      break
-    case GL_UNSIGNED_BYTE$2:
-      result = new Uint8Array(alloc(n), 0, n);
-      break
-    case GL_SHORT$1:
-      result = new Int16Array(alloc(2 * n), 0, n);
-      break
-    case GL_UNSIGNED_SHORT$1:
-      result = new Uint16Array(alloc(2 * n), 0, n);
-      break
-    case GL_INT$1:
-      result = new Int32Array(alloc(4 * n), 0, n);
-      break
-    case GL_UNSIGNED_INT$1:
-      result = new Uint32Array(alloc(4 * n), 0, n);
-      break
-    case GL_FLOAT$2:
-      result = new Float32Array(alloc(4 * n), 0, n);
-      break
-    default:
-      return null
-  }
-  if (result.length !== n) {
-    return result.subarray(0, n)
-  }
-  return result
-}
-
-function freeType (array) {
-  free(array.buffer);
-}
-
-var pool = {
-  alloc: alloc,
-  free: free,
-  allocType: allocType,
-  freeType: freeType
 };
 
 var flattenUtils = {
@@ -9371,6 +24293,19 @@ function arrayShape$1 (array_) {
   return shape
 }
 
+var arrayTypes = {
+	"[object Int8Array]": 5120,
+	"[object Int16Array]": 5122,
+	"[object Int32Array]": 5124,
+	"[object Uint8Array]": 5121,
+	"[object Uint8ClampedArray]": 5121,
+	"[object Uint16Array]": 5123,
+	"[object Uint32Array]": 5125,
+	"[object Float32Array]": 5126,
+	"[object Float64Array]": 5121,
+	"[object ArrayBuffer]": 5121
+};
+
 var int8 = 5120;
 var int16 = 5122;
 var int32 = 5124;
@@ -9404,8 +24339,8 @@ var arrayShape = flattenUtils.shape;
 var GL_STATIC_DRAW = 0x88E4;
 var GL_STREAM_DRAW = 0x88E0;
 
-var GL_UNSIGNED_BYTE$1 = 5121;
-var GL_FLOAT$1 = 5126;
+var GL_UNSIGNED_BYTE$3 = 5121;
+var GL_FLOAT$3 = 5126;
 
 var DTYPES_SIZES = [];
 DTYPES_SIZES[5120] = 1; // int8
@@ -9447,7 +24382,7 @@ function wrapBufferState (gl, stats, config, attributeState) {
     this.usage = GL_STATIC_DRAW;
     this.byteLength = 0;
     this.dimension = 1;
-    this.dtype = GL_UNSIGNED_BYTE$1;
+    this.dtype = GL_UNSIGNED_BYTE$3;
 
     this.persistentData = null;
 
@@ -9489,7 +24424,7 @@ function wrapBufferState (gl, stats, config, attributeState) {
     var shape;
     buffer.usage = usage;
     if (Array.isArray(data)) {
-      buffer.dtype = dtype || GL_FLOAT$1;
+      buffer.dtype = dtype || GL_FLOAT$3;
       if (data.length > 0) {
         var flatData;
         if (Array.isArray(data[0])) {
@@ -9518,7 +24453,7 @@ function wrapBufferState (gl, stats, config, attributeState) {
           }
         } else if (isTypedArray(data[0])) {
           buffer.dimension = data[0].length;
-          buffer.dtype = dtype || typedArrayCode(data[0]) || GL_FLOAT$1;
+          buffer.dtype = dtype || typedArrayCode(data[0]) || GL_FLOAT$3;
           flatData = arrayFlatten(
             data,
             [data.length, data[0].length],
@@ -9563,7 +24498,7 @@ function wrapBufferState (gl, stats, config, attributeState) {
         check$1.raise('invalid shape');
       }
 
-      buffer.dtype = dtype || typedArrayCode(data.data) || GL_FLOAT$1;
+      buffer.dtype = dtype || typedArrayCode(data.data) || GL_FLOAT$3;
       buffer.dimension = shapeY;
 
       var transposeData = pool.allocType(buffer.dtype, shapeX * shapeY);
@@ -9586,18 +24521,16 @@ function wrapBufferState (gl, stats, config, attributeState) {
   function destroy (buffer) {
     stats.bufferCount--;
 
-    var handle = buffer.buffer;
-    check$1(handle, 'buffer must not be deleted already');
-
-    // fix dangling enabled vertex attrib arrays
     for (var i = 0; i < attributeState.state.length; ++i) {
-      var binding = attributeState.state[i];
-      if (binding.buffer === buffer) {
+      var record = attributeState.state[i];
+      if (record.buffer === buffer) {
         gl.disableVertexAttribArray(i);
-        binding.buffer = null;
+        record.buffer = null;
       }
     }
 
+    var handle = buffer.buffer;
+    check$1(handle, 'buffer must not be deleted already');
     gl.deleteBuffer(handle);
     buffer.buffer = null;
     delete bufferSet[buffer.id];
@@ -9659,8 +24592,9 @@ function wrapBufferState (gl, stats, config, attributeState) {
 
       buffer.bind();
       if (!data) {
-        gl.bufferData(buffer.type, byteLength, usage);
-        buffer.dtype = dtype || GL_UNSIGNED_BYTE$1;
+        // #475
+        if (byteLength) { gl.bufferData(buffer.type, byteLength, usage); }
+        buffer.dtype = dtype || GL_UNSIGNED_BYTE$3;
         buffer.usage = usage;
         buffer.dimension = dimension;
         buffer.byteLength = byteLength;
@@ -9686,7 +24620,9 @@ function wrapBufferState (gl, stats, config, attributeState) {
       var offset = (offset_ || 0) | 0;
       var shape;
       buffer.bind();
-      if (Array.isArray(data)) {
+      if (isTypedArray(data)) {
+        setSubData(data, offset);
+      } else if (Array.isArray(data)) {
         if (data.length > 0) {
           if (typeof data[0] === 'number') {
             var converted = pool.allocType(buffer.dtype, data.length);
@@ -9702,8 +24638,6 @@ function wrapBufferState (gl, stats, config, attributeState) {
             check$1.raise('invalid buffer data');
           }
         }
-      } else if (isTypedArray(data)) {
-        setSubData(data, offset);
       } else if (isNDArrayLike(data)) {
         shape = data.shape;
         var stride = data.stride;
@@ -9826,7 +24760,7 @@ var GL_LINES = 1;
 var GL_TRIANGLES = 4;
 
 var GL_BYTE$2 = 5120;
-var GL_UNSIGNED_BYTE$3 = 5121;
+var GL_UNSIGNED_BYTE$4 = 5121;
 var GL_SHORT$2 = 5122;
 var GL_UNSIGNED_SHORT$2 = 5123;
 var GL_INT$2 = 5124;
@@ -9842,7 +24776,7 @@ function wrapElementsState (gl, extensions, bufferState, stats) {
   var elementCount = 0;
 
   var elementTypes = {
-    'uint8': GL_UNSIGNED_BYTE$3,
+    'uint8': GL_UNSIGNED_BYTE$4,
     'uint16': GL_UNSIGNED_SHORT$2
   };
 
@@ -9908,7 +24842,7 @@ function wrapElementsState (gl, extensions, bufferState, stats) {
         3);
     } else {
       gl.bufferData(GL_ELEMENT_ARRAY_BUFFER, byteLength, usage);
-      elements.buffer.dtype = dtype || GL_UNSIGNED_BYTE$3;
+      elements.buffer.dtype = dtype || GL_UNSIGNED_BYTE$4;
       elements.buffer.usage = usage;
       elements.buffer.dimension = 3;
       elements.buffer.byteLength = byteLength;
@@ -9917,9 +24851,9 @@ function wrapElementsState (gl, extensions, bufferState, stats) {
     var dtype = type;
     if (!type) {
       switch (elements.buffer.dtype) {
-        case GL_UNSIGNED_BYTE$3:
+        case GL_UNSIGNED_BYTE$4:
         case GL_BYTE$2:
-          dtype = GL_UNSIGNED_BYTE$3;
+          dtype = GL_UNSIGNED_BYTE$4;
           break
 
         case GL_UNSIGNED_SHORT$2:
@@ -9988,12 +24922,12 @@ function wrapElementsState (gl, extensions, bufferState, stats) {
         buffer();
         elements.primType = GL_TRIANGLES;
         elements.vertCount = 0;
-        elements.type = GL_UNSIGNED_BYTE$3;
+        elements.type = GL_UNSIGNED_BYTE$4;
       } else if (typeof options === 'number') {
         buffer(options);
         elements.primType = GL_TRIANGLES;
         elements.vertCount = options | 0;
-        elements.type = GL_UNSIGNED_BYTE$3;
+        elements.type = GL_UNSIGNED_BYTE$4;
       } else {
         var data = null;
         var usage = GL_STATIC_DRAW$1;
@@ -10145,13 +25079,17 @@ function isArrayLike (s) {
   return Array.isArray(s) || isTypedArray(s)
 }
 
+var isPow2$1 = function (v) {
+  return !(v & (v - 1)) && (!!v)
+};
+
 var GL_COMPRESSED_TEXTURE_FORMATS = 0x86A3;
 
-var GL_TEXTURE_2D = 0x0DE1;
-var GL_TEXTURE_CUBE_MAP = 0x8513;
-var GL_TEXTURE_CUBE_MAP_POSITIVE_X = 0x8515;
+var GL_TEXTURE_2D$1 = 0x0DE1;
+var GL_TEXTURE_CUBE_MAP$1 = 0x8513;
+var GL_TEXTURE_CUBE_MAP_POSITIVE_X$1 = 0x8515;
 
-var GL_RGBA = 0x1908;
+var GL_RGBA$1 = 0x1908;
 var GL_ALPHA = 0x1906;
 var GL_RGB = 0x1907;
 var GL_LUMINANCE = 0x1909;
@@ -10190,10 +25128,10 @@ var GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG = 0x8C03;
 
 var GL_COMPRESSED_RGB_ETC1_WEBGL = 0x8D64;
 
-var GL_UNSIGNED_BYTE$4 = 0x1401;
+var GL_UNSIGNED_BYTE$5 = 0x1401;
 var GL_UNSIGNED_SHORT$3 = 0x1403;
 var GL_UNSIGNED_INT$3 = 0x1405;
-var GL_FLOAT$3 = 0x1406;
+var GL_FLOAT$4 = 0x1406;
 
 var GL_TEXTURE_WRAP_S = 0x2802;
 var GL_TEXTURE_WRAP_T = 0x2803;
@@ -10226,7 +25164,7 @@ var GL_UNPACK_COLORSPACE_CONVERSION_WEBGL = 0x9243;
 
 var GL_BROWSER_DEFAULT_WEBGL = 0x9244;
 
-var GL_TEXTURE0 = 0x84C0;
+var GL_TEXTURE0$1 = 0x84C0;
 
 var MIPMAP_FILTERS = [
   GL_NEAREST_MIPMAP_NEAREST$1,
@@ -10240,7 +25178,7 @@ var CHANNELS_FORMAT = [
   GL_LUMINANCE,
   GL_LUMINANCE_ALPHA,
   GL_RGB,
-  GL_RGBA
+  GL_RGBA$1
 ];
 
 var FORMAT_CHANNELS = {};
@@ -10251,7 +25189,7 @@ FORMAT_CHANNELS[GL_DEPTH_STENCIL] =
 FORMAT_CHANNELS[GL_LUMINANCE_ALPHA] = 2;
 FORMAT_CHANNELS[GL_RGB] =
 FORMAT_CHANNELS[GL_SRGB_EXT] = 3;
-FORMAT_CHANNELS[GL_RGBA] =
+FORMAT_CHANNELS[GL_RGBA$1] =
 FORMAT_CHANNELS[GL_SRGB_ALPHA_EXT] = 4;
 
 function objectName (str) {
@@ -10260,12 +25198,14 @@ function objectName (str) {
 
 var CANVAS_CLASS = objectName('HTMLCanvasElement');
 var CONTEXT2D_CLASS = objectName('CanvasRenderingContext2D');
+var BITMAP_CLASS = objectName('ImageBitmap');
 var IMAGE_CLASS = objectName('HTMLImageElement');
 var VIDEO_CLASS = objectName('HTMLVideoElement');
 
 var PIXEL_CLASSES = Object.keys(arrayTypes).concat([
   CANVAS_CLASS,
   CONTEXT2D_CLASS,
+  BITMAP_CLASS,
   IMAGE_CLASS,
   VIDEO_CLASS
 ]);
@@ -10273,8 +25213,8 @@ var PIXEL_CLASSES = Object.keys(arrayTypes).concat([
 // for every texture type, store
 // the size in bytes.
 var TYPE_SIZES = [];
-TYPE_SIZES[GL_UNSIGNED_BYTE$4] = 1;
-TYPE_SIZES[GL_FLOAT$3] = 4;
+TYPE_SIZES[GL_UNSIGNED_BYTE$5] = 1;
+TYPE_SIZES[GL_FLOAT$4] = 4;
 TYPE_SIZES[GL_HALF_FLOAT_OES$1] = 2;
 
 TYPE_SIZES[GL_UNSIGNED_SHORT$3] = 2;
@@ -10332,6 +25272,10 @@ function isContext2D (object) {
   return classString(object) === CONTEXT2D_CLASS
 }
 
+function isBitmap (object) {
+  return classString(object) === BITMAP_CLASS
+}
+
 function isImageElement (object) {
   return classString(object) === IMAGE_CLASS
 }
@@ -10361,10 +25305,10 @@ function typedArrayCode$1 (data) {
 function convertData (result, data) {
   var n = data.length;
   switch (result.type) {
-    case GL_UNSIGNED_BYTE$4:
+    case GL_UNSIGNED_BYTE$5:
     case GL_UNSIGNED_SHORT$3:
     case GL_UNSIGNED_INT$3:
-    case GL_FLOAT$3:
+    case GL_FLOAT$4:
       var converted = pool.allocType(result.type, n);
       converted.set(data);
       result.data = converted;
@@ -10382,7 +25326,7 @@ function convertData (result, data) {
 function preConvert (image, n) {
   return pool.allocType(
     image.type === GL_HALF_FLOAT_OES$1
-      ? GL_FLOAT$3
+      ? GL_FLOAT$4
       : image.type, n)
 }
 
@@ -10481,7 +25425,7 @@ function createTextureSet (
   };
 
   var textureTypes = {
-    'uint8': GL_UNSIGNED_BYTE$4,
+    'uint8': GL_UNSIGNED_BYTE$5,
     'rgba4': GL_UNSIGNED_SHORT_4_4_4_4$1,
     'rgb565': GL_UNSIGNED_SHORT_5_6_5$1,
     'rgb5 a1': GL_UNSIGNED_SHORT_5_5_5_1$1
@@ -10492,7 +25436,7 @@ function createTextureSet (
     'luminance': GL_LUMINANCE,
     'luminance alpha': GL_LUMINANCE_ALPHA,
     'rgb': GL_RGB,
-    'rgba': GL_RGBA,
+    'rgba': GL_RGBA$1,
     'rgba4': GL_RGBA4,
     'rgb5 a1': GL_RGB5_A1,
     'rgb565': GL_RGB565
@@ -10506,7 +25450,7 @@ function createTextureSet (
   }
 
   if (extensions.oes_texture_float) {
-    textureTypes.float32 = textureTypes.float = GL_FLOAT$3;
+    textureTypes.float32 = textureTypes.float = GL_FLOAT$4;
   }
 
   if (extensions.oes_texture_half_float) {
@@ -10615,7 +25559,7 @@ function createTextureSet (
         glenum === GL_DEPTH_STENCIL) {
       color[glenum] = glenum;
     } else if (glenum === GL_RGB5_A1 || key.indexOf('rgba') >= 0) {
-      color[glenum] = GL_RGBA;
+      color[glenum] = GL_RGBA$1;
     } else {
       color[glenum] = GL_RGB;
     }
@@ -10624,16 +25568,16 @@ function createTextureSet (
 
   function TexFlags () {
     // format info
-    this.internalformat = GL_RGBA;
-    this.format = GL_RGBA;
-    this.type = GL_UNSIGNED_BYTE$4;
+    this.internalformat = GL_RGBA$1;
+    this.format = GL_RGBA$1;
+    this.type = GL_UNSIGNED_BYTE$5;
     this.compressed = false;
 
     // pixel storage
     this.premultiplyAlpha = false;
     this.flipY = false;
     this.unpackAlignment = 1;
-    this.colorSpace = 0;
+    this.colorSpace = GL_BROWSER_DEFAULT_WEBGL;
 
     // shape info
     this.width = 0;
@@ -10845,7 +25789,7 @@ function createTextureSet (
     } else if (isTypedArray(data)) {
       image.channels = image.channels || 4;
       image.data = data;
-      if (!('type' in options) && image.type === GL_UNSIGNED_BYTE$4) {
+      if (!('type' in options) && image.type === GL_UNSIGNED_BYTE$5) {
         image.type = typedArrayCode$1(data);
       }
     } else if (isNumericArray(data)) {
@@ -10855,7 +25799,7 @@ function createTextureSet (
       image.needsFree = true;
     } else if (isNDArrayLike(data)) {
       var array = data.data;
-      if (!Array.isArray(array) && image.type === GL_UNSIGNED_BYTE$4) {
+      if (!Array.isArray(array) && image.type === GL_UNSIGNED_BYTE$5) {
         image.type = typedArrayCode$1(array);
       }
       var shape = data.shape;
@@ -10888,6 +25832,11 @@ function createTextureSet (
       }
       image.width = image.element.width;
       image.height = image.element.height;
+      image.channels = 4;
+    } else if (isBitmap(data)) {
+      image.element = data;
+      image.width = data.width;
+      image.height = data.height;
       image.channels = 4;
     } else if (isImageElement(data)) {
       image.element = data;
@@ -10924,7 +25873,7 @@ function createTextureSet (
       image.needsFree = true;
     }
 
-    if (image.type === GL_FLOAT$3) {
+    if (image.type === GL_FLOAT$4) {
       check$1(limits.extensions.indexOf('oes_texture_float') >= 0,
         'oes_texture_float extension not enabled');
     } else if (image.type === GL_HALF_FLOAT_OES$1) {
@@ -10943,6 +25892,7 @@ function createTextureSet (
     var type = info.type;
     var width = info.width;
     var height = info.height;
+    var channels = info.channels;
 
     setFlags(info);
 
@@ -10955,8 +25905,16 @@ function createTextureSet (
       gl.copyTexImage2D(
         target, miplevel, format, info.xOffset, info.yOffset, width, height, 0);
     } else {
-      gl.texImage2D(
-        target, miplevel, format, width, height, 0, format, type, data);
+      var nullData = !data;
+      if (nullData) {
+        data = pool.zero.allocType(type, width * height * channels);
+      }
+
+      gl.texImage2D(target, miplevel, format, width, height, 0, format, type, data);
+
+      if (nullData && data) {
+        pool.zero.freeType(data);
+      }
     }
   }
 
@@ -11124,7 +26082,7 @@ function createTextureSet (
       var minFilter = options.min;
       check$1.parameter(minFilter, minFilters);
       info.minFilter = minFilters[minFilter];
-      if (MIPMAP_FILTERS.indexOf(info.minFilter) >= 0) {
+      if (MIPMAP_FILTERS.indexOf(info.minFilter) >= 0 && !('faces' in options)) {
         info.genMipmaps = true;
       }
     }
@@ -11228,7 +26186,7 @@ function createTextureSet (
   function REGLTexture (target) {
     TexFlags.call(this);
     this.mipmask = 0;
-    this.internalformat = GL_RGBA;
+    this.internalformat = GL_RGBA$1;
 
     this.id = textureCount++;
 
@@ -11248,7 +26206,7 @@ function createTextureSet (
   }
 
   function tempBind (texture) {
-    gl.activeTexture(GL_TEXTURE0);
+    gl.activeTexture(GL_TEXTURE0$1);
     gl.bindTexture(texture.target, texture.texture);
   }
 
@@ -11257,7 +26215,7 @@ function createTextureSet (
     if (prev) {
       gl.bindTexture(prev.target, prev.texture);
     } else {
-      gl.bindTexture(GL_TEXTURE_2D, null);
+      gl.bindTexture(GL_TEXTURE_2D$1, null);
     }
   }
 
@@ -11267,7 +26225,7 @@ function createTextureSet (
     var unit = texture.unit;
     var target = texture.target;
     if (unit >= 0) {
-      gl.activeTexture(GL_TEXTURE0 + unit);
+      gl.activeTexture(GL_TEXTURE0$1 + unit);
       gl.bindTexture(target, null);
       textureUnits[unit] = null;
     }
@@ -11305,7 +26263,7 @@ function createTextureSet (
           stats.maxTextureUnits = unit + 1; // +1, since the units are zero-based
         }
         texture.unit = unit;
-        gl.activeTexture(GL_TEXTURE0 + unit);
+        gl.activeTexture(GL_TEXTURE0$1 + unit);
         gl.bindTexture(texture.target, texture.texture);
       }
       return unit
@@ -11323,7 +26281,7 @@ function createTextureSet (
   });
 
   function createTexture2D (a, b) {
-    var texture = new REGLTexture(GL_TEXTURE_2D);
+    var texture = new REGLTexture(GL_TEXTURE_2D$1);
     textureSet[texture.id] = texture;
     stats.textureCount++;
 
@@ -11361,8 +26319,8 @@ function createTextureSet (
       reglTexture2D.height = mipData.height;
 
       tempBind(texture);
-      setMipMap(mipData, GL_TEXTURE_2D);
-      setTexInfo(texInfo, GL_TEXTURE_2D);
+      setMipMap(mipData, GL_TEXTURE_2D$1);
+      setTexInfo(texInfo, GL_TEXTURE_2D$1);
       tempRestore();
 
       freeMipMap(mipData);
@@ -11421,7 +26379,7 @@ function createTextureSet (
         'missing image data');
 
       tempBind(texture);
-      setSubImage(imageData, GL_TEXTURE_2D, x, y, level);
+      setSubImage(imageData, GL_TEXTURE_2D$1, x, y, level);
       tempRestore();
 
       freeImage(imageData);
@@ -11440,17 +26398,27 @@ function createTextureSet (
       reglTexture2D.height = texture.height = h;
 
       tempBind(texture);
+
+      var data;
+      var channels = texture.channels;
+      var type = texture.type;
+
       for (var i = 0; texture.mipmask >> i; ++i) {
+        var _w = w >> i;
+        var _h = h >> i;
+        if (!_w || !_h) { break }
+        data = pool.zero.allocType(type, _w * _h * channels);
         gl.texImage2D(
-          GL_TEXTURE_2D,
+          GL_TEXTURE_2D$1,
           i,
           texture.format,
-          w >> i,
-          h >> i,
+          _w,
+          _h,
           0,
           texture.format,
           texture.type,
-          null);
+          data);
+        if (data) { pool.zero.freeType(data); }
       }
       tempRestore();
 
@@ -11485,7 +26453,7 @@ function createTextureSet (
   }
 
   function createTextureCube (a0, a1, a2, a3, a4, a5) {
-    var texture = new REGLTexture(GL_TEXTURE_CUBE_MAP);
+    var texture = new REGLTexture(GL_TEXTURE_CUBE_MAP$1);
     textureSet[texture.id] = texture;
     stats.cubeCount++;
 
@@ -11536,6 +26504,11 @@ function createTextureSet (
       }
 
       copyFlags(texture, faces[0]);
+
+      if (!limits.npotTextureCube) {
+        check$1(isPow2$1(texture.width) && isPow2$1(texture.height), 'your browser does not support non power or two texture dimensions');
+      }
+
       if (texInfo.genMipmaps) {
         texture.mipmask = (faces[0].width << 1) - 1;
       } else {
@@ -11550,9 +26523,9 @@ function createTextureSet (
 
       tempBind(texture);
       for (i = 0; i < 6; ++i) {
-        setMipMap(faces[i], GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+        setMipMap(faces[i], GL_TEXTURE_CUBE_MAP_POSITIVE_X$1 + i);
       }
-      setTexInfo(texInfo, GL_TEXTURE_CUBE_MAP);
+      setTexInfo(texInfo, GL_TEXTURE_CUBE_MAP$1);
       tempRestore();
 
       if (config.profile) {
@@ -11616,7 +26589,7 @@ function createTextureSet (
         'missing image data');
 
       tempBind(texture);
-      setSubImage(imageData, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, x, y, level);
+      setSubImage(imageData, GL_TEXTURE_CUBE_MAP_POSITIVE_X$1 + face, x, y, level);
       tempRestore();
 
       freeImage(imageData);
@@ -11637,7 +26610,7 @@ function createTextureSet (
       for (var i = 0; i < 6; ++i) {
         for (var j = 0; texture.mipmask >> j; ++j) {
           gl.texImage2D(
-            GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X$1 + i,
             j,
             texture.format,
             radius >> j,
@@ -11682,8 +26655,8 @@ function createTextureSet (
   // Called when regl is destroyed
   function destroyTextures () {
     for (var i = 0; i < numTexUnits; ++i) {
-      gl.activeTexture(GL_TEXTURE0 + i);
-      gl.bindTexture(GL_TEXTURE_2D, null);
+      gl.activeTexture(GL_TEXTURE0$1 + i);
+      gl.bindTexture(GL_TEXTURE_2D$1, null);
       textureUnits[i] = null;
     }
     values(textureSet).forEach(destroy);
@@ -11703,6 +26676,15 @@ function createTextureSet (
   }
 
   function restoreTextures () {
+    for (var i = 0; i < numTexUnits; ++i) {
+      var tex = textureUnits[i];
+      if (tex) {
+        tex.bindCount = 0;
+        tex.unit = -1;
+        textureUnits[i] = null;
+      }
+    }
+    
     values(textureSet).forEach(function (texture) {
       texture.texture = gl.createTexture();
       gl.bindTexture(texture.target, texture.texture);
@@ -11710,8 +26692,8 @@ function createTextureSet (
         if ((texture.mipmask & (1 << i)) === 0) {
           continue
         }
-        if (texture.target === GL_TEXTURE_2D) {
-          gl.texImage2D(GL_TEXTURE_2D,
+        if (texture.target === GL_TEXTURE_2D$1) {
+          gl.texImage2D(GL_TEXTURE_2D$1,
             i,
             texture.internalformat,
             texture.width >> i,
@@ -11722,7 +26704,7 @@ function createTextureSet (
             null);
         } else {
           for (var j = 0; j < 6; ++j) {
-            gl.texImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + j,
+            gl.texImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X$1 + j,
               i,
               texture.internalformat,
               texture.width >> i,
@@ -11914,6 +26896,10 @@ var wrapRenderbuffers = function (gl, extensions, limits, stats, config) {
       gl.bindRenderbuffer(GL_RENDERBUFFER, renderbuffer.renderbuffer);
       gl.renderbufferStorage(GL_RENDERBUFFER, format, w, h);
 
+      check$1(
+        gl.getError() === 0,
+        'invalid render buffer format');
+
       if (config.profile) {
         renderbuffer.stats.size = getRenderbufferSize(renderbuffer.format, renderbuffer.width, renderbuffer.height);
       }
@@ -11941,6 +26927,10 @@ var wrapRenderbuffers = function (gl, extensions, limits, stats, config) {
 
       gl.bindRenderbuffer(GL_RENDERBUFFER, renderbuffer.renderbuffer);
       gl.renderbufferStorage(GL_RENDERBUFFER, renderbuffer.format, w, h);
+
+      check$1(
+        gl.getError() === 0,
+        'invalid render buffer format');
 
       // also, recompute size.
       if (config.profile) {
@@ -11995,45 +26985,48 @@ var wrapRenderbuffers = function (gl, extensions, limits, stats, config) {
 };
 
 // We store these constants so that the minifier can inline them
-var GL_FRAMEBUFFER = 0x8D40;
+var GL_FRAMEBUFFER$1 = 0x8D40;
 var GL_RENDERBUFFER$1 = 0x8D41;
 
-var GL_TEXTURE_2D$1 = 0x0DE1;
-var GL_TEXTURE_CUBE_MAP_POSITIVE_X$1 = 0x8515;
+var GL_TEXTURE_2D$2 = 0x0DE1;
+var GL_TEXTURE_CUBE_MAP_POSITIVE_X$2 = 0x8515;
 
-var GL_COLOR_ATTACHMENT0 = 0x8CE0;
+var GL_COLOR_ATTACHMENT0$1 = 0x8CE0;
 var GL_DEPTH_ATTACHMENT = 0x8D00;
 var GL_STENCIL_ATTACHMENT = 0x8D20;
 var GL_DEPTH_STENCIL_ATTACHMENT = 0x821A;
 
-var GL_FRAMEBUFFER_COMPLETE = 0x8CD5;
+var GL_FRAMEBUFFER_COMPLETE$1 = 0x8CD5;
 var GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT = 0x8CD6;
 var GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT = 0x8CD7;
 var GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS = 0x8CD9;
 var GL_FRAMEBUFFER_UNSUPPORTED = 0x8CDD;
 
 var GL_HALF_FLOAT_OES$2 = 0x8D61;
-var GL_UNSIGNED_BYTE$5 = 0x1401;
-var GL_FLOAT$4 = 0x1406;
+var GL_UNSIGNED_BYTE$6 = 0x1401;
+var GL_FLOAT$5 = 0x1406;
 
-var GL_RGBA$1 = 0x1908;
+var GL_RGB$1 = 0x1907;
+var GL_RGBA$2 = 0x1908;
 
 var GL_DEPTH_COMPONENT$1 = 0x1902;
 
 var colorTextureFormatEnums = [
-  GL_RGBA$1
+  GL_RGB$1,
+  GL_RGBA$2
 ];
 
 // for every texture format, store
 // the number of channels
 var textureFormatChannels = [];
-textureFormatChannels[GL_RGBA$1] = 4;
+textureFormatChannels[GL_RGBA$2] = 4;
+textureFormatChannels[GL_RGB$1] = 3;
 
 // for every texture type, store
 // the size in bytes.
 var textureTypeSizes = [];
-textureTypeSizes[GL_UNSIGNED_BYTE$5] = 1;
-textureTypeSizes[GL_FLOAT$4] = 4;
+textureTypeSizes[GL_UNSIGNED_BYTE$6] = 1;
+textureTypeSizes[GL_FLOAT$5] = 4;
 textureTypeSizes[GL_HALF_FLOAT_OES$2] = 2;
 
 var GL_RGBA4$2 = 0x8056;
@@ -12061,7 +27054,7 @@ var colorRenderbufferFormatEnums = [
 ];
 
 var statusCode = {};
-statusCode[GL_FRAMEBUFFER_COMPLETE] = 'complete';
+statusCode[GL_FRAMEBUFFER_COMPLETE$1] = 'complete';
 statusCode[GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT] = 'incomplete attachment';
 statusCode[GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS] = 'incomplete dimensions';
 statusCode[GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT] = 'incomplete, missing attachment';
@@ -12157,14 +27150,14 @@ function wrapFBOState (
     if (attachment) {
       if (attachment.texture) {
         gl.framebufferTexture2D(
-          GL_FRAMEBUFFER,
+          GL_FRAMEBUFFER$1,
           location,
           attachment.target,
           attachment.texture._texture.texture,
           0);
       } else {
         gl.framebufferRenderbuffer(
-          GL_FRAMEBUFFER,
+          GL_FRAMEBUFFER$1,
           location,
           GL_RENDERBUFFER$1,
           attachment.renderbuffer._renderbuffer.renderbuffer);
@@ -12173,7 +27166,7 @@ function wrapFBOState (
   }
 
   function parseAttachment (attachment) {
-    var target = GL_TEXTURE_2D$1;
+    var target = GL_TEXTURE_2D$2;
     var texture = null;
     var renderbuffer = null;
 
@@ -12190,12 +27183,12 @@ function wrapFBOState (
     var type = data._reglType;
     if (type === 'texture2d') {
       texture = data;
-      check$1(target === GL_TEXTURE_2D$1);
+      check$1(target === GL_TEXTURE_2D$2);
     } else if (type === 'textureCube') {
       texture = data;
       check$1(
-        target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X$1 &&
-        target < GL_TEXTURE_CUBE_MAP_POSITIVE_X$1 + 6,
+        target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X$2 &&
+        target < GL_TEXTURE_CUBE_MAP_POSITIVE_X$2 + 6,
         'invalid cube map target');
     } else if (type === 'renderbuffer') {
       renderbuffer = data;
@@ -12221,7 +27214,7 @@ function wrapFBOState (
         type: type
       });
       texture._texture.refCount = 0;
-      return new FramebufferAttachment(GL_TEXTURE_2D$1, texture, null)
+      return new FramebufferAttachment(GL_TEXTURE_2D$2, texture, null)
     } else {
       var rb = renderbufferState.create({
         width: width,
@@ -12244,6 +27237,8 @@ function wrapFBOState (
       } else if (attachment.renderbuffer) {
         attachment.renderbuffer.resize(w, h);
       }
+      attachment.width = w;
+      attachment.height = h;
     }
   }
 
@@ -12283,36 +27278,36 @@ function wrapFBOState (
   function updateFramebuffer (framebuffer) {
     var i;
 
-    gl.bindFramebuffer(GL_FRAMEBUFFER, framebuffer.framebuffer);
+    gl.bindFramebuffer(GL_FRAMEBUFFER$1, framebuffer.framebuffer);
     var colorAttachments = framebuffer.colorAttachments;
     for (i = 0; i < colorAttachments.length; ++i) {
-      attach(GL_COLOR_ATTACHMENT0 + i, colorAttachments[i]);
+      attach(GL_COLOR_ATTACHMENT0$1 + i, colorAttachments[i]);
     }
     for (i = colorAttachments.length; i < limits.maxColorAttachments; ++i) {
       gl.framebufferTexture2D(
-        GL_FRAMEBUFFER,
-        GL_COLOR_ATTACHMENT0 + i,
-        GL_TEXTURE_2D$1,
+        GL_FRAMEBUFFER$1,
+        GL_COLOR_ATTACHMENT0$1 + i,
+        GL_TEXTURE_2D$2,
         null,
         0);
     }
 
     gl.framebufferTexture2D(
-      GL_FRAMEBUFFER,
+      GL_FRAMEBUFFER$1,
       GL_DEPTH_STENCIL_ATTACHMENT,
-      GL_TEXTURE_2D$1,
+      GL_TEXTURE_2D$2,
       null,
       0);
     gl.framebufferTexture2D(
-      GL_FRAMEBUFFER,
+      GL_FRAMEBUFFER$1,
       GL_DEPTH_ATTACHMENT,
-      GL_TEXTURE_2D$1,
+      GL_TEXTURE_2D$2,
       null,
       0);
     gl.framebufferTexture2D(
-      GL_FRAMEBUFFER,
+      GL_FRAMEBUFFER$1,
       GL_STENCIL_ATTACHMENT,
-      GL_TEXTURE_2D$1,
+      GL_TEXTURE_2D$2,
       null,
       0);
 
@@ -12321,13 +27316,13 @@ function wrapFBOState (
     attach(GL_DEPTH_STENCIL_ATTACHMENT, framebuffer.depthStencilAttachment);
 
     // Check status code
-    var status = gl.checkFramebufferStatus(GL_FRAMEBUFFER);
-    if (status !== GL_FRAMEBUFFER_COMPLETE) {
+    var status = gl.checkFramebufferStatus(GL_FRAMEBUFFER$1);
+    if (!gl.isContextLost() && status !== GL_FRAMEBUFFER_COMPLETE$1) {
       check$1.raise('framebuffer configuration not supported, status = ' +
         statusCode[status]);
     }
 
-    gl.bindFramebuffer(GL_FRAMEBUFFER, framebufferState.next);
+    gl.bindFramebuffer(GL_FRAMEBUFFER$1, framebufferState.next ? framebufferState.next.framebuffer : null);
     framebufferState.cur = framebufferState.next;
 
     // FIXME: Clear error code here.  This is a work around for a bug in
@@ -12344,8 +27339,6 @@ function wrapFBOState (
 
       check$1(framebufferState.next !== framebuffer,
         'can not update framebuffer which is currently in use');
-
-      var extDrawBuffers = extensions.webgl_draw_buffers;
 
       var width = 0;
       var height = 0;
@@ -12398,7 +27391,7 @@ function wrapFBOState (
             options.colors;
           if (Array.isArray(colorBuffer)) {
             check$1(
-              colorBuffer.length === 1 || extDrawBuffers,
+              colorBuffer.length === 1 || extensions.webgl_draw_buffers,
               'multiple render targets not supported');
           }
         }
@@ -12636,8 +27629,8 @@ function wrapFBOState (
       check$1(framebufferState.next !== framebuffer,
         'can not resize a framebuffer which is currently in use');
 
-      var w = w_ | 0;
-      var h = (h_ | 0) || w;
+      var w = Math.max(w_ | 0, 1);
+      var h = Math.max((h_ | 0) || w, 1);
       if (w === framebuffer.width && h === framebuffer.height) {
         return reglFramebuffer
       }
@@ -12685,8 +27678,6 @@ function wrapFBOState (
 
       check$1(faces.indexOf(framebufferState.next) < 0,
         'can not update framebuffer which is currently in use');
-
-      var extDrawBuffers = extensions.webgl_draw_buffers;
 
       var params = {
         color: null
@@ -12737,7 +27728,7 @@ function wrapFBOState (
             options.colors;
           if (Array.isArray(colorBuffer)) {
             check$1(
-              colorBuffer.length === 1 || extDrawBuffers,
+              colorBuffer.length === 1 || extensions.webgl_draw_buffers,
               'multiple render targets not supported');
           }
         }
@@ -12810,14 +27801,14 @@ function wrapFBOState (
           cube.width === radius && cube.height === radius,
           'invalid cube map shape');
         params.color[i] = {
-          target: GL_TEXTURE_CUBE_MAP_POSITIVE_X$1,
+          target: GL_TEXTURE_CUBE_MAP_POSITIVE_X$2,
           data: colorCubes[i]
         };
       }
 
       for (i = 0; i < 6; ++i) {
         for (var j = 0; j < colorCubes.length; ++j) {
-          params.color[j].target = GL_TEXTURE_CUBE_MAP_POSITIVE_X$1 + i;
+          params.color[j].target = GL_TEXTURE_CUBE_MAP_POSITIVE_X$2 + i;
         }
         // reuse depth-stencil attachments across all cube maps
         if (i > 0) {
@@ -12878,6 +27869,9 @@ function wrapFBOState (
   }
 
   function restoreFramebuffers () {
+    framebufferState.cur = null;
+    framebufferState.next = null;
+    framebufferState.dirty = true;
     values(framebufferSet).forEach(function (fb) {
       fb.framebuffer = gl.createFramebuffer();
       updateFramebuffer(fb);
@@ -12903,7 +27897,7 @@ function wrapFBOState (
   })
 }
 
-var GL_FLOAT$5 = 5126;
+var GL_FLOAT$6 = 5126;
 
 function AttributeRecord () {
   this.state = 0;
@@ -12916,7 +27910,7 @@ function AttributeRecord () {
   this.buffer = null;
   this.size = 0;
   this.normalized = false;
-  this.type = GL_FLOAT$5;
+  this.type = GL_FLOAT$6;
   this.offset = 0;
   this.stride = 0;
   this.divisor = 0;
@@ -13157,10 +28151,10 @@ function wrapShaderState (gl, stringStore, stats, config) {
   }
 }
 
-var GL_RGBA$2 = 6408;
-var GL_UNSIGNED_BYTE$6 = 5121;
+var GL_RGBA$3 = 6408;
+var GL_UNSIGNED_BYTE$7 = 5121;
 var GL_PACK_ALIGNMENT = 0x0D05;
-var GL_FLOAT$6 = 0x1406; // 5126
+var GL_FLOAT$7 = 0x1406; // 5126
 
 function wrapReadPixels (
   gl,
@@ -13168,14 +28162,15 @@ function wrapReadPixels (
   reglPoll,
   context,
   glAttributes,
-  extensions) {
+  extensions,
+  limits) {
   function readPixelsImpl (input) {
     var type;
     if (framebufferState.next === null) {
       check$1(
         glAttributes.preserveDrawingBuffer,
         'you must create a webgl context with "preserveDrawingBuffer":true in order to read pixels from the drawing buffer');
-      type = GL_UNSIGNED_BYTE$6;
+      type = GL_UNSIGNED_BYTE$7;
     } else {
       check$1(
         framebufferState.next.colorAttachments[0].texture !== null,
@@ -13184,11 +28179,15 @@ function wrapReadPixels (
 
       if (extensions.oes_texture_float) {
         check$1(
-          type === GL_UNSIGNED_BYTE$6 || type === GL_FLOAT$6,
+          type === GL_UNSIGNED_BYTE$7 || type === GL_FLOAT$7,
           'Reading from a framebuffer is only allowed for the types \'uint8\' and \'float\'');
+
+        if (type === GL_FLOAT$7) {
+          check$1(limits.readFloat, 'Reading \'float\' values is not permitted in your browser. For a fallback, please see: https://www.npmjs.com/package/glsl-read-float');
+        }
       } else {
         check$1(
-          type === GL_UNSIGNED_BYTE$6,
+          type === GL_UNSIGNED_BYTE$7,
           'Reading from a framebuffer is only allowed for the type \'uint8\'');
       }
     }
@@ -13218,11 +28217,11 @@ function wrapReadPixels (
 
     // sanity check input.data
     if (data) {
-      if (type === GL_UNSIGNED_BYTE$6) {
+      if (type === GL_UNSIGNED_BYTE$7) {
         check$1(
           data instanceof Uint8Array,
           'buffer must be \'Uint8Array\' when reading from a framebuffer of type \'uint8\'');
-      } else if (type === GL_FLOAT$6) {
+      } else if (type === GL_FLOAT$7) {
         check$1(
           data instanceof Float32Array,
           'buffer must be \'Float32Array\' when reading from a framebuffer of type \'float\'');
@@ -13244,9 +28243,9 @@ function wrapReadPixels (
 
     // Allocate data
     if (!data) {
-      if (type === GL_UNSIGNED_BYTE$6) {
+      if (type === GL_UNSIGNED_BYTE$7) {
         data = new Uint8Array(size);
-      } else if (type === GL_FLOAT$6) {
+      } else if (type === GL_FLOAT$7) {
         data = data || new Float32Array(size);
       }
     }
@@ -13257,7 +28256,7 @@ function wrapReadPixels (
 
     // Run read pixels
     gl.pixelStorei(GL_PACK_ALIGNMENT, 4);
-    gl.readPixels(x, y, width, height, GL_RGBA$2,
+    gl.readPixels(x, y, width, height, GL_RGBA$3,
                   type,
                   data);
 
@@ -13469,7 +28468,7 @@ function createEnvironment () {
 // "cute" names for vector components
 var CUTE_COMPONENTS = 'xyzw'.split('');
 
-var GL_UNSIGNED_BYTE$7 = 5121;
+var GL_UNSIGNED_BYTE$8 = 5121;
 
 var ATTRIB_STATE_POINTER = 1;
 var ATTRIB_STATE_CONSTANT = 2;
@@ -13548,8 +28547,8 @@ var GL_ELEMENT_ARRAY_BUFFER$1 = 34963;
 var GL_FRAGMENT_SHADER$1 = 35632;
 var GL_VERTEX_SHADER$1 = 35633;
 
-var GL_TEXTURE_2D$2 = 0x0DE1;
-var GL_TEXTURE_CUBE_MAP$1 = 0x8513;
+var GL_TEXTURE_2D$3 = 0x0DE1;
+var GL_TEXTURE_CUBE_MAP$2 = 0x8513;
 
 var GL_CULL_FACE = 0x0B44;
 var GL_BLEND = 0x0BE2;
@@ -13561,7 +28560,7 @@ var GL_POLYGON_OFFSET_FILL = 0x8037;
 var GL_SAMPLE_ALPHA_TO_COVERAGE = 0x809E;
 var GL_SAMPLE_COVERAGE = 0x80A0;
 
-var GL_FLOAT$7 = 5126;
+var GL_FLOAT$8 = 5126;
 var GL_FLOAT_VEC2 = 35664;
 var GL_FLOAT_VEC3 = 35665;
 var GL_FLOAT_VEC4 = 35666;
@@ -13594,8 +28593,8 @@ var GL_ONE = 1;
 var GL_FUNC_ADD = 0x8006;
 var GL_LESS = 513;
 
-var GL_FRAMEBUFFER$1 = 0x8D40;
-var GL_COLOR_ATTACHMENT0$1 = 0x8CE0;
+var GL_FRAMEBUFFER$2 = 0x8D40;
+var GL_COLOR_ATTACHMENT0$2 = 0x8CE0;
 
 var blendFuncs = {
   '0': 0,
@@ -13903,7 +28902,7 @@ function reglCore (
         return [0]
       }
       return loop(i, function (j) {
-        return GL_COLOR_ATTACHMENT0$1 + j
+        return GL_COLOR_ATTACHMENT0$2 + j
       })
     });
   }
@@ -14936,7 +29935,7 @@ function reglCore (
                 typeof value === 'number' &&
                 value >= limits.lineWidthDims[0] &&
                 value <= limits.lineWidthDims[1],
-                'invalid line width, must positive number between ' +
+                'invalid line width, must be a positive number between ' +
                 limits.lineWidthDims[0] + ' and ' + limits.lineWidthDims[1], env.commandStr);
               return value
             },
@@ -15102,7 +30101,7 @@ function reglCore (
         } else {
           check$1.command(typeof value === 'object' && value,
             'invalid data for attribute ' + attribute, env.commandStr);
-          if (value.constant) {
+          if ('constant' in value) {
             var constant = value.constant;
             record.buffer = 'null';
             record.state = ATTRIB_STATE_CONSTANT;
@@ -15269,7 +30268,7 @@ function reglCore (
           '}else{',
           CUTE_COMPONENTS.map(function (name, i) {
             return (
-              result[name] + '=' + VALUE + '.constant.length>=' + i +
+              result[name] + '=' + VALUE + '.constant.length>' + i +
               '?' + VALUE + '.constant[' + i + ']:0;'
             )
           }).join(''),
@@ -15446,13 +30445,13 @@ function reglCore (
     }
     scope(
       'if(', NEXT, '){',
-      GL, '.bindFramebuffer(', GL_FRAMEBUFFER$1, ',', NEXT, '.framebuffer);');
+      GL, '.bindFramebuffer(', GL_FRAMEBUFFER$2, ',', NEXT, '.framebuffer);');
     if (extDrawBuffers) {
       scope(EXT_DRAW_BUFFERS, '.drawBuffersWEBGL(',
         DRAW_BUFFERS, '[', NEXT, '.colorAttachments.length]);');
     }
     scope('}else{',
-      GL, '.bindFramebuffer(', GL_FRAMEBUFFER$1, ',null);');
+      GL, '.bindFramebuffer(', GL_FRAMEBUFFER$2, ',null);');
     if (extDrawBuffers) {
       scope(EXT_DRAW_BUFFERS, '.drawBuffersWEBGL(', BACK_BUFFER, ');');
     }
@@ -15854,7 +30853,7 @@ function reglCore (
               LOCATION, ',false,', MAT_VALUE, ');');
           } else {
             switch (type) {
-              case GL_FLOAT$7:
+              case GL_FLOAT$8:
                 check$1.commandType(value, 'number', 'uniform ' + name, env.commandStr);
                 infix = '1f';
                 break
@@ -15971,7 +30970,7 @@ function reglCore (
           check(
             'typeof ' + VALUE + '==="function"&&' +
             VALUE + '._reglType==="texture' +
-            (target === GL_TEXTURE_2D$2 ? '2d' : 'Cube') + '"',
+            (target === GL_TEXTURE_2D$3 ? '2d' : 'Cube') + '"',
             'invalid texture type', env.commandStr);
         }
 
@@ -15988,7 +30987,7 @@ function reglCore (
           case GL_INT_VEC4:
             checkVector(4, 'number');
             break
-          case GL_FLOAT$7:
+          case GL_FLOAT$8:
             checkType('number');
             break
           case GL_FLOAT_VEC2:
@@ -16022,10 +31021,10 @@ function reglCore (
             checkVector(16, 'number');
             break
           case GL_SAMPLER_2D:
-            checkTexture(GL_TEXTURE_2D$2);
+            checkTexture(GL_TEXTURE_2D$3);
             break
           case GL_SAMPLER_CUBE:
-            checkTexture(GL_TEXTURE_CUBE_MAP$1);
+            checkTexture(GL_TEXTURE_CUBE_MAP$2);
             break
         }
       });
@@ -16062,7 +31061,7 @@ function reglCore (
           unroll = 4;
           break
 
-        case GL_FLOAT$7:
+        case GL_FLOAT$8:
           infix = '1f';
           break
 
@@ -16210,7 +31209,7 @@ function reglCore (
           PRIMITIVE,
           COUNT,
           ELEMENT_TYPE,
-          OFFSET + '<<((' + ELEMENT_TYPE + '-' + GL_UNSIGNED_BYTE$7 + ')>>1)',
+          OFFSET + '<<((' + ELEMENT_TYPE + '-' + GL_UNSIGNED_BYTE$8 + ')>>1)',
           INSTANCES
         ], ');');
       }
@@ -16241,7 +31240,7 @@ function reglCore (
           PRIMITIVE,
           COUNT,
           ELEMENT_TYPE,
-          OFFSET + '<<((' + ELEMENT_TYPE + '-' + GL_UNSIGNED_BYTE$7 + ')>>1)'
+          OFFSET + '<<((' + ELEMENT_TYPE + '-' + GL_UNSIGNED_BYTE$8 + ')>>1)'
         ] + ');');
       }
 
@@ -16735,7 +31734,6 @@ function reglCore (
       emitPollFramebuffer(env, refresh, null, true);
 
       // Refresh updates all attribute state changes
-      var extInstancing = gl.getExtension('angle_instanced_arrays');
       var INSTANCING;
       if (extInstancing) {
         INSTANCING = env.link(extInstancing);
@@ -16840,7 +31838,6 @@ function stats () {
     textureCount: 0,
     cubeCount: 0,
     renderbufferCount: 0,
-
     maxTextureUnits: 0
   }
 }
@@ -16850,16 +31847,14 @@ var GL_QUERY_RESULT_AVAILABLE_EXT = 0x8867;
 var GL_TIME_ELAPSED_EXT = 0x88BF;
 
 var createTimer = function (gl, extensions) {
-  var extTimer = extensions.ext_disjoint_timer_query;
-
-  if (!extTimer) {
+  if (!extensions.ext_disjoint_timer_query) {
     return null
   }
 
   // QUERY POOL BEGIN
   var queryPool = [];
   function allocQuery () {
-    return queryPool.pop() || extTimer.createQueryEXT()
+    return queryPool.pop() || extensions.ext_disjoint_timer_query.createQueryEXT()
   }
   function freeQuery (query) {
     queryPool.push(query);
@@ -16869,13 +31864,13 @@ var createTimer = function (gl, extensions) {
   var pendingQueries = [];
   function beginQuery (stats) {
     var query = allocQuery();
-    extTimer.beginQueryEXT(GL_TIME_ELAPSED_EXT, query);
+    extensions.ext_disjoint_timer_query.beginQueryEXT(GL_TIME_ELAPSED_EXT, query);
     pendingQueries.push(query);
     pushScopeStats(pendingQueries.length - 1, pendingQueries.length, stats);
   }
 
   function endQuery () {
-    extTimer.endQueryEXT(GL_TIME_ELAPSED_EXT);
+    extensions.ext_disjoint_timer_query.endQueryEXT(GL_TIME_ELAPSED_EXT);
   }
 
   //
@@ -16929,8 +31924,8 @@ var createTimer = function (gl, extensions) {
     ptr = 0;
     for (i = 0; i < pendingQueries.length; ++i) {
       var query = pendingQueries[i];
-      if (extTimer.getQueryObjectEXT(query, GL_QUERY_RESULT_AVAILABLE_EXT)) {
-        queryTime += extTimer.getQueryObjectEXT(query, GL_QUERY_RESULT_EXT);
+      if (extensions.ext_disjoint_timer_query.getQueryObjectEXT(query, GL_QUERY_RESULT_AVAILABLE_EXT)) {
+        queryTime += extensions.ext_disjoint_timer_query.getQueryObjectEXT(query, GL_QUERY_RESULT_EXT);
         freeQuery(query);
       } else {
         pendingQueries[ptr++] = query;
@@ -16972,7 +31967,7 @@ var createTimer = function (gl, extensions) {
     clear: function () {
       queryPool.push.apply(queryPool, pendingQueries);
       for (var i = 0; i < queryPool.length; i++) {
-        extTimer.deleteQueryEXT(queryPool[i]);
+        extensions.ext_disjoint_timer_query.deleteQueryEXT(queryPool[i]);
       }
       pendingQueries.length = 0;
       queryPool.length = 0;
@@ -17056,7 +32051,11 @@ function wrapREGL (args) {
     extensions,
     limits,
     stringStore);
-  var bufferState = wrapBufferState(gl, stats$$1, config, attributeState);
+  var bufferState = wrapBufferState(
+    gl,
+    stats$$1,
+    config,
+    attributeState);
   var elementState = wrapElementsState(gl, extensions, bufferState, stats$$1);
   var shaderState = wrapShaderState(gl, stringStore, stats$$1, config);
   var textureState = createTextureSet(
@@ -17096,7 +32095,7 @@ function wrapREGL (args) {
     framebufferState,
     core.procs.poll,
     contextState,
-    glAttributes, extensions);
+    glAttributes, extensions, limits);
 
   var nextState = core.next;
   var canvas = gl.canvas;
@@ -17308,8 +32307,6 @@ function wrapREGL (args) {
     }
 
     function REGLCommand (args, body) {
-      var this$1 = this;
-
       var i;
       if (contextLost) {
         check$1.raise('context lost');
@@ -17319,12 +32316,12 @@ function wrapREGL (args) {
       } else if (typeof body === 'function') {
         if (typeof args === 'number') {
           for (i = 0; i < args; ++i) {
-            scope.call(this$1, null, body, i);
+            scope.call(this, null, body, i);
           }
           return
         } else if (Array.isArray(args)) {
           for (i = 0; i < args.length; ++i) {
-            scope.call(this$1, args[i], body, i);
+            scope.call(this, args[i], body, i);
           }
           return
         } else {
@@ -17763,12 +32760,12 @@ RendererClock.prototype.frame = function frame () {
     this.delta = this.absTime - oldTime;
     this.time += this.delta;
     while (this.time >= this.period) {
-      this$1.time -= this$1.period;
+      this.time -= this.period;
       var loop = function ( i ) {
         window.setTimeout(function () { return this$1.wrapListeners[i](); }, 0);
       };
 
-        for (var i = 0; i < this.wrapListeners.length; i++) loop( i );
+        for (var i = 0; i < this$1.wrapListeners.length; i++) loop( i );
     }
   }
 };
@@ -17795,7 +32792,6 @@ RendererClock.prototype.getAbsoluteTime = function getAbsoluteTime () {
   return this.absTime;
 };
 RendererClock.prototype.setPaused = function setPaused (paused) {
-    var this$1 = this;
     if ( paused === void 0 ) paused = true;
 
   if (paused !== this.paused) {
@@ -17806,7 +32802,7 @@ RendererClock.prototype.setPaused = function setPaused (paused) {
     }
     this.paused = paused;
     for (var i = 0; i < this.pauseListeners.length; i++) {
-      this$1.pauseListeners[i](paused);
+      this.pauseListeners[i](paused);
     }
   }
 };
@@ -17832,7 +32828,7 @@ RendererClock.prototype.removePauseListener = function removePauseListener (list
   this.pauseListeners.splice(this.pauseListeners.indexOf(listener), 1);
 };
 
-var PaintResultCommand = (function (FullscreenRectCommand$$1) {
+var PaintResultCommand = /*@__PURE__*/(function (FullscreenRectCommand$$1) {
   function PaintResultCommand(getResult) {
     FullscreenRectCommand$$1.call(this);
     this.frag = "\n      precision highp float;\n      uniform sampler2D resultTexture;\n      varying vec2 texcoord;\n      void main() {\n        vec3 color = texture2D(resultTexture, texcoord).rgb;\n        gl_FragColor = vec4(color, 1);\n      }\n    ";
@@ -17848,7 +32844,7 @@ var PaintResultCommand = (function (FullscreenRectCommand$$1) {
   return PaintResultCommand;
 }(FullscreenRectCommand));
 
-var AccumulationCommand = (function (FullscreenRectCommand$$1) {
+var AccumulationCommand = /*@__PURE__*/(function (FullscreenRectCommand$$1) {
   function AccumulationCommand(getParticles, getHistory, getOutput, agents) {
     FullscreenRectCommand$$1.call(this);
     this.uniforms = {};
@@ -17941,6 +32937,7 @@ RendererPipeline.prototype.resize = function resize (width, height) {
 };
 RendererPipeline.prototype.run = function run (props) {
     var this$1 = this;
+    var assign;
 
   if (!this.mainCommand) {
     return;
@@ -17953,8 +32950,7 @@ RendererPipeline.prototype.run = function run (props) {
     // pause at some point, the other if() branch above will have the
     // two buffers alrady swapped - which we don't want. resultBuffer
     // should still be resultBuffer
-    var assign;
-      (assign = [this.resultBuffer, this.accuHistoryBuffer], this.accuHistoryBuffer = assign[0], this.resultBuffer = assign[1]);
+    (assign = [this.resultBuffer, this.accuHistoryBuffer], this.accuHistoryBuffer = assign[0], this.resultBuffer = assign[1]);
     this.particleBuffer.framebuffer.use(function () {
       this$1.regl.clear({color: this$1.clearColor});
       this$1.mainCommand(props);
@@ -18186,8 +33182,6 @@ var RendererState = function RendererState(regl) {
   this.dataInBuffer = -1;
 };
 RendererState.prototype.adaptToConfig = function adaptToConfig (config) {
-    var this$1 = this;
-
   this.config = config;
   this.pipeline.reset(config.backgroundColor);
 
@@ -18225,18 +33219,18 @@ RendererState.prototype.adaptToConfig = function adaptToConfig (config) {
   }
   // release resources
   for (var i = 1; i < this.particleDataStore.length; i++) {
-    this$1.particleDataStore[i].destroy();
+    this.particleDataStore[i].destroy();
   }
   this.particleDataStore.length = 1;
   this.particleData = 0;
 
   for (var i$1 = 0; i$1 < this.buffers.length; i$1++) {
-    this$1.buffers[i$1].destroy();
+    this.buffers[i$1].destroy();
   }
   this.buffers.length = 0;
   // run hooks
   for (var i$2 = 0; i$2 < this.hooks.length; i$2++) {
-    this$1.hooks[i$2]();
+    this.hooks[i$2]();
   }
 };
 RendererState.prototype.setParticleData = function setParticleData (id) {
@@ -18286,13 +33280,13 @@ RendererState.prototype.getColorBuffer = function getColorBuffer () {
   return this.colorBuffer;
 };
 RendererState.prototype.createBuffer = function createBuffer () {
+    var ref;
+
     var args = [], len = arguments.length;
     while ( len-- ) args[ len ] = arguments[ len ];
-
   var buf = (ref = this.regl).buffer.apply(ref, args);
   this.buffers.push(buf);
   return { id: this.buffers.length - 1, buffer: buf };
-    var ref;
 };
 RendererState.prototype.destroyBuffer = function destroyBuffer (id) {
   if (id < 0 || id >= this.buffers.length) {
@@ -18365,7 +33359,9 @@ var Renderer = function Renderer(canvas) {
       return;
     }
     this$1.clock.frame();
-    this$1.frameTime += (this$1.clock.getDelta() - this$1.frameTime) / FILTER_STRENGTH;
+    if (!this$1.clock.isPaused()) {
+      this$1.frameTime += (this$1.clock.getDelta() - this$1.frameTime) / FILTER_STRENGTH;
+    }
     this$1.state.pipeline.run({
       config: this$1.config,
       state:this$1.state,
