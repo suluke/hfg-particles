@@ -7,6 +7,7 @@ const resolve         = require('rollup-plugin-node-resolve');
 const commonjs        = require('rollup-plugin-commonjs');
 const replace         = require('rollup-plugin-replace');
 const json            = require('rollup-plugin-json');
+const string          = require('rollup-plugin-string');
 
 const git             = require('git-rev');
 
@@ -47,6 +48,9 @@ fs.mkdirp(StaticPath)
           namedExports: {
             'node_modules/image-capture/lib/imagecapture.js': [ 'ImageCapture' ]
           }
+        }),
+        string({
+          include: '**/*.wjs',
         }),
       ]
     }
