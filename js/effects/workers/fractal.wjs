@@ -135,6 +135,9 @@ function ComputeDestination(x0, y0, width, height, img) {
     [x, y] = bfsRes;
     [x, y] = GradientDescent(x, y, width, height, img);
   }
+  // Cause other particles to look for an even better destination because
+  // this particle already takes this spot
+  img[x + y * width] += 1 / (width * height);
   return [x, y];
 }
 

@@ -1,6 +1,7 @@
 import Effect, { ConfigUI, fract } from './effect';
 import WorkerCode from './workers/fractal.wjs';
 import { parseHtml } from '../ui/util';
+import Ease from './ease-mixins';
 
 const EffectName = 'Fractal';
 const EffectDescription = 'Lets the particles converge towards a fractal shape';
@@ -12,10 +13,10 @@ class FractalConfigUI extends ConfigUI {
     this.element = parseHtml(`
       <fieldset>
         <legend>${EffectName}</legend>
-        Nothing to be configured :)
       </fieldset>
     `);
     const ui = this.element;
+    Ease.extend(this, classPrefix);
   }
 
   getElement() {
@@ -38,7 +39,6 @@ class FractalFactory {
     this.worker = new Worker(URL.createObjectURL(new Blob([WorkerCode], { type: "text/javascript" })));
     this.worker.onmessage = (e) => {
       const map = new Float32Array(e.data);
-      console.log("Received: " + map);
       this.resolve(map);
       this.resolve = null;
       this.reject = null;
@@ -68,13 +68,14 @@ export default class FractalEffect extends Effect {
   static registerAsync(instance, props, uniforms, vertexShader, frag, attributes) {
     const factory = FractalEffect.getFactory(props);
     return factory.createDisplacmentMap().then((map) => {
-      console.log(map);
       const { id, buffer } = props.state.createBuffer(map);
       const offset = attributes.add('offset', 'vec2', buffer);
+      const easeFunc = Ease.setupShaderEasing(instance, uniforms);
       // eslint-disable-next-line no-param-reassign
       vertexShader.mainBody += `
         {
-          position = position + vec3(${offset}, 0.);
+          float ease = ${easeFunc};
+          position = position + ease * vec3(${offset}, 0.);
         }
       `;
     });
