@@ -1,0 +1,158 @@
+function iterateEquation(Cr, Ci, iterations, escapeRadius) {
+  let Zr = 0;
+  let Zi = 0;
+  let Tr = 0;
+  let Ti = 0;
+  let n  = 0;
+  for (; n < iterations && (Tr+Ti) <= escapeRadius; n++) {
+    Zi = 2 * Zr * Zi + Ci;
+    Zr = Tr - Ti + Cr;
+    Tr = Zr * Zr;
+    Ti = Zi * Zi;
+  }
+  for (let e = 0; e < 4; e++) {
+    Zi = 2 * Zr * Zi + Ci;
+    Zr = Tr - Ti + Cr;
+    Tr = Zr * Zr;
+    Ti = Zi * Zi;
+  }
+  return [n, Tr, Ti];
+}
+
+const logBase = 1.0 / Math.log(2.0);
+const logHalfBase = Math.log(0.5) * logBase;
+function smoothColor(iterations, n, Tr, Ti) {
+  let v = 5 + n - logHalfBase - Math.log(Math.log(Tr + Ti)) * logBase;
+  v = 512.0 * v / iterations;
+  if (v > 255)
+    v = 255;
+  return v;
+}
+
+function pickColor(iterations, n, Tr, Ti) {
+  if (n == iterations) // converged?
+    return 0;
+  const v = smoothColor(iterations, n, Tr, Ti);
+  return 255 - v;
+}
+
+/// Create a texture of floats that describes the convergence speed for
+/// each point. We can then use gradient descent to accelerate finding
+/// the destination coordinate for a particle
+function CreateFractal(width, height) {
+  const lookAt = [-0.6, 0];
+  const zoom = [3.4, 3.4];
+  const xRange = [lookAt[0] - zoom[0] / 2, lookAt[0] + zoom[0] / 2];
+  const yRange = [lookAt[1] - zoom[1] / 2, lookAt[1] + zoom[1] / 2];
+  let iterations = 50;
+  const escapeRadius = Math.pow(2, 2.0);
+
+  if (true) {
+    const f = Math.sqrt(
+            0.001 + 2.0 * Math.min(
+              Math.abs(xRange[0] - xRange[1]),
+              Math.abs(yRange[0] - yRange[1])));
+    iterations = Math.floor(223.0/f);
+  }
+
+  const dx = (xRange[1] - xRange[0]) / (0.5 + (width - 1));
+  const dy = (yRange[1] - yRange[0]) / (0.5 + (height - 1));
+  const img = new Float32Array(width * height);
+  let offset = 0;
+  for (let y = 0, Ci = yRange[0]; y < height; y++, Ci += dy)
+    for (let x = 0, Cr = xRange[0]; x < width; x++, Cr += dx) {
+      const p = iterateEquation(Cr, Ci, iterations, escapeRadius);
+      img[offset++] = pickColor(iterations, p[0], p[1], p[2]);
+    }
+  return img;
+}
+
+function ComputeDestination(x0, y0, width, height, img) {
+  // We are performing a gradient-descent-guided breath-first-search.
+  // Since we trust the gradient more than the bfs for performance
+  // reasons, we will stop the bfs as soon as there is a gradient.
+  function BFS(x, y, width, height, img) {
+    const dest = [x, y];
+    const pos = x + y * width;
+    let bestVal = img[pos];
+    let top = y;
+    let bottom = y;
+    let left = x;
+    let right = x;
+    // This is the bfs part
+    while (top > 0 || bottom < height - 1 || left > 0 || right < width - 1) {
+      top = Math.max(0, top - 1);
+      bottom = Math.min(height - 1, bottom + 1);
+      left = Math.max(0, left - 1);
+      right = Math.min(width - 1, right + 1);
+      for (let j = top; j <= bottom; j++) {
+        const lineSkip = j * width;
+        for (let i = left; i <= right; i++) {
+          if (i == x && j == y)
+            continue; // Avoid memory load
+          if (img[i + lineSkip] < bestVal) {
+            dest[0] = i;
+            dest[1] = j;
+            return dest;
+          }
+        }
+      }
+    }
+    return null;
+  }
+  function GradientDescent(x0, y0, width, height, img) {
+    let bestVal = img[x0 + y0 * width];
+    const dest = [x0, y0];
+    while(true) {
+      let [x, y] = dest;
+      let top = Math.max(0, y - 1);
+      let bottom = Math.min(height - 1, y + 1);
+      let left = Math.max(0, x - 1);
+      let right = Math.min(width - 1, x + 1);
+      let delta = 0;
+      for (let j = top; j <= bottom; j++) {
+        const lineSkip = j * width;
+        for (let i = left; i <= right; i++) {
+          const val = img[i + lineSkip];
+          if (val < bestVal) {
+            bestVal = val;
+            delta += bestVal - val;
+            dest[0] = i;
+            dest[1] = j;
+          }
+        }
+      }
+      if (delta === 0)
+        break;
+    }
+    return dest;
+  }
+  let [x, y] = [x0, y0];
+  while (img[x + y * width] > 1) {
+    const bfsRes = BFS(x, y, width, height, img);
+    if (bfsRes === null)
+      break;
+    [x, y] = bfsRes;
+    [x, y] = GradientDescent(x, y, width, height, img);
+  }
+  return [x, y];
+}
+
+function CreateDisplacementMap(width, height) {
+  const img = CreateFractal(width, height);
+  const map = new Float32Array(width * height * 2);
+  let offset = 0;
+  for (let y = 0; y < height; y++)
+    for (let x = 0; x < width; x++) {
+      const dest = ComputeDestination(x, y, width, height, img);
+      map[offset++] = (dest[0] - x + 0.5) / width;
+      map[offset++] = (dest[1] - y + 0.5) / height;
+    }
+  return map;
+}
+
+self.onmessage = function(msg) {
+  const { width, height } = msg.data;
+  const map = CreateDisplacementMap(width, height);
+  self.postMessage(map.buffer);
+};
