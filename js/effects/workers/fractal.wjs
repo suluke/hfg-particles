@@ -85,17 +85,45 @@ function ComputeDestination(x0, y0, width, height, img) {
       bottom = Math.min(height - 1, bottom + 1);
       left = Math.max(0, left - 1);
       right = Math.min(width - 1, right + 1);
-      for (let j = top; j <= bottom; j++) {
-        const lineSkip = j * width;
-        for (let i = left; i <= right; i++) {
-          if (i == x && j == y)
-            continue; // Avoid memory load
-          if (img[i + lineSkip] < bestVal) {
+      if (y - top >= bottom - y) {
+        // there is a top edge to check
+        const start = top * width;
+        for (let i = left; i <= right; i++)
+          if (img[start + i] < bestVal) {
             dest[0] = i;
-            dest[1] = j;
+            dest[1] = top;
             return dest;
           }
-        }
+      }
+      if (bottom - y >= y - top) {
+        // there is a bottom edge to check
+        const start = bottom * width;
+        for (let i = left; i <= right; i++)
+          if (img[start + i] < bestVal) {
+            dest[0] = i;
+            dest[1] = bottom;
+            return dest;
+          }
+      }
+      if (x - left >= right - x) {
+        // there is a left edge to check
+        let offset = left + top * width;
+        for (let i = top; i <= bottom; i++, offset += width)
+          if (img[offset] < bestVal) {
+            dest[0] = left;
+            dest[1] = i;
+            return dest;
+          }
+      }
+      if (right - x >= x - left) {
+        // there is a right edge to check
+        let offset = right + top * width;
+        for (let i = top; i <= bottom; i++, offset += width)
+          if (img[offset] < bestVal) {
+            dest[0] = right;
+            dest[1] = i;
+            return dest;
+          }
       }
     }
     return null;
