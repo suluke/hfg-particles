@@ -1,70 +1,123 @@
-function iterateEquation(Cr, Ci, iterations, escapeRadius) {
-  let Zr = 0;
-  let Zi = 0;
-  let Tr = 0;
-  let Ti = 0;
-  let n  = 0;
-  for (; n < iterations && (Tr+Ti) <= escapeRadius; n++) {
-    Zi = 2 * Zr * Zi + Ci;
-    Zr = Tr - Ti + Cr;
-    Tr = Zr * Zr;
-    Ti = Zi * Zi;
+class HeightMap {
+  constructor(width, height, buffer) {
+    this.width = width;
+    this.height = height;
+    this.buffer = buffer;
   }
-  for (let e = 0; e < 4; e++) {
-    Zi = 2 * Zr * Zi + Ci;
-    Zr = Tr - Ti + Cr;
-    Tr = Zr * Zr;
-    Ti = Zi * Zi;
-  }
-  return [n, Tr, Ti];
 }
 
-const logBase = 1.0 / Math.log(2.0);
-const logHalfBase = Math.log(0.5) * logBase;
-function smoothColor(iterations, n, Tr, Ti) {
-  let v = 5 + n - logHalfBase - Math.log(Math.log(Tr + Ti)) * logBase;
-  v = 512.0 * v / iterations;
-  if (v > 255)
-    v = 255;
-  return v;
-}
+class MandelbrotBakery {
+  constructor() {
+    this.byIterations = {};
+    this.byWidth = {};
+    this.byHeight = {};
+    this.byEscapeRadius = {};
+    this.byLookAtX = {};
+    this.byLookAtY = {};
+    this.byZoomX = {};
+    this.byZoomY = {};
 
-function pickColor(iterations, n, Tr, Ti) {
-  if (n == iterations) // converged?
-    return 0;
-  const v = smoothColor(iterations, n, Tr, Ti);
-  return 255 - v;
-}
-
-/// Create a texture of floats that describes the convergence speed for
-/// each point. We can then use gradient descent to accelerate finding
-/// the destination coordinate for a particle
-function CreateFractal(width, height) {
-  const lookAt = [-0.6, 0];
-  const zoom = [3.4, 3.4];
-  const xRange = [lookAt[0] - zoom[0] / 2, lookAt[0] + zoom[0] / 2];
-  const yRange = [lookAt[1] - zoom[1] / 2, lookAt[1] + zoom[1] / 2];
-  let iterations = 50;
-  const escapeRadius = Math.pow(2, 2.0);
-
-  if (true) {
-    const f = Math.sqrt(
-            0.001 + 2.0 * Math.min(
-              Math.abs(xRange[0] - xRange[1]),
-              Math.abs(yRange[0] - yRange[1])));
-    iterations = Math.floor(223.0/f);
+    this.logBase = 1.0 / Math.log(2.0);
+    this.logHalfBase = Math.log(0.5) * this.logBase;
   }
 
-  const dx = (xRange[1] - xRange[0]) / (0.5 + (width - 1));
-  const dy = (yRange[1] - yRange[0]) / (0.5 + (height - 1));
-  const img = new Float32Array(width * height);
-  let offset = 0;
-  for (let y = 0, Ci = yRange[0]; y < height; y++, Ci += dy)
-    for (let x = 0, Cr = xRange[0]; x < width; x++, Cr += dx) {
-      const p = iterateEquation(Cr, Ci, iterations, escapeRadius);
-      img[offset++] = pickColor(iterations, p[0], p[1], p[2]);
+  getHeightMap(width, height, iterations, escapeRadius, lookAt, zoom) {
+    const constraints = [this.byIterations, this.byWidth, this.byHeight, this.byEscapeRadius, this.byLookAtX, this.byLookAtY, this.byZoomX, this.byZoomY];
+    const params =      [iterations,        width,        height,        escapeRadius,        lookAt[0],      lookAt[1],      zoom[0],      zoom[1]];
+    let candidates = this.byIterations[iterations];
+    for (let constI = 1 /* we already inited using byIterations */; constI < constraints.length; constI++) {
+      if (!candidates || candidates.length === 0)
+        break;
+      const constraint = constraints[constI][params[constI]];
+      if (!constraint) {
+        candidates = [];
+        break;
+      }
+      const newCandidates = [];
+      for (let candI = 0; candI < candidates.length; candI++) {
+        const candidate = candidates[candI];
+        if (constraint.includes(candidate))
+          newCandidates.push(candidate);
+      }
+      candidates = newCandidates;
     }
-  return img;
+    if (candidates && candidates.length > 0)
+      return candidates[0];
+    const buffer = this.createNewMandelbrot(width, height, iterations, escapeRadius, lookAt, zoom);
+    const hmap = new HeightMap(width, height, buffer);
+    for (let i = 0; i < constraints.length; i++) {
+      if (!constraints[i][params[i]])
+        constraints[i][params[i]] = [];
+      constraints[i][params[i]].push(hmap);
+    }
+    return hmap;
+  }
+
+  /// Create a texture of floats that describes the convergence speed for
+  /// each point. We can then use gradient descent to accelerate finding
+  /// the destination coordinate for a particle
+  createNewMandelbrot(width, height, iterations, escapeRadius, lookAt, zoom) {
+    //const lookAt = [-0.6, 0];
+    //const zoom = [3.4, 3.4];
+    const xRange = [lookAt[0] - zoom[0] / 2, lookAt[0] + zoom[0] / 2];
+    const yRange = [lookAt[1] - zoom[1] / 2, lookAt[1] + zoom[1] / 2];
+    //const escapeRadius = Math.pow(2, 2.0);
+
+    if (false) {
+      const f = Math.sqrt(
+              0.001 + 2.0 * Math.min(
+                Math.abs(xRange[0] - xRange[1]),
+                Math.abs(yRange[0] - yRange[1])));
+      iterations = Math.floor(223.0/f);
+    }
+
+    const dx = (xRange[1] - xRange[0]) / (0.5 + (width - 1));
+    const dy = (yRange[1] - yRange[0]) / (0.5 + (height - 1));
+    const img = new Float32Array(width * height);
+    let offset = 0;
+    for (let y = 0, Ci = yRange[0]; y < height; y++, Ci += dy)
+      for (let x = 0, Cr = xRange[0]; x < width; x++, Cr += dx) {
+        const p = this.iterateEquation(Cr, Ci, iterations, escapeRadius);
+        img[offset++] = this.pickColor(iterations, p[0], p[1], p[2]);
+      }
+    return img;
+  }
+
+  iterateEquation(Cr, Ci, iterations, escapeRadius) {
+    let Zr = 0;
+    let Zi = 0;
+    let Tr = 0;
+    let Ti = 0;
+    let n  = 0;
+    for (; n < iterations && (Tr+Ti) <= escapeRadius; n++) {
+      Zi = 2 * Zr * Zi + Ci;
+      Zr = Tr - Ti + Cr;
+      Tr = Zr * Zr;
+      Ti = Zi * Zi;
+    }
+    for (let e = 0; e < 4; e++) {
+      Zi = 2 * Zr * Zi + Ci;
+      Zr = Tr - Ti + Cr;
+      Tr = Zr * Zr;
+      Ti = Zi * Zi;
+    }
+    return [n, Tr, Ti];
+  }
+
+  pickColor(iterations, n, Tr, Ti) {
+    if (n == iterations) // converged?
+      return 0;
+    const v = this.smoothColor(iterations, n, Tr, Ti);
+    return 255 - v;
+  }
+
+  smoothColor(iterations, n, Tr, Ti) {
+    let v = 5 + n - this.logHalfBase - Math.log(Math.log(Tr + Ti)) * this.logBase;
+    v = 512.0 * v / iterations;
+    if (v > 255)
+      v = 255;
+    return v;
+  }
 }
 
 function ComputeDestination(x0, y0, width, height, img) {
@@ -163,14 +216,10 @@ function ComputeDestination(x0, y0, width, height, img) {
     [x, y] = bfsRes;
     [x, y] = GradientDescent(x, y, width, height, img);
   }
-  // Cause other particles to look for an even better destination because
-  // this particle already takes this spot
-  img[x + y * width] += 1 / (width * height);
   return [x, y];
 }
 
-function CreateDisplacementMap(width, height) {
-  const img = CreateFractal(width, height);
+function CreateDisplacementMap(width, height, img) {
   const map = new Float32Array(width * height * 2);
   let offset = 0;
   for (let y = 0; y < height; y++)
@@ -182,8 +231,34 @@ function CreateDisplacementMap(width, height) {
   return map;
 }
 
+const HeightMaps = [];
+const Mandelbrots = new MandelbrotBakery();
+const DisplacementCache = new Map();
+
 self.onmessage = function(msg) {
-  const { width, height } = msg.data;
-  const map = CreateDisplacementMap(width, height);
-  self.postMessage(map.buffer);
+  const { action, params } = msg.data;
+  switch (action) {
+    case 'push': {
+      const { width, height } = params;
+      const hmap = Mandelbrots.getHeightMap(width, height, 50, 4, [-0.6, 0], [3.4, 3.4]);
+      HeightMaps.push(hmap);
+      self.postMessage(true);
+      break;
+    }
+    case 'pop': {
+      if (HeightMaps.length === 0)
+        throw new Error('No height map available to be converted into a displacement map');
+      const hmap = HeightMaps.pop();
+      if (DisplacementCache.has(hmap))
+        self.postMessage(DisplacementCache.get(hmap))
+      else {
+        const map = CreateDisplacementMap(hmap.width, hmap.height, hmap.buffer);
+        DisplacementCache.set(hmap, map);
+        self.postMessage(map.buffer);
+      }
+      break;
+    }
+    default:
+      throw new Error(`Unknown action: ${action}`);
+  }
 };

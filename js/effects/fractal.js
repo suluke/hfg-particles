@@ -34,15 +34,7 @@ class FractalConfigUI extends ConfigUI {
 class FractalFactory {
   constructor() {
     this.props = null;
-    this.reject = null;
-    this.resolve = null;
     this.worker = new Worker(URL.createObjectURL(new Blob([WorkerCode], { type: "text/javascript" })));
-    this.worker.onmessage = (e) => {
-      const map = new Float32Array(e.data);
-      this.resolve(map);
-      this.resolve = null;
-      this.reject = null;
-    }
   }
 
   createDisplacmentMap() {
@@ -50,13 +42,18 @@ class FractalFactory {
       throw new Error('Cannot create displacement map prior to setting props');
     const { props } = this;
     const { config } = props;
-    return new Promise((res, rej) => {
-      if (this.resolve !== null || this.reject !== null)
-        throw new Error('Cannot create more than one displacement map at once (for now)');
-      this.resolve = res;
-      this.reject = rej;
-      this.worker.postMessage({width: config.xParticlesCount, height: config.yParticlesCount});
-    });
+    return new Promise((resolve, reject) => {
+      this.worker.onmessage = (e) => {
+        resolve(e.data);
+      }
+      this.worker.postMessage({ action: 'push', params: { width: config.xParticlesCount, height: config.yParticlesCount } });
+    }).then((pushed) => new Promise((resolve, reject) => {
+      this.worker.onmessage = (e) => {
+        const map = new Float32Array(e.data);
+        resolve(map);
+      }
+      this.worker.postMessage({ action: 'pop', params: null });
+    }));
   }
 
   setProps(props) {
