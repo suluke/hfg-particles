@@ -24,27 +24,54 @@ export default class Renderer {
     this.config = null;
     this.commandBuilder = new CommandBuilder();
     this.clock = new RendererClock();
+    this.resizeListeners = [];
     // low pass filtered FPS measurement found on stackoverflow.com/a/5111475/1468532
-    const FILTER_STRENGTH = 20;
     this.frameTime = 0;
+    this.pipelineCfg = {config: null, state: null, clock: null};
     this.regl.frame(() => {
-      if (!this.state.isValid()) {
+      if (!this.state.isValid() || this.clock.isPaused())
         return;
-      }
-      this.clock.frame();
-      if (!this.clock.isPaused()) {
-        this.frameTime += (this.clock.getDelta() - this.frameTime) / FILTER_STRENGTH;
-      }
-      this.state.pipeline.run({
-        config: this.config,
-        state:  this.state,
-        clock:  this.clock
-      });
+      this.renderFrame();
     });
+    const OnPausedResize = () => {
+      // Wait for the resize event to be applied everywhere
+      window.setTimeout((() => this.renderFrame()), 0);
+    }
+    this.clock.addPauseListener((paused) => {
+      if (paused)
+        this.addResizeListener(OnPausedResize);
+      else
+        this.removeResizeListener(OnPausedResize);
+    });
+  }
+
+  renderFrame() {
+    const FILTER_STRENGTH = 20;
+    this.clock.frame();
+    if (!this.clock.isPaused())
+      this.frameTime += (this.clock.getDelta() - this.frameTime) / FILTER_STRENGTH;
+    this.pipelineCfg.config = this.config,
+    this.pipelineCfg.state  = this.state,
+    this.pipelineCfg.clock  = this.clock
+    this.state.pipeline.run(this.pipelineCfg);
   }
 
   resize(width, height) {
     this.state.resize(width, height);
+    for (let i = 0; i < this.resizeListeners.length; i++) {
+      const listener = this.resizeListeners[i];
+      listener(width, height);
+    }
+  }
+  addResizeListener(listener) {
+    this.resizeListeners.push(listener);
+  }
+  removeResizeListener(listener) {
+    const idx = this.resizeListeners.indexOf(listener);
+    if (idx > -1)
+      this.resizeListeners.splice(idx, 1);
+    else
+      console.warn('Could not find resize listener to be removed');
   }
 
   getClock() {
@@ -64,6 +91,8 @@ export default class Renderer {
       this.clock.reset();
       this.clock.setPeriod(this.config.duration);
       this.state.pipeline.compile(this.regl(command));
+      if (this.clock.isPaused())
+        this.renderFrame();
     }, (error) => console.error(error));
   }
 

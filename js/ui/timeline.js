@@ -471,14 +471,15 @@ class TimeIndicator {
 }
 
 class PauseButton {
-  constructor(clock) {
+  constructor(menu) {
+    const clock = menu.clock;
     this.clock = clock;
     this.element = document.querySelector('.menu-timeline-pause');
     this.element.addEventListener('click', () => {
       clock.setPaused(!clock.getPaused());
     });
+    const onPauseClass = 'paused';
     clock.addPauseListener((paused) => {
-      const onPauseClass = 'paused';
       if (paused) {
         this.element.classList.add(onPauseClass);
       } else {
@@ -486,10 +487,25 @@ class PauseButton {
       }
     });
     window.document.addEventListener('keydown', (e) => {
+      if (this.element.disabled)
+        return;
       if (e.key === ' ') {
         clock.tooglePause();
       }
     });
+    menu.addChangeListener((config) => {
+      if (config.duration === 0) {
+        this.disable();
+        clock.setPaused(true);
+      } else
+        this.enable();
+    });
+  }
+  enable() {
+    this.element.disabled = false;
+  }
+  disable() {
+    this.element.disabled = true;
   }
 }
 
@@ -631,7 +647,7 @@ export default class Timeline {
     this.effectConfigDialog = new EffectConfigDialog();
     this.timeticks = new Timeticks(menu.clock);
     this.timeDisplay = new TimeDisplay(menu);
-    this.pauseButton = new PauseButton(menu.clock);
+    this.pauseButton = new PauseButton(menu);
     this.randomplayButton = new RandomplayButton(this);
     this.positionIndicator = new TimeIndicator(menu, this.timeticks);
     this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();

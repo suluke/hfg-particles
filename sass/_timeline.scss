@@ -30,6 +30,10 @@
     &.paused {
       @include icon($fa-var-play);
     }
+    &[disabled] {
+      background-color: #666;
+      color: #333;
+    }
   }
   #menu-timeline-randomplay {
     @include visuallyhidden;
