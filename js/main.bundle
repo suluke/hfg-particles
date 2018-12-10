@@ -117,6 +117,8 @@ const errorManager = new ErrorManager(function() {
       .then(() => {
         // do this both on cancel and on accept (= .finally())
         document.documentElement.classList.remove(imageLoadingClass);
+      }, (e) => {
+        console.warn(e);
       });
     }
   };

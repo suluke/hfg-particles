@@ -148,7 +148,7 @@ export function mapImageToParticles(imageCanvas, scalingInfo) {
   } else if (scalingInfo.imageScaling === 'fit-height') {
     scalingParams = getFitHeightParams(imageCanvas, scalingInfo);
   } else if (scalingInfo.imageScaling === 'scale-to-viewport') {
-    scalingParams = getDefaultPixelParticleMappingParams();
+    scalingParams = getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo);
   } else {
     throw new Error('Illegal value for scalingInfo.imageScaling: "' + scalingInfo.imageScaling + '"');
   }
