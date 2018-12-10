@@ -58,14 +58,14 @@ export default class LettersEffect extends Effect {
       }
       float getDistFromB(vec2 coord) {
         // Back line
-        float d1 = pointToLineDist(coord, vec2(-.375, -.5),  vec2(-.375, .5));
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4),  vec2(-.375, .4));
         // horizontal lines
-        float d2 = pointToLineDist(coord, vec2(-.375, .5),   vec2(0.125, .5));
+        float d2 = pointToLineDist(coord, vec2(-.375, .4),   vec2(0.125, .4));
         float d3 = pointToLineDist(coord, vec2(-.375, .1),   vec2(0.25, .1));
-        float d4 = pointToLineDist(coord, vec2(-.375, -.5),  vec2(0.25, -.5));
+        float d4 = pointToLineDist(coord, vec2(-.375, -.4),  vec2(0.25, -.4));
         // vertical lines
-        float d5 = pointToLineDist(coord, vec2(0.125, .5),    vec2(0.125, .1));
-        float d6 = pointToLineDist(coord, vec2(0.25, .1), vec2(0.25, -.5));
+        float d5 = pointToLineDist(coord, vec2(0.125, .4),    vec2(0.125, .1));
+        float d6 = pointToLineDist(coord, vec2(0.25, .1), vec2(0.25, -.4));
         float dist = min(min(min(min(min(d1, d2), d3), d4), d5), d6);
         return dist;
       }
