@@ -47,12 +47,12 @@ export default class LettersEffect extends Effect {
       }
       int colorToLetter(vec3 color) {
         vec3 hsv = rgb2hsv(color);
-        return int(65. + mod(floor(255. * hsv.x), 6.));
+        return int(65. + mod(floor(255. * hsv.x), 26.));
       }
       float getDistFromA(vec2 coord) {
-        float d1 = pointToLineDist(coord, vec2(-.5, -.5),      vec2(0., .5));
-        float d2 = pointToLineDist(coord, vec2(0., .5),        vec2(.5, -.5));
-        float d3 = pointToLineDist(coord, vec2(-.3125, -.125), vec2(.3125, -.125));
+        float d1 = pointToLineDist(coord, vec2(-.4, -.4),      vec2(0., .4));
+        float d2 = pointToLineDist(coord, vec2(0., .4),        vec2(.4, -.4));
+        float d3 = pointToLineDist(coord, vec2(-.25, -.125), vec2(.25, -.125));
         float dist = min(min(d1, d2), d3);
         return dist;
       }
@@ -100,6 +100,151 @@ export default class LettersEffect extends Effect {
         float dist = min(min(d1, d2), d3);
         return dist;
       }
+      float getDistFromG(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.375), vec2(-.375, .375));
+        float d2 = pointToLineDist(coord, vec2(-.375, .375),  vec2(.375, .375));
+        float d3 = pointToLineDist(coord, vec2(-.375, -.375), vec2(.375, -.375));
+        float d4 = pointToLineDist(coord, vec2(.375, -.375), vec2(.375, 0.));
+        float d5 = pointToLineDist(coord, vec2(.375, 0.), vec2(.1, 0.));
+        float dist = min(min(min(min(d1, d2), d3), d4), d5);
+        return dist;
+      }
+      float getDistFromH(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
+        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
+        float d3 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, 0.));
+        float dist = min(min(d1, d2), d3);
+        return dist;
+      }
+      float getDistFromI(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(0., -.4), vec2(0., .4));
+        float dist = d1;
+        return dist;
+      }
+      float getDistFromJ(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.125, .5), vec2(.125, .5));
+        float d2 = pointToLineDist(coord, vec2(0., -.2), vec2(0., .5));
+        float d3 = pointToLineDist(coord, vec2(0., -.2), vec2(-.25, -.5));
+        float dist = min(min(d1, d2), d3);
+        return dist;
+      }
+      float getDistFromK(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
+        float d2 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, .4));
+        float d3 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, -.4));
+        float dist = min(min(d1, d2), d3);
+        return dist;
+      }
+      float getDistFromL(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
+        float d2 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.25, -.4));
+        float dist = min(d1, d2);
+        return dist;
+      }
+      float getDistFromM(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
+        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
+        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(0., 0.));
+        float d4 = pointToLineDist(coord, vec2(.375, .4),   vec2(0., 0.));
+        float dist = min(min(min(d1, d2), d3), d4);
+        return dist;
+      }
+      float getDistFromN(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
+        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
+        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, -.4));
+        float dist = min(min(d1, d2), d3);
+        return dist;
+      }
+      float getDistFromO(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
+        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
+        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));
+        float d4 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));
+        float dist = min(min(min(d1, d2), d3), d4);
+        return dist;
+      }
+      float getDistFromP(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
+        float d2 = pointToLineDist(coord, vec2(.375, .4),   vec2(.375, 0.));
+        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));
+        float d4 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, 0.));
+        float dist = min(min(min(d1, d2), d3), d4);
+        return dist;
+      }
+      float getDistFromQ(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
+        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
+        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));
+        float d4 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));
+        float d5 = pointToLineDist(coord, vec2(.2, -.2), vec2(.5, -.5));
+        float dist = min(min(min(min(d1, d2), d3), d4), d5);
+        return dist;
+      }
+      float getDistFromR(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
+        float d2 = pointToLineDist(coord, vec2(.375, .4),   vec2(.375, 0.));
+        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));
+        float d4 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, 0.));
+        float d5 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, -.4));
+        float dist = min(min(min(min(d1, d2), d3), d4), d5);
+        return dist;
+      }
+      float getDistFromS(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));
+        float d2 = pointToLineDist(coord, vec2(-.375, 0.),  vec2(.375, -0.));
+        float d3 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));
+        float d4 = pointToLineDist(coord, vec2(-.375, .4),  vec2(-.375, 0.));
+        float d5 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, 0.));
+        float dist = min(min(min(min(d1, d2), d3), d4), d5);
+        return dist;
+      }
+      float getDistFromT(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(0., -.4),   vec2(0., .4));
+        float d2 = pointToLineDist(coord, vec2(-.375, .4), vec2(.375, .4));
+        float dist = min(d1, d2);
+        return dist;
+      }
+      float getDistFromU(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
+        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
+        float d3 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));
+        float dist = min(min(d1, d2), d3);
+        return dist;
+      }
+      float getDistFromV(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, .4), vec2(0., -.4));
+        float d2 = pointToLineDist(coord, vec2(.375, .4),  vec2(0., -.4));
+        float dist = min(d1, d2);
+        return dist;
+      }
+      float getDistFromW(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
+        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
+        float d3 = pointToLineDist(coord, vec2(-.375, -.4),  vec2(0., 0.));
+        float d4 = pointToLineDist(coord, vec2(.375, -.4),   vec2(0., 0.));
+        float dist = min(min(min(d1, d2), d3), d4);
+        return dist;
+      }
+      float getDistFromX(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, .4));
+        float d2 = pointToLineDist(coord, vec2(-.375, .4), vec2(.375, -.4));
+        float dist = min(d1, d2);
+        return dist;
+      }
+      float getDistFromY(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.5), vec2(.375, .4));
+        float d2 = pointToLineDist(coord, vec2(-.375, .4), vec2(0., 0.));
+        float dist = min(d1, d2);
+        return dist;
+      }
+      float getDistFromZ(vec2 coord) {
+        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));
+        float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));
+        float d3 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, .4));
+        float dist = min(min(d1, d2), d3);
+        return dist;
+      }
       float getLetterOpacity(int letter, vec2 coord) {
         float dist = 0.;
         if (letter == 65)
@@ -114,6 +259,46 @@ export default class LettersEffect extends Effect {
           dist = getDistFromE(coord);
         else if (letter == 70)
           dist = getDistFromF(coord);
+        else if (letter == 71)
+          dist = getDistFromG(coord);
+        else if (letter == 72)
+          dist = getDistFromH(coord);
+        else if (letter == 73)
+          dist = getDistFromI(coord);
+        else if (letter == 74)
+          dist = getDistFromJ(coord);
+        else if (letter == 75)
+          dist = getDistFromK(coord);
+        else if (letter == 76)
+          dist = getDistFromL(coord);
+        else if (letter == 77)
+          dist = getDistFromM(coord);
+        else if (letter == 78)
+          dist = getDistFromN(coord);
+        else if (letter == 79)
+          dist = getDistFromO(coord);
+        else if (letter == 80)
+          dist = getDistFromP(coord);
+        else if (letter == 81)
+          dist = getDistFromQ(coord);
+        else if (letter == 82)
+          dist = getDistFromR(coord);
+        else if (letter == 83)
+          dist = getDistFromS(coord);
+        else if (letter == 84)
+          dist = getDistFromT(coord);
+        else if (letter == 85)
+          dist = getDistFromU(coord);
+        else if (letter == 86)
+          dist = getDistFromV(coord);
+        else if (letter == 87)
+          dist = getDistFromW(coord);
+        else if (letter == 88)
+          dist = getDistFromX(coord);
+        else if (letter == 89)
+          dist = getDistFromY(coord);
+        else if (letter == 90)
+          dist = getDistFromZ(coord);
         // Opacity is only the distance to the letter atm. Therefore we
         // do some mathematic magic to get to a more sensible opacity
         // value
