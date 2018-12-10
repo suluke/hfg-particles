@@ -16,6 +16,7 @@ import ResetDefaultImageEffect from './reset-default-image';
 import WebcamEffect from './webcam';
 import ParticlesReduceEffect from './particles-reduce';
 import VignetteEffect from './vignette';
+import LettersEffect from './letters';
 
 // should be last
 import DummyEffect from './dummy';
@@ -39,6 +40,7 @@ const effectList = [
   ResetDefaultImageEffect,
   WebcamEffect,
   VignetteEffect,
+  LettersEffect,
 
   // Should be last
   DummyEffect

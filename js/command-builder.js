@@ -2,6 +2,32 @@ import { effectsById } from './effects/index';
 import { Shader, Uniforms, Attributes } from './regl-utils';
 import { reportError } from './error-manager';
 
+const gl_rgb2hsv = `
+      vec3 rgb2hsv(vec3 rgb) {
+        float cmin = min(rgb.r, min(rgb.g, rgb.b));
+        float cmax = max(rgb.r, max(rgb.g, rgb.b));
+        float d = cmax - cmin;
+        float eps = 0.00001;
+        if (d < eps || cmax < eps) {
+          return vec3(0, 0, cmax);
+        }
+
+        float _h;
+        if (cmax == rgb.r) {
+          _h = (rgb.g - rgb.b) / d;
+          if (_h < 0.) {
+            _h += 6.;
+          }
+        } else if (cmax == rgb.g) {
+          _h = ((rgb.b - rgb.r) / d) + 2.;
+        } else {
+          _h = ((rgb.r - rgb.g) / d) + 4.;
+        }
+
+        return vec3(_h * 60. * (PI / 180.), d / cmax, cmax);
+      }
+`;
+
 export default class CommandBuilder {
   buildCommand(props) {
     this.config = props.config;
@@ -38,29 +64,7 @@ export default class CommandBuilder {
       vec2 getDirectionVector(float angle) {
         return vec2(cos(angle), sin(angle));
       }
-      vec3 rgb2hsv(vec3 rgb) {
-        float cmin = min(rgb.r, min(rgb.g, rgb.b));
-        float cmax = max(rgb.r, max(rgb.g, rgb.b));
-        float d = cmax - cmin;
-        float eps = 0.00001;
-        if (d < eps || cmax < eps) {
-          return vec3(0, 0, cmax);
-        }
-
-        float _h;
-        if (cmax == rgb.r) {
-          _h = (rgb.g - rgb.b) / d;
-          if (_h < 0.) {
-            _h += 6.;
-          }
-        } else if (cmax == rgb.g) {
-          _h = ((rgb.b - rgb.r) / d) + 2.;
-        } else {
-          _h = ((rgb.r - rgb.g) / d) + 4.;
-        }
-
-        return vec3(_h * 60. * (PI / 180.), d / cmax, cmax);
-      }
+      ${gl_rgb2hsv}
     `;
 
     return vertexShader;
@@ -70,6 +74,7 @@ export default class CommandBuilder {
     const fragmentShader = new Shader();
     fragmentShader.varyings += 'varying vec3 color;\n';
     fragmentShader.globals += 'const float PI = 3.14159265;\n';
+    fragmentShader.functions += gl_rgb2hsv
     return fragmentShader;
   }
 
@@ -127,7 +132,7 @@ export default class CommandBuilder {
         // gl_PointCoord coord system is edge-centered, but it's more
         // convenient if we center the system at the center of the
         // fragment (see point_dist below for example)
-        vec2 point_coord = gl_PointCoord * vec2(2.) - vec2(1.);
+        vec2 point_coord = (gl_PointCoord * 2. - vec2(1.)) * vec2(1., -1.);
         float point_dist = length(point_coord);
       `;
       const nextEffect = (() => {
