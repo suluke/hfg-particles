@@ -1,47 +1,45 @@
-import HueDisplaceEffect from './hue-displace';
-import ConvergePointEffect from './converge-point';
-import ConvergeCircleEffect from './converge-circle';
-import WaveEffect from './wave';
 import ChangeImageEffect from './change-image';
-import FlickrImageEffect from './flickr-image';
-import TrailsEffect from './trails';
-import SmoothTrailsEffect from './smooth-trails';
-import SmearEffect from './smear';
-import StandingWaveEffect from './standing-wave';
-import SparkleEffect from './sparkle';
-import ParticleSpacingEffect from './particle-spacing';
-import ParticleDisplaceEffect from './particle-displace';
-import ParticleSizeByHueEffect from './particle-size-by-hue';
-import ResetDefaultImageEffect from './reset-default-image';
-import WebcamEffect from './webcam';
-import ParticlesReduceEffect from './particles-reduce';
-import VignetteEffect from './vignette';
-
-// should be last
+import ConvergeCircleEffect from './converge-circle';
+import ConvergePointEffect from './converge-point';
 import DummyEffect from './dummy';
+import FlickrImageEffect from './flickr-image';
+import FractalEffect from './fractal';
+import HueDisplaceEffect from './hue-displace';
+import ParticleDisplaceEffect from './particle-displace';
+import ParticlesReduceEffect from './particles-reduce';
+import ParticleSizeByHueEffect from './particle-size-by-hue';
+import ParticleSpacingEffect from './particle-spacing';
+import ResetDefaultImageEffect from './reset-default-image';
+import SmearEffect from './smear';
+import SmoothTrailsEffect from './smooth-trails';
+import SparkleEffect from './sparkle';
+import StandingWaveEffect from './standing-wave';
+import TrailsEffect from './trails';
+import VignetteEffect from './vignette';
+import WaveEffect from './wave';
+import WebcamEffect from './webcam';
 
 const effectList = [
-  HueDisplaceEffect,
+  ChangeImageEffect,
   ConvergePointEffect,
   ConvergeCircleEffect,
-  WaveEffect,
-  ChangeImageEffect,
+  DummyEffect,
   FlickrImageEffect,
-  TrailsEffect,
-  SmoothTrailsEffect,
-  SmearEffect,
-  StandingWaveEffect,
-  SparkleEffect,
-  ParticleSpacingEffect,
+  FractalEffect,
+  HueDisplaceEffect,
   ParticleDisplaceEffect,
-  ParticleSizeByHueEffect,
   ParticlesReduceEffect,
+  ParticleSizeByHueEffect,
+  ParticleSpacingEffect,
   ResetDefaultImageEffect,
-  WebcamEffect,
+  SmearEffect,
+  SmoothTrailsEffect,
+  SparkleEffect,
+  StandingWaveEffect,
+  TrailsEffect,
   VignetteEffect,
-
-  // Should be last
-  DummyEffect
+  WaveEffect,
+  WebcamEffect
 ];
 const byId = {};
 for (let i = 0; i < effectList.length; i++) {

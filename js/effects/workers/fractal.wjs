@@ -1,0 +1,264 @@
+class HeightMap {
+  constructor(width, height, buffer) {
+    this.width = width;
+    this.height = height;
+    this.buffer = buffer;
+  }
+}
+
+class MandelbrotBakery {
+  constructor() {
+    this.byIterations = {};
+    this.byWidth = {};
+    this.byHeight = {};
+    this.byEscapeRadius = {};
+    this.byLookAtX = {};
+    this.byLookAtY = {};
+    this.byZoomX = {};
+    this.byZoomY = {};
+
+    this.logBase = 1.0 / Math.log(2.0);
+    this.logHalfBase = Math.log(0.5) * this.logBase;
+  }
+
+  getHeightMap(width, height, iterations, escapeRadius, lookAt, zoom) {
+    const constraints = [this.byIterations, this.byWidth, this.byHeight, this.byEscapeRadius, this.byLookAtX, this.byLookAtY, this.byZoomX, this.byZoomY];
+    const params =      [iterations,        width,        height,        escapeRadius,        lookAt[0],      lookAt[1],      zoom[0],      zoom[1]];
+    let candidates = this.byIterations[iterations];
+    for (let constI = 1 /* we already inited using byIterations */; constI < constraints.length; constI++) {
+      if (!candidates || candidates.length === 0)
+        break;
+      const constraint = constraints[constI][params[constI]];
+      if (!constraint) {
+        candidates = [];
+        break;
+      }
+      const newCandidates = [];
+      for (let candI = 0; candI < candidates.length; candI++) {
+        const candidate = candidates[candI];
+        if (constraint.includes(candidate))
+          newCandidates.push(candidate);
+      }
+      candidates = newCandidates;
+    }
+    if (candidates && candidates.length > 0)
+      return candidates[0];
+    const buffer = this.createNewMandelbrot(width, height, iterations, escapeRadius, lookAt, zoom);
+    const hmap = new HeightMap(width, height, buffer);
+    for (let i = 0; i < constraints.length; i++) {
+      if (!constraints[i][params[i]])
+        constraints[i][params[i]] = [];
+      constraints[i][params[i]].push(hmap);
+    }
+    return hmap;
+  }
+
+  /// Create a texture of floats that describes the convergence speed for
+  /// each point. We can then use gradient descent to accelerate finding
+  /// the destination coordinate for a particle
+  createNewMandelbrot(width, height, iterations, escapeRadius, lookAt, zoom) {
+    //const lookAt = [-0.6, 0];
+    //const zoom = [3.4, 3.4];
+    const xRange = [lookAt[0] - zoom[0] / 2, lookAt[0] + zoom[0] / 2];
+    const yRange = [lookAt[1] - zoom[1] / 2, lookAt[1] + zoom[1] / 2];
+    //const escapeRadius = Math.pow(2, 2.0);
+
+    if (false) {
+      const f = Math.sqrt(
+              0.001 + 2.0 * Math.min(
+                Math.abs(xRange[0] - xRange[1]),
+                Math.abs(yRange[0] - yRange[1])));
+      iterations = Math.floor(223.0/f);
+    }
+
+    const dx = (xRange[1] - xRange[0]) / (0.5 + (width - 1));
+    const dy = (yRange[1] - yRange[0]) / (0.5 + (height - 1));
+    const img = new Float32Array(width * height);
+    let offset = 0;
+    for (let y = 0, Ci = yRange[0]; y < height; y++, Ci += dy)
+      for (let x = 0, Cr = xRange[0]; x < width; x++, Cr += dx) {
+        const p = this.iterateEquation(Cr, Ci, iterations, escapeRadius);
+        img[offset++] = this.pickColor(iterations, p[0], p[1], p[2]);
+      }
+    return img;
+  }
+
+  iterateEquation(Cr, Ci, iterations, escapeRadius) {
+    let Zr = 0;
+    let Zi = 0;
+    let Tr = 0;
+    let Ti = 0;
+    let n  = 0;
+    for (; n < iterations && (Tr+Ti) <= escapeRadius; n++) {
+      Zi = 2 * Zr * Zi + Ci;
+      Zr = Tr - Ti + Cr;
+      Tr = Zr * Zr;
+      Ti = Zi * Zi;
+    }
+    for (let e = 0; e < 4; e++) {
+      Zi = 2 * Zr * Zi + Ci;
+      Zr = Tr - Ti + Cr;
+      Tr = Zr * Zr;
+      Ti = Zi * Zi;
+    }
+    return [n, Tr, Ti];
+  }
+
+  pickColor(iterations, n, Tr, Ti) {
+    if (n == iterations) // converged?
+      return 0;
+    const v = this.smoothColor(iterations, n, Tr, Ti);
+    return 255 - v;
+  }
+
+  smoothColor(iterations, n, Tr, Ti) {
+    let v = 5 + n - this.logHalfBase - Math.log(Math.log(Tr + Ti)) * this.logBase;
+    v = 512.0 * v / iterations;
+    if (v > 255)
+      v = 255;
+    return v;
+  }
+}
+
+function ComputeDestination(x0, y0, width, height, img) {
+  // We are performing a gradient-descent-guided breath-first-search.
+  // Since we trust the gradient more than the bfs for performance
+  // reasons, we will stop the bfs as soon as there is a gradient.
+  function BFS(x, y, width, height, img) {
+    const dest = [x, y];
+    const pos = x + y * width;
+    let bestVal = img[pos];
+    let top = y;
+    let bottom = y;
+    let left = x;
+    let right = x;
+    // This is the bfs part
+    while (top > 0 || bottom < height - 1 || left > 0 || right < width - 1) {
+      top = Math.max(0, top - 1);
+      bottom = Math.min(height - 1, bottom + 1);
+      left = Math.max(0, left - 1);
+      right = Math.min(width - 1, right + 1);
+      if (y - top >= bottom - y) {
+        // there is a top edge to check
+        const start = top * width;
+        for (let i = left; i <= right; i++)
+          if (img[start + i] < bestVal) {
+            dest[0] = i;
+            dest[1] = top;
+            return dest;
+          }
+      }
+      if (bottom - y >= y - top) {
+        // there is a bottom edge to check
+        const start = bottom * width;
+        for (let i = left; i <= right; i++)
+          if (img[start + i] < bestVal) {
+            dest[0] = i;
+            dest[1] = bottom;
+            return dest;
+          }
+      }
+      if (x - left >= right - x) {
+        // there is a left edge to check
+        let offset = left + top * width;
+        for (let i = top; i <= bottom; i++, offset += width)
+          if (img[offset] < bestVal) {
+            dest[0] = left;
+            dest[1] = i;
+            return dest;
+          }
+      }
+      if (right - x >= x - left) {
+        // there is a right edge to check
+        let offset = right + top * width;
+        for (let i = top; i <= bottom; i++, offset += width)
+          if (img[offset] < bestVal) {
+            dest[0] = right;
+            dest[1] = i;
+            return dest;
+          }
+      }
+    }
+    return null;
+  }
+  function GradientDescent(x0, y0, width, height, img) {
+    let bestVal = img[x0 + y0 * width];
+    const dest = [x0, y0];
+    while(true) {
+      let [x, y] = dest;
+      let top = Math.max(0, y - 1);
+      let bottom = Math.min(height - 1, y + 1);
+      let left = Math.max(0, x - 1);
+      let right = Math.min(width - 1, x + 1);
+      let delta = 0;
+      for (let j = top; j <= bottom; j++) {
+        const lineSkip = j * width;
+        for (let i = left; i <= right; i++) {
+          const val = img[i + lineSkip];
+          if (val < bestVal) {
+            bestVal = val;
+            delta += bestVal - val;
+            dest[0] = i;
+            dest[1] = j;
+          }
+        }
+      }
+      if (delta === 0)
+        break;
+    }
+    return dest;
+  }
+  let [x, y] = [x0, y0];
+  while (img[x + y * width] > 1) {
+    const bfsRes = BFS(x, y, width, height, img);
+    if (bfsRes === null)
+      break;
+    [x, y] = bfsRes;
+    [x, y] = GradientDescent(x, y, width, height, img);
+  }
+  return [x, y];
+}
+
+function CreateDisplacementMap(width, height, img) {
+  const map = new Float32Array(width * height * 2);
+  let offset = 0;
+  for (let y = 0; y < height; y++)
+    for (let x = 0; x < width; x++) {
+      const dest = ComputeDestination(x, y, width, height, img);
+      map[offset++] = (dest[0] - x + 0.5) / width;
+      map[offset++] = (dest[1] - y + 0.5) / height;
+    }
+  return map;
+}
+
+const HeightMaps = [];
+const Mandelbrots = new MandelbrotBakery();
+const DisplacementCache = new Map();
+
+self.onmessage = function(msg) {
+  const { action, params } = msg.data;
+  switch (action) {
+    case 'push': {
+      const { width, height } = params;
+      const hmap = Mandelbrots.getHeightMap(width, height, 50, 4, [-0.6, 0], [3.4, 3.4]);
+      HeightMaps.push(hmap);
+      self.postMessage(true);
+      break;
+    }
+    case 'pop': {
+      if (HeightMaps.length === 0)
+        throw new Error('No height map available to be converted into a displacement map');
+      const hmap = HeightMaps.pop();
+      if (DisplacementCache.has(hmap))
+        self.postMessage(DisplacementCache.get(hmap))
+      else {
+        const map = CreateDisplacementMap(hmap.width, hmap.height, hmap.buffer);
+        DisplacementCache.set(hmap, map);
+        self.postMessage(map.buffer);
+      }
+      break;
+    }
+    default:
+      throw new Error(`Unknown action: ${action}`);
+  }
+};
