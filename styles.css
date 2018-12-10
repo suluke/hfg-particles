@@ -2397,7 +2397,7 @@
   border: none;
   outline: none;
   opacity: 0;
-  background-color: rgba(0, 0, 0, 0); }
+  background-color: transparent; }
 
 .drag-drop-copy {
   z-index: 100;
@@ -2883,6 +2883,9 @@
       font-family: FontAwesome; }
       .menu-timeline-container .menu-timeline-pause.paused:before {
         content: ""; }
+    .menu-timeline-container .menu-timeline-pause[disabled] {
+      background-color: #666;
+      color: #333; }
   .menu-timeline-container #menu-timeline-randomplay {
     position: absolute;
     top: 0;

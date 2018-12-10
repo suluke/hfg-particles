@@ -1291,8 +1291,8 @@ var parseColor = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2018-12-01T18:08:22.697Z',
-  git_rev:               '813fc15',
+  timestamp:             '2018-12-10T18:46:39.437Z',
+  git_rev:               '50d8255',
   export_schema_version: 0
 };
 
@@ -21039,13 +21039,82 @@ var VignetteEffect = /*@__PURE__*/(function (Effect$$1) {
   return VignetteEffect;
 }(Effect));
 
-var EffectName$18 = 'Dummy';
-var EffectDescription$18 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
+var EffectName$18 = 'Letters';
+var EffectDescription$18 = 'Render particles in the shape of letters';
+
+var LettersConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
+  function LettersConfigUI() {
+    ConfigUI$$1.call(this);
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$18 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
+    var ui = this.element;
+  }
+
+  if ( ConfigUI$$1 ) LettersConfigUI.__proto__ = ConfigUI$$1;
+  LettersConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  LettersConfigUI.prototype.constructor = LettersConfigUI;
+
+  LettersConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  LettersConfigUI.prototype.getConfig = function getConfig () {
+    return {};
+  };
+
+  LettersConfigUI.prototype.applyConfig = function applyConfig (config) {
+  };
+
+  return LettersConfigUI;
+}(ConfigUI));
+
+var LettersEffect = /*@__PURE__*/(function (Effect$$1) {
+  function LettersEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) LettersEffect.__proto__ = Effect$$1;
+  LettersEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  LettersEffect.prototype.constructor = LettersEffect;
+
+  LettersEffect.register = function register (instance, props, uniforms, vertexShader, fragmentShader) {
+    fragmentShader.functions += "\n      // https://stackoverflow.com/a/1501725/1468532\n      float pointToLineDist(vec2 p, vec2 v, vec2 w) {\n        // Return minimum distance between line segment vw and point p\n        float l2 = pow(distance(v, w), 2.);  // i.e. |w-v|^2 -  avoid a sqrt\n        if (l2 == 0.0) return distance(p, v);   // v == w case\n        // Consider the line extending the segment, parameterized as v + t (w - v).\n        // We find projection of point p onto the line.\n        // It falls where t = [(p-v) . (w-v)] / |w-v|^2\n        // We clamp t from [0,1] to handle points outside the segment vw.\n        float t = max(0., min(1., dot(p - v, w - v) / l2));\n        vec2 projection = v + t * (w - v);  // Projection falls on the segment\n        return distance(p, projection);\n      }\n      int colorToLetter(vec3 color) {\n        vec3 hsv = rgb2hsv(color);\n        return int(65. + mod(floor(255. * hsv.x), 6.));\n      }\n      float getDistFromA(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.5, -.5),      vec2(0., .5));\n        float d2 = pointToLineDist(coord, vec2(0., .5),        vec2(.5, -.5));\n        float d3 = pointToLineDist(coord, vec2(-.3125, -.125), vec2(.3125, -.125));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n      float getDistFromB(vec2 coord) {\n        // Back line\n        float d1 = pointToLineDist(coord, vec2(-.375, -.5),  vec2(-.375, .5));\n        // horizontal lines\n        float d2 = pointToLineDist(coord, vec2(-.375, .5),   vec2(0.125, .5));\n        float d3 = pointToLineDist(coord, vec2(-.375, .1),   vec2(0.25, .1));\n        float d4 = pointToLineDist(coord, vec2(-.375, -.5),  vec2(0.25, -.5));\n        // vertical lines\n        float d5 = pointToLineDist(coord, vec2(0.125, .5),    vec2(0.125, .1));\n        float d6 = pointToLineDist(coord, vec2(0.25, .1), vec2(0.25, -.5));\n        float dist = min(min(min(min(min(d1, d2), d3), d4), d5), d6);\n        return dist;\n      }\n      float getDistFromC(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.375), vec2(-.375, .375));\n        float d2 = pointToLineDist(coord, vec2(-.375, .375),  vec2(.375, .375));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.375), vec2(.375, -.375));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n      float getDistFromD(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.25, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.25, -.4));\n        float d4 = pointToLineDist(coord, vec2(.25, .4),    vec2(.375, 0.));\n        float d5 = pointToLineDist(coord, vec2(.25, -.4),   vec2(.375, 0.));\n        float dist = min(min(min(min(d1, d2), d3), d4), d5);\n        return dist;\n      }\n      float getDistFromE(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));\n        float d4 = pointToLineDist(coord, vec2(-.375, .1),  vec2(.25, .1));\n        float dist = min(min(min(d1, d2), d3), d4);\n        return dist;\n      }\n      float getDistFromF(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, 0.),  vec2(.25, 0.));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n      float getLetterOpacity(int letter, vec2 coord) {\n        float dist = 0.;\n        if (letter == 65)\n          dist = getDistFromA(coord);\n        else if (letter == 66)\n          dist = getDistFromB(coord);\n        else if (letter == 67)\n          dist = getDistFromC(coord);\n        else if (letter == 68)\n          dist = getDistFromD(coord);\n        else if (letter == 69)\n          dist = getDistFromE(coord);\n        else if (letter == 70)\n          dist = getDistFromF(coord);\n        // Opacity is only the distance to the letter atm. Therefore we\n        // do some mathematic magic to get to a more sensible opacity\n        // value\n        float tooFar = .1;\n        float opacity = min(dist, tooFar * .99);\n        opacity = 1. / ((opacity - tooFar) * 100.) + 1.1;\n        return max(min(opacity, 1.), 0.);\n      }\n    ";
+    fragmentShader.mainBody += "\n      int letter = colorToLetter(rgb);\n      rgb.rgb *= getLetterOpacity(letter, point_coord);\n    ";
+  };
+
+  LettersEffect.getDisplayName = function getDisplayName () {
+    return EffectName$18;
+  };
+
+  LettersEffect.getDescription = function getDescription () {
+    return EffectDescription$18;
+  };
+
+  LettersEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new LettersConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  LettersEffect.getDefaultConfig = function getDefaultConfig () {
+    return {};
+  };
+
+  LettersEffect.getRandomConfig = function getRandomConfig () {
+    return {};
+  };
+
+  return LettersEffect;
+}(Effect));
+
+var EffectName$19 = 'Dummy';
+var EffectDescription$19 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
 
 var DummyConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function DummyConfigUI() {
     ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$18 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$19 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
     var ui = this.element;
   }
 
@@ -21080,11 +21149,11 @@ var DummyEffect = /*@__PURE__*/(function (Effect$$1) {
   };
 
   DummyEffect.getDisplayName = function getDisplayName () {
-    return EffectName$18;
+    return EffectName$19;
   };
 
   DummyEffect.getDescription = function getDescription () {
-    return EffectDescription$18;
+    return EffectDescription$19;
   };
 
   DummyEffect.getConfigUI = function getConfigUI () {
@@ -21126,6 +21195,7 @@ var effectList = [
   ResetDefaultImageEffect,
   WebcamEffect,
   VignetteEffect,
+  LettersEffect,
 
   // Should be last
   DummyEffect
@@ -21642,16 +21712,17 @@ TimeIndicator.prototype.updateStyles = function updateStyles () {
   this.element.style.left = (ticksRect.left + ticksBorder - selfRect.left + timePx) + "px";
 };
 
-var PauseButton = function PauseButton(clock) {
+var PauseButton = function PauseButton(menu) {
   var this$1 = this;
 
+  var clock = menu.clock;
   this.clock = clock;
   this.element = document.querySelector('.menu-timeline-pause');
   this.element.addEventListener('click', function () {
     clock.setPaused(!clock.getPaused());
   });
+  var onPauseClass = 'paused';
   clock.addPauseListener(function (paused) {
-    var onPauseClass = 'paused';
     if (paused) {
       this$1.element.classList.add(onPauseClass);
     } else {
@@ -21659,10 +21730,25 @@ var PauseButton = function PauseButton(clock) {
     }
   });
   window.document.addEventListener('keydown', function (e) {
+    if (this$1.element.disabled)
+      { return; }
     if (e.key === ' ') {
       clock.tooglePause();
     }
   });
+  menu.addChangeListener(function (config) {
+    if (config.duration === 0) {
+      this$1.disable();
+      clock.setPaused(true);
+    } else
+      { this$1.enable(); }
+  });
+};
+PauseButton.prototype.enable = function enable () {
+  this.element.disabled = false;
+};
+PauseButton.prototype.disable = function disable () {
+  this.element.disabled = true;
 };
 
 var RandomplayButton = function RandomplayButton(timeline) {
@@ -21806,7 +21892,7 @@ var Timeline = function Timeline(menu) {
   this.effectConfigDialog = new EffectConfigDialog();
   this.timeticks = new Timeticks(menu.clock);
   this.timeDisplay = new TimeDisplay(menu);
-  this.pauseButton = new PauseButton(menu.clock);
+  this.pauseButton = new PauseButton(menu);
   this.randomplayButton = new RandomplayButton(this);
   this.positionIndicator = new TimeIndicator(menu, this.timeticks);
   this.pxPerSecond = this.timeticks.getOptimalTimetickSpace();
@@ -22824,7 +22910,8 @@ var MainMenu = function MainMenu(clock) {
       this$1.toggle.checked = false;
     }
     this$1.submit();
-    this$1.clock.setPaused(false);
+    if (this$1.submittedConfig.duration > 0)
+      { this$1.clock.setPaused(false); }
   });
 
   for (var i = 0; i < ControlsList.length; i++) {
@@ -32564,6 +32651,8 @@ return wrapREGL;
 
 });
 
+var gl_rgb2hsv = "\n      vec3 rgb2hsv(vec3 rgb) {\n        float cmin = min(rgb.r, min(rgb.g, rgb.b));\n        float cmax = max(rgb.r, max(rgb.g, rgb.b));\n        float d = cmax - cmin;\n        float eps = 0.00001;\n        if (d < eps || cmax < eps) {\n          return vec3(0, 0, cmax);\n        }\n\n        float _h;\n        if (cmax == rgb.r) {\n          _h = (rgb.g - rgb.b) / d;\n          if (_h < 0.) {\n            _h += 6.;\n          }\n        } else if (cmax == rgb.g) {\n          _h = ((rgb.b - rgb.r) / d) + 2.;\n        } else {\n          _h = ((rgb.r - rgb.g) / d) + 4.;\n        }\n\n        return vec3(_h * 60. * (PI / 180.), d / cmax, cmax);\n      }\n";
+
 var CommandBuilder = function CommandBuilder () {};
 
 CommandBuilder.prototype.buildCommand = function buildCommand (props) {
@@ -32596,7 +32685,7 @@ CommandBuilder.prepareVertexShader = function prepareVertexShader (uniforms) {
   // Global library functions
   // TODO make functions a dict (= set) so that users can add them on
   // demand without defining them more than once
-  vertexShader.functions += "\n      vec2 getDirectionVector(float angle) {\n        return vec2(cos(angle), sin(angle));\n      }\n      vec3 rgb2hsv(vec3 rgb) {\n        float cmin = min(rgb.r, min(rgb.g, rgb.b));\n        float cmax = max(rgb.r, max(rgb.g, rgb.b));\n        float d = cmax - cmin;\n        float eps = 0.00001;\n        if (d < eps || cmax < eps) {\n          return vec3(0, 0, cmax);\n        }\n\n        float _h;\n        if (cmax == rgb.r) {\n          _h = (rgb.g - rgb.b) / d;\n          if (_h < 0.) {\n            _h += 6.;\n          }\n        } else if (cmax == rgb.g) {\n          _h = ((rgb.b - rgb.r) / d) + 2.;\n        } else {\n          _h = ((rgb.r - rgb.g) / d) + 4.;\n        }\n\n        return vec3(_h * 60. * (PI / 180.), d / cmax, cmax);\n      }\n    ";
+  vertexShader.functions += "\n      vec2 getDirectionVector(float angle) {\n        return vec2(cos(angle), sin(angle));\n      }\n      " + gl_rgb2hsv + "\n    ";
 
   return vertexShader;
 };
@@ -32605,6 +32694,7 @@ CommandBuilder.prepareFragmentShader = function prepareFragmentShader () {
   var fragmentShader = new Shader();
   fragmentShader.varyings += 'varying vec3 color;\n';
   fragmentShader.globals += 'const float PI = 3.14159265;\n';
+  fragmentShader.functions += gl_rgb2hsv;
   return fragmentShader;
 };
 
@@ -32651,7 +32741,7 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
     }
 
     vert.mainBody += "\n        vec3 rgb = rgba_int.rgb / 255.;\n        vec3 hsv = rgb2hsv(rgb);\n        vec3 initialPosition = vec3(texcoord, 0);\n        float pointSize = max(particleSize, 0.);\n\n        vec3 position = initialPosition;\n      ";
-    frag.mainBody += "\n        vec3 rgb = color;\n        vec2 frag_coord = (gl_FragCoord.xy - vec2(.5)) / (viewport - vec2(1.));\n        // gl_PointCoord coord system is edge-centered, but it's more\n        // convenient if we center the system at the center of the\n        // fragment (see point_dist below for example)\n        vec2 point_coord = gl_PointCoord * vec2(2.) - vec2(1.);\n        float point_dist = length(point_coord);\n      ";
+    frag.mainBody += "\n        vec3 rgb = color;\n        vec2 frag_coord = (gl_FragCoord.xy - vec2(.5)) / (viewport - vec2(1.));\n        // gl_PointCoord coord system is edge-centered, but it's more\n        // convenient if we center the system at the center of the\n        // fragment (see point_dist below for example)\n        vec2 point_coord = (gl_PointCoord * 2. - vec2(1.)) * vec2(1., -1.);\n        float point_dist = length(point_coord);\n      ";
     var nextEffect = (function () {
       var i = 0;
       var j = 0;
@@ -33351,27 +33441,52 @@ var Renderer = function Renderer(canvas) {
   this.config = null;
   this.commandBuilder = new CommandBuilder();
   this.clock = new RendererClock();
+  this.resizeListeners = [];
   // low pass filtered FPS measurement found on stackoverflow.com/a/5111475/1468532
-  var FILTER_STRENGTH = 20;
   this.frameTime = 0;
+  this.pipelineCfg = {config: null, state: null, clock: null};
   this.regl.frame(function () {
-    if (!this$1.state.isValid()) {
-      return;
-    }
-    this$1.clock.frame();
-    if (!this$1.clock.isPaused()) {
-      this$1.frameTime += (this$1.clock.getDelta() - this$1.frameTime) / FILTER_STRENGTH;
-    }
-    this$1.state.pipeline.run({
-      config: this$1.config,
-      state:this$1.state,
-      clock:this$1.clock
-    });
+    if (!this$1.state.isValid() || this$1.clock.isPaused())
+      { return; }
+    this$1.renderFrame();
   });
+  var OnPausedResize = function () {
+    // Wait for the resize event to be applied everywhere
+    window.setTimeout((function () { return this$1.renderFrame(); }), 0);
+  };
+  this.clock.addPauseListener(function (paused) {
+    if (paused)
+      { this$1.addResizeListener(OnPausedResize); }
+    else
+      { this$1.removeResizeListener(OnPausedResize); }
+  });
+};
+
+Renderer.prototype.renderFrame = function renderFrame () {
+  var FILTER_STRENGTH = 20;
+  this.clock.frame();
+  if (!this.clock.isPaused())
+    { this.frameTime += (this.clock.getDelta() - this.frameTime) / FILTER_STRENGTH; }
+  this.pipelineCfg.config = this.config, this.pipelineCfg.state= this.state, this.pipelineCfg.clock= this.clock;
+  this.state.pipeline.run(this.pipelineCfg);
 };
 
 Renderer.prototype.resize = function resize (width, height) {
   this.state.resize(width, height);
+  for (var i = 0; i < this.resizeListeners.length; i++) {
+    var listener = this.resizeListeners[i];
+    listener(width, height);
+  }
+};
+Renderer.prototype.addResizeListener = function addResizeListener (listener) {
+  this.resizeListeners.push(listener);
+};
+Renderer.prototype.removeResizeListener = function removeResizeListener (listener) {
+  var idx = this.resizeListeners.indexOf(listener);
+  if (idx > -1)
+    { this.resizeListeners.splice(idx, 1); }
+  else
+    { console.warn('Could not find resize listener to be removed'); }
 };
 
 Renderer.prototype.getClock = function getClock () {
@@ -33393,6 +33508,8 @@ Renderer.prototype.setConfig = function setConfig (config) {
     this$1.clock.reset();
     this$1.clock.setPeriod(this$1.config.duration);
     this$1.state.pipeline.compile(this$1.regl(command));
+    if (this$1.clock.isPaused())
+      { this$1.renderFrame(); }
   }, function (error) { return console.error(error); });
 };
 
