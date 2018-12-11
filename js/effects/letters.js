@@ -1,5 +1,6 @@
 import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
+import Ease from './ease-mixins';
 
 const EffectName = 'Letters';
 const EffectDescription = 'Render particles in the shape of letters';
@@ -32,6 +33,8 @@ class LettersConfigUI extends ConfigUI {
     this.selectLetterByInput.addEventListener('change', () => {
       this.notifyChange();
     });
+
+    Ease.extend(this, classPrefix);
   }
 
   getElement() {
@@ -417,9 +420,11 @@ export default class LettersEffect extends Effect {
         return max(min(opacity, 1.), 0.);
       }
     `);
+    const easeFunc = Ease.setupShaderEasing(instance, uniforms);
     fragmentShader.mainBody += `
       int letter = colorToLetter(rgb);
-      rgb.rgb *= getLetterOpacity(letter, point_coord);
+      float ease = ${easeFunc};
+      rgb.rgb *= mix(1., getLetterOpacity(letter, point_coord), ease);
     `;
   }
 
