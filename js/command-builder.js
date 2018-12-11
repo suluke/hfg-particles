@@ -171,6 +171,7 @@ export default class CommandBuilder {
           frag.mainBody += '}\n';
 
           effectUniforms.compile(vert, uniforms);
+          effectUniforms.compile(frag, null);
           effectAttributes.compile(vert, attributes);
           effectVaryings.compile(vert);
           effectVaryings.compile(frag);
@@ -182,6 +183,7 @@ export default class CommandBuilder {
           frag.mainBody += '// error during registration\n}\n';
 
           effectUniforms.compile(vert, uniforms);
+          effectUniforms.compile(frag, null);
           effectAttributes.compile(vert, attributes);
           effectVaryings.compile(vert);
           effectVaryings.compile(frag);
