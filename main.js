@@ -1291,8 +1291,8 @@ var parseColor = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2018-12-11T01:18:28.416Z',
-  git_rev:               'd71db2a',
+  timestamp:             '2018-12-11T17:13:40.528Z',
+  git_rev:               'b7142e0',
   export_schema_version: 0
 };
 
@@ -33678,9 +33678,12 @@ var errorManager = new ErrorManager(function() {
   window.addEventListener("hashchange", tryLoadFromHash);
 
   var adjustCanvasSize = function () {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    renderer.resize(window.innerWidth, window.innerHeight);
+    var dpr = window.devicePixelRatio;
+    if (!dpr)
+      { dpr = 1; }
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    renderer.resize(canvas.width, canvas.height);
   };
   window.addEventListener('resize', adjustCanvasSize);
   adjustCanvasSize();
