@@ -17,10 +17,10 @@ export default class Ease {
         </label><br/>
         <label>
           Ease function:
-          <select class="${classPrefix}-ease-func" value="sine">
-            <option value="sine" selected>Sine</option>
+          <select class="${classPrefix}-ease-func" value="none">
+            <option value="sine">Sine</option>
             <option value="linear">Linear</option>
-            <option value="none">None</option>
+            <option value="none" selected>None</option>
           </select>
         </label>
       </div>
@@ -58,14 +58,11 @@ export default class Ease {
   static applyConfig(configUI, config) {
     configUI.easeInInput.value = config.easeInTime || 1000;
     configUI.easeOutInput.value = config.easeOutTime || 1000;
-    configUI.easeFuncInput.value = config.easeFunc || 'sine';
+    configUI.easeFuncInput.value = config.easeFunc || 'none';
   }
 
-  static extend(configUI, classPrefix, appendInputsSelector = null) {
+  static extend(configUI, classPrefix) {
     let container = configUI.getElement();
-    if (appendInputsSelector !== null) {
-      container = container.querySelector(appendInputsSelector);
-    }
     container.appendChild(Ease.makeConfigMarkup(classPrefix));
     Ease.extendWithConfigInputs(configUI, classPrefix);
     const oldGetConfig = configUI.getConfig;
@@ -98,7 +95,7 @@ export default class Ease {
       sine: `(1. - cos(PI * min(${easeInProgress}, ${easeOutProgress}))) / 2.`,
       linear: `min(${easeInProgress}, ${easeOutProgress})`
     };
-    const easeFunc = easeFuncs[instance.config.easeFunc || 'sine'];
+    const easeFunc = easeFuncs[instance.config.easeFunc || 'none'];
     return easeFunc;
   }
 }
