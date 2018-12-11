@@ -37,6 +37,18 @@ export class Shader {
     this.globals = '';
     this.functions = '';
     this.mainBody = '';
+
+    this.functionLookup = {};
+  }
+
+  addFunction(name, code) {
+    if (this.functionLookup[name]) {
+      if (this.functionLookup[name] != code)
+        throw new Error(`Registered same shader function name twice but with different code: ${name}`);
+    } else {
+      this.functions += code;
+      this.functionLookup[name] = code;
+    }
   }
 
   compile() {
@@ -122,5 +134,18 @@ export class Attributes extends ShaderData {
   compile(shader, attributes = null) {
     // eslint-disable-next-line no-param-reassign
     shader.attributes += this.getCompiled(shader, attributes);
+  }
+}
+
+export class Varyings extends ShaderData {
+  constructor(id) {
+    super(id, 'varying');
+  }
+  addVarying(name, type) {
+    return this.add(name, type, null);
+  }
+  compile(shader) {
+    // eslint-disable-next-line no-param-reassign
+    shader.varyings += this.getCompiled(shader, null);
   }
 }

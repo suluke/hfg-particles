@@ -11,10 +11,27 @@ class LettersConfigUI extends ConfigUI {
     this.element = parseHtml(`
       <fieldset>
         <legend>${EffectName}</legend>
-        Nothing to be configured :)
+        <label>
+          Particle attribute used for selecting letter:
+          <select class="${classPrefix}-select-letter-by" value="hue">
+            <option value="hue" selected>Hue</option>
+            <option value="brightness">Brightness</option>
+            <option value="text">Text</option>
+          </select><br/>
+          <label>
+            Text:
+            <input type="text" class="${classPrefix}-text" value="HELLO WORLD "/>
+          </label>
+        </label>
       </fieldset>
     `);
     const ui = this.element;
+    this.selectLetterByInput = ui.querySelector(`select.${classPrefix}-select-letter-by`);
+    this.textInput = ui.querySelector(`input.${classPrefix}-text`);
+
+    this.selectLetterByInput.addEventListener('change', () => {
+      this.notifyChange();
+    });
   }
 
   getElement() {
@@ -22,16 +39,22 @@ class LettersConfigUI extends ConfigUI {
   }
 
   getConfig() {
-    return {};
+    return {
+      selectLetterBy: this.selectLetterByInput.value || 'hue',
+      text: this.textInput.value || 'HELLO WORLD '
+    };
   }
 
   applyConfig(config) {
+    this.selectLetterByInput.value = config.selectLetterBy || 'hue';
+    this.textInput.value = config.text ||  'HELLO WORLD ';
   }
 }
 
 export default class LettersEffect extends Effect {
-  static register(instance, props, uniforms, vertexShader, fragmentShader) {
-    fragmentShader.functions += `
+  static register(instance, props, uniforms, vertexShader, fragmentShader, attributes, varyings) {
+    const selectLetterBy = instance.config.selectLetterBy || 'hue';
+    fragmentShader.addFunction('pointToLineDist', `
       // https://stackoverflow.com/a/1501725/1468532
       float pointToLineDist(vec2 p, vec2 v, vec2 w) {
         // Return minimum distance between line segment vw and point p
@@ -45,10 +68,42 @@ export default class LettersEffect extends Effect {
         vec2 projection = v + t * (w - v);  // Projection falls on the segment
         return distance(p, projection);
       }
-      int colorToLetter(vec3 color) {
-        vec3 hsv = rgb2hsv(color);
-        return int(65. + mod(floor(255. * hsv.x), 26.));
-      }
+    `);
+    if (selectLetterBy === 'hue')
+      fragmentShader.addFunction('colorToLetter', `
+        int colorToLetter(vec3 color) {
+          vec3 hsv = rgb2hsv(color);
+          return int(65. + mod(floor(26. * hsv.x), 26.));
+        }
+      `);
+    else if (selectLetterBy === 'brightness')
+      fragmentShader.addFunction('colorToLetter', `
+        int colorToLetter(vec3 color) {
+          vec3 hsv = rgb2hsv(color);
+          return int(65. + mod(floor(26. * hsv.z), 26.));
+        }
+      `);
+    else if (selectLetterBy === 'text') {
+      const px = props.config.xParticlesCount;
+      const py = props.config.yParticlesCount;
+      const enc = new TextEncoder();
+      let text = instance.config.text || 'HELLO WORLD ';
+      text = text.toUpperCase();
+      text = text.repeat(Math.ceil(px * py / text.length));
+      text = text.substring(0, px * py);
+      const textData = enc.encode(text);
+      const { id, buffer: textBuffer } = props.state.createBuffer(textData);
+      const charAttr = attributes.add('textCharacterAttr', 'float', textBuffer);
+      const charVar = varyings.addVarying('textCharacter', 'float');
+      vertexShader.mainBody += `${charVar} = float(${charAttr});`;
+      fragmentShader.addFunction('colorToLetter', `
+        int colorToLetter(vec3 color) {
+          return int(${charVar});
+        }
+      `);
+    } else
+      throw new Error(`Unknown value for letter effect's select-letter-by option: ${selectLetterBy}`);
+    fragmentShader.addFunction('getDistFromA', `
       float getDistFromA(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.4, -.4),      vec2(0., .4));
         float d2 = pointToLineDist(coord, vec2(0., .4),        vec2(.4, -.4));
@@ -56,6 +111,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(d1, d2), d3);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromB', `
       float getDistFromB(vec2 coord) {
         // Back line
         float d1 = pointToLineDist(coord, vec2(-.375, -.4),  vec2(-.375, .4));
@@ -69,6 +126,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(min(min(min(d1, d2), d3), d4), d5), d6);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromC', `
       float getDistFromC(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.375), vec2(-.375, .375));
         float d2 = pointToLineDist(coord, vec2(-.375, .375),  vec2(.375, .375));
@@ -76,6 +135,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(d1, d2), d3);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromD', `
       float getDistFromD(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.25, .4));
@@ -85,6 +146,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(min(min(d1, d2), d3), d4), d5);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromE', `
       float getDistFromE(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));
@@ -93,6 +156,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(min(d1, d2), d3), d4);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromF', `
       float getDistFromF(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));
@@ -100,6 +165,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(d1, d2), d3);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromG', `
       float getDistFromG(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.375), vec2(-.375, .375));
         float d2 = pointToLineDist(coord, vec2(-.375, .375),  vec2(.375, .375));
@@ -109,6 +176,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(min(min(d1, d2), d3), d4), d5);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromH', `
       float getDistFromH(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
@@ -116,11 +185,15 @@ export default class LettersEffect extends Effect {
         float dist = min(min(d1, d2), d3);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromI', `
       float getDistFromI(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(0., -.4), vec2(0., .4));
         float dist = d1;
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromJ', `
       float getDistFromJ(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.125, .5), vec2(.125, .5));
         float d2 = pointToLineDist(coord, vec2(0., -.2), vec2(0., .5));
@@ -128,6 +201,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(d1, d2), d3);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromK', `
       float getDistFromK(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, .4));
@@ -135,12 +210,16 @@ export default class LettersEffect extends Effect {
         float dist = min(min(d1, d2), d3);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromL', `
       float getDistFromL(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.25, -.4));
         float dist = min(d1, d2);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromM', `
       float getDistFromM(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
@@ -149,6 +228,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(min(d1, d2), d3), d4);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromN', `
       float getDistFromN(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
@@ -156,6 +237,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(d1, d2), d3);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromO', `
       float getDistFromO(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
@@ -164,6 +247,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(min(d1, d2), d3), d4);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromP', `
       float getDistFromP(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(.375, .4),   vec2(.375, 0.));
@@ -172,6 +257,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(min(d1, d2), d3), d4);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromQ', `
       float getDistFromQ(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
@@ -181,6 +268,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(min(min(d1, d2), d3), d4), d5);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromR', `
       float getDistFromR(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(.375, .4),   vec2(.375, 0.));
@@ -190,6 +279,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(min(min(d1, d2), d3), d4), d5);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromS', `
       float getDistFromS(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));
         float d2 = pointToLineDist(coord, vec2(-.375, 0.),  vec2(.375, -0.));
@@ -199,12 +290,16 @@ export default class LettersEffect extends Effect {
         float dist = min(min(min(min(d1, d2), d3), d4), d5);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromT', `
       float getDistFromT(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(0., -.4),   vec2(0., .4));
         float d2 = pointToLineDist(coord, vec2(-.375, .4), vec2(.375, .4));
         float dist = min(d1, d2);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromU', `
       float getDistFromU(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
@@ -212,12 +307,16 @@ export default class LettersEffect extends Effect {
         float dist = min(min(d1, d2), d3);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromV', `
       float getDistFromV(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, .4), vec2(0., -.4));
         float d2 = pointToLineDist(coord, vec2(.375, .4),  vec2(0., -.4));
         float dist = min(d1, d2);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromW', `
       float getDistFromW(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));
         float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));
@@ -226,18 +325,24 @@ export default class LettersEffect extends Effect {
         float dist = min(min(min(d1, d2), d3), d4);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromX', `
       float getDistFromX(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, .4));
         float d2 = pointToLineDist(coord, vec2(-.375, .4), vec2(.375, -.4));
         float dist = min(d1, d2);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromY', `
       float getDistFromY(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.5), vec2(.375, .4));
         float d2 = pointToLineDist(coord, vec2(-.375, .4), vec2(0., 0.));
         float dist = min(d1, d2);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getDistFromZ', `
       float getDistFromZ(vec2 coord) {
         float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));
         float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));
@@ -245,6 +350,8 @@ export default class LettersEffect extends Effect {
         float dist = min(min(d1, d2), d3);
         return dist;
       }
+    `);
+    fragmentShader.addFunction('getLetterOpacity', `
       float getLetterOpacity(int letter, vec2 coord) {
         float dist = 0.;
         if (letter == 65)
@@ -299,6 +406,8 @@ export default class LettersEffect extends Effect {
           dist = getDistFromY(coord);
         else if (letter == 90)
           dist = getDistFromZ(coord);
+        else if (letter == 9 || letter == 32)
+          dist = 1.;
         // Opacity is only the distance to the letter atm. Therefore we
         // do some mathematic magic to get to a more sensible opacity
         // value
@@ -307,7 +416,7 @@ export default class LettersEffect extends Effect {
         opacity = 1. / ((opacity - tooFar) * 100.) + 1.1;
         return max(min(opacity, 1.), 0.);
       }
-    `;
+    `);
     fragmentShader.mainBody += `
       int letter = colorToLetter(rgb);
       rgb.rgb *= getLetterOpacity(letter, point_coord);

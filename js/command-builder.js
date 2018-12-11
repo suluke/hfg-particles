@@ -1,5 +1,5 @@
 import { effectsById } from './effects/index';
-import { Shader, Uniforms, Attributes } from './regl-utils';
+import { Shader, Uniforms, Attributes, Varyings } from './regl-utils';
 import { reportError } from './error-manager';
 
 const gl_rgb2hsv = `
@@ -161,16 +161,19 @@ export default class CommandBuilder {
         }
         const effectUniforms = new Uniforms(globalId);
         const effectAttributes = new Attributes(globalId);
+        const effectVaryings = new Varyings(globalId);
         const effectClass = effectConfig.getEffectClass();
         vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {\n`;
         frag.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {\n`;
-        effectClass.registerAsync(effectConfig, this.props, effectUniforms, vert, frag, effectAttributes)
+        effectClass.registerAsync(effectConfig, this.props, effectUniforms, vert, frag, effectAttributes, effectVaryings)
         .then(() => {
           vert.mainBody += '}\n';
           frag.mainBody += '}\n';
 
           effectUniforms.compile(vert, uniforms);
           effectAttributes.compile(vert, attributes);
+          effectVaryings.compile(vert);
+          effectVaryings.compile(frag);
           globalId += 1;
           registerEffects(res, rej);
         }, (err) => {
@@ -180,6 +183,8 @@ export default class CommandBuilder {
 
           effectUniforms.compile(vert, uniforms);
           effectAttributes.compile(vert, attributes);
+          effectVaryings.compile(vert);
+          effectVaryings.compile(frag);
           globalId += 1;
           registerEffects(res, rej);
         });

@@ -6,8 +6,8 @@ export default class Effect {
     throw new Error('Method not implemented');
   }
 
-  static registerAsync(instance, props, uniforms, vertexShader, fragmentShader, attributes) {
-    this.register(instance, props, uniforms, vertexShader, fragmentShader, attributes);
+  static registerAsync(instance, props, uniforms, vertexShader, fragmentShader, attributes, varyings) {
+    this.register(instance, props, uniforms, vertexShader, fragmentShader, attributes, varyings);
     return Promise.resolve();
   }
 
