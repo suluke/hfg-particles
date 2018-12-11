@@ -63,9 +63,12 @@ const errorManager = new ErrorManager(function() {
   window.addEventListener("hashchange", tryLoadFromHash);
 
   const adjustCanvasSize = () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    renderer.resize(window.innerWidth, window.innerHeight);
+    let dpr = window.devicePixelRatio;
+    if (!dpr)
+      dpr = 1;
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    renderer.resize(canvas.width, canvas.height);
   };
   window.addEventListener('resize', adjustCanvasSize);
   adjustCanvasSize();
