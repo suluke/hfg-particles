@@ -2,6 +2,7 @@ import EffectConfigDialog from './effect-config-dialog';
 import { parseHtml, clearChildNodes } from './util';
 import EffectConfig from '../effects/effect-config';
 import { effectList, getColorClassnameForEffect } from '../effects/index';
+import { reportError } from '../error-manager';
 
 /**
  *
@@ -67,7 +68,7 @@ class TimelineEntry {
           if (deleted) {
             if (deleted !== true) {
               // Another error occurred
-              throw deleted;
+              reportError(deleted);
             }
             this.remove();
           }
