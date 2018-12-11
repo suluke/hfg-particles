@@ -1291,8 +1291,8 @@ var parseColor = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2018-12-11T17:13:40.528Z',
-  git_rev:               'b7142e0',
+  timestamp:             '2018-12-11T22:08:12.948Z',
+  git_rev:               '81646a3',
   export_schema_version: 0
 };
 
@@ -19857,7 +19857,7 @@ var SparkleEffect = /*@__PURE__*/(function (Effect$$1) {
 var Ease = function Ease () {};
 
 Ease.makeConfigMarkup = function makeConfigMarkup (classPrefix) {
-  var markup = parseHtml(("\n      <div>\n        <label>\n          Ease in time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-in\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease out time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-out\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease function:\n          <select class=\"" + classPrefix + "-ease-func\" value=\"sine\">\n            <option value=\"sine\" selected>Sine</option>\n            <option value=\"linear\">Linear</option>\n            <option value=\"none\">None</option>\n          </select>\n        </label>\n      </div>\n    "));
+  var markup = parseHtml(("\n      <div>\n        <label>\n          Ease in time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-in\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease out time:\n          <input type=\"number\" min=\"0\" step=\"1\" class=\"" + classPrefix + "-ease-out\" value=\"1000\" />\n          ms\n        </label><br/>\n        <label>\n          Ease function:\n          <select class=\"" + classPrefix + "-ease-func\" value=\"none\">\n            <option value=\"sine\">Sine</option>\n            <option value=\"linear\">Linear</option>\n            <option value=\"none\" selected>None</option>\n          </select>\n        </label>\n      </div>\n    "));
   var fragment = document.createDocumentFragment();
   while (markup.childNodes.length > 0) {
     fragment.appendChild(markup.firstChild);
@@ -19891,16 +19891,11 @@ Ease.extendConfig = function extendConfig (configUI, config) {
 Ease.applyConfig = function applyConfig (configUI, config) {
   configUI.easeInInput.value = config.easeInTime || 1000;
   configUI.easeOutInput.value = config.easeOutTime || 1000;
-  configUI.easeFuncInput.value = config.easeFunc || 'sine';
+  configUI.easeFuncInput.value = config.easeFunc || 'none';
 };
 
-Ease.extend = function extend (configUI, classPrefix, appendInputsSelector) {
-    if ( appendInputsSelector === void 0 ) appendInputsSelector = null;
-
+Ease.extend = function extend (configUI, classPrefix) {
   var container = configUI.getElement();
-  if (appendInputsSelector !== null) {
-    container = container.querySelector(appendInputsSelector);
-  }
   container.appendChild(Ease.makeConfigMarkup(classPrefix));
   Ease.extendWithConfigInputs(configUI, classPrefix);
   var oldGetConfig = configUI.getConfig;
@@ -19933,7 +19928,7 @@ Ease.setupShaderEasing = function setupShaderEasing (instance, uniforms) {
     sine: ("(1. - cos(PI * min(" + easeInProgress + ", " + easeOutProgress + "))) / 2."),
     linear: ("min(" + easeInProgress + ", " + easeOutProgress + ")")
   };
-  var easeFunc = easeFuncs[instance.config.easeFunc || 'sine'];
+  var easeFunc = easeFuncs[instance.config.easeFunc || 'none'];
   return easeFunc;
 };
 
@@ -21087,6 +21082,8 @@ var LettersConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
     this.selectLetterByInput.addEventListener('change', function () {
       this$1.notifyChange();
     });
+
+    Ease.extend(this, classPrefix);
   }
 
   if ( ConfigUI$$1 ) LettersConfigUI.__proto__ = ConfigUI$$1;
@@ -21173,7 +21170,8 @@ var LettersEffect = /*@__PURE__*/(function (Effect$$1) {
     fragmentShader.addFunction('getDistFromY', "\n      float getDistFromY(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.5), vec2(.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4), vec2(0., 0.));\n        float dist = min(d1, d2);\n        return dist;\n      }\n    ");
     fragmentShader.addFunction('getDistFromZ', "\n      float getDistFromZ(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, .4));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n    ");
     fragmentShader.addFunction('getLetterOpacity', "\n      float getLetterOpacity(int letter, vec2 coord) {\n        float dist = 0.;\n        if (letter == 65)\n          dist = getDistFromA(coord);\n        else if (letter == 66)\n          dist = getDistFromB(coord);\n        else if (letter == 67)\n          dist = getDistFromC(coord);\n        else if (letter == 68)\n          dist = getDistFromD(coord);\n        else if (letter == 69)\n          dist = getDistFromE(coord);\n        else if (letter == 70)\n          dist = getDistFromF(coord);\n        else if (letter == 71)\n          dist = getDistFromG(coord);\n        else if (letter == 72)\n          dist = getDistFromH(coord);\n        else if (letter == 73)\n          dist = getDistFromI(coord);\n        else if (letter == 74)\n          dist = getDistFromJ(coord);\n        else if (letter == 75)\n          dist = getDistFromK(coord);\n        else if (letter == 76)\n          dist = getDistFromL(coord);\n        else if (letter == 77)\n          dist = getDistFromM(coord);\n        else if (letter == 78)\n          dist = getDistFromN(coord);\n        else if (letter == 79)\n          dist = getDistFromO(coord);\n        else if (letter == 80)\n          dist = getDistFromP(coord);\n        else if (letter == 81)\n          dist = getDistFromQ(coord);\n        else if (letter == 82)\n          dist = getDistFromR(coord);\n        else if (letter == 83)\n          dist = getDistFromS(coord);\n        else if (letter == 84)\n          dist = getDistFromT(coord);\n        else if (letter == 85)\n          dist = getDistFromU(coord);\n        else if (letter == 86)\n          dist = getDistFromV(coord);\n        else if (letter == 87)\n          dist = getDistFromW(coord);\n        else if (letter == 88)\n          dist = getDistFromX(coord);\n        else if (letter == 89)\n          dist = getDistFromY(coord);\n        else if (letter == 90)\n          dist = getDistFromZ(coord);\n        else if (letter == 9 || letter == 32)\n          dist = 1.;\n        // Opacity is only the distance to the letter atm. Therefore we\n        // do some mathematic magic to get to a more sensible opacity\n        // value\n        float tooFar = .1;\n        float opacity = min(dist, tooFar * .99);\n        opacity = 1. / ((opacity - tooFar) * 100.) + 1.1;\n        return max(min(opacity, 1.), 0.);\n      }\n    ");
-    fragmentShader.mainBody += "\n      int letter = colorToLetter(rgb);\n      rgb.rgb *= getLetterOpacity(letter, point_coord);\n    ";
+    var easeFunc = Ease.setupShaderEasing(instance, uniforms);
+    fragmentShader.mainBody += "\n      int letter = colorToLetter(rgb);\n      float ease = " + easeFunc + ";\n      rgb.rgb *= mix(1., getLetterOpacity(letter, point_coord), ease);\n    ";
   };
 
   LettersEffect.getDisplayName = function getDisplayName () {
@@ -21422,7 +21420,7 @@ var TimelineEntry = function TimelineEntry(effect, timeline) {
         if (deleted) {
           if (deleted !== true) {
             // Another error occurred
-            throw deleted;
+            reportError(deleted);
           }
           this$1.remove();
         }
@@ -32873,6 +32871,7 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
         frag.mainBody += '}\n';
 
         effectUniforms.compile(vert, uniforms);
+        effectUniforms.compile(frag, null);
         effectAttributes.compile(vert, attributes);
         effectVaryings.compile(vert);
         effectVaryings.compile(frag);
@@ -32884,6 +32883,7 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
         frag.mainBody += '// error during registration\n}\n';
 
         effectUniforms.compile(vert, uniforms);
+        effectUniforms.compile(frag, null);
         effectAttributes.compile(vert, attributes);
         effectVaryings.compile(vert);
         effectVaryings.compile(frag);
