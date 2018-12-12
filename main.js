@@ -1291,8 +1291,8 @@ var parseColor = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2018-12-11T22:08:12.948Z',
-  git_rev:               '81646a3',
+  timestamp:             '2018-12-12T18:24:41.609Z',
+  git_rev:               'b7a16b4',
   export_schema_version: 0
 };
 
@@ -21109,6 +21109,77 @@ var LettersConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   return LettersConfigUI;
 }(ConfigUI));
 
+var MAX_LINES_PER_LETTER = 8;
+var NUM_LETTERS = 256;
+var ELMTS_PER_LINE = 4;
+
+function CreateFontData() {
+  var letterLines = new Uint8Array(NUM_LETTERS * MAX_LINES_PER_LETTER * ELMTS_PER_LINE);
+  function addChar(char) {
+    var lines = [], len = arguments.length - 1;
+    while ( len-- > 0 ) lines[ len ] = arguments[ len + 1 ];
+
+    if (lines.length === 0)
+      { return; }
+    var charCode = char.charCodeAt(0);
+    if (lines.length > MAX_LINES_PER_LETTER)
+      { throw new Error('Exceeded maximum number of lines per letter'); }
+    var offset = MAX_LINES_PER_LETTER * ELMTS_PER_LINE * charCode;
+    for (var i = 0; i < lines.length; i++) {
+      var line$1 = lines[i];
+      if (line$1.length > ELMTS_PER_LINE)
+        { throw new Error('Unexpected line format'); }
+      for (var j = 0; j < line$1.length; j++)
+        { letterLines[offset + i * ELMTS_PER_LINE + j] = Math.round((line$1[j] + 0.5) * 255); }
+    }
+    var line = lines[lines.length - 1];
+    for (var i$1 = 0; i$1 < MAX_LINES_PER_LETTER - lines.length; i$1++) {
+      for (var j$1 = 0; j$1 < line.length; j$1++)
+        { letterLines[offset + (lines.length + i$1) * ELMTS_PER_LINE + j$1] = Math.round((line[j$1] + 0.5) * 255); }
+    }
+  }
+  addChar('0', /* l1 */[-.375, -.4, -.375, .4], /* l2 */[.375,  -.4, .375,  .4],
+               /* l3 */[-.375,  .4,  .375, .4], /* l4 */[-.375, -.4, .375, -.4], /* l5 */[-.375, -.4, .375, .4]);
+  addChar('1', [0., -.4, 0., .4], [0., .4, -.125, .3]);
+  addChar('2', [-.375, .4, .375, .4], [-.375, 0., .375, 0.], [-.375, -.375, .375, -.375], [-.375, 0., -.375, -.375], [.375, 0., .4, .375]);
+  addChar('3', [.375, .4, .375, -.375], [-.375, .4, .375, .4], [-.375, 0., .375, 0.], [-.375, -.375, .375, -.375] );
+  addChar('4', [-.375, -.125, .375, -.125], [.2, .4, .2, -.375], [-.375, -.125, .2, .4]);
+  addChar('5', [-.375, 0., -.375, .4], [-.375, .4, .375, .4], [-.375, 0., .375, 0.], [-.375, -.375, .375, -.375], [.375, -.375, .375, 0.]);
+  addChar('6', [-.375, -.375, -.375, .4], [-.375, .4, .375, .4], [-.375, 0., .375, 0.], [-.375, -.375, .375, -.375], [.375, -.375, .375, 0.]);
+  addChar('7', [-.375, .4, .375, .4], [.375, .4, -.375, -.375]);
+  addChar('8', [-.375, -.4, -.375, .4], [.375, -.4, .375, .4], [-.375, .4, .375, .4], [-.375, -.4, .375, -.4], [-.375, 0., .375, 0.]);
+  addChar('9', [-.375, 0., -.375, .4], [.375, -.4, .375, .4], [-.375, .4, .375, .4], [-.375, -.4, .375, -.4], [-.375, 0., .375, 0.]);
+  addChar('A', [-.4, -.4, 0., .4], [0., .4, .4, -.4], [-.25, -.125, .25, -.125]);
+  addChar('B', [-.375, -.4, -.375, .4], [-.375, .4, 0.125, .4], [-.375, .1, 0.25, .1], [-.375, -.4, 0.25, -.4], [0.125, .4, 0.125, .1], [0.25, .1, 0.25, -.4]);
+  addChar('C', [-.375, -.375, -.375, .375], [-.375, .375, .375, .375], [-.375, -.375, .375, -.375]);
+  addChar('D', [-.375, -.4, -.375, .4], [-.375, .4, .25, .4], [-.375, -.4, .25, -.4], [.25, .4, .375, 0.], [.25, -.4, .375, 0.]);
+  addChar('E', [-.375, -.4, -.375, .4], [-.375, .4, .375, .4], [-.375, -.4, .375, -.4], [-.375, .1, .25, .1]);
+  addChar('F', [-.375, -.4, -.375, .4], [-.375, .4, .375, .4], [-.375, 0., .25, 0.]);
+  addChar('G', [-.375, -.375, -.375, .375], [-.375, .375, .375, .375], [-.375, -.375, .375, -.375], [.375, -.375, .375, 0.], [.375, 0., .1, 0.]);
+  addChar('H', [-.375, -.4, -.375, .4], [.375, -.4, .375, .4], [-.375, 0., .375, 0.]);
+  addChar('I', [0., -.4, 0., .4]);
+  addChar('J', [-.125, .5, .125, .5], [0., -.2, 0., .5], [0., -.2, -.25, -.5]);
+  addChar('K', [-.375, -.4, -.375, .4], [-.375, 0., .375, .4], [-.375, 0., .375, -.4]);
+  addChar('L', [-.375, -.4, -.375, .4], [-.375, -.4, .25, -.4]);
+  addChar('M', [-.375, -.4, -.375, .4], [.375, -.4, .375, .4], [-.375, .4, 0., 0.], [.375, .4, 0., 0.]);
+  addChar('N', [-.375, -.4, -.375, .4], [.375, -.4, .375, .4], [-.375, .4, .375, -.4]);
+  addChar('O', [-.375, -.4, -.375, .4], [.375, -.4, .375, .4], [-.375, .4, .375, .4], [-.375, -.4, .375, -.4]);
+  addChar('P', [-.375, -.4, -.375, .4], [.375, .4, .375, 0.], [-.375, .4, .375, .4], [-.375, 0., .375, 0.]);
+  addChar('Q', [-.375, -.4, -.375, .4], [.375, -.4, .375, .4], [-.375, .4, .375, .4], [-.375, -.4, .375, -.4], [.2, -.2, .5, -.5]);
+  addChar('R', [-.375, -.4, -.375, .4], [.375, .4, .375, 0.], [-.375, .4, .375, .4], [-.375, 0., .375, 0.], [-.375, 0., .375, -.4]);
+  addChar('S', [-.375, .4, .375, .4], [-.375, 0., .375, -0.], [-.375, -.4, .375, -.4], [-.375, .4, -.375, 0.], [.375, -.4, .375, 0.]);
+  addChar('T', [0., -.4, 0., .4], [-.375, .4, .375, .4]);
+  addChar('U', [-.375, -.4, -.375, .4], [.375, -.4, .375, .4], [-.375, -.4, .375, -.4]);
+  addChar('V', [-.375, .4, 0., -.4], [.375, .4, 0., -.4]);
+  addChar('W', [-.375, -.4, -.375, .4], [.375, -.4, .375, .4], [-.375, -.4, 0., 0.], [.375, -.4, 0., 0.]);
+  addChar('X', [-.375, -.4, .375, .4], [-.375, .4, .375, -.4]);
+  addChar('Y', [-.375, -.5, .375, .4], [-.375, .4, 0., 0.]);
+  addChar('Z', [-.375, -.4, .375, -.4], [-.375, .4, .375, .4], [-.375, -.4, .375, .4]);
+  return letterLines;
+}
+
+var LetterLines = CreateFontData();
+
 var LettersEffect = /*@__PURE__*/(function (Effect$$1) {
   function LettersEffect () {
     Effect$$1.apply(this, arguments);
@@ -21119,6 +21190,13 @@ var LettersEffect = /*@__PURE__*/(function (Effect$$1) {
   LettersEffect.prototype.constructor = LettersEffect;
 
   LettersEffect.register = function register (instance, props, uniforms, vertexShader, fragmentShader, attributes, varyings) {
+    var numLetterLines = NUM_LETTERS * MAX_LINES_PER_LETTER;
+    var ref = props.state.createTexture({ data: LetterLines, width: numLetterLines, height: 1, format: 'rgba' });
+    var linesId = ref.id;
+    var linesText = ref.texture;
+    var linesUniform = uniforms.addUniform('LetterLines', 'sampler2D', linesText);
+    var linesLenUniform = uniforms.addUniform('LetterLinesLength', 'float', numLetterLines);
+
     var selectLetterBy = instance.config.selectLetterBy || 'hue';
     fragmentShader.addFunction('pointToLineDist', "\n      // https://stackoverflow.com/a/1501725/1468532\n      float pointToLineDist(vec2 p, vec2 v, vec2 w) {\n        // Return minimum distance between line segment vw and point p\n        float l2 = pow(distance(v, w), 2.);  // i.e. |w-v|^2 -  avoid a sqrt\n        if (l2 == 0.0) return distance(p, v);   // v == w case\n        // Consider the line extending the segment, parameterized as v + t (w - v).\n        // We find projection of point p onto the line.\n        // It falls where t = [(p-v) . (w-v)] / |w-v|^2\n        // We clamp t from [0,1] to handle points outside the segment vw.\n        float t = max(0., min(1., dot(p - v, w - v) / l2));\n        vec2 projection = v + t * (w - v);  // Projection falls on the segment\n        return distance(p, projection);\n      }\n    ");
     if (selectLetterBy === 'hue')
@@ -21134,42 +21212,16 @@ var LettersEffect = /*@__PURE__*/(function (Effect$$1) {
       text = text.repeat(Math.ceil(px * py / text.length));
       text = text.substring(0, px * py);
       var textData = enc.encode(text);
-      var ref = props.state.createBuffer(textData);
-      var id = ref.id;
-      var textBuffer = ref.buffer;
+      var ref$1 = props.state.createBuffer(textData);
+      var id = ref$1.id;
+      var textBuffer = ref$1.buffer;
       var charAttr = attributes.add('textCharacterAttr', 'float', textBuffer);
       var charVar = varyings.addVarying('textCharacter', 'float');
       vertexShader.mainBody += charVar + " = float(" + charAttr + ");";
       fragmentShader.addFunction('colorToLetter', ("\n        int colorToLetter(vec3 color) {\n          return int(" + charVar + ");\n        }\n      "));
     } else
       { throw new Error(("Unknown value for letter effect's select-letter-by option: " + selectLetterBy)); }
-    fragmentShader.addFunction('getDistFromA', "\n      float getDistFromA(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.4, -.4),      vec2(0., .4));\n        float d2 = pointToLineDist(coord, vec2(0., .4),        vec2(.4, -.4));\n        float d3 = pointToLineDist(coord, vec2(-.25, -.125), vec2(.25, -.125));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromB', "\n      float getDistFromB(vec2 coord) {\n        // Back line\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4),  vec2(-.375, .4));\n        // horizontal lines\n        float d2 = pointToLineDist(coord, vec2(-.375, .4),   vec2(0.125, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, .1),   vec2(0.25, .1));\n        float d4 = pointToLineDist(coord, vec2(-.375, -.4),  vec2(0.25, -.4));\n        // vertical lines\n        float d5 = pointToLineDist(coord, vec2(0.125, .4),    vec2(0.125, .1));\n        float d6 = pointToLineDist(coord, vec2(0.25, .1), vec2(0.25, -.4));\n        float dist = min(min(min(min(min(d1, d2), d3), d4), d5), d6);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromC', "\n      float getDistFromC(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.375), vec2(-.375, .375));\n        float d2 = pointToLineDist(coord, vec2(-.375, .375),  vec2(.375, .375));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.375), vec2(.375, -.375));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromD', "\n      float getDistFromD(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.25, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.25, -.4));\n        float d4 = pointToLineDist(coord, vec2(.25, .4),    vec2(.375, 0.));\n        float d5 = pointToLineDist(coord, vec2(.25, -.4),   vec2(.375, 0.));\n        float dist = min(min(min(min(d1, d2), d3), d4), d5);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromE', "\n      float getDistFromE(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));\n        float d4 = pointToLineDist(coord, vec2(-.375, .1),  vec2(.25, .1));\n        float dist = min(min(min(d1, d2), d3), d4);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromF', "\n      float getDistFromF(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, 0.),  vec2(.25, 0.));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromG', "\n      float getDistFromG(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.375), vec2(-.375, .375));\n        float d2 = pointToLineDist(coord, vec2(-.375, .375),  vec2(.375, .375));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.375), vec2(.375, -.375));\n        float d4 = pointToLineDist(coord, vec2(.375, -.375), vec2(.375, 0.));\n        float d5 = pointToLineDist(coord, vec2(.375, 0.), vec2(.1, 0.));\n        float dist = min(min(min(min(d1, d2), d3), d4), d5);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromH', "\n      float getDistFromH(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, 0.));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromI', "\n      float getDistFromI(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(0., -.4), vec2(0., .4));\n        float dist = d1;\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromJ', "\n      float getDistFromJ(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.125, .5), vec2(.125, .5));\n        float d2 = pointToLineDist(coord, vec2(0., -.2), vec2(0., .5));\n        float d3 = pointToLineDist(coord, vec2(0., -.2), vec2(-.25, -.5));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromK', "\n      float getDistFromK(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, -.4));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromL', "\n      float getDistFromL(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.25, -.4));\n        float dist = min(d1, d2);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromM', "\n      float getDistFromM(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(0., 0.));\n        float d4 = pointToLineDist(coord, vec2(.375, .4),   vec2(0., 0.));\n        float dist = min(min(min(d1, d2), d3), d4);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromN', "\n      float getDistFromN(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, -.4));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromO', "\n      float getDistFromO(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));\n        float d4 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));\n        float dist = min(min(min(d1, d2), d3), d4);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromP', "\n      float getDistFromP(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(.375, .4),   vec2(.375, 0.));\n        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));\n        float d4 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, 0.));\n        float dist = min(min(min(d1, d2), d3), d4);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromQ', "\n      float getDistFromQ(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));\n        float d4 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));\n        float d5 = pointToLineDist(coord, vec2(.2, -.2), vec2(.5, -.5));\n        float dist = min(min(min(min(d1, d2), d3), d4), d5);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromR', "\n      float getDistFromR(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(.375, .4),   vec2(.375, 0.));\n        float d3 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));\n        float d4 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, 0.));\n        float d5 = pointToLineDist(coord, vec2(-.375, 0.), vec2(.375, -.4));\n        float dist = min(min(min(min(d1, d2), d3), d4), d5);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromS', "\n      float getDistFromS(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, 0.),  vec2(.375, -0.));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));\n        float d4 = pointToLineDist(coord, vec2(-.375, .4),  vec2(-.375, 0.));\n        float d5 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, 0.));\n        float dist = min(min(min(min(d1, d2), d3), d4), d5);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromT', "\n      float getDistFromT(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(0., -.4),   vec2(0., .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4), vec2(.375, .4));\n        float dist = min(d1, d2);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromU', "\n      float getDistFromU(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromV', "\n      float getDistFromV(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, .4), vec2(0., -.4));\n        float d2 = pointToLineDist(coord, vec2(.375, .4),  vec2(0., -.4));\n        float dist = min(d1, d2);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromW', "\n      float getDistFromW(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(-.375, .4));\n        float d2 = pointToLineDist(coord, vec2(.375, -.4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.4),  vec2(0., 0.));\n        float d4 = pointToLineDist(coord, vec2(.375, -.4),   vec2(0., 0.));\n        float dist = min(min(min(d1, d2), d3), d4);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromX', "\n      float getDistFromX(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4), vec2(.375, -.4));\n        float dist = min(d1, d2);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromY', "\n      float getDistFromY(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.5), vec2(.375, .4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4), vec2(0., 0.));\n        float dist = min(d1, d2);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getDistFromZ', "\n      float getDistFromZ(vec2 coord) {\n        float d1 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, -.4));\n        float d2 = pointToLineDist(coord, vec2(-.375, .4),  vec2(.375, .4));\n        float d3 = pointToLineDist(coord, vec2(-.375, -.4), vec2(.375, .4));\n        float dist = min(min(d1, d2), d3);\n        return dist;\n      }\n    ");
-    fragmentShader.addFunction('getLetterOpacity', "\n      float getLetterOpacity(int letter, vec2 coord) {\n        float dist = 0.;\n        if (letter == 65)\n          dist = getDistFromA(coord);\n        else if (letter == 66)\n          dist = getDistFromB(coord);\n        else if (letter == 67)\n          dist = getDistFromC(coord);\n        else if (letter == 68)\n          dist = getDistFromD(coord);\n        else if (letter == 69)\n          dist = getDistFromE(coord);\n        else if (letter == 70)\n          dist = getDistFromF(coord);\n        else if (letter == 71)\n          dist = getDistFromG(coord);\n        else if (letter == 72)\n          dist = getDistFromH(coord);\n        else if (letter == 73)\n          dist = getDistFromI(coord);\n        else if (letter == 74)\n          dist = getDistFromJ(coord);\n        else if (letter == 75)\n          dist = getDistFromK(coord);\n        else if (letter == 76)\n          dist = getDistFromL(coord);\n        else if (letter == 77)\n          dist = getDistFromM(coord);\n        else if (letter == 78)\n          dist = getDistFromN(coord);\n        else if (letter == 79)\n          dist = getDistFromO(coord);\n        else if (letter == 80)\n          dist = getDistFromP(coord);\n        else if (letter == 81)\n          dist = getDistFromQ(coord);\n        else if (letter == 82)\n          dist = getDistFromR(coord);\n        else if (letter == 83)\n          dist = getDistFromS(coord);\n        else if (letter == 84)\n          dist = getDistFromT(coord);\n        else if (letter == 85)\n          dist = getDistFromU(coord);\n        else if (letter == 86)\n          dist = getDistFromV(coord);\n        else if (letter == 87)\n          dist = getDistFromW(coord);\n        else if (letter == 88)\n          dist = getDistFromX(coord);\n        else if (letter == 89)\n          dist = getDistFromY(coord);\n        else if (letter == 90)\n          dist = getDistFromZ(coord);\n        else if (letter == 9 || letter == 32)\n          dist = 1.;\n        // Opacity is only the distance to the letter atm. Therefore we\n        // do some mathematic magic to get to a more sensible opacity\n        // value\n        float tooFar = .1;\n        float opacity = min(dist, tooFar * .99);\n        opacity = 1. / ((opacity - tooFar) * 100.) + 1.1;\n        return max(min(opacity, 1.), 0.);\n      }\n    ");
+    fragmentShader.addFunction('getLetterOpacity', ("\n      float getLetterOpacity(int letter, vec2 coord) {\n        // Short-cut for whitespace characters\n        if (letter == 9 || letter == 32)\n          return 1.;\n        float dist = 1.;\n        float begin = float(letter * " + MAX_LINES_PER_LETTER + ");\n        for (float i = 0.; i < " + MAX_LINES_PER_LETTER + ".; i += 1.) {\n          vec4 line = texture2D(" + linesUniform + ", vec2((i + begin + .5) / " + linesLenUniform + ", .5));\n          dist = min(dist, pointToLineDist(coord, line.xy - .5, line.zw - .5));\n        }\n        // Opacity is only the distance to the letter atm. Therefore we\n        // do some mathematic magic to get to a more sensible opacity\n        // value\n        float tooFar = .1;\n        float opacity = min(dist, tooFar * .99);\n        opacity = 1. / ((opacity - tooFar) * 100.) + 1.1;\n        return max(min(opacity, 1.), 0.);\n      }\n    "));
     var easeFunc = Ease.setupShaderEasing(instance, uniforms);
     fragmentShader.mainBody += "\n      int letter = colorToLetter(rgb);\n      float ease = " + easeFunc + ";\n      rgb.rgb *= mix(1., getLetterOpacity(letter, point_coord), ease);\n    ";
   };
@@ -33364,6 +33416,7 @@ var RendererState = function RendererState(regl) {
   this.particleData = -1;
   this.particleDataStore = [new ParticleDataStoreEntry(null, '', {x: '', y: ''}, null)];
   this.buffers = [];
+  this.textures = [];
   this.hooks = [];
   this.width = 0;
   this.height = 0;
@@ -33418,9 +33471,13 @@ RendererState.prototype.adaptToConfig = function adaptToConfig (config) {
     this.buffers[i$1].destroy();
   }
   this.buffers.length = 0;
+  for (var i$2 = 0; i$2 < this.textures.length; i$2++) {
+    this.textures[i$2].destroy();
+  }
+  this.textures.length = 0;
   // run hooks
-  for (var i$2 = 0; i$2 < this.hooks.length; i$2++) {
-    this.hooks[i$2]();
+  for (var i$3 = 0; i$3 < this.hooks.length; i$3++) {
+    this.hooks[i$3]();
   }
 };
 RendererState.prototype.setParticleData = function setParticleData (id) {
@@ -33478,12 +33535,14 @@ RendererState.prototype.createBuffer = function createBuffer () {
   this.buffers.push(buf);
   return { id: this.buffers.length - 1, buffer: buf };
 };
-RendererState.prototype.destroyBuffer = function destroyBuffer (id) {
-  if (id < 0 || id >= this.buffers.length) {
-    throw new Error('Illegal buffer id given for destruction');
-  }
-  this.buffers[id].destroy();
-  this.buffers.splice(id, 1);
+RendererState.prototype.createTexture = function createTexture () {
+    var ref;
+
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ];
+  var tex = (ref = this.regl).texture.apply(ref, args);
+  this.textures.push(tex);
+  return { id: this.textures.length - 1, texture: tex };
 };
 RendererState.prototype.isValid = function isValid () {
   return this.particleData >= 0 && this.pipeline.isValid();
