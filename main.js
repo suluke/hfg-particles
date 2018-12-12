@@ -1291,8 +1291,8 @@ var parseColor = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2018-12-12T18:24:41.609Z',
-  git_rev:               'b7a16b4',
+  timestamp:             '2018-12-12T19:28:58.855Z',
+  git_rev:               '88cdb78',
   export_schema_version: 0
 };
 
@@ -21253,13 +21253,97 @@ var LettersEffect = /*@__PURE__*/(function (Effect$$1) {
   return LettersEffect;
 }(Effect));
 
-var EffectName$19 = 'Dummy';
-var EffectDescription$19 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
+var EffectName$19 = 'Particle Scaling';
+var EffectDescription$19 = 'Modifies the size of the ';
+
+var ParticlesScalingConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
+  function ParticlesScalingConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    var classPrefix = 'effect-particles-scaling';
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$19 + "</legend>\n        <label>\n          Scale to: <input type=\"number\" min=\"1\" step=\"1\" value=\"100\" class=\"" + classPrefix + "-scale\">%\n        </label>\n        <br/>\n      </fieldset>\n    "));
+    var ui = this.element;
+    this.scaleInput = ui.querySelector(("." + classPrefix + "-scale"));
+
+    this.scaleInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+
+    Ease.extend(this);
+  }
+
+  if ( ConfigUI$$1 ) ParticlesScalingConfigUI.__proto__ = ConfigUI$$1;
+  ParticlesScalingConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  ParticlesScalingConfigUI.prototype.constructor = ParticlesScalingConfigUI;
+
+  ParticlesScalingConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  ParticlesScalingConfigUI.prototype.getConfig = function getConfig () {
+    return {
+      scale: parseInt(this.scaleInput.value || 100) / 100
+    };
+  };
+
+  ParticlesScalingConfigUI.prototype.applyConfig = function applyConfig (config) {
+    var scale = config.scale || 1.;
+    this.scaleInput.value = Math.round(scale * 100);
+  };
+
+  return ParticlesScalingConfigUI;
+}(ConfigUI));
+
+var ParticlesScalingEffect = /*@__PURE__*/(function (Effect$$1) {
+  function ParticlesScalingEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) ParticlesScalingEffect.__proto__ = Effect$$1;
+  ParticlesScalingEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  ParticlesScalingEffect.prototype.constructor = ParticlesScalingEffect;
+
+  ParticlesScalingEffect.register = function register (instance, props, uniforms, vertexShader) {
+    var scale = instance.config.scale || 1.;
+    var easeFunc = Ease.setupShaderEasing(instance, uniforms);
+    vertexShader.mainBody += "\n      float ease = " + easeFunc + ";\n      pointSize *= mix(1., float(" + scale + "), ease);\n    ";
+  };
+
+  ParticlesScalingEffect.getDisplayName = function getDisplayName () {
+    return EffectName$19;
+  };
+
+  ParticlesScalingEffect.getDescription = function getDescription () {
+    return EffectDescription$19;
+  };
+
+  ParticlesScalingEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new ParticlesScalingConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  ParticlesScalingEffect.getDefaultConfig = function getDefaultConfig () {
+    return {};
+  };
+
+  ParticlesScalingEffect.getRandomConfig = function getRandomConfig () {
+    return {};
+  };
+
+  return ParticlesScalingEffect;
+}(Effect));
+
+var EffectName$20 = 'Dummy';
+var EffectDescription$20 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
 
 var DummyConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function DummyConfigUI() {
     ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$19 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$20 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
     var ui = this.element;
   }
 
@@ -21294,11 +21378,11 @@ var DummyEffect = /*@__PURE__*/(function (Effect$$1) {
   };
 
   DummyEffect.getDisplayName = function getDisplayName () {
-    return EffectName$19;
+    return EffectName$20;
   };
 
   DummyEffect.getDescription = function getDescription () {
-    return EffectDescription$19;
+    return EffectDescription$20;
   };
 
   DummyEffect.getConfigUI = function getConfigUI () {
@@ -21341,6 +21425,7 @@ var effectList = [
   WebcamEffect,
   VignetteEffect,
   LettersEffect,
+  ParticlesScalingEffect,
 
   // Should be last
   DummyEffect
