@@ -17,6 +17,7 @@ import WebcamEffect from './webcam';
 import ParticlesReduceEffect from './particles-reduce';
 import VignetteEffect from './vignette';
 import LettersEffect from './letters';
+import ParticlesScalingEffect from './particle-scaling';
 
 // should be last
 import DummyEffect from './dummy';
@@ -41,6 +42,7 @@ const effectList = [
   WebcamEffect,
   VignetteEffect,
   LettersEffect,
+  ParticlesScalingEffect,
 
   // Should be last
   DummyEffect
