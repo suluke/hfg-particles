@@ -9,6 +9,9 @@ import ErrorManager from './error-manager';
 import Config from './config';
 import { allPresets } from './presets/index.js';
 
+// We want this to be constant and browsers seem to change it on zoom
+const DevicePixelRatio = window.devicePixelRatio || 1.;
+
 const errorManager = new ErrorManager(function() {
   console.info(Config);
 
@@ -63,11 +66,8 @@ const errorManager = new ErrorManager(function() {
   window.addEventListener("hashchange", tryLoadFromHash);
 
   const adjustCanvasSize = () => {
-    let dpr = window.devicePixelRatio;
-    if (!dpr)
-      dpr = 1;
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
+    canvas.width = window.innerWidth * DevicePixelRatio;
+    canvas.height = window.innerHeight * DevicePixelRatio;
     renderer.resize(canvas.width, canvas.height);
   };
   window.addEventListener('resize', adjustCanvasSize);
