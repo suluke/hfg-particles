@@ -1291,7 +1291,7 @@ var parseColor = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2018-12-14T00:11:35.007Z',
+  timestamp:             '2018-12-14T10:12:47.024Z',
   git_rev:               '1a89abe',
   export_schema_version: 0
 };
@@ -33825,6 +33825,9 @@ Renderer.prototype.getFPS = function getFPS () {
   return Math.round(1000 / this.frameTime);
 };
 
+// We want this to be constant and browsers seem to change it on zoom
+var DevicePixelRatio = window.devicePixelRatio || 1.;
+
 var errorManager = new ErrorManager(function() {
   console.info(Config);
 
@@ -33879,11 +33882,8 @@ var errorManager = new ErrorManager(function() {
   window.addEventListener("hashchange", tryLoadFromHash);
 
   var adjustCanvasSize = function () {
-    var dpr = window.devicePixelRatio;
-    if (!dpr)
-      { dpr = 1; }
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
+    canvas.width = window.innerWidth * DevicePixelRatio;
+    canvas.height = window.innerHeight * DevicePixelRatio;
     renderer.resize(canvas.width, canvas.height);
   };
   window.addEventListener('resize', adjustCanvasSize);
