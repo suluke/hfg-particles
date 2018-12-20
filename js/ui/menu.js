@@ -385,7 +385,6 @@ class EffectList {
     const effectListItems = this.effectList.querySelectorAll('li');
     const applyFilter = () => {
       const filters = this.filterInput.value.toLowerCase().split(' ');
-      console.log(filters);
       for (let i = 0; i < effects.length; i++) {
         const effect = effects[i];
         const name = effect.getDisplayName().toLowerCase();

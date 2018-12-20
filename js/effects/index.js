@@ -18,6 +18,7 @@ import ParticlesReduceEffect from './particles-reduce';
 import VignetteEffect from './vignette';
 import LettersEffect from './letters';
 import ParticlesScalingEffect from './particle-scaling';
+import RotateEffect from './rotate';
 
 // should be last
 import DummyEffect from './dummy';
@@ -43,6 +44,7 @@ const effectList = [
   VignetteEffect,
   LettersEffect,
   ParticlesScalingEffect,
+  RotateEffect,
 
   // Should be last
   DummyEffect

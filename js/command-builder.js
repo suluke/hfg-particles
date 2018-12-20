@@ -123,7 +123,7 @@ export default class CommandBuilder {
         vec3 hsv = rgb2hsv(rgb);
         vec3 initialPosition = vec3(texcoord, 0);
         float pointSize = max(particleSize, 0.);
-
+        // Position ranges from 0 to 1 in each dimension
         vec3 position = initialPosition;
       `;
       frag.mainBody += `

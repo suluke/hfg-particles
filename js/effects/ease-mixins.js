@@ -77,10 +77,24 @@ export default class Ease {
     };
   }
 
+  static getCurrentEase(instance, props) {
+    const easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
+    const easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
+    const time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+    const easeInProgress = Math.min(1, time / (easeInTime / instance.getPeriod()));
+    const easeOutProgress =  Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
+    const easeFuncs = {
+      none: 1.,
+      sine: (1. - Math.cos(Math.PI * Math.min(easeInProgress, easeOutProgress))) / 2.,
+      linear: Math.min(easeInProgress, easeOutProgress)
+    };
+    return easeFuncs[instance.config.easeFunc || 'none'];
+  }
+
   static setupShaderEasing(instance, uniforms) {
     const easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
     const easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
-    // starts at 0, goes down to 1
+    // starts at 0, goes up to 1
     const easeInProgress = uniforms.addUniform('easeInProgress', 'float', (ctx, props) => {
       const time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
       return Math.min(1, time / (easeInTime / instance.getPeriod()));
