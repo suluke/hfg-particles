@@ -145,6 +145,1555 @@ DoubleClickFullscreen.prototype.reset = function reset () {
   }
 };
 
+/**
+ * A tool for presenting an ArrayBuffer as a stream for writing some simple data types.
+ * 
+ * By Nicholas Sherlock
+ * 
+ * Released under the WTFPLv2 https://en.wikipedia.org/wiki/WTFPL
+ */
+
+/*
+ * Create an ArrayBuffer of the given length and present it as a writable stream with methods
+ * for writing data in different formats.
+ */
+var ArrayBufferDataStream = function(length) {
+    this.data = new Uint8Array(length);
+    this.pos = 0;
+};
+
+ArrayBufferDataStream.prototype.seek = function(offset) {
+    this.pos = offset;
+};
+
+ArrayBufferDataStream.prototype.writeBytes = function(arr) {
+    for (var i = 0; i < arr.length; i++) {
+        this.data[this.pos++] = arr[i];
+    }
+};
+
+ArrayBufferDataStream.prototype.writeByte = function(b) {
+    this.data[this.pos++] = b;
+};
+
+//Synonym:
+ArrayBufferDataStream.prototype.writeU8 = ArrayBufferDataStream.prototype.writeByte;
+
+ArrayBufferDataStream.prototype.writeU16BE = function(u) {
+    this.data[this.pos++] = u >> 8;
+    this.data[this.pos++] = u;
+};
+
+ArrayBufferDataStream.prototype.writeDoubleBE = function(d) {
+    var 
+        bytes = new Uint8Array(new Float64Array([d]).buffer);
+    
+    for (var i = bytes.length - 1; i >= 0; i--) {
+        this.writeByte(bytes[i]);
+    }
+};
+
+ArrayBufferDataStream.prototype.writeFloatBE = function(d) {
+    var 
+        bytes = new Uint8Array(new Float32Array([d]).buffer);
+    
+    for (var i = bytes.length - 1; i >= 0; i--) {
+        this.writeByte(bytes[i]);
+    }
+};
+
+/**
+ * Write an ASCII string to the stream
+ */
+ArrayBufferDataStream.prototype.writeString = function(s) {
+    for (var i = 0; i < s.length; i++) {
+        this.data[this.pos++] = s.charCodeAt(i);
+    }
+};
+
+/**
+ * Write the given 32-bit integer to the stream as an EBML variable-length integer using the given byte width 
+ * (use measureEBMLVarInt).
+ * 
+ * No error checking is performed to ensure that the supplied width is correct for the integer.
+ * 
+ * @param i Integer to be written
+ * @param width Number of bytes to write to the stream
+ */
+ArrayBufferDataStream.prototype.writeEBMLVarIntWidth = function(i, width) {
+    switch (width) {
+        case 1:
+            this.writeU8((1 << 7) | i);
+        break;
+        case 2:
+            this.writeU8((1 << 6) | (i >> 8));
+            this.writeU8(i);
+        break;
+        case 3:
+            this.writeU8((1 << 5) | (i >> 16));
+            this.writeU8(i >> 8);
+            this.writeU8(i);
+        break;
+        case 4:
+            this.writeU8((1 << 4) | (i >> 24));
+            this.writeU8(i >> 16);
+            this.writeU8(i >> 8);
+            this.writeU8(i);
+        break;
+        case 5:
+            /* 
+             * JavaScript converts its doubles to 32-bit integers for bitwise operations, so we need to do a 
+             * division by 2^32 instead of a right-shift of 32 to retain those top 3 bits
+             */
+            this.writeU8((1 << 3) | ((i / 4294967296) & 0x7)); 
+            this.writeU8(i >> 24);
+            this.writeU8(i >> 16);
+            this.writeU8(i >> 8);
+            this.writeU8(i);
+        break;
+        default:
+            throw new RuntimeException("Bad EBML VINT size " + width);
+    }
+};
+
+/**
+ * Return the number of bytes needed to encode the given integer as an EBML VINT.
+ */
+ArrayBufferDataStream.prototype.measureEBMLVarInt = function(val) {
+    if (val < (1 << 7) - 1) { 
+        /* Top bit is set, leaving 7 bits to hold the integer, but we can't store 127 because
+         * "all bits set to one" is a reserved value. Same thing for the other cases below:
+         */
+        return 1;
+    } else if (val < (1 << 14) - 1) {
+        return 2;
+    } else if (val < (1 << 21) - 1) {
+        return 3;
+    } else if (val < (1 << 28) - 1) {
+        return 4;
+    } else if (val < 34359738367) { // 2 ^ 35 - 1 (can address 32GB)
+        return 5;
+    } else {
+        throw new RuntimeException("EBML VINT size not supported " + val);
+    }
+};
+
+ArrayBufferDataStream.prototype.writeEBMLVarInt = function(i) {
+    this.writeEBMLVarIntWidth(i, this.measureEBMLVarInt(i));
+};
+
+/**
+ * Write the given unsigned 32-bit integer to the stream in big-endian order using the given byte width.
+ * No error checking is performed to ensure that the supplied width is correct for the integer.
+ * 
+ * Omit the width parameter to have it determined automatically for you.
+ * 
+ * @param u Unsigned integer to be written
+ * @param width Number of bytes to write to the stream
+ */
+ArrayBufferDataStream.prototype.writeUnsignedIntBE = function(u, width) {
+    if (width === undefined) {
+        width = this.measureUnsignedInt(u);
+    }
+    
+    // Each case falls through:
+    switch (width) {
+        case 5:
+            this.writeU8(Math.floor(u / 4294967296)); // Need to use division to access >32 bits of floating point var
+        case 4:
+            this.writeU8(u >> 24);
+        case 3:
+            this.writeU8(u >> 16);
+        case 2:
+            this.writeU8(u >> 8);
+        case 1:
+            this.writeU8(u);
+        break;
+        default:
+            throw new RuntimeException("Bad UINT size " + width);
+    }
+};
+
+/**
+ * Return the number of bytes needed to hold the non-zero bits of the given unsigned integer.
+ */
+ArrayBufferDataStream.prototype.measureUnsignedInt = function(val) {
+    // Force to 32-bit unsigned integer
+    if (val < (1 << 8)) {
+        return 1;
+    } else if (val < (1 << 16)) {
+        return 2;
+    } else if (val < (1 << 24)) {
+        return 3;
+    } else if (val < 4294967296) {
+        return 4;
+    } else {
+        return 5;
+    }
+};
+
+/**
+ * Return a view on the portion of the buffer from the beginning to the current seek position as a Uint8Array.
+ */
+ArrayBufferDataStream.prototype.getAsDataArray = function() {
+    if (this.pos < this.data.byteLength) {
+        return this.data.subarray(0, this.pos);
+    } else if (this.pos == this.data.byteLength) {
+        return this.data;
+    } else {
+        throw "ArrayBufferDataStream's pos lies beyond end of buffer";
+    }
+};
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = ArrayBufferDataStream;
+} else {
+    window.ArrayBufferDataStream = ArrayBufferDataStream;
+}
+
+/**
+ * Allows a series of Blob-convertible objects (ArrayBuffer, Blob, String, etc) to be added to a buffer. Seeking and
+ * overwriting of blobs is allowed.
+ * 
+ * You can supply a FileWriter, in which case the BlobBuffer is just used as temporary storage before it writes it 
+ * through to the disk.
+ * 
+ * By Nicholas Sherlock
+ * 
+ * Released under the WTFPLv2 https://en.wikipedia.org/wiki/WTFPL
+ */
+var BlobBuffer = function(fs) {
+    return function(destination) {
+        var
+            buffer = [],
+            writePromise = Promise.resolve(),
+            fileWriter = null,
+            fd = null;
+        
+        if (typeof FileWriter !== "undefined" && destination instanceof FileWriter) {
+            fileWriter = destination;
+        } else if (fs && destination) {
+            fd = destination;
+        }
+        
+        // Current seek offset
+        this.pos = 0;
+        
+        // One more than the index of the highest byte ever written
+        this.length = 0;
+        
+        // Returns a promise that converts the blob to an ArrayBuffer
+        function readBlobAsBuffer(blob) {
+            return new Promise(function (resolve, reject) {
+                var
+                    reader = new FileReader();
+                
+                reader.addEventListener("loadend", function () {
+                    resolve(reader.result);
+                });
+                
+                reader.readAsArrayBuffer(blob);
+            });
+        }
+        
+        function convertToUint8Array(thing) {
+            return new Promise(function (resolve, reject) {
+                if (thing instanceof Uint8Array) {
+                    resolve(thing);
+                } else if (thing instanceof ArrayBuffer || ArrayBuffer.isView(thing)) {
+                    resolve(new Uint8Array(thing));
+                } else if (thing instanceof Blob) {
+                    resolve(readBlobAsBuffer(thing).then(function (buffer) {
+                        return new Uint8Array(buffer);
+                    }));
+                } else {
+                    //Assume that Blob will know how to read this thing
+                    resolve(readBlobAsBuffer(new Blob([thing])).then(function (buffer) {
+                        return new Uint8Array(buffer);
+                    }));
+                }
+            });
+        }
+        
+        function measureData(data) {
+            var
+                result = data.byteLength || data.length || data.size;
+            
+            if (!Number.isInteger(result)) {
+                throw "Failed to determine size of element";
+            }
+            
+            return result;
+        }
+        
+        /**
+         * Seek to the given absolute offset.
+         *
+         * You may not seek beyond the end of the file (this would create a hole and/or allow blocks to be written in non-
+         * sequential order, which isn't currently supported by the memory buffer backend).
+         */
+        this.seek = function (offset) {
+            if (offset < 0) {
+                throw "Offset may not be negative";
+            }
+            
+            if (isNaN(offset)) {
+                throw "Offset may not be NaN";
+            }
+            
+            if (offset > this.length) {
+                throw "Seeking beyond the end of file is not allowed";
+            }
+            
+            this.pos = offset;
+        };
+        
+        /**
+         * Write the Blob-convertible data to the buffer at the current seek position.
+         *
+         * Note: If overwriting existing data, the write must not cross preexisting block boundaries (written data must
+         * be fully contained by the extent of a previous write).
+         */
+        this.write = function (data) {
+            var
+                newEntry = {
+                    offset: this.pos,
+                    data: data,
+                    length: measureData(data)
+                },
+                isAppend = newEntry.offset >= this.length;
+            
+            this.pos += newEntry.length;
+            this.length = Math.max(this.length, this.pos);
+            
+            // After previous writes complete, perform our write
+            writePromise = writePromise.then(function () {
+                if (fd) {
+                    return new Promise(function(resolve, reject) {
+                        convertToUint8Array(newEntry.data).then(function(dataArray) {
+                            var
+                                totalWritten = 0,
+                                buffer = Buffer.from(dataArray.buffer),
+                                
+                                handleWriteComplete = function(err, written, buffer) {
+                                    totalWritten += written;
+                                    
+                                    if (totalWritten >= buffer.length) {
+                                        resolve();
+                                    } else {
+                                        // We still have more to write...
+                                        fs.write(fd, buffer, totalWritten, buffer.length - totalWritten, newEntry.offset + totalWritten, handleWriteComplete);
+                                    }
+                                };
+                            
+                            fs.write(fd, buffer, 0, buffer.length, newEntry.offset, handleWriteComplete);
+                        });
+                    });
+                } else if (fileWriter) {
+                    return new Promise(function (resolve, reject) {
+                        fileWriter.onwriteend = resolve;
+                        
+                        fileWriter.seek(newEntry.offset);
+                        fileWriter.write(new Blob([newEntry.data]));
+                    });
+                } else if (!isAppend) {
+                    // We might be modifying a write that was already buffered in memory.
+                    
+                    // Slow linear search to find a block we might be overwriting
+                    for (var i = 0; i < buffer.length; i++) {
+                        var
+                            entry = buffer[i];
+                        
+                        // If our new entry overlaps the old one in any way...
+                        if (!(newEntry.offset + newEntry.length <= entry.offset || newEntry.offset >= entry.offset + entry.length)) {
+                            if (newEntry.offset < entry.offset || newEntry.offset + newEntry.length > entry.offset + entry.length) {
+                                throw new Error("Overwrite crosses blob boundaries");
+                            }
+                            
+                            if (newEntry.offset == entry.offset && newEntry.length == entry.length) {
+                                // We overwrote the entire block
+                                entry.data = newEntry.data;
+                                
+                                // We're done
+                                return;
+                            } else {
+                                return convertToUint8Array(entry.data)
+                                    .then(function (entryArray) {
+                                        entry.data = entryArray;
+                                        
+                                        return convertToUint8Array(newEntry.data);
+                                    }).then(function (newEntryArray) {
+                                        newEntry.data = newEntryArray;
+                                        
+                                        entry.data.set(newEntry.data, newEntry.offset - entry.offset);
+                                    });
+                            }
+                        }
+                    }
+                    // Else fall through to do a simple append, as we didn't overwrite any pre-existing blocks
+                }
+                
+                buffer.push(newEntry);
+            });
+        };
+        
+        /**
+         * Finish all writes to the buffer, returning a promise that signals when that is complete.
+         *
+         * If a FileWriter was not provided, the promise is resolved with a Blob that represents the completed BlobBuffer
+         * contents. You can optionally pass in a mimeType to be used for this blob.
+         *
+         * If a FileWriter was provided, the promise is resolved with null as the first argument.
+         */
+        this.complete = function (mimeType) {
+            if (fd || fileWriter) {
+                writePromise = writePromise.then(function () {
+                    return null;
+                });
+            } else {
+                // After writes complete we need to merge the buffer to give to the caller
+                writePromise = writePromise.then(function () {
+                    var
+                        result = [];
+                    
+                    for (var i = 0; i < buffer.length; i++) {
+                        result.push(buffer[i].data);
+                    }
+                    
+                    return new Blob(result, {mimeType: mimeType});
+                });
+            }
+            
+            return writePromise;
+        };
+    };
+};
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = BlobBuffer(require('fs'));
+} else {
+    window.BlobBuffer = BlobBuffer(null);
+}
+
+/**
+ * WebM video encoder for Google Chrome. This implementation is suitable for creating very large video files, because
+ * it can stream Blobs directly to a FileWriter without buffering the entire video in memory.
+ * 
+ * When FileWriter is not available or not desired, it can buffer the video in memory as a series of Blobs which are 
+ * eventually returned as one composite Blob.
+ * 
+ * By Nicholas Sherlock.
+ * 
+ * Based on the ideas from Whammy: https://github.com/antimatter15/whammy
+ * 
+ * Released under the WTFPLv2 https://en.wikipedia.org/wiki/WTFPL
+ */
+
+var WebMWriter = function(ArrayBufferDataStream, BlobBuffer) {
+    function extend(base, top) {
+        var
+            target = {};
+        
+        [base, top].forEach(function(obj) {
+            for (var prop in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+                    target[prop] = obj[prop];
+                }
+            }
+        });
+        
+        return target;
+    }
+    
+    /**
+     * Decode a Base64 data URL into a binary string.
+     *
+     * Returns the binary string, or false if the URL could not be decoded.
+     */
+    function decodeBase64WebPDataURL(url) {
+        if (typeof url !== "string" || !url.match(/^data:image\/webp;base64,/i)) {
+            return false;
+        }
+        
+        return window.atob(url.substring("data:image\/webp;base64,".length));
+    }
+    
+    /**
+     * Convert a raw binary string (one character = one output byte) to an ArrayBuffer
+     */
+    function renderAsWebP(canvas, quality) {
+        var
+            frame = canvas.toDataURL('image/webp', {quality: quality});
+        
+        return decodeBase64WebPDataURL(frame);
+    }
+    
+    function extractKeyframeFromWebP(webP) {
+        // Assume that Chrome will generate a Simple Lossy WebP which has this header:
+        var
+            keyframeStartIndex = webP.indexOf('VP8 ');
+        
+        if (keyframeStartIndex == -1) {
+            throw "Failed to identify beginning of keyframe in WebP image";
+        }
+        
+        // Skip the header and the 4 bytes that encode the length of the VP8 chunk
+        keyframeStartIndex += 'VP8 '.length + 4;
+        
+        return webP.substring(keyframeStartIndex);
+    }
+    
+    // Just a little utility so we can tag values as floats for the EBML encoder's benefit
+    function EBMLFloat32(value) {
+        this.value = value;
+    }
+    
+    function EBMLFloat64(value) {
+        this.value = value;
+    }
+    
+    /**
+     * Write the given EBML object to the provided ArrayBufferStream.
+     *
+     * The buffer's first byte is at bufferFileOffset inside the video file. This is used to complete offset and
+     * dataOffset fields in each EBML structure, indicating the file offset of the first byte of the EBML element and
+     * its data payload.
+     */
+    function writeEBML(buffer, bufferFileOffset, ebml) {
+        // Is the ebml an array of sibling elements?
+        if (Array.isArray(ebml)) {
+            for (var i = 0; i < ebml.length; i++) {
+                writeEBML(buffer, bufferFileOffset, ebml[i]);
+            }
+        // Is this some sort of raw data that we want to write directly?
+        } else if (typeof ebml === "string") {
+            buffer.writeString(ebml);
+        } else if (ebml instanceof Uint8Array) {
+            buffer.writeBytes(ebml);
+        } else if (ebml.id){
+            // We're writing an EBML element
+            ebml.offset = buffer.pos + bufferFileOffset;
+            
+            buffer.writeUnsignedIntBE(ebml.id); // ID field
+            
+            // Now we need to write the size field, so we must know the payload size:
+            
+            if (Array.isArray(ebml.data)) {
+                // Writing an array of child elements. We won't try to measure the size of the children up-front
+                
+                var
+                    sizePos, dataBegin, dataEnd;
+                
+                if (ebml.size === -1) {
+                    // Write the reserved all-one-bits marker to note that the size of this element is unknown/unbounded
+                    buffer.writeByte(0xFF);
+                } else {
+                    sizePos = buffer.pos;
+                    
+                    /* Write a dummy size field to overwrite later. 4 bytes allows an element maximum size of 256MB,
+                     * which should be plenty (we don't want to have to buffer that much data in memory at one time
+                     * anyway!)
+                     */
+                    buffer.writeBytes([0, 0, 0, 0]);
+                }
+                
+                dataBegin = buffer.pos;
+                
+                ebml.dataOffset = dataBegin + bufferFileOffset;
+                writeEBML(buffer, bufferFileOffset, ebml.data);
+                
+                if (ebml.size !== -1) {
+                    dataEnd = buffer.pos;
+                    
+                    ebml.size = dataEnd - dataBegin;
+                    
+                    buffer.seek(sizePos);
+                    buffer.writeEBMLVarIntWidth(ebml.size, 4); // Size field
+                    
+                    buffer.seek(dataEnd);
+                }
+            } else if (typeof ebml.data === "string") {
+                buffer.writeEBMLVarInt(ebml.data.length); // Size field
+                ebml.dataOffset = buffer.pos + bufferFileOffset;
+                buffer.writeString(ebml.data);
+            } else if (typeof ebml.data === "number") {
+                // Allow the caller to explicitly choose the size if they wish by supplying a size field
+                if (!ebml.size) {
+                    ebml.size = buffer.measureUnsignedInt(ebml.data);
+                }
+                
+                buffer.writeEBMLVarInt(ebml.size); // Size field
+                ebml.dataOffset = buffer.pos + bufferFileOffset;
+                buffer.writeUnsignedIntBE(ebml.data, ebml.size);
+            } else if (ebml.data instanceof EBMLFloat64) {
+                buffer.writeEBMLVarInt(8); // Size field
+                ebml.dataOffset = buffer.pos + bufferFileOffset;
+                buffer.writeDoubleBE(ebml.data.value);
+            } else if (ebml.data instanceof EBMLFloat32) {
+                buffer.writeEBMLVarInt(4); // Size field
+                ebml.dataOffset = buffer.pos + bufferFileOffset;
+                buffer.writeFloatBE(ebml.data.value);
+            } else if (ebml.data instanceof Uint8Array) {
+                buffer.writeEBMLVarInt(ebml.data.byteLength); // Size field
+                ebml.dataOffset = buffer.pos + bufferFileOffset;
+                buffer.writeBytes(ebml.data);
+            } else {
+                throw "Bad EBML datatype " + typeof ebml.data;
+            }
+        } else {
+            throw "Bad EBML datatype " + typeof ebml.data;
+        }
+    }
+    
+    return function(options) {
+        var
+            MAX_CLUSTER_DURATION_MSEC = 5000,
+            DEFAULT_TRACK_NUMBER = 1,
+        
+            writtenHeader = false,
+            videoWidth, videoHeight,
+            
+            clusterFrameBuffer = [],
+            clusterStartTime = 0,
+            clusterDuration = 0,
+            
+            optionDefaults = {
+                quality: 0.95,       // WebM image quality from 0.0 (worst) to 1.0 (best)
+                fileWriter: null,    // Chrome FileWriter in order to stream to a file instead of buffering to memory (optional)
+                fd: null,            // Node.JS file descriptor to write to instead of buffering (optional)
+                
+                // You must supply one of:
+                frameDuration: null, // Duration of frames in milliseconds
+                frameRate: null,     // Number of frames per second
+            },
+            
+            seekPoints = {
+                Cues: {id: new Uint8Array([0x1C, 0x53, 0xBB, 0x6B]), positionEBML: null},
+                SegmentInfo: {id: new Uint8Array([0x15, 0x49, 0xA9, 0x66]), positionEBML: null},
+                Tracks: {id: new Uint8Array([0x16, 0x54, 0xAE, 0x6B]), positionEBML: null},
+            },
+            
+            ebmlSegment,
+            segmentDuration = {
+                "id": 0x4489, // Duration
+                "data": new EBMLFloat64(0)
+            },
+            
+            seekHead,
+            
+            cues = [],
+            
+            blobBuffer = new BlobBuffer(options.fileWriter || options.fd);
+
+        function fileOffsetToSegmentRelative(fileOffset) {
+            return fileOffset - ebmlSegment.dataOffset;
+        }
+        
+        /**
+         * Create a SeekHead element with descriptors for the points in the global seekPoints array.
+         *
+         * 5 bytes of position values are reserved for each node, which lie at the offset point.positionEBML.dataOffset,
+         * to be overwritten later.
+         */
+        function createSeekHead() {
+            var
+                seekPositionEBMLTemplate = {
+                    "id": 0x53AC, // SeekPosition
+                    "size": 5, // Allows for 32GB video files
+                    "data": 0 // We'll overwrite this when the file is complete
+                },
+                
+                result = {
+                    "id": 0x114D9B74, // SeekHead
+                    "data": []
+                };
+            
+            for (var name in seekPoints) {
+                var
+                    seekPoint = seekPoints[name];
+            
+                seekPoint.positionEBML = Object.create(seekPositionEBMLTemplate);
+                
+                result.data.push({
+                     "id": 0x4DBB, // Seek
+                     "data": [
+                          {
+                              "id": 0x53AB, // SeekID
+                              "data": seekPoint.id
+                          },
+                          seekPoint.positionEBML
+                     ]
+                });
+            }
+            
+            return result;
+        }
+        
+        /**
+         * Write the WebM file header to the stream.
+         */
+        function writeHeader() {
+            seekHead = createSeekHead();
+            
+            var
+                ebmlHeader = {
+                    "id": 0x1a45dfa3, // EBML
+                    "data": [
+                        {
+                            "id": 0x4286, // EBMLVersion
+                            "data": 1
+                        },
+                        {
+                            "id": 0x42f7, // EBMLReadVersion
+                            "data": 1
+                        },
+                        {
+                            "id": 0x42f2, // EBMLMaxIDLength
+                            "data": 4
+                        },
+                        {
+                            "id": 0x42f3, // EBMLMaxSizeLength
+                            "data": 8
+                        },
+                        {
+                            "id": 0x4282, // DocType
+                            "data": "webm"
+                        },
+                        {
+                            "id": 0x4287, // DocTypeVersion
+                            "data": 2
+                        },
+                        {
+                            "id": 0x4285, // DocTypeReadVersion
+                            "data": 2
+                        }
+                    ]
+                },
+                
+                segmentInfo = {
+                    "id": 0x1549a966, // Info
+                    "data": [
+                        {
+                            "id": 0x2ad7b1, // TimecodeScale
+                            "data": 1e6 // Times will be in miliseconds (1e6 nanoseconds per step = 1ms)
+                        },
+                        {
+                            "id": 0x4d80, // MuxingApp
+                            "data": "webm-writer-js",
+                        },
+                        {
+                            "id": 0x5741, // WritingApp
+                            "data": "webm-writer-js"
+                        },
+                        segmentDuration // To be filled in later
+                    ]
+                },
+                
+                tracks = {
+                    "id": 0x1654ae6b, // Tracks
+                    "data": [
+                        {
+                            "id": 0xae, // TrackEntry
+                            "data": [
+                                {
+                                    "id": 0xd7, // TrackNumber
+                                    "data": DEFAULT_TRACK_NUMBER
+                                },
+                                {
+                                    "id": 0x73c5, // TrackUID
+                                    "data": DEFAULT_TRACK_NUMBER
+                                },
+                                {
+                                    "id": 0x9c, // FlagLacing
+                                    "data": 0
+                                },
+                                {
+                                    "id": 0x22b59c, // Language
+                                    "data": "und"
+                                },
+                                {
+                                    "id": 0x86, // CodecID
+                                    "data": "V_VP8"
+                                },
+                                {
+                                    "id": 0x258688, // CodecName
+                                    "data": "VP8"
+                                },
+                                {
+                                    "id": 0x83, // TrackType
+                                    "data": 1
+                                },
+                                {
+                                    "id": 0xe0,  // Video
+                                    "data": [
+                                        {
+                                            "id": 0xb0, // PixelWidth
+                                            "data": videoWidth
+                                        },
+                                        {
+                                            "id": 0xba, // PixelHeight
+                                            "data": videoHeight
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                };
+            
+            ebmlSegment = {
+                "id": 0x18538067, // Segment
+                "size": -1, // Unbounded size
+                "data": [
+                    seekHead,
+                    segmentInfo,
+                    tracks ]
+            };
+            
+            var
+                bufferStream = new ArrayBufferDataStream(256);
+                
+            writeEBML(bufferStream, blobBuffer.pos, [ebmlHeader, ebmlSegment]);
+            blobBuffer.write(bufferStream.getAsDataArray());
+            
+            // Now we know where these top-level elements lie in the file:
+            seekPoints.SegmentInfo.positionEBML.data = fileOffsetToSegmentRelative(segmentInfo.offset);
+            seekPoints.Tracks.positionEBML.data = fileOffsetToSegmentRelative(tracks.offset);
+        }
+        
+        /**
+         * Create a SimpleBlock keyframe header using these fields:
+         *     timecode    - Time of this keyframe
+         *     trackNumber - Track number from 1 to 126 (inclusive)
+         *     frame       - Raw frame data payload string
+         *
+         * Returns an EBML element.
+         */
+        function createKeyframeBlock(keyframe) {
+            var
+                bufferStream = new ArrayBufferDataStream(1 + 2 + 1);
+            
+            if (!(keyframe.trackNumber > 0 && keyframe.trackNumber < 127)) {
+                throw "TrackNumber must be > 0 and < 127";
+            }
+
+            bufferStream.writeEBMLVarInt(keyframe.trackNumber); // Always 1 byte since we limit the range of trackNumber
+            bufferStream.writeU16BE(keyframe.timecode);
+            
+            // Flags byte
+            bufferStream.writeByte(
+                1 << 7 // Keyframe
+            );
+            
+            return {
+                "id": 0xA3, // SimpleBlock
+                "data": [
+                     bufferStream.getAsDataArray(),
+                     keyframe.frame
+                ]
+            };
+        }
+        
+        /**
+         * Create a Cluster node using these fields:
+         *
+         *    timecode    - Start time for the cluster
+         *
+         * Returns an EBML element.
+         */
+        function createCluster(cluster) {
+            return {
+                "id": 0x1f43b675,
+                "data": [
+                     {
+                        "id": 0xe7, // Timecode
+                        "data": Math.round(cluster.timecode)
+                     }
+                ]
+            };
+        }
+        
+        function addCuePoint(trackIndex, clusterTime, clusterFileOffset) {
+            cues.push({
+                "id": 0xBB, // Cue
+                "data": [
+                     {
+                         "id": 0xB3, // CueTime
+                         "data": clusterTime
+                     },
+                     {
+                         "id": 0xB7, // CueTrackPositions
+                         "data": [
+                              {
+                                  "id": 0xF7, // CueTrack
+                                  "data": trackIndex
+                              },
+                              {
+                                  "id": 0xF1, // CueClusterPosition
+                                  "data": fileOffsetToSegmentRelative(clusterFileOffset)
+                              }
+                         ]
+                     }
+                ]
+            });
+        }
+        
+        /**
+         * Write a Cues element to the blobStream using the global `cues` array of CuePoints (use addCuePoint()).
+         * The seek entry for the Cues in the SeekHead is updated.
+         */
+        function writeCues() {
+            var
+                ebml = {
+                    "id": 0x1C53BB6B,
+                    "data": cues
+                },
+                
+                cuesBuffer = new ArrayBufferDataStream(16 + cues.length * 32); // Pretty crude estimate of the buffer size we'll need
+            
+            writeEBML(cuesBuffer, blobBuffer.pos, ebml);
+            blobBuffer.write(cuesBuffer.getAsDataArray());
+            
+            // Now we know where the Cues element has ended up, we can update the SeekHead
+            seekPoints.Cues.positionEBML.data = fileOffsetToSegmentRelative(ebml.offset);
+        }
+        
+        /**
+         * Flush the frames in the current clusterFrameBuffer out to the stream as a Cluster.
+         */
+        function flushClusterFrameBuffer() {
+            if (clusterFrameBuffer.length == 0) {
+                return;
+            }
+
+            // First work out how large of a buffer we need to hold the cluster data
+            var
+                rawImageSize = 0;
+            
+            for (var i = 0; i < clusterFrameBuffer.length; i++) {
+                rawImageSize += clusterFrameBuffer[i].frame.length;
+            }
+            
+            var
+                buffer = new ArrayBufferDataStream(rawImageSize + clusterFrameBuffer.length * 32), // Estimate 32 bytes per SimpleBlock header
+
+                cluster = createCluster({
+                    timecode: Math.round(clusterStartTime),
+                });
+                
+            for (var i = 0; i < clusterFrameBuffer.length; i++) {
+                cluster.data.push(createKeyframeBlock(clusterFrameBuffer[i]));
+            }
+            
+            writeEBML(buffer, blobBuffer.pos, cluster);
+            blobBuffer.write(buffer.getAsDataArray());
+            
+            addCuePoint(DEFAULT_TRACK_NUMBER, Math.round(clusterStartTime), cluster.offset);
+            
+            clusterFrameBuffer = [];
+            clusterStartTime += clusterDuration;
+            clusterDuration = 0;
+        }
+        
+        function validateOptions() {
+            // Derive frameDuration setting if not already supplied
+            if (!options.frameDuration) {
+                if (options.frameRate) {
+                    options.frameDuration = 1000 / options.frameRate;
+                } else {
+                    throw "Missing required frameDuration or frameRate setting";
+                }
+            }
+        }
+        
+        function addFrameToCluster(frame) {
+            frame.trackNumber = DEFAULT_TRACK_NUMBER;
+            
+            // Frame timecodes are relative to the start of their cluster:
+            frame.timecode = Math.round(clusterDuration);
+
+            clusterFrameBuffer.push(frame);
+            
+            clusterDuration += frame.duration;
+            
+            if (clusterDuration >= MAX_CLUSTER_DURATION_MSEC) {
+                flushClusterFrameBuffer();
+            }
+        }
+        
+        /**
+         * Rewrites the SeekHead element that was initially written to the stream with the offsets of top level elements.
+         *
+         * Call once writing is complete (so the offset of all top level elements is known).
+         */
+        function rewriteSeekHead() {
+            var
+                seekHeadBuffer = new ArrayBufferDataStream(seekHead.size),
+                oldPos = blobBuffer.pos;
+            
+            // Write the rewritten SeekHead element's data payload to the stream (don't need to update the id or size)
+            writeEBML(seekHeadBuffer, seekHead.dataOffset, seekHead.data);
+            
+            // And write that through to the file
+            blobBuffer.seek(seekHead.dataOffset);
+            blobBuffer.write(seekHeadBuffer.getAsDataArray());
+
+            blobBuffer.seek(oldPos);
+        }
+        
+        /**
+         * Rewrite the Duration field of the Segment with the newly-discovered video duration.
+         */
+        function rewriteDuration() {
+            var
+                buffer = new ArrayBufferDataStream(8),
+                oldPos = blobBuffer.pos;
+            
+            // Rewrite the data payload (don't need to update the id or size)
+            buffer.writeDoubleBE(clusterStartTime);
+            
+            // And write that through to the file
+            blobBuffer.seek(segmentDuration.dataOffset);
+            blobBuffer.write(buffer.getAsDataArray());
+    
+            blobBuffer.seek(oldPos);
+        }
+        
+        /**
+         * Add a frame to the video. Currently the frame must be a Canvas element.
+         */
+        this.addFrame = function(canvas) {
+            if (writtenHeader) {
+                if (canvas.width != videoWidth || canvas.height != videoHeight) {
+                    throw "Frame size differs from previous frames";
+                }
+            } else {
+                videoWidth = canvas.width;
+                videoHeight = canvas.height;
+
+                writeHeader();
+                writtenHeader = true;
+            }
+
+            var
+                webP = renderAsWebP(canvas, {quality: options.quality});
+            
+            if (!webP) {
+                throw "Couldn't decode WebP frame, does the browser support WebP?";
+            }
+            
+            addFrameToCluster({
+                frame: extractKeyframeFromWebP(webP),
+                duration: options.frameDuration
+            });
+        };
+        
+        /**
+         * Finish writing the video and return a Promise to signal completion.
+         *
+         * If the destination device was memory (i.e. options.fileWriter was not supplied), the Promise is resolved with
+         * a Blob with the contents of the entire video.
+         */
+        this.complete = function() {
+            flushClusterFrameBuffer();
+            
+            writeCues();
+            rewriteSeekHead();
+            rewriteDuration();
+            
+            return blobBuffer.complete('video/webm');
+        };
+        
+        this.getWrittenSize = function() {
+            return blobBuffer.length;
+        };
+
+        options = extend(optionDefaults, options || {});
+        validateOptions();
+    };
+};
+
+var WebMWriter$1 = WebMWriter(ArrayBufferDataStream, BlobBuffer());
+
+function parseHtml(html) {
+  // eslint-disable-next-line no-param-reassign
+  html = html.trim();
+  /* code adapted from jQuery */
+  var wrapper = function (depth, open, close) { return ({ depth: depth, open: open, close: close }); };
+  var wrapMap = {
+    option: wrapper(1, "<select multiple='multiple'>", '</select>'),
+    legend: wrapper(1, '<fieldset>', '</fieldset>'),
+    area:   wrapper(1, '<map>', '</map>'),
+    param:  wrapper(1, '<object>', '</object>'),
+    thead:  wrapper(1, '<table>', '</table>'),
+    tr:     wrapper(2, '<table><tbody>', '</tbody></table>'),
+    col:    wrapper(2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'),
+    td:     wrapper(3, '<table><tbody><tr>', '</tr></tbody></table>'),
+
+    // IE6-8 can't serialize link, script, style, or any html5 (NoScope) tags,
+    // unless wrapped in a div with non-breaking characters in front of it.
+    _default: wrapper(1, '<div>', '</div>')
+  };
+  wrapMap.optgroup = wrapMap.option;
+  wrapMap.tbody = wrapMap.thead;
+  wrapMap.tfoot = wrapMap.thead;
+  wrapMap.colgroup = wrapMap.thead;
+  wrapMap.caption = wrapMap.thead;
+  wrapMap.th = wrapMap.td;
+  var element = document.createElement('div');
+  var match = /<\s*(\w+).*?>/g.exec(html);
+  if (match != null) {
+    var tag = match[1];
+    var wrap = wrapMap[tag] || wrapMap._default;
+    // eslint-disable-next-line no-param-reassign
+    html = "" + (wrap.open) + html + (wrap.close);
+    element.innerHTML = html;
+    // Descend through wrappers to the right content
+    var depth = wrap.depth + 1;
+    for (var d = 0; d < depth; d++) {
+      if (element.firstChild !== element.lastChild) {
+        throw new Error(
+          'util.parseHtml requires one single top level element.' +
+          'NOTE: This error might also occur if your tag structure ' +
+          'is nested illegaly.'
+        );
+      }
+      element = element.lastChild;
+    }
+  } else {
+    // if only text is passed
+    element.innerHTML = html;
+    element = element.lastChild;
+  }
+
+  return element;
+}
+
+function clearChildNodes(node) {
+  while (node.firstChild) {
+    node.removeChild(node.firstChild);
+  }
+}
+
+function imageScalingMarkup(classPrefix) {
+  return ("\n    <fieldset>\n      <legend>Image scaling</legend>\n      <label>\n        Image scaling:\n        <select class=\"" + classPrefix + "-scaling-select\">\n          <option value=\"crop-to-viewport\" title=\"Image might be cropped to fit the viewport\" selected>crop to fit viewport</option>\n          <option value=\"fit-image\" title=\"Black borders might be visible\">fit image</option>\n          <option value=\"fit-width\" title=\"Black borders might be visible at the top and bottom\">fit width</option>\n          <option value=\"fit-height\" title=\"Black borders might be visible at the left or right edges\">fit height</option>\n          <option value=\"scale-to-viewport\" title=\"The image's aspect ratio might be skewed\">scale to fit viewport</option>\n        </select>\n      </label><br/>\n      <label>\n        Horizontal image cropping:\n        <select class=\"" + classPrefix + "-crop-x-select\">\n          <option value=\"crop-both\" title=\"Drop exceeding pixels on either side\" selected>both sides</option>\n          <option value=\"crop-left\" title=\"Drop exceeding pixels on the leftern side\">leftern side</option>\n          <option value=\"crop-right\" title=\"Drop exceeding pixels on the rightern side\">rightern side</option>\n        </select>\n      </label><br/>\n      <label>\n        Vertical image cropping:\n        <select class=\"" + classPrefix + "-crop-y-select\">\n          <option value=\"crop-both\" title=\"Drop exceeding pixels on either edge\" selected>both edges</option>\n          <option value=\"crop-top\" title=\"Drop exceeding pixels at the top\">top edge</option>\n          <option value=\"crop-bottom\" title=\"Drop exceeding pixels at the bottom\">bottom edge</option>\n        </select>\n      </label>\n    </fieldset>\n  ")
+}
+
+var FfmpegLoader = function FfmpegLoader() {
+  this.STATES = {IDLE: 1, PENDING: 2, LOADED: 3, ERROR: 0};
+  this.state = this.STATES.IDLE;
+  this.ffmpeg = null;
+  this.observers = [];
+  this.error = null;
+};
+FfmpegLoader.prototype.startLoading = function startLoading () {
+    var this$1 = this;
+
+  var worker = new Worker('ffmpeg-worker-mp4.js');
+  this.state = this.STATES.PENDING;
+  worker.onmessage = function (ref) {
+      var msg = ref.data;
+
+    if (msg.type === 'ready') {
+      this$1.state = this$1.STATES.LOADED;
+      this$1.ffmpeg = worker;
+      for (var i = 0; i < this$1.observers.length; i++) {
+        this$1.observers[i].resolve(this$1.ffmpeg);
+      }
+      this$1.observers = [];
+    }
+  };
+  worker.onerror = function (error) {
+    this$1.state = this$1.STATES.ERROR;
+    this$1.error = error;
+    for (var i = 0; i < this$1.observers.length; i++) {
+      this$1.observers[i].reject(this$1.ffmpeg);
+    }
+    this$1.observers = [];
+  };
+};
+FfmpegLoader.prototype.getFFMPEG = function getFFMPEG () {
+    var this$1 = this;
+
+  return new Promise(function (resolve, reject) {
+    if (this$1.state === this$1.STATES.LOADED) {
+      resolve(this$1.ffmpeg);
+    } else if (this$1.state === this$1.STATES.ERROR) {
+      reject(this$1.error);
+    } else if (this$1.state === this$1.STATES.IDLE) {
+      this$1.observers.push({resolve: resolve, reject: reject});
+      this$1.startLoading();
+    } else if (this$1.state === this$1.STATES.PENDING) {
+      this$1.observers.push({resolve: resolve, reject: reject});
+    } else {
+      throw new Error('Illegal FfmpegLoader state encountered');
+    }
+  });
+};
+
+var ffmpegLoader = new FfmpegLoader();
+
+var FfmpegRecorder = function FfmpegRecorder(renderer, ffmpeg) {
+  var this$1 = this;
+
+  this.fps = 20;
+  this.renderer = renderer;
+  this.scalingCanvas = document.createElement('canvas');
+  // TODO no idea what happens when we resize - but who would want to
+  // resize while recording anyways?
+  var renderW = renderer.getState().getWidth();
+  var renderH = renderer.getState().getHeight();
+  var maxDim = 640;
+  var scaledW = Math.round(renderW > renderH ? maxDim : renderW / renderH * maxDim) & (~1);
+  var scaledH = Math.round(renderW > renderH ? renderH / renderW * maxDim : maxDim) & (~1);
+  this.scalingCanvas.width= scaledW;
+  this.scalingCanvas.height = scaledH;
+  var scalingCtx = this.scalingCanvas.getContext('2d');
+  this.ffmpeg = ffmpeg;
+  this.frames = [];
+  this.dimensions = { width: scaledW, height: scaledH };
+
+  var desiredFrameTime = 1 / this.fps * 1000;
+  var waited = desiredFrameTime;
+  this.frameCallback = function (canvas, frameTime) {
+    waited += frameTime;
+    if (waited >= desiredFrameTime) {
+      waited = 0;
+      scalingCtx.drawImage(canvas, 0, 0, scaledW, scaledH);
+      // compress the image as jpg by making a base64 data-url and
+      // decoding it to plain bytes (which can be consumed by ffmpeg)
+      var url = this$1.scalingCanvas.toDataURL('image/jpeg').replace(/^data:image\/jpeg;base64,/, '');
+      var byteString = atob(url);
+      var ab = new ArrayBuffer(byteString.length);
+      // create a view into the buffer
+      var ia = new Uint8Array(ab);
+      // set the bytes of the buffer to the correct values
+      for (var p = 0; p < byteString.length; p++) {
+        ia[p] = byteString.charCodeAt(p);
+      }
+      this$1.frames.push(ia);
+    }
+  };
+};
+FfmpegRecorder.prototype.start = function start () {
+  this.renderer.addFrameListener(this.frameCallback);
+};
+FfmpegRecorder.prototype.stop = function stop () {
+  this.renderer.removeFrameListener(this.frameCallback);
+};
+FfmpegRecorder.prototype.compile = function compile (onProgress) {
+    var this$1 = this;
+
+  return new Promise(function (resolve, reject) {
+    var frameCount = this$1.frames.length;
+
+    // set up communication with ffmpeg webworker
+    var stdout = '';
+    var stderr = '';
+    var exitCode = 0;
+    var progressRegex = /^frame=\s*([0-9]+) fps=/;
+    this$1.ffmpeg.onmessage = function (e) {
+      var msg = e.data;
+      switch (msg.type) {
+      case 'stdout':
+        stdout += msg.data + "\n";
+        break;
+      case 'stderr':
+        if (progressRegex.test(msg.data)) {
+          var res = progressRegex.exec(msg.data);
+          if (onProgress) {
+            onProgress(res[1] / frameCount);
+          }
+        }
+        stderr += msg.data + "\n";
+        break;
+      case 'exit':
+        exitCode = msg.data;
+        break;
+      case 'done':
+        if (exitCode === 0) {
+          var video = msg.data.MEMFS[0].data;
+          var blob = new Blob([video]);
+          var url = window.URL.createObjectURL(blob);
+          resolve({blob: blob, url: url});
+        } else {
+          console.log(("FFMPEG exited with code " + exitCode));
+          reject(new Error(stderr));
+        }
+        break;
+      }
+    };
+
+    /// Pad the given number n to have the desired width
+    var pad = function (n, width) {
+      n = "" + n;
+      if (n.length >= width) {
+        if (n.length > width) {
+          console.warn('Number too big for padding to width');
+        }
+        return n;
+      }
+      var padding = new Array(width - n.length + 1).join('0');
+      return ("" + padding + n);
+    };
+
+    // set up the virtual filesystem for ffmpeg
+    var MEMFS = [];
+    var frameNum = 0;
+    var padWidth = Math.ceil(Math.log10(frameCount));
+    var ref = this$1.dimensions;
+      var w = ref.width;
+      var h = ref.height;
+    while (this$1.frames.length > 0) {
+      var frame = this$1.frames.shift();
+      var file = {
+        name: ("img" + (pad(frameNum++, padWidth)) + ".jpg"),
+        data: frame
+      };
+      MEMFS.push(file);
+    }
+    // kick off encoding
+    var filePattern = "img%0" + padWidth + "d.jpg";
+    this$1.ffmpeg.postMessage({
+      type: 'run',
+      arguments: [
+        '-r', ("" + (this$1.fps)), '-f', 'image2', '-s', (w + "x" + h), '-i', filePattern, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '25', 'out.mp4'
+      ],
+      MEMFS: MEMFS,
+      TOTAL_MEMORY: 100000000
+    });
+  });
+};
+
+var FfmpegRecorderActivationDialog = function FfmpegRecorderActivationDialog() {
+  var this$1 = this;
+
+  var classPrefix = 'video-recording';
+  var activateBtnClass = "btn-" + classPrefix + "-activate";
+  var cancelBtnClass = "btn-" + classPrefix + "-cancel";
+
+  // Object properties
+  this.parentNode = document.getElementById('modal-container');
+  this.resolve = null;
+  this.reject = null;
+  this.elm = parseHtml(("\n      <div class=\"" + classPrefix + "-backdrop\">\n        <div class=\"" + classPrefix + "-popup\">\n          <h3>\n            WARNING: You are about to activate the video recording feature.\n          </h3>\n          <p>\n            This feature\n            <ul>\n              <li>is highly experimental technology</li>\n              <li>is still under development</li>\n              <li>needs to download an additional 13mb of javascript</li>\n            </ul>\n            For these reasons, the overall user experience is likely to suffer.\n            You can still cancel activating this feature by clicking 'Cancel' below.\n          </p>\n          <button type=\"button\" class=\"" + activateBtnClass + "\">Activate</button>\n          <button type=\"button\" class=\"" + cancelBtnClass + "\">Cancel</button>\n        </div>\n      </div>\n    "));
+  var activateBtn = this.elm.querySelector(("." + activateBtnClass));
+  activateBtn.addEventListener('click', function () {
+    this$1.hide();
+    this$1.resolve();
+  });
+  var cancelBtn = this.elm.querySelector(("." + cancelBtnClass));
+  cancelBtn.addEventListener('click', function () {
+    this$1.hide();
+    this$1.reject(new Error('User canceled recorder activation'));
+  });
+};
+FfmpegRecorderActivationDialog.prototype.promptUser = function promptUser () {
+    var this$1 = this;
+
+  return new Promise(function (resolve, reject) {
+    this$1.resolve = resolve;
+    this$1.reject = reject;
+    this$1.parentNode.appendChild(this$1.elm);
+  });
+};
+FfmpegRecorderActivationDialog.prototype.hide = function hide () {
+  this.parentNode.removeChild(this.elm);
+};
+
+var WebMRecorder = function WebMRecorder(renderer) {
+  var this$1 = this;
+
+  this.fps = 20;
+  this.renderer = renderer;
+  this.writer = new WebMWriter$1({
+    quality: 0.95,
+    fileWriter: null,
+    frameRate: this.fps
+  });
+  var scalingCanvas = document.createElement('canvas');
+  var renderW = renderer.getState().getWidth();
+  var renderH = renderer.getState().getHeight();
+  var maxDim = 640;
+  var scaledW = Math.round(renderW > renderH ? maxDim : renderW / renderH * maxDim) & (~1);
+  var scaledH = Math.round(renderW > renderH ? renderH / renderW * maxDim : maxDim) & (~1);
+  scalingCanvas.width= scaledW;
+  scalingCanvas.height = scaledH;
+  var scalingCtx = scalingCanvas.getContext('2d');
+  var desiredFrameTime = 1 / this.fps * 1000;
+  var waited = desiredFrameTime;
+  this.frameCallback = function (canvas, frameTime) {
+    waited += frameTime;
+    if (waited >= desiredFrameTime) {
+      waited = 0;
+      scalingCtx.drawImage(canvas, 0, 0, scaledW, scaledH);
+      this$1.writer.addFrame(scalingCanvas);
+    }
+  };
+};
+
+WebMRecorder.prototype.start = function start () {
+  this.renderer.addFrameListener(this.frameCallback);
+};
+WebMRecorder.prototype.stop = function stop () {
+  this.renderer.removeFrameListener(this.frameCallback);
+};
+
+WebMRecorder.prototype.compile = function compile () {
+  return this.writer.complete().then(function (blob) {
+    return { blob: blob, url: window.URL.createObjectURL(blob) };
+  });
+};
+
+// https://stackoverflow.com/a/27232658/1468532
+WebMRecorder.isSupported = function isSupported () {
+  var canvas = document.createElement('canvas');
+  if (!!(canvas.getContext && canvas.getContext('2d'))) {
+      // was able or not to get WebP representation
+      return canvas.toDataURL('image/webp').indexOf('data:image/webp') == 0;
+  }
+  // very old browser like IE 8, canvas not supported
+  return false;
+};
+
+var RecordButton = function RecordButton(renderer) {
+  var this$1 = this;
+
+  this.recorder = null;
+  this.renderer = renderer;
+  this.ffmpeg = null;
+  this.dlLink = null;
+  // set up dom elements (but don't display them yet)
+  var elm = parseHtml("\n      <div class=\"recorder-container disabled\">\n        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"recorder-encoding-progress\"></svg>\n        <button type=\"button\" class=\"btn-record\">\n      </div>\n    ");
+  this.container = document.querySelector('body');
+  var btn = elm.querySelector('button');
+  this.btn = btn;
+  this.elm = elm;
+  if (WebMRecorder.isSupported()) {
+    this.elm.classList.remove('disabled');
+    this.btn.addEventListener('click', function () {
+    var ref;
+
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ]; (ref = this$1).onClick.apply(ref, args); });
+  } else {
+    this.activateListener = function () { this$1.showActivationDialog(); };
+    btn.addEventListener('click', this.activateListener);
+  }
+};
+
+RecordButton.prototype.enable = function enable () {
+  this.container.appendChild(this.elm);
+};
+
+RecordButton.prototype.disable = function disable () {
+  this.container.removeChild(this.elm);
+};
+
+RecordButton.prototype.showActivationDialog = function showActivationDialog () {
+    var this$1 = this;
+
+  var dialog = new FfmpegRecorderActivationDialog();
+  dialog.promptUser()
+    .then(function () {
+      this$1.btn.removeEventListener('click', this$1.activateListener);
+      this$1.activate();
+    }, function (error) {
+      // Nothing to do
+    });
+};
+
+RecordButton.prototype.activate = function activate () {
+    var this$1 = this;
+
+  this.btn.addEventListener('click', function () {
+    var ref;
+
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ]; (ref = this$1).onClick.apply(ref, args); });
+  ffmpegLoader.getFFMPEG()
+    .then(function (ffmpeg) {
+      this$1.elm.classList.remove('disabled');
+      this$1.ffmpeg = ffmpeg;
+    }, function (err) {
+      console.error(err);
+    });
+};
+
+RecordButton.prototype.onClick = function onClick () {
+    var this$1 = this;
+
+  if (this.recorder === null) {
+    if (this.ffmpeg !== null)
+      { this.recorder = new FfmpegRecorder(this.renderer, this.ffmpeg); }
+    else
+      { this.recorder = new WebMRecorder(this.renderer); }
+    if (this.dlLink !== null) {
+      this.dlLink.parentNode.removeChild(this.dlLink);
+    }
+    this.recorder.start();
+  } else {
+    this.elm.classList.add('processing');
+    this.recorder.stop();
+    // encoding has the highest priority now (for the user as-well)
+    // so at least pretend to free CPU resources by pausing
+    this.renderer.getClock().setPaused();
+    // compiling the video at least used to take quite some time, so
+    // let's put it in the next event loop iteration
+    window.setTimeout(function () {
+      this$1.recorder.compile(function (progress) { console.log(progress); })
+        .then(function (ref) {
+            var blob = ref.blob;
+            var url = ref.url;
+
+          var outfile = this$1.ffmpeg === null ? 'video.webm' : 'video.mp4';
+          var dlLink = document.createElement('a');
+          dlLink.setAttribute('href', url);
+          dlLink.setAttribute('download', outfile);
+          dlLink.textContent = 'DOWNLOAD';
+          this$1.elm.appendChild(dlLink);
+          this$1.dlLink = dlLink;
+        }, function (error) {
+          console.error(error);
+        })
+        .then(function () {
+          this$1.elm.classList.remove('processing');
+          this$1.renderer.getClock().setPaused(false);
+        });
+      this$1.recorder = null;
+    }, 0);
+  }
+  this.elm.classList.toggle('recording');
+};
+
+var BetaFeaturesToggle = function BetaFeaturesToggle(menu, renderer) {
+  var this$1 = this;
+
+  var features = [new RecordButton(renderer)];
+  this.elm = menu.menu.querySelector('.menu-beta-features input');
+  menu.addChangeListener(function (config) {
+    if ('enableBetaFeatures' in config)
+      { this$1.elm.checked = config.enableBetaFeatures; }
+    else
+      { config.enableBetaFeatures = this$1.elm.checked; }
+  });
+  var onChange = function (evt) {
+    var enabled = this$1.elm.checked;
+    menu.submittedConfig.enableBetaFeatures = enabled;
+    menu.persist();
+    for (var i = 0; i < features.length; i++) {
+      var feature = features[i];
+      if (enabled)
+        { feature.enable(); }
+      else
+        { feature.disable(); }
+    }
+  };
+  this.elm.addEventListener('change', onChange);
+  // Give the app time to load the initial config
+  window.setTimeout(onChange, 0);
+};
+
 if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
   throw new Error('The File APIs are not fully supported in this browser.');
 }
@@ -305,70 +1854,6 @@ var InactivityMonitor = function InactivityMonitor() {
   // Touch devices don't have (or at least make us of) mouses or keys
   document.addEventListener('click', onActivity);
 };
-
-function parseHtml(html) {
-  // eslint-disable-next-line no-param-reassign
-  html = html.trim();
-  /* code adapted from jQuery */
-  var wrapper = function (depth, open, close) { return ({ depth: depth, open: open, close: close }); };
-  var wrapMap = {
-    option: wrapper(1, "<select multiple='multiple'>", '</select>'),
-    legend: wrapper(1, '<fieldset>', '</fieldset>'),
-    area:   wrapper(1, '<map>', '</map>'),
-    param:  wrapper(1, '<object>', '</object>'),
-    thead:  wrapper(1, '<table>', '</table>'),
-    tr:     wrapper(2, '<table><tbody>', '</tbody></table>'),
-    col:    wrapper(2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'),
-    td:     wrapper(3, '<table><tbody><tr>', '</tr></tbody></table>'),
-
-    // IE6-8 can't serialize link, script, style, or any html5 (NoScope) tags,
-    // unless wrapped in a div with non-breaking characters in front of it.
-    _default: wrapper(1, '<div>', '</div>')
-  };
-  wrapMap.optgroup = wrapMap.option;
-  wrapMap.tbody = wrapMap.thead;
-  wrapMap.tfoot = wrapMap.thead;
-  wrapMap.colgroup = wrapMap.thead;
-  wrapMap.caption = wrapMap.thead;
-  wrapMap.th = wrapMap.td;
-  var element = document.createElement('div');
-  var match = /<\s*(\w+).*?>/g.exec(html);
-  if (match != null) {
-    var tag = match[1];
-    var wrap = wrapMap[tag] || wrapMap._default;
-    // eslint-disable-next-line no-param-reassign
-    html = "" + (wrap.open) + html + (wrap.close);
-    element.innerHTML = html;
-    // Descend through wrappers to the right content
-    var depth = wrap.depth + 1;
-    for (var d = 0; d < depth; d++) {
-      if (element.firstChild !== element.lastChild) {
-        throw new Error(
-          'util.parseHtml requires one single top level element.' +
-          'NOTE: This error might also occur if your tag structure ' +
-          'is nested illegaly.'
-        );
-      }
-      element = element.lastChild;
-    }
-  } else {
-    // if only text is passed
-    element.innerHTML = html;
-    element = element.lastChild;
-  }
-
-  return element;
-}
-
-function clearChildNodes(node) {
-  while (node.firstChild) {
-    node.removeChild(node.firstChild);
-  }
-}
-
-function imageScalingMarkup(classPrefix) {
-  return ("\n    <fieldset>\n      <legend>Image scaling</legend>\n      <label>\n        Image scaling:\n        <select class=\"" + classPrefix + "-scaling-select\">\n          <option value=\"crop-to-viewport\" title=\"Image might be cropped to fit the viewport\" selected>crop to fit viewport</option>\n          <option value=\"fit-image\" title=\"Black borders might be visible\">fit image</option>\n          <option value=\"fit-width\" title=\"Black borders might be visible at the top and bottom\">fit width</option>\n          <option value=\"fit-height\" title=\"Black borders might be visible at the left or right edges\">fit height</option>\n          <option value=\"scale-to-viewport\" title=\"The image's aspect ratio might be skewed\">scale to fit viewport</option>\n        </select>\n      </label><br/>\n      <label>\n        Horizontal image cropping:\n        <select class=\"" + classPrefix + "-crop-x-select\">\n          <option value=\"crop-both\" title=\"Drop exceeding pixels on either side\" selected>both sides</option>\n          <option value=\"crop-left\" title=\"Drop exceeding pixels on the leftern side\">leftern side</option>\n          <option value=\"crop-right\" title=\"Drop exceeding pixels on the rightern side\">rightern side</option>\n        </select>\n      </label><br/>\n      <label>\n        Vertical image cropping:\n        <select class=\"" + classPrefix + "-crop-y-select\">\n          <option value=\"crop-both\" title=\"Drop exceeding pixels on either edge\" selected>both edges</option>\n          <option value=\"crop-top\" title=\"Drop exceeding pixels at the top\">top edge</option>\n          <option value=\"crop-bottom\" title=\"Drop exceeding pixels at the bottom\">bottom edge</option>\n        </select>\n      </label>\n    </fieldset>\n  ")
-}
 
 var LoadImgDialog = function LoadImgDialog() {
   var this$1 = this;
@@ -1291,8 +2776,8 @@ var parseColor = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2018-12-20T20:00:20.814Z',
-  git_rev:               'c7906cc',
+  timestamp:             '2018-12-20T22:33:57.521Z',
+  git_rev:               '4fc8730',
   export_schema_version: 0
 };
 
@@ -20714,16 +22199,22 @@ WebcamEffectImpl.prototype.start = function start () {
   // Shutdown hook
   this.props.state.addHook(function () { return this$1.kill(); });
   return this.createStream()
-  .then(function (stream) { this$1.stream = stream; return this$1.createTrack(); },
+  .then(function (stream) {
+          this$1.stream = stream;
+          return this$1.createTrack();
+        },
         function (err) { return Promise.reject(err); })
-  .then(function (track) { this$1.track = track; this$1.capture = new imagecapture_1(this$1.track); return this$1.tryStartGrabbing(); },
+  .then(function (track) {
+          this$1.track = track;
+          this$1.capture = new imagecapture_1(this$1.track);
+          return this$1.tryStartGrabbing();
+        },
         function (err) { return Promise.reject(err); });
 };
 WebcamEffectImpl.prototype.kill = function kill () {
   this.alive = false;
   // FIXME understand and document when this can happen.
-  // E.g. when the getUserMedia() request is ignored in icognito
-  // mode
+  // E.g. when the getUserMedia() request is ignored in icognito mode
   var stream = this.stream;
   if (stream !== null) {
     var allTracks = stream.getTracks();
@@ -20758,8 +22249,7 @@ WebcamEffectImpl.prototype.grabLoop = function grabLoop () {
       // explode the call stack with recursive calls
       window.requestAnimationFrame(function () { return this$1.grabLoop(); });
     }, function (err) {
-      // Throw this error into the global scope
-      window.setTimeout(function () { throw new Error('Cannot grab images from the camera'); }, 0);
+      reportError(new Error('Cannot grab images from the camera'));
     });
   }
 };
@@ -23383,24 +24873,7 @@ var MainMenu = function MainMenu(clock) {
   }
 
   this.defaultConfig = this.readConfig();
-
-  // now populate the initial config (NOT defaultConfig) with some effects
-  var effectLen = 2500;
-  var tracks = [];
-  for (var i$1 = 0; i$1 < effectList.length; i$1++) {
-    tracks.push([
-      new EffectConfig(
-        effectList[i$1].getId(),
-        i$1 * effectLen,
-        i$1 * effectLen + effectLen,
-        1,
-        effectList[i$1].getDefaultConfig()
-      )
-    ]);
-  }
-  this.timeline.loadTimeline(tracks);
-
-  this.submittedConfig = this.readConfig();
+  this.submittedConfig = this.defaultConfig;
 };
 
 MainMenu.prototype.applyConfig = function applyConfig (config) {
@@ -23424,10 +24897,10 @@ MainMenu.prototype.readConfig = function readConfig () {
 MainMenu.prototype.submit = function submit () {
   this.applyBtn.disabled = true;
   var config = this.readConfig();
+  this.submittedConfig = config;
   for (var i = 0; i < this.changeListeners.length; i++) {
     this.changeListeners[i](config);
   }
-  this.submittedConfig = config;
 };
 
 MainMenu.prototype.addControl = function addControl (CtrlClass) {
@@ -23436,6 +24909,10 @@ MainMenu.prototype.addControl = function addControl (CtrlClass) {
 };
 MainMenu.prototype.addChangeListener = function addChangeListener (listener) {
   this.changeListeners.push(listener);
+};
+MainMenu.prototype.persist = function persist () {
+  if (window.localStorage)
+    { window.localStorage.setItem('savedConfig', JSON.stringify(this.submittedConfig, null, 2)); }
 };
 
 MainMenu.prototype.isCoverFullWidth = function isCoverFullWidth () {
@@ -33692,6 +35169,9 @@ function domImgToCanvas(img) {
 var ParticleData = function ParticleData(imageData, regl, scalingInfo) {
   this.rgba = mapImageToParticles(imageData, scalingInfo).data;
 };
+ParticleData.prototype.destroy = function destroy () {
+  this.rgba = null;
+};
 
 var ParticleDataStoreEntry = function ParticleDataStoreEntry(imageCanvas, imageScaling, imageCropping, particleData) {
   this.imageCanvas = imageCanvas || null;
@@ -33701,6 +35181,7 @@ var ParticleDataStoreEntry = function ParticleDataStoreEntry(imageCanvas, imageS
 };
 ParticleDataStoreEntry.prototype.destroy = function destroy () {
   if (this.particleData !== null) {
+    this.particleData.destroy();
     this.particleData = null;
   }
   this.imageCanvas = null;
@@ -33901,10 +35382,11 @@ RendererState.prototype.getHeight = function getHeight () {
  *    command (the pipeline, to be more precise) with the current state
  *    and clock info (cf. RendererClock)
  */
-var Renderer = function Renderer(canvas) {
+var Renderer = function Renderer(webgl) {
   var this$1 = this;
 
-  this.regl = regl({ canvas: canvas });
+  this.webgl = webgl;
+  this.regl = regl({ gl: webgl });
   console.info(("max texture size: " + (this.regl.limits.maxTextureSize)));
   console.info(("point size dims: " + (this.regl.limits.pointSizeDims[0]) + " " + (this.regl.limits.pointSizeDims[1])));
   console.info(("max uniforms: " + (this.regl.limits.maxVertexUniforms) + " " + (this.regl.limits.maxFragmentUniforms)));
@@ -33913,6 +35395,7 @@ var Renderer = function Renderer(canvas) {
   this.commandBuilder = new CommandBuilder();
   this.clock = new RendererClock();
   this.resizeListeners = [];
+  this.frameListeners = [];
   // low pass filtered FPS measurement found on stackoverflow.com/a/5111475/1468532
   this.frameTime = 0;
   this.pipelineCfg = {config: null, state: null, clock: null};
@@ -33940,6 +35423,8 @@ Renderer.prototype.renderFrame = function renderFrame () {
     { this.frameTime += (this.clock.getDelta() - this.frameTime) / FILTER_STRENGTH; }
   this.pipelineCfg.config = this.config, this.pipelineCfg.state= this.state, this.pipelineCfg.clock= this.clock;
   this.state.pipeline.run(this.pipelineCfg);
+  for (var i = 0; i < this.frameListeners.length; i++)
+    { this.frameListeners[i](this.webgl.canvas, this.frameTime); }
 };
 
 Renderer.prototype.resize = function resize (width, height) {
@@ -33995,6 +35480,18 @@ Renderer.prototype.getFPS = function getFPS () {
   return Math.round(1000 / this.frameTime);
 };
 
+Renderer.prototype.addFrameListener = function addFrameListener (listener) {
+  this.frameListeners.push(listener);
+};
+Renderer.prototype.removeFrameListener = function removeFrameListener (listener) {
+  var pos = this.frameListeners.indexOf(listener);
+  if (pos >= 0) {
+    this.frameListeners.splice(pos, 1);
+  } else {
+    throw new Error('Could not find frame listener to be removed');
+  }
+};
+
 // We want this to be constant and browsers seem to change it on zoom
 var DevicePixelRatio = window.devicePixelRatio || 1.;
 
@@ -34004,15 +35501,19 @@ var errorManager = new ErrorManager(function() {
   // some constants
   var imageLoadingClass = 'loading-image';
   var canvas = document.getElementById('main-canvas');
+  var ctx = canvas.getContext('webgl');
+
+  // initialize rendering core
+  var renderer = new Renderer(ctx);
 
   // set up ui components
   var fullscreenBtn = new FullscreenButton();
   var fullscreenListener = new DoubleClickFullscreen();
   var imgSelect = new ImgSelect();
-  var inactivityMonitor = new InactivityMonitor();
   var imgLoadDialog = new LoadImgDialog();
-  var renderer = new Renderer(canvas);
+  var inactivityMonitor = new InactivityMonitor();
   var menu = new MainMenu(renderer.getClock());
+  var betaFeatures = new BetaFeaturesToggle(menu, renderer);
 
   function tryLoadFromLocalStorage() {
     if (window.localStorage) {
@@ -34046,9 +35547,10 @@ var errorManager = new ErrorManager(function() {
     return false;
   }
   // Try loading the timeline from different places
-  if (!tryLoadFromHash()) {
-    tryLoadFromLocalStorage();
-  }
+  var loaded = false;
+  loaded = loaded || tryLoadFromHash();
+  loaded = loaded || tryLoadFromLocalStorage();
+
   window.addEventListener("hashchange", tryLoadFromHash);
 
   var adjustCanvasSize = function () {
@@ -34128,9 +35630,7 @@ var errorManager = new ErrorManager(function() {
 
   menu.addChangeListener(function (config) {
     renderer.setConfig(config);
-    if (window.localStorage) {
-      window.localStorage.setItem('savedConfig', JSON.stringify(config, null, 2));
-    }
+    menu.persist();
   });
 
   // FPS display

@@ -3274,6 +3274,133 @@
         transform: translate(-50%, -50%);
         padding: 20px; } }
 
+.video-recording-backdrop {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 40; }
+  .video-recording-backdrop .video-recording-popup {
+    text-align: center;
+    overflow: scroll;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 50;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 20px 0; }
+    @media (min-width: 961px) {
+      .video-recording-backdrop .video-recording-popup {
+        /* tablet, landscape iPad, lo-res laptops ands desktops */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 50%;
+        height: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+        padding: 20px; } }
+    @media (min-width: 1025px) {
+      .video-recording-backdrop .video-recording-popup {
+        /* big landscape tablets, laptops, and desktops */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 50%;
+        height: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+        padding: 20px; } }
+    @media (min-width: 1281px) {
+      .video-recording-backdrop .video-recording-popup {
+        /* hi-res laptops and desktops */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 50%;
+        height: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+        padding: 20px; } }
+
+@keyframes recorder_blink_outer {
+  from {
+    border-color: #e0291d; }
+  50% {
+    border-color: rgba(224, 41, 29, 0.2); }
+  to {
+    border-color: #e0291d; } }
+
+@keyframes recorder_blink_inner {
+  from {
+    background-color: #e0291d; }
+  50% {
+    background-color: rgba(224, 41, 29, 0.2); }
+  to {
+    background-color: #e0291d; } }
+
+.recorder-container {
+  position: absolute;
+  display: block;
+  bottom: 5%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: 100px;
+  height: 100px; }
+  .recorder-container svg.recorder-encoding-progress {
+    display: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; }
+  .recorder-container .btn-record {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border-width: 2px;
+    border-style: solid;
+    border-color: #e0291d;
+    background-color: transparent;
+    outline: none; }
+    .recorder-container .btn-record::-moz-focus-inner {
+      border: none; }
+    .recorder-container .btn-record:after {
+      content: "";
+      display: block;
+      width: 75%;
+      height: 75%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #e0291d;
+      border-radius: 50%; }
+  .recorder-container.recording .btn-record {
+    opacity: 100 !important;
+    animation: recorder_blink_outer 2s infinite; }
+    .recorder-container.recording .btn-record:after {
+      width: 60%;
+      height: 60%;
+      border-radius: 10%;
+      animation: recorder_blink_inner 2s infinite; }
+  .recorder-container.processing .btn-record {
+    display: none; }
+  .recorder-container.disabled .btn-record {
+    border-color: #7f7f7f; }
+    .recorder-container.disabled .btn-record:after {
+      background-color: #7f7f7f; }
+
 html,
 body {
   margin: 0px;
@@ -3357,12 +3484,14 @@ body {
  */
 .btn-fullscreen,
 .btn-file-select + label,
-.toggle-menu-visible + label {
+.toggle-menu-visible + label,
+.btn-record {
   -webkit-transition: opacity 1s;
   transition: opacity 1s; }
   .user-inactive .btn-fullscreen, .user-inactive
   .btn-file-select + label, .user-inactive
-  .toggle-menu-visible + label {
+  .toggle-menu-visible + label, .user-inactive
+  .btn-record {
     opacity: 0; }
 
 /* But not the 'close menu' button ;) */
