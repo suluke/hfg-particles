@@ -1,4 +1,3 @@
-import { effectsById } from './effects/index';
 import { Shader, Uniforms, Attributes, Varyings } from './regl-utils';
 import { reportError } from './error-manager';
 

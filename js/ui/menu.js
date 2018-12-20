@@ -458,24 +458,7 @@ export default class MainMenu {
     }
 
     this.defaultConfig = this.readConfig();
-
-    // now populate the initial config (NOT defaultConfig) with some effects
-    const effectLen = 2500;
-    const tracks = [];
-    for (let i = 0; i < effects.length; i++) {
-      tracks.push([
-        new EffectConfig(
-          effects[i].getId(),
-          i * effectLen,
-          i * effectLen + effectLen,
-          1,
-          effects[i].getDefaultConfig()
-        )
-      ]);
-    }
-    this.timeline.loadTimeline(tracks);
-
-    this.submittedConfig = this.readConfig();
+    this.submittedConfig = this.defaultConfig;
   }
 
   applyConfig(config) {
