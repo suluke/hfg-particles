@@ -9,6 +9,7 @@ $fa-font-path: "./fonts";
 @import 'menu';
 @import 'timeline';
 @import 'effect-config-dialog';
+@import 'recorder';
 
 $main-text-color: #333;
 
@@ -69,7 +70,8 @@ body {
  */
 .btn-fullscreen,
 .btn-file-select + label,
-.toggle-menu-visible + label {
+.toggle-menu-visible + label,
+.btn-record {
   $transition-time: 1s;
   -webkit-transition: opacity $transition-time;
   transition: opacity $transition-time;

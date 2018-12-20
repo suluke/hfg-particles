@@ -458,24 +458,7 @@ export default class MainMenu {
     }
 
     this.defaultConfig = this.readConfig();
-
-    // now populate the initial config (NOT defaultConfig) with some effects
-    const effectLen = 2500;
-    const tracks = [];
-    for (let i = 0; i < effects.length; i++) {
-      tracks.push([
-        new EffectConfig(
-          effects[i].getId(),
-          i * effectLen,
-          i * effectLen + effectLen,
-          1,
-          effects[i].getDefaultConfig()
-        )
-      ]);
-    }
-    this.timeline.loadTimeline(tracks);
-
-    this.submittedConfig = this.readConfig();
+    this.submittedConfig = this.defaultConfig;
   }
 
   applyConfig(config) {
@@ -499,10 +482,10 @@ export default class MainMenu {
   submit() {
     this.applyBtn.disabled = true;
     const config = this.readConfig();
+    this.submittedConfig = config;
     for (let i = 0; i < this.changeListeners.length; i++) {
       this.changeListeners[i](config);
     }
-    this.submittedConfig = config;
   }
 
   addControl(CtrlClass) {
@@ -511,6 +494,10 @@ export default class MainMenu {
   }
   addChangeListener(listener) {
     this.changeListeners.push(listener);
+  }
+  persist() {
+    if (window.localStorage)
+      window.localStorage.setItem('savedConfig', JSON.stringify(this.submittedConfig, null, 2));
   }
 
   isCoverFullWidth() {
