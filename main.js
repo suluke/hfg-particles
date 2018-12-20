@@ -1291,8 +1291,8 @@ var parseColor = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2018-12-14T10:12:47.024Z',
-  git_rev:               '1a89abe',
+  timestamp:             '2018-12-20T13:54:37.514Z',
+  git_rev:               'b273c3f',
   export_schema_version: 0
 };
 
@@ -23162,6 +23162,51 @@ EffectListItem.prototype.getElement = function getElement () {
   return this.element;
 };
 
+var EffectList = function EffectList(menu) {
+  var this$1 = this;
+
+  this.elm = menu.menu.querySelector('.menu-effects');
+  this.effectList = this.elm.querySelector('ul.menu-effect-list');
+  this.filterInput = this.elm.querySelector('input.menu-effects-filter');
+  var effectListElms = document.createDocumentFragment();
+  for (var i = 0; i < effectList.length; i++) {
+    var elm = new EffectListItem(effectList[i], menu.timeline).getElement();
+    effectListElms.appendChild(elm);
+  }
+  this.effectList.appendChild(effectListElms);
+  var effectListItems = this.effectList.querySelectorAll('li');
+  var applyFilter = function () {
+    var filters = this$1.filterInput.value.toLowerCase().split(' ');
+    console.log(filters);
+    for (var i = 0; i < effectList.length; i++) {
+      var effect = effectList[i];
+      var name = effect.getDisplayName().toLowerCase();
+      var desc = effect.getDescription().toLowerCase();
+      var match = true;
+      for (var j = 0; j < filters.length; j++) {
+        var filter = filters[j];
+        if (filter.length === 0)
+          { continue; }
+        var inName = name.indexOf(filter) >= 0;
+        var inDesc = desc.indexOf(filter) >= 0;
+        if (!inName && !inDesc) {
+          match = false;
+          break;
+        }
+      }
+      var li = effectListItems[i];
+      if (!match) {
+        li.style.display = 'none';
+      } else {
+        li.style.display = '';
+      }
+    }
+  };
+  this.filterInput.addEventListener('input', applyFilter);
+  this.filterInput.addEventListener('change', applyFilter);
+  applyFilter();
+};
+
 var MainMenu = function MainMenu(clock) {
   var this$1 = this;
 
@@ -23173,11 +23218,11 @@ var MainMenu = function MainMenu(clock) {
   this.submittedConfig = null;
 
   this.menuContent = this.menu.querySelector('.menu-content');
-  this.effectList = this.menu.querySelector('.menu-effect-list');
   this.toggle = document.getElementById('toggle-menu-visible');
   this.applyBtn = document.getElementById('menu-btn-apply');
 
   this.timeline = new Timeline(this);
+  this.effectList = new EffectList(this); // requires timeline
 
   var menu = this.menu;
   var toggle = this.toggle;
@@ -23205,26 +23250,19 @@ var MainMenu = function MainMenu(clock) {
     this.addControl(ControlsList[i]);
   }
 
-  var effectListElms = document.createDocumentFragment();
-  for (var i$1 = 0; i$1 < effectList.length; i$1++) {
-    var elm = new EffectListItem(effectList[i$1], this.timeline).getElement();
-    effectListElms.appendChild(elm);
-  }
-  this.effectList.appendChild(effectListElms);
-
   this.defaultConfig = this.readConfig();
 
   // now populate the initial config (NOT defaultConfig) with some effects
   var effectLen = 2500;
   var tracks = [];
-  for (var i$2 = 0; i$2 < effectList.length; i$2++) {
+  for (var i$1 = 0; i$1 < effectList.length; i$1++) {
     tracks.push([
       new EffectConfig(
-        effectList[i$2].getId(),
-        i$2 * effectLen,
-        i$2 * effectLen + effectLen,
+        effectList[i$1].getId(),
+        i$1 * effectLen,
+        i$1 * effectLen + effectLen,
         1,
-        effectList[i$2].getDefaultConfig()
+        effectList[i$1].getDefaultConfig()
       )
     ]);
   }
