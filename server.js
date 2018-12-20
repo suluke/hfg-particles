@@ -52,7 +52,9 @@ fs.mkdirp(StaticPath).then(
         // use Node resolution algorithm to find files in node_modules
         resolve({
           main: true,
-          extensions: [ '.js', '.json' ]
+          browser: true,
+          extensions: [ '.js', '.json' ],
+          preferBuiltins: false,
         }),
         // CommonJS modules -> ES6 modules
         commonjs({
