@@ -301,8 +301,7 @@ export default class RecordButton {
         <button type="button" class="btn-record">
       </div>
     `);
-    const container = document.querySelector('body');
-    container.appendChild(elm);
+    this.container = document.querySelector('body');
     const btn = elm.querySelector('button');
     this.btn = btn;
     this.elm = elm;
@@ -313,6 +312,14 @@ export default class RecordButton {
       this.activateListener = () => { this.showActivationDialog(); }
       btn.addEventListener('click', this.activateListener);
     }
+  }
+
+  enable() {
+    this.container.appendChild(this.elm);
+  }
+
+  disable() {
+    this.container.removeChild(this.elm);
   }
 
   showActivationDialog() {

@@ -499,10 +499,10 @@ export default class MainMenu {
   submit() {
     this.applyBtn.disabled = true;
     const config = this.readConfig();
+    this.submittedConfig = config;
     for (let i = 0; i < this.changeListeners.length; i++) {
       this.changeListeners[i](config);
     }
-    this.submittedConfig = config;
   }
 
   addControl(CtrlClass) {
@@ -511,6 +511,10 @@ export default class MainMenu {
   }
   addChangeListener(listener) {
     this.changeListeners.push(listener);
+  }
+  persist() {
+    if (window.localStorage)
+      window.localStorage.setItem('savedConfig', JSON.stringify(this.submittedConfig, null, 2));
   }
 
   isCoverFullWidth() {

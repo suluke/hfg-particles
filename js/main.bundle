@@ -1,10 +1,10 @@
 import './polyfills/classlist';
 import { FullscreenButton, DoubleClickFullscreen } from './ui/fullscreen';
+import BetaFeaturesToggle from './ui/beta-features';
 import ImgSelect from './ui/image-select';
 import InactivityMonitor from './ui/inactivity-monitor';
 import LoadImgDialog from './ui/load-default-img-dialog';
 import MainMenu from './ui/menu';
-import RecordButton from './ui/record';
 import Renderer from './renderer';
 import ErrorManager from './error-manager';
 import Config from './config';
@@ -30,8 +30,8 @@ const errorManager = new ErrorManager(function() {
   const imgSelect = new ImgSelect();
   const imgLoadDialog = new LoadImgDialog();
   const inactivityMonitor = new InactivityMonitor();
-  const recordBtn = new RecordButton(renderer);
   const menu = new MainMenu(renderer.getClock());
+  const betaFeatures = new BetaFeaturesToggle(menu, renderer);
 
   function tryLoadFromLocalStorage() {
     if (window.localStorage) {
@@ -65,9 +65,10 @@ const errorManager = new ErrorManager(function() {
     return false;
   }
   // Try loading the timeline from different places
-  if (!tryLoadFromHash()) {
-    tryLoadFromLocalStorage();
-  }
+  let loaded = false;
+  loaded = loaded || tryLoadFromHash();
+  loaded = loaded || tryLoadFromLocalStorage();
+
   window.addEventListener("hashchange", tryLoadFromHash);
 
   const adjustCanvasSize = () => {
@@ -144,9 +145,7 @@ const errorManager = new ErrorManager(function() {
 
   menu.addChangeListener((config) => {
     renderer.setConfig(config);
-    if (window.localStorage) {
-      window.localStorage.setItem('savedConfig', JSON.stringify(config, null, 2));
-    }
+    menu.persist();
   });
 
   // FPS display
