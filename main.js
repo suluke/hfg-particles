@@ -1291,8 +1291,8 @@ var parseColor = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2018-12-20T13:54:37.514Z',
-  git_rev:               'b273c3f',
+  timestamp:             '2018-12-20T20:00:20.814Z',
+  git_rev:               'c7906cc',
   export_schema_version: 0
 };
 
@@ -19910,10 +19910,24 @@ Ease.extend = function extend (configUI, classPrefix) {
   };
 };
 
+Ease.getCurrentEase = function getCurrentEase (instance, props) {
+  var easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
+  var easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
+  var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+  var easeInProgress = Math.min(1, time / (easeInTime / instance.getPeriod()));
+  var easeOutProgress =Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
+  var easeFuncs = {
+    none: 1.,
+    sine: (1. - Math.cos(Math.PI * Math.min(easeInProgress, easeOutProgress))) / 2.,
+    linear: Math.min(easeInProgress, easeOutProgress)
+  };
+  return easeFuncs[instance.config.easeFunc || 'none'];
+};
+
 Ease.setupShaderEasing = function setupShaderEasing (instance, uniforms) {
   var easeInTime = Math.min(instance.config.easeInTime || 1000, instance.getPeriod() / 2);
   var easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
-  // starts at 0, goes down to 1
+  // starts at 0, goes up to 1
   var easeInProgress = uniforms.addUniform('easeInProgress', 'float', function (ctx, props) {
     var time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
     return Math.min(1, time / (easeInTime / instance.getPeriod()));
@@ -21394,13 +21408,131 @@ var ParticlesScalingEffect = /*@__PURE__*/(function (Effect$$1) {
   return ParticlesScalingEffect;
 }(Effect));
 
-var EffectName$20 = 'Dummy';
-var EffectDescription$20 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
+var EffectName$20 = 'Rotate';
+var EffectDescription$20 = 'Rotate all particles with a custom angle around a custom origin';
+
+var RotateConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
+  function RotateConfigUI() {
+    var this$1 = this;
+
+    ConfigUI$$1.call(this);
+    var classPrefix = 'effect-rotate';
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$20 + "</legend>\n        <label>\n          Rotation angle\n          <input type=\"number\" value=\"0\" class=\"" + classPrefix + "-angle\"/>\n        </label>\n        <select value=\"deg\" class=\"" + classPrefix + "-angle-unit\">\n          <option value=\"deg\" selected>degrees</option>\n          <option value=\"rad\">radians</option>\n        </select>\n        <br/>\n        Origin:\n        <label>\n          x:\n          <input type=\"number\" value=\"0\" class=\"" + classPrefix + "-origin-x\"/>\n        </label>\n        <label>\n          y:\n          <input type=\"number\" value=\"0\" class=\"" + classPrefix + "-origin-y\"/>\n        </label>\n        <br/>\n      </fieldset>\n    "));
+    var ui = this.element;
+
+    this.angleInput = ui.querySelector(("." + classPrefix + "-angle"));
+    this.angleUnitInput = ui.querySelector(("." + classPrefix + "-angle-unit"));
+    this.originXInput = ui.querySelector(("." + classPrefix + "-origin-x"));
+    this.originYInput = ui.querySelector(("." + classPrefix + "-origin-y"));
+
+    this.angleInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.angleUnitInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.originXInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+    this.originYInput.addEventListener('change', function () {
+      this$1.notifyChange();
+    });
+
+    Ease.extend(this);
+  }
+
+  if ( ConfigUI$$1 ) RotateConfigUI.__proto__ = ConfigUI$$1;
+  RotateConfigUI.prototype = Object.create( ConfigUI$$1 && ConfigUI$$1.prototype );
+  RotateConfigUI.prototype.constructor = RotateConfigUI;
+
+  RotateConfigUI.prototype.getElement = function getElement () {
+    return this.element;
+  };
+
+  RotateConfigUI.prototype.getConfig = function getConfig () {
+    return {
+      angle: parseFloat(this.angleInput.value || 0),
+      angleUnit: this.angleUnitInput.value || 'deg',
+      originX: parseFloat(this.originXInput.value || 0),
+      originY: parseFloat(this.originYInput.value || 0),
+    };
+  };
+
+  RotateConfigUI.prototype.applyConfig = function applyConfig (config) {
+    this.angleInput.value = config.angle || 0;
+    this.angleUnitInput.value = config.angleUnit || 'deg';
+    this.originXInput.value = config.originX || 0;
+    this.originYInput.value = config.originY || 0;
+  };
+
+  return RotateConfigUI;
+}(ConfigUI));
+
+var RotateEffect = /*@__PURE__*/(function (Effect$$1) {
+  function RotateEffect () {
+    Effect$$1.apply(this, arguments);
+  }
+
+  if ( Effect$$1 ) RotateEffect.__proto__ = Effect$$1;
+  RotateEffect.prototype = Object.create( Effect$$1 && Effect$$1.prototype );
+  RotateEffect.prototype.constructor = RotateEffect;
+
+  RotateEffect.register = function register (instance, props, uniforms, vertexShader) {
+    var angle = instance.config.angle || 0;
+    var angleUnit = instance.config.angleUnit || 'deg';
+    if (angleUnit !== 'rad')
+      { angle = angle / 360 * 2 * Math.PI; }
+    var origX = instance.config.originX || 0;
+    var origY = instance.config.originY || 0;
+    // GL is column-major!
+    var matAlloc = [0, 0, 0, 0, 0, 0, 0, 0, 1];
+    var matrix = function (ctx, props) {
+      var ease = Ease.getCurrentEase(instance, props);
+      var teta = angle * ease;
+      matAlloc[0] = Math.cos(teta);
+      matAlloc[1] = Math.sin(teta);
+      matAlloc[3] = -Math.sin(teta);
+      matAlloc[4] = Math.cos(teta);
+      return matAlloc;
+    };
+    var rotate = uniforms.addUniform('rotationMat', 'mat3', matrix);
+    vertexShader.mainBody += "\n      vec3 offset = vec3(float(" + origX + ") + .5, float(" + origY + ") + .5, 0.);\n      vec3 rot = " + rotate + " * (position - offset) + offset;\n      position.xy = rot.xy;\n    ";
+  };
+
+  RotateEffect.getDisplayName = function getDisplayName () {
+    return EffectName$20;
+  };
+
+  RotateEffect.getDescription = function getDescription () {
+    return EffectDescription$20;
+  };
+
+  RotateEffect.getConfigUI = function getConfigUI () {
+    if (!this._configUI) {
+      this._configUI = new RotateConfigUI();
+    }
+
+    return this._configUI;
+  };
+
+  RotateEffect.getDefaultConfig = function getDefaultConfig () {
+    return {};
+  };
+
+  RotateEffect.getRandomConfig = function getRandomConfig () {
+    return {};
+  };
+
+  return RotateEffect;
+}(Effect));
+
+var EffectName$21 = 'Dummy';
+var EffectDescription$21 = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
 
 var DummyConfigUI = /*@__PURE__*/(function (ConfigUI$$1) {
   function DummyConfigUI() {
     ConfigUI$$1.call(this);
-    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$20 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
+    this.element = parseHtml(("\n      <fieldset>\n        <legend>" + EffectName$21 + "</legend>\n        Nothing to be configured :)\n      </fieldset>\n    "));
     var ui = this.element;
   }
 
@@ -21435,11 +21567,11 @@ var DummyEffect = /*@__PURE__*/(function (Effect$$1) {
   };
 
   DummyEffect.getDisplayName = function getDisplayName () {
-    return EffectName$20;
+    return EffectName$21;
   };
 
   DummyEffect.getDescription = function getDescription () {
-    return EffectDescription$20;
+    return EffectDescription$21;
   };
 
   DummyEffect.getConfigUI = function getConfigUI () {
@@ -21483,6 +21615,7 @@ var effectList = [
   VignetteEffect,
   LettersEffect,
   ParticlesScalingEffect,
+  RotateEffect,
 
   // Should be last
   DummyEffect
@@ -23177,7 +23310,6 @@ var EffectList = function EffectList(menu) {
   var effectListItems = this.effectList.querySelectorAll('li');
   var applyFilter = function () {
     var filters = this$1.filterInput.value.toLowerCase().split(' ');
-    console.log(filters);
     for (var i = 0; i < effectList.length; i++) {
       var effect = effectList[i];
       var name = effect.getDisplayName().toLowerCase();
@@ -33065,7 +33197,7 @@ CommandBuilder.prototype.assembleCommand = function assembleCommand () {
         throw new Error(("Unknown particle overlap mode: " + (this$1.config.particleOverlap)));
     }
 
-    vert.mainBody += "\n        vec3 rgb = rgba_int.rgb / 255.;\n        vec3 hsv = rgb2hsv(rgb);\n        vec3 initialPosition = vec3(texcoord, 0);\n        float pointSize = max(particleSize, 0.);\n\n        vec3 position = initialPosition;\n      ";
+    vert.mainBody += "\n        vec3 rgb = rgba_int.rgb / 255.;\n        vec3 hsv = rgb2hsv(rgb);\n        vec3 initialPosition = vec3(texcoord, 0);\n        float pointSize = max(particleSize, 0.);\n        // Position ranges from 0 to 1 in each dimension\n        vec3 position = initialPosition;\n      ";
     frag.mainBody += "\n        vec3 rgb = color;\n        vec2 frag_coord = (gl_FragCoord.xy - vec2(.5)) / (viewport - vec2(1.));\n        // gl_PointCoord coord system is edge-centered, but it's more\n        // convenient if we center the system at the center of the\n        // fragment (see point_dist below for example)\n        vec2 point_coord = (gl_PointCoord * 2. - vec2(1.)) * vec2(1., -1.);\n        float point_dist = length(point_coord);\n      ";
     var nextEffect = (function () {
       var i = 0;
