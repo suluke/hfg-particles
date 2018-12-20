@@ -16,6 +16,7 @@ import RendererState from './renderer/state';
  */
 export default class Renderer {
   constructor(webgl) {
+    this.webgl = webgl;
     this.regl = createRegl({ gl: webgl });
     console.info(`max texture size: ${this.regl.limits.maxTextureSize}`);
     console.info(`point size dims: ${this.regl.limits.pointSizeDims[0]} ${this.regl.limits.pointSizeDims[1]}`);
@@ -56,7 +57,7 @@ export default class Renderer {
     this.pipelineCfg.clock  = this.clock
     this.state.pipeline.run(this.pipelineCfg);
     for (let i = 0; i < this.frameListeners.length; i++)
-      this.frameListeners[i](webgl.canvas, this.frameTime);
+      this.frameListeners[i](this.webgl.canvas, this.frameTime);
   }
 
   resize(width, height) {
