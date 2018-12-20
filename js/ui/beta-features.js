@@ -12,7 +12,6 @@ export default class BetaFeaturesToggle {
     });
     const onChange = (evt) => {
       const enabled = this.elm.checked;
-      console.log(enabled);
       menu.submittedConfig.enableBetaFeatures = enabled;
       menu.persist();
       for (let i = 0; i < features.length; i++) {
