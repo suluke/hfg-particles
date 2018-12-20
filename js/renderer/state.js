@@ -17,6 +17,9 @@ class ParticleData {
   constructor(imageData, regl, scalingInfo) {
     this.rgba = mapImageToParticles(imageData, scalingInfo).data;
   }
+  destroy() {
+    this.rgba = null;
+  }
 }
 
 class ParticleDataStoreEntry {
@@ -28,6 +31,7 @@ class ParticleDataStoreEntry {
   }
   destroy() {
     if (this.particleData !== null) {
+      this.particleData.destroy();
       this.particleData = null;
     }
     this.imageCanvas = null;
