@@ -371,6 +371,51 @@ class EffectListItem {
   }
 }
 
+class EffectList {
+  constructor(menu) {
+    this.elm = menu.menu.querySelector('.menu-effects');
+    this.effectList = this.elm.querySelector('ul.menu-effect-list');
+    this.filterInput = this.elm.querySelector('input.menu-effects-filter');
+    const effectListElms = document.createDocumentFragment();
+    for (let i = 0; i < effects.length; i++) {
+      const elm = new EffectListItem(effects[i], menu.timeline).getElement();
+      effectListElms.appendChild(elm);
+    }
+    this.effectList.appendChild(effectListElms);
+    const effectListItems = this.effectList.querySelectorAll('li');
+    const applyFilter = () => {
+      const filters = this.filterInput.value.toLowerCase().split(' ');
+      console.log(filters);
+      for (let i = 0; i < effects.length; i++) {
+        const effect = effects[i];
+        const name = effect.getDisplayName().toLowerCase();
+        const desc = effect.getDescription().toLowerCase();
+        let match = true;
+        for (let j = 0; j < filters.length; j++) {
+          const filter = filters[j];
+          if (filter.length === 0)
+            continue;
+          const inName = name.indexOf(filter) >= 0;
+          const inDesc = desc.indexOf(filter) >= 0;
+          if (!inName && !inDesc) {
+            match = false;
+            break;
+          }
+        }
+        const li = effectListItems[i];
+        if (!match) {
+          li.style.display = 'none';
+        } else {
+          li.style.display = '';
+        }
+      }
+    };
+    this.filterInput.addEventListener('input', applyFilter);
+    this.filterInput.addEventListener('change', applyFilter);
+    applyFilter();
+  }
+}
+
 export default class MainMenu {
   constructor(clock) {
     this.menu = document.getElementById('menu-container');
@@ -381,11 +426,11 @@ export default class MainMenu {
     this.submittedConfig = null;
 
     this.menuContent = this.menu.querySelector('.menu-content');
-    this.effectList = this.menu.querySelector('.menu-effect-list');
     this.toggle = document.getElementById('toggle-menu-visible');
     this.applyBtn = document.getElementById('menu-btn-apply');
 
     this.timeline = new Timeline(this);
+    this.effectList = new EffectList(this); // requires timeline
 
     const menu = this.menu;
     const toggle = this.toggle;
@@ -412,13 +457,6 @@ export default class MainMenu {
     for (let i = 0; i < ControlsList.length; i++) {
       this.addControl(ControlsList[i]);
     }
-
-    const effectListElms = document.createDocumentFragment();
-    for (let i = 0; i < effects.length; i++) {
-      const elm = new EffectListItem(effects[i], this.timeline).getElement();
-      effectListElms.appendChild(elm);
-    }
-    this.effectList.appendChild(effectListElms);
 
     this.defaultConfig = this.readConfig();
 

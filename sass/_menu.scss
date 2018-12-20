@@ -95,48 +95,76 @@ $menu-apply-btn-height: 10%;
       /**
        * Effects list
        */
-      .menu-effect-list {
-        $item-spacing: 10px;
-        display: flex;
-        padding: 0;
-        margin-top: -$item-spacing / 2;
-        margin-left: -$item-spacing / 2;
-        width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        list-style-type: none;
-        /* Effect boxes */
-        & > li {
-          @include vCenterText;
-          @include unselectable;
-          cursor: -moz-grab;
-          cursor: -webkit-grab;
-          cursor: grab;
-          flex: 1;
-          background-color: rgba(0, 0, 0, 0.3);
-          text-align: center;
-          width: 8em;
-          height: 4em;
-          white-space: nowrap;
-          margin-top: $item-spacing;
-          margin-left: $item-spacing;
-          padding: 0 3px;
-        }
-        @for $i from 1 through length($effect-colors) {
-          & > li:nth-child(#{$i}) {
-            background-color: lighten(nth($effect-colors, $i), 20%);
+      .menu-effects {
+        .menu-effects-filter-label {
+          display: block;
+          position: relative;
+          & > span {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            position: absolute;
+            visibility: hidden;
+          }
+          &:after {
+            display: inline-block;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-55%);
+            right: 5%;
+            font-family: FontAwesome;
+            content: $fa-var-search;
+            color: #555;
           }
         }
-        @at-root #modal-container {
-          .effect-list-item.drag-drop-copy {
+        input.menu-effects-filter {
+          display: block;
+          width: 90%;
+          margin: 0 auto;
+        }
+        .menu-effect-list {
+          $item-spacing: 10px;
+          display: flex;
+          padding: 0;
+          margin-top: -$item-spacing / 2;
+          margin-left: -$item-spacing / 2;
+          width: 100%;
+          flex-direction: row;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          list-style-type: none;
+          /* Effect boxes */
+          & > li {
             @include vCenterText;
             @include unselectable;
-            cursor: -moz-grabbing;
-            cursor: -webkit-grabbing;
-            cursor: grabbing;
-            text-align: center;
+            cursor: -moz-grab;
+            cursor: -webkit-grab;
+            cursor: grab;
+            flex: 1;
             background-color: rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 8em;
+            height: 4em;
+            white-space: nowrap;
+            margin-top: $item-spacing;
+            margin-left: $item-spacing;
+            padding: 0 3px;
+          }
+          @for $i from 1 through length($effect-colors) {
+            & > li:nth-child(#{$i}) {
+              background-color: lighten(nth($effect-colors, $i), 20%);
+            }
+          }
+          @at-root #modal-container {
+            .effect-list-item.drag-drop-copy {
+              @include vCenterText;
+              @include unselectable;
+              cursor: -moz-grabbing;
+              cursor: -webkit-grabbing;
+              cursor: grabbing;
+              text-align: center;
+              background-color: rgba(0, 0, 0, 0.3);
+            }
           }
         }
       }
