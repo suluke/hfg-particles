@@ -1,3 +1,4 @@
+import WebMWriter from '../vendor/webm-writer-0.2.0.js'
 import { parseHtml } from './util';
 
 class FfmpegLoader {
@@ -50,7 +51,7 @@ class FfmpegLoader {
 
 const ffmpegLoader = new FfmpegLoader();
 
-class Recorder {
+class FfmpegRecorder {
   constructor(renderer, ffmpeg) {
     this.fps = 20;
     this.renderer = renderer;
@@ -178,7 +179,7 @@ class Recorder {
   }
 }
 
-class RecorderActivationDialog {
+class FfmpegRecorderActivationDialog {
   constructor() {
     const classPrefix = 'video-recording';
     const activateBtnClass = `btn-${classPrefix}-activate`;
@@ -232,31 +233,90 @@ class RecorderActivationDialog {
   }
 }
 
+class WebMRecorder {
+  constructor(renderer) {
+    this.fps = 20;
+    this.renderer = renderer;
+    this.writer = new WebMWriter({
+      quality: 0.95,
+      fileWriter: null,
+      frameRate: this.fps
+    });
+    const scalingCanvas = document.createElement('canvas');
+    const renderW = renderer.getState().getWidth();
+    const renderH = renderer.getState().getHeight();
+    const maxDim = 640;
+    const scaledW = Math.round(renderW > renderH ? maxDim : renderW / renderH * maxDim) & (~1);
+    const scaledH = Math.round(renderW > renderH ? renderH / renderW * maxDim : maxDim) & (~1);
+    scalingCanvas.width  = scaledW;
+    scalingCanvas.height = scaledH;
+    const scalingCtx = scalingCanvas.getContext('2d');
+    const desiredFrameTime = 1 / this.fps * 1000;
+    let waited = desiredFrameTime;
+    this.frameCallback = (canvas, frameTime) => {
+      waited += frameTime;
+      if (waited >= desiredFrameTime) {
+        waited = 0;
+        scalingCtx.drawImage(canvas, 0, 0, scaledW, scaledH);
+        this.writer.addFrame(scalingCanvas);
+      }
+    };
+  }
+
+  start() {
+    this.renderer.addFrameListener(this.frameCallback);
+  }
+  stop() {
+    this.renderer.removeFrameListener(this.frameCallback);
+  }
+
+  compile() {
+    return this.writer.complete().then((blob) => {
+      return { blob, url: window.URL.createObjectURL(blob) };
+    });
+  }
+
+  // https://stackoverflow.com/a/27232658/1468532
+  static isSupported() {
+    const canvas = document.createElement('canvas');
+    if (!!(canvas.getContext && canvas.getContext('2d'))) {
+        // was able or not to get WebP representation
+        return canvas.toDataURL('image/webp').indexOf('data:image/webp') == 0;
+    }
+    // very old browser like IE 8, canvas not supported
+    return false;
+  }
+}
+
 export default class RecordButton {
   constructor(renderer) {
+    this.recorder = null;
+    this.renderer = renderer;
+    this.ffmpeg = null;
+    this.dlLink = null;
     // set up dom elements (but don't display them yet)
-    const container = document.querySelector('body');
     const elm = parseHtml(`
       <div class="recorder-container disabled">
         <svg xmlns="http://www.w3.org/2000/svg" class="recorder-encoding-progress"></svg>
         <button type="button" class="btn-record">
       </div>
     `);
+    const container = document.querySelector('body');
     container.appendChild(elm);
     const btn = elm.querySelector('button');
-    this.activateListener = () => { this.showActivationDialog(); }
-    btn.addEventListener('click', this.activateListener);
-
     this.btn = btn;
     this.elm = elm;
-    this.recorder = null;
-    this.renderer = renderer;
-    this.ffmpeg = null;
-    this.dlLink = null;
+    if (WebMRecorder.isSupported()) {
+      this.elm.classList.remove('disabled');
+      this.btn.addEventListener('click', (...args) => { this.onClick(...args); });
+    } else {
+      this.activateListener = () => { this.showActivationDialog(); }
+      btn.addEventListener('click', this.activateListener);
+    }
   }
 
   showActivationDialog() {
-    const dialog = new RecorderActivationDialog();
+    const dialog = new FfmpegRecorderActivationDialog();
     dialog.promptUser()
       .then(() => {
         this.btn.removeEventListener('click', this.activateListener);
@@ -278,8 +338,11 @@ export default class RecordButton {
   }
 
   onClick() {
-    if (this.recorder == null) {
-      this.recorder = new Recorder(this.renderer, this.ffmpeg);
+    if (this.recorder === null) {
+      if (this.ffmpeg !== null)
+        this.recorder = new FfmpegRecorder(this.renderer, this.ffmpeg);
+      else
+        this.recorder = new WebMRecorder(this.renderer);
       if (this.dlLink !== null) {
         this.dlLink.parentNode.removeChild(this.dlLink);
       }
@@ -295,9 +358,10 @@ export default class RecordButton {
       window.setTimeout(() => {
         this.recorder.compile((progress) => { console.log(progress); })
           .then(({blob, url}) => {
+            const outfile = this.ffmpeg === null ? 'video.webm' : 'video.mp4';
             const dlLink = document.createElement('a');
             dlLink.setAttribute('href', url);
-            dlLink.setAttribute('download', 'video.mp4');
+            dlLink.setAttribute('download', outfile);
             dlLink.textContent = 'DOWNLOAD';
             this.elm.appendChild(dlLink);
             this.dlLink = dlLink;
