@@ -1,4 +1,5 @@
 import Effect, { ConfigUI, fract } from './effect';
+import { reportError } from '../error-manager';
 import { parseHtml, imageScalingMarkup } from '../ui/util';
 import { ImageCapture } from 'image-capture/lib/imagecapture';
 
@@ -110,16 +111,22 @@ class WebcamEffectImpl {
     // Shutdown hook
     this.props.state.addHook(() => this.kill());
     return this.createStream()
-    .then((stream) => { this.stream = stream; return this.createTrack(); },
+    .then((stream) => {
+            this.stream = stream;
+            return this.createTrack();
+          },
           (err) => Promise.reject(err))
-    .then((track) => { this.track = track; this.capture = new ImageCapture(this.track); return this.tryStartGrabbing(); },
+    .then((track) => {
+            this.track = track;
+            this.capture = new ImageCapture(this.track);
+            return this.tryStartGrabbing();
+          },
           (err) => Promise.reject(err));
   }
   kill() {
     this.alive = false;
     // FIXME understand and document when this can happen.
-    // E.g. when the getUserMedia() request is ignored in icognito
-    // mode
+    // E.g. when the getUserMedia() request is ignored in icognito mode
     const stream = this.stream;
     if (stream !== null) {
       const allTracks = stream.getTracks();
@@ -152,8 +159,7 @@ class WebcamEffectImpl {
         // explode the call stack with recursive calls
         window.requestAnimationFrame(() => this.grabLoop());
       }, (err) => {
-        // Throw this error into the global scope
-        window.setTimeout(() => { throw new Error('Cannot grab images from the camera'); }, 0);
+        reportError(new Error('Cannot grab images from the camera'));
       });
     }
   }
