@@ -1121,6 +1121,7 @@ var WebMWriter = function WebMWriter(options) {
    * Add a frame to the video. Currently the frame must be a Canvas element.
    */
   var addFramePromise = Promise.resolve();
+  var previousFrame = null;
   this.addFrame = function(canvas) {
     if (writtenHeader) {
       if (canvas.width != videoWidth || canvas.height != videoHeight) {
@@ -1136,11 +1137,22 @@ var WebMWriter = function WebMWriter(options) {
 
     addFramePromise = addFramePromise.then(function() {
       return renderAsWebP(canvas, {quality: options.quality}).then(function(webP) {
+        previousFrame = extractKeyframeFromWebP(webP);
         addFrameToCluster({
-          frame: extractKeyframeFromWebP(webP),
+          frame: previousFrame,
           duration: options.frameDuration
         });
       });
+    });
+    return addFramePromise;
+  };
+
+  this.repeatPreviousFrame = function() {
+    if (previousFrame === null)
+      { throw new Error('Cannot repeat frame: No previous frame'); }
+    addFrameToCluster({
+      frame: previousFrame,
+      duration: options.frameDuration
     });
   };
 
@@ -1290,10 +1302,11 @@ FfmpegLoader.prototype.getFFMPEG = function getFFMPEG () {
 
 var ffmpegLoader = new FfmpegLoader();
 
-var FfmpegRecorder = function FfmpegRecorder(renderer, ffmpeg) {
+var FfmpegRecorder = function FfmpegRecorder(renderer, ffmpeg, fps) {
   var this$1 = this;
+  if ( fps === void 0 ) fps = 20;
 
-  this.fps = 20;
+  this.fps = fps;
   this.renderer = renderer;
   this.scalingCanvas = document.createElement('canvas');
   // TODO no idea what happens when we resize - but who would want to
@@ -1458,14 +1471,14 @@ FfmpegRecorderActivationDialog.prototype.hide = function hide () {
   this.parentNode.removeChild(this.elm);
 };
 
-var WebMRecorder = function WebMRecorder(renderer) {
+var WebMRecorder = function WebMRecorder(renderer, fps) {
   var this$1 = this;
+  if ( fps === void 0 ) fps = 20;
 
-  this.fps = 20;
+  this.fps = fps;
   this.renderer = renderer;
   this.writer = new WebMWriter({
     quality: 0.95,
-    fileWriter: null,
     frameRate: this.fps
   });
   var scalingCanvas = document.createElement('canvas');
@@ -1477,14 +1490,40 @@ var WebMRecorder = function WebMRecorder(renderer) {
   scalingCanvas.width= scaledW;
   scalingCanvas.height = scaledH;
   var scalingCtx = scalingCanvas.getContext('2d');
+  // We want to do realtime encoding. Therefore, it is important how long
+  // it takes for a frame to be added. If frames need longer than the
+  // desiredFrameTime we might need to skip frames and replace the gap
+  // using a (hopefully faster) repeatPreviousFrame.
+  // Furthermore, if rendering performance drops below the desired fps,
+  // We also need to duplicate frames.
   var desiredFrameTime = 1 / this.fps * 1000;
   var waited = desiredFrameTime;
+  var frameInFlight = false;
+  var hasFrame = false;
   this.frameCallback = function (canvas, frameTime) {
     waited += frameTime;
+    // Do we want this frame to be added?
     if (waited >= desiredFrameTime) {
-      waited = 0;
-      scalingCtx.drawImage(canvas, 0, 0, scaledW, scaledH);
-      this$1.writer.addFrame(scalingCanvas);
+      // Do we currently already process a frame?
+      if (!frameInFlight) {
+        // If not, let's send this frame on its way
+        scalingCtx.drawImage(canvas, 0, 0, scaledW, scaledH);
+        frameInFlight = true;
+        this$1.writer.addFrame(scalingCanvas).then(function () {
+          waited -= desiredFrameTime;
+          hasFrame = true;
+          frameInFlight = false;
+        });
+      } else if (hasFrame) {
+        // If there is a frame in the pipeline we unfortunately need
+        // to discard this frame. Instead, we make up for all the frames
+        // we have missed so far by duplicating the current frame until
+        // the pipelined frame is ready
+        while (waited >= desiredFrameTime) {
+          this$1.writer.repeatPreviousFrame();
+          waited -= desiredFrameTime;
+        }
+      }
     }
   };
 };
@@ -2743,8 +2782,8 @@ var parseColor = function (cstr) {
 };
 
 var Config = {
-  timestamp:             '2018-12-21T17:20:03.334Z',
-  git_rev:               '092487c',
+  timestamp:             '2018-12-21T20:55:43.930Z',
+  git_rev:               'e9fe674',
   export_schema_version: 0
 };
 
