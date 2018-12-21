@@ -272,6 +272,8 @@ class WebMRecorder {
 
   compile() {
     return this.writer.complete().then((blob) => {
+      if (blob === null)
+        return { blob: null, url: null};
       return { blob, url: window.URL.createObjectURL(blob) };
     });
   }
@@ -319,7 +321,8 @@ export default class RecordButton {
   }
 
   disable() {
-    this.container.removeChild(this.elm);
+    if (this.elm.parentNode)
+      this.elm.parentNode.removeChild(this.elm);
   }
 
   showActivationDialog() {
@@ -359,12 +362,18 @@ export default class RecordButton {
       this.recorder.stop();
       // encoding has the highest priority now (for the user as-well)
       // so at least pretend to free CPU resources by pausing
+      const wasPaused = this.renderer.getClock().isPaused();
       this.renderer.getClock().setPaused();
       // compiling the video at least used to take quite some time, so
       // let's put it in the next event loop iteration
       window.setTimeout(() => {
         this.recorder.compile((progress) => { console.log(progress); })
           .then(({blob, url}) => {
+            // If a recorder does not record a single frame (e.g. because the
+            // renderer was paused the whole time) it's ok to return null
+            // as result
+            if (blob === null || url === null)
+              return;
             const outfile = this.ffmpeg === null ? 'video.webm' : 'video.mp4';
             const dlLink = document.createElement('a');
             dlLink.setAttribute('href', url);
@@ -377,7 +386,8 @@ export default class RecordButton {
           })
           .then(() => {
             this.elm.classList.remove('processing');
-            this.renderer.getClock().setPaused(false);
+            if (!wasPaused)
+              this.renderer.getClock().setPaused(false);
           });
         this.recorder = null;
       }, 0);
