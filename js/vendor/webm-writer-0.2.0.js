@@ -14,57 +14,25 @@ import BlobBuffer from './blobbuffer';
  *
  * Released under the WTFPLv2 https://en.wikipedia.org/wiki/WTFPL
  */
-function extend(base, top) {
-  var
-    target = {};
-
-  [base, top].forEach(function(obj) {
-    for (var prop in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, prop)) {
-        target[prop] = obj[prop];
-      }
-    }
-  });
-
-  return target;
-}
-
-/**
- * Decode a Base64 data URL into a binary string.
- *
- * Returns the binary string, or false if the URL could not be decoded.
- */
-function decodeBase64WebPDataURL(url) {
-  if (typeof url !== "string" || !url.match(/^data:image\/webp;base64,/i)) {
-    return false;
-  }
-
-  return window.atob(url.substring("data:image\/webp;base64,".length));
-}
-
-/**
- * Convert a raw binary string (one character = one output byte) to an ArrayBuffer
- */
-function stringToArrayBuffer(string) {
-  var
-    buffer = new ArrayBuffer(string.length),
-    int8Array = new Uint8Array(buffer);
-
-  for (var i = 0; i < string.length; i++) {
-    int8Array[i] = string.charCodeAt(i);
-  }
-
-  return buffer;
-}
 
 /**
  * Convert the given canvas to a WebP encoded image and return the image data as a string.
  */
 function renderAsWebP(canvas, quality) {
-  var
-    frame = canvas.toDataURL('image/webp', {quality: quality});
-
-  return decodeBase64WebPDataURL(frame);
+  return new Promise(function(resolve, reject) {
+    canvas.toBlob(function(blob) {
+      const reader = new FileReader();
+      reader.onload = function() {
+        const buffer = reader.result;
+        const asString = new Uint8Array(buffer).reduce(function (data, byte) { return data + String.fromCharCode(byte); }, '');
+        resolve(asString);
+      };
+      reader.onabort = function() {
+        reject(new Error('Failed to read blob using FileWriter'));
+      };
+      reader.readAsArrayBuffer(blob);
+    }, 'image/webp', quality);
+  });
 }
 
 function extractKeyframeFromWebP(webP) {
@@ -603,6 +571,7 @@ export default class WebMWriter {
     /**
      * Add a frame to the video. Currently the frame must be a Canvas element.
      */
+    let addFramePromise = Promise.resolve();
     this.addFrame = function(canvas) {
       if (writtenHeader) {
         if (canvas.width != videoWidth || canvas.height != videoHeight) {
@@ -616,16 +585,13 @@ export default class WebMWriter {
         writtenHeader = true;
       }
 
-      var
-        webP = renderAsWebP(canvas, {quality: options.quality});
-
-      if (!webP) {
-        throw "Couldn't decode WebP frame, does the browser support WebP?";
-      }
-
-      addFrameToCluster({
-        frame: extractKeyframeFromWebP(webP),
-        duration: options.frameDuration
+      addFramePromise = addFramePromise.then(function() {
+        return renderAsWebP(canvas, {quality: options.quality}).then(function(webP) {
+          addFrameToCluster({
+            frame: extractKeyframeFromWebP(webP),
+            duration: options.frameDuration
+          });
+        });
       });
     };
 
@@ -636,22 +602,24 @@ export default class WebMWriter {
      * a Blob with the contents of the entire video.
      */
     this.complete = function() {
-      if (!writtenHeader)
-        return Promise.resolve(null);
-      flushClusterFrameBuffer();
+      return addFramePromise.then(function() {
+        if (!writtenHeader)
+          return Promise.resolve(null);
+        flushClusterFrameBuffer();
 
-      writeCues();
-      rewriteSeekHead();
-      rewriteDuration();
+        writeCues();
+        rewriteSeekHead();
+        rewriteDuration();
 
-      return blobBuffer.complete('video/webm');
+        return blobBuffer.complete('video/webm');
+      });
     };
 
     this.getWrittenSize = function() {
       return blobBuffer.length;
     };
 
-    options = extend(optionDefaults, options || {});
+    options = Object.assign({} , optionDefaults, options || {});
     validateOptions();
   }
 };
