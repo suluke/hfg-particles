@@ -52,8 +52,8 @@ class FfmpegLoader {
 const ffmpegLoader = new FfmpegLoader();
 
 class FfmpegRecorder {
-  constructor(renderer, ffmpeg) {
-    this.fps = 20;
+  constructor(renderer, ffmpeg, fps = 20) {
+    this.fps = fps;
     this.renderer = renderer;
     this.scalingCanvas = document.createElement('canvas');
     // TODO no idea what happens when we resize - but who would want to
@@ -234,12 +234,11 @@ class FfmpegRecorderActivationDialog {
 }
 
 class WebMRecorder {
-  constructor(renderer) {
-    this.fps = 20;
+  constructor(renderer, fps = 20) {
+    this.fps = fps;
     this.renderer = renderer;
     this.writer = new WebMWriter({
       quality: 0.95,
-      fileWriter: null,
       frameRate: this.fps
     });
     const scalingCanvas = document.createElement('canvas');
@@ -251,14 +250,40 @@ class WebMRecorder {
     scalingCanvas.width  = scaledW;
     scalingCanvas.height = scaledH;
     const scalingCtx = scalingCanvas.getContext('2d');
+    // We want to do realtime encoding. Therefore, it is important how long
+    // it takes for a frame to be added. If frames need longer than the
+    // desiredFrameTime we might need to skip frames and replace the gap
+    // using a (hopefully faster) repeatPreviousFrame.
+    // Furthermore, if rendering performance drops below the desired fps,
+    // We also need to duplicate frames.
     const desiredFrameTime = 1 / this.fps * 1000;
     let waited = desiredFrameTime;
+    let frameInFlight = false;
+    let hasFrame = false;
     this.frameCallback = (canvas, frameTime) => {
       waited += frameTime;
+      // Do we want this frame to be added?
       if (waited >= desiredFrameTime) {
-        waited = 0;
-        scalingCtx.drawImage(canvas, 0, 0, scaledW, scaledH);
-        this.writer.addFrame(scalingCanvas);
+        // Do we currently already process a frame?
+        if (!frameInFlight) {
+          // If not, let's send this frame on its way
+          scalingCtx.drawImage(canvas, 0, 0, scaledW, scaledH);
+          frameInFlight = true;
+          this.writer.addFrame(scalingCanvas).then(() => {
+            waited -= desiredFrameTime;
+            hasFrame = true;
+            frameInFlight = false;
+          });
+        } else if (hasFrame) {
+          // If there is a frame in the pipeline we unfortunately need
+          // to discard this frame. Instead, we make up for all the frames
+          // we have missed so far by duplicating the current frame until
+          // the pipelined frame is ready
+          while (waited >= desiredFrameTime) {
+            this.writer.repeatPreviousFrame();
+            waited -= desiredFrameTime;
+          }
+        }
       }
     };
   }

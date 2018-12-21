@@ -572,6 +572,7 @@ export default class WebMWriter {
      * Add a frame to the video. Currently the frame must be a Canvas element.
      */
     let addFramePromise = Promise.resolve();
+    let previousFrame = null;
     this.addFrame = function(canvas) {
       if (writtenHeader) {
         if (canvas.width != videoWidth || canvas.height != videoHeight) {
@@ -587,13 +588,24 @@ export default class WebMWriter {
 
       addFramePromise = addFramePromise.then(function() {
         return renderAsWebP(canvas, {quality: options.quality}).then(function(webP) {
+          previousFrame = extractKeyframeFromWebP(webP);
           addFrameToCluster({
-            frame: extractKeyframeFromWebP(webP),
+            frame: previousFrame,
             duration: options.frameDuration
           });
         });
       });
+      return addFramePromise;
     };
+
+    this.repeatPreviousFrame = function() {
+      if (previousFrame === null)
+        throw new Error('Cannot repeat frame: No previous frame');
+      addFrameToCluster({
+        frame: previousFrame,
+        duration: options.frameDuration
+      });
+    }
 
     /**
      * Finish writing the video and return a Promise to signal completion.
