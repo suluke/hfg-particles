@@ -2695,6 +2695,8 @@
             height: 100%;
             vertical-align: middle;
             width: 0; }
+        .menu-container .menu-content .menu-content-inner .menu-effects .menu-effect-list > li {
+          background-color: #f4d6e8; }
         .menu-container .menu-content .menu-content-inner .menu-effects .menu-effect-list > li:nth-child(1) {
           background-color: #e59888; }
         .menu-container .menu-content .menu-content-inner .menu-effects .menu-effect-list > li:nth-child(2) {
