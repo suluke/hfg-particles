@@ -150,6 +150,9 @@ $menu-apply-btn-height: 10%;
             margin-left: $item-spacing;
             padding: 0 3px;
           }
+          & > li {
+            background-color: lighten(nth($effect-colors, length($effect-colors)), 20%);
+          }
           @for $i from 1 through length($effect-colors) {
             & > li:nth-child(#{$i}) {
               background-color: lighten(nth($effect-colors, $i), 20%);
