@@ -1,4 +1,15 @@
+type WrapListener = () => void;
+type PauseListener = (paused: boolean) => void;
+
 export default class RendererClock {
+  private time: number;
+  private delta: number;
+  private absTime: number;
+  private period: number;
+  private paused: boolean;
+  private wrapListeners: WrapListener[];
+  private pauseListeners: PauseListener[];
+
   constructor() {
     this.time = -1;
     this.delta = 0;
@@ -8,7 +19,8 @@ export default class RendererClock {
     this.wrapListeners = [];
     this.pauseListeners = [];
   }
-  frame() {
+
+  frame(): void {
     if (this.paused || this.period === 0) {
       this.delta = 0;
       return;
@@ -30,29 +42,36 @@ export default class RendererClock {
       }
     }
   }
-  reset() {
+
+  reset(): void {
     this.time = -1;
     this.delta = 0;
     this.absTime = Date.now();
   }
-  setPeriod(p) {
+
+  setPeriod(p: number): void {
     this.period = p;
   }
-  getTime() {
+
+  getTime(): number {
     return this.time;
   }
-  setTime(time) {
+
+  setTime(time: number): void {
     this.time = time;
     this.delta = 0;
     this.absTime = Date.now();
   }
-  getDelta() {
+
+  getDelta(): number {
     return this.delta;
   }
-  getAbsoluteTime() {
+
+  getAbsoluteTime(): number {
     return this.absTime;
   }
-  setPaused(paused = true) {
+
+  setPaused(paused: boolean = true): void {
     if (paused !== this.paused) {
       if (!paused) {
         // on unpause
@@ -65,25 +84,32 @@ export default class RendererClock {
       }
     }
   }
-  tooglePause() {
+
+  tooglePause(): void {
     this.setPaused(!this.paused);
   }
-  getPaused() {
+
+  getPaused(): boolean {
     return this.paused;
   }
-  isPaused() {
+
+  isPaused(): boolean {
     return this.paused;
   }
-  addWrapListener(listener) {
+
+  addWrapListener(listener: WrapListener): void {
     this.wrapListeners.push(listener);
   }
-  removeWrapListener(listener) {
+
+  removeWrapListener(listener: WrapListener): void {
     this.wrapListeners.splice(this.wrapListeners.indexOf(listener), 1);
   }
-  addPauseListener(listener) {
+
+  addPauseListener(listener: PauseListener): void {
     this.pauseListeners.push(listener);
   }
-  removePauseListener(listener) {
+
+  removePauseListener(listener: PauseListener): void {
     this.pauseListeners.splice(this.pauseListeners.indexOf(listener), 1);
   }
 }

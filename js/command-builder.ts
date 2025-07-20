@@ -27,8 +27,18 @@ const gl_rgb2hsv = `
       }
 `;
 
+type BuildContext = {
+  config: any;
+  state: any; 
+  clock: any;
+};
+
 export default class CommandBuilder {
-  buildCommand(props) {
+  private config: any;
+  private state: any;
+  private clock: any;
+
+  buildCommand(props: BuildContext): Promise<any> {
     this.config = props.config;
     this.state = props.state;
     this.clock = props.clock;
