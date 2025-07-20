@@ -1,12 +1,12 @@
 const express         = require('express');
-const rollup          = require('express-middleware-rollup');
-const sass            = require('node-sass-middleware');
-const buble           = require('rollup-plugin-buble');
+const rollup          = require('rollup');
+const sass            = require('sass');
+const buble           = require('@rollup/plugin-buble');
 const fs              = require('fs-extra');
-const resolve         = require('rollup-plugin-node-resolve');
-const commonjs        = require('rollup-plugin-commonjs');
-const replace         = require('rollup-plugin-replace');
-const json            = require('rollup-plugin-json');
+const resolve         = require('@rollup/plugin-node-resolve');
+const commonjs        = require('@rollup/plugin-commonjs');
+const replace         = require('@rollup/plugin-replace');
+const json            = require('@rollup/plugin-json');
 const string          = require('rollup-plugin-string');
 
 const git             = require('git-rev');
@@ -16,85 +16,196 @@ const PkgRoot         = __dirname;
 const StaticDir       = 'static'; // must not be absolute since concatenated with `root` option
 const StaticPath      = path.join(PkgRoot, StaticDir);
 
-fs.mkdirp(StaticPath).then(
-  () => fs.copy(path.join(PkgRoot, 'node_modules', 'font-awesome', 'fonts'), path.join(StaticPath, 'fonts'))
-).then(
-  () => fs.copy(path.join(PkgRoot, 'node_modules', 'ffmpeg.js', 'ffmpeg-worker-mp4.js'), path.join(StaticPath, 'ffmpeg-worker-mp4.js'))
-).then(
-  () => new Promise((res, rej) => git.short(res))
-).then((gitrev) => {
-  // Javascript compilation
-  const js = rollup({
-    src: 'js',
-    dest: StaticDir,
-    root: PkgRoot,
-    prefix: '/',
-    serve: 'on-compile',
-    rollupOpts: {
-      plugins: [
-        // turn file contents into js strings which can be imported
-        string({ include: '**/*.md' }),
-        // allow importing json as ES6 modules
-        json(),
-        // replace patterns in files with new values
-        replace({
-          include: 'js/config.js',
-          delimiters: [ '<@', '@>' ],
-          values: {
-            TIMESTAMP: new Date().toISOString(),
-            GIT_REV: gitrev
-          }
-        }),
-        // ES6 -> ES5
-        buble({
-          exclude: [ 'node_modules/ffmpeg.js/**' ]
-        }),
-        // use Node resolution algorithm to find files in node_modules
-        resolve({
-          main: true,
-          browser: true,
-          extensions: [ '.js', '.json' ],
-          preferBuiltins: false,
-        }),
-        // CommonJS modules -> ES6 modules
-        commonjs({
-          extensions: [ '.js', '.json' ],
-          exclude: [ 'node_modules/ffmpeg.js/**' ],
-          namedExports: {
-            'node_modules/image-capture/lib/imagecapture.js': [ 'ImageCapture' ]
-          }
-        }),
-      ]
+// Shared build functions
+async function copyAssets() {
+  console.log('Copying assets...');
+  await fs.mkdirp(StaticPath);
+  await fs.copy(path.join(PkgRoot, 'node_modules', 'font-awesome', 'fonts'), path.join(StaticPath, 'fonts'));
+  await fs.copy(path.join(PkgRoot, 'node_modules', 'ffmpeg.js', 'ffmpeg-worker-mp4.js'), path.join(StaticPath, 'ffmpeg-worker-mp4.js'));
+  console.log('✅ Assets copied');
+}
+
+function compileSassFile(sassPath, outputPath = null) {
+  try {
+    const result = sass.compile(sassPath, {
+      style: 'expanded',
+      loadPaths: [path.join(PkgRoot, 'node_modules')]
+    });
+    
+    if (outputPath) {
+      fs.ensureDirSync(path.dirname(outputPath));
+      fs.writeFileSync(outputPath, result.css);
+      console.log(`✅ Sass compiled: ${outputPath}`);
     }
-  });
+    
+    return result.css;
+  } catch (error) {
+    console.error('❌ Sass compilation failed:', error.message);
+    if (error.span) {
+      console.error(`At line ${error.span.start.line + 1}, column ${error.span.start.column + 1}`);
+    }
+    throw error;
+  }
+}
 
-  // Css compilation
-  const css = sass({
-    src: 'sass',
-    dest: StaticDir,
-    root: PkgRoot,
-    prefix: '/',
-    outputStyle: 'extended',
-    includePaths: [
-      path.join(PkgRoot, 'node_modules')
+async function buildAllSass() {
+  console.log('Building all Sass files...');
+  const sassFile = path.join(PkgRoot, 'sass', 'styles.scss');
+  const cssFile = path.join(StaticPath, 'styles.css');
+  compileSassFile(sassFile, cssFile);
+}
+
+function getGitRevision() {
+  return new Promise((resolve, reject) => {
+    git.short(resolve);
+  });
+}
+
+function createRollupConfig(gitrev, inputFile = 'main.bundle', outputFile = 'main.js') {
+  return {
+    input: path.join(PkgRoot, 'js', inputFile),
+    output: {
+      file: path.join(StaticPath, outputFile),
+      format: 'iife'
+    },
+    plugins: [
+      string({ include: '**/*.md' }),
+      json(),
+      replace({
+        include: 'js/config.js',
+        delimiters: [ '<@', '@>' ],
+        values: {
+          TIMESTAMP: new Date().toISOString(),
+          GIT_REV: gitrev
+        }
+      }),
+      buble({
+        exclude: [ 'node_modules/ffmpeg.js/**' ]
+      }),
+      resolve({
+        browser: true,
+        preferBuiltins: false,
+      }),
+      commonjs({
+        exclude: [ 'node_modules/ffmpeg.js/**' ]
+      }),
     ]
-  });
+  };
+}
 
-  // Static file server
-  const statics = express.static(StaticPath);
-  
-  const server = express();
-  server.get('/', (req, res) => {
-    fs.copy(path.join(PkgRoot, 'index.html'), path.join(StaticPath, 'index.html')).then(
-      () => res.sendFile(path.join(PkgRoot, StaticDir, 'index.html'))
-    );
-  });
-  server.use(js);
-  server.use(css);
-  server.use(statics);
+async function buildJavaScript(gitrev, inputFile = 'main.bundle', outputFile = 'main.js') {
+  console.log(`Building JavaScript: ${inputFile} -> ${outputFile}`);
+  try {
+    const config = createRollupConfig(gitrev, inputFile, outputFile);
+    const bundle = await rollup.rollup(config);
+    await bundle.write(config.output);
+    console.log('✅ JavaScript compiled');
+    console.log(`Generated: ${config.output.file}`);
+  } catch (error) {
+    console.error('❌ JavaScript compilation failed:', error.message);
+    throw error;
+  }
+}
 
-  server.listen(3000);
-}).catch(err => {
-  console.error(err)
-  process.exit(1);
-});
+function createSassMiddleware() {
+  return (req, res, next) => {
+    if (req.url.endsWith('.css')) {
+      const cssFile = req.url.replace(/\.css$/, '.scss');
+      const sassPath = path.join(PkgRoot, 'sass', cssFile);
+      const outPath = path.join(StaticPath, req.url);
+      
+      try {
+        const css = compileSassFile(sassPath, outPath);
+        res.sendFile(outPath);
+      } catch (err) {
+        console.error('Sass middleware error:', err.message);
+        next();
+      }
+    } else {
+      next();
+    }
+  };
+}
+
+function createJavaScriptMiddleware() {
+  return async (req, res, next) => {
+    if (req.url.endsWith('.js')) {
+      try {
+        const gitrev = await getGitRevision();
+        const bundleName = path.basename(req.url, '.js') + '.bundle';
+        const outputName = path.basename(req.url);
+        
+        await buildJavaScript(gitrev, bundleName, outputName);
+        res.sendFile(path.join(StaticPath, outputName));
+      } catch (err) {
+        console.error('JavaScript middleware error:', err.message);
+        next();
+      }
+    } else {
+      next();
+    }
+  };
+}
+
+// Command line interface for build tasks
+async function runBuildCommand(command) {
+  try {
+    const gitrev = await getGitRevision();
+    
+    switch (command) {
+      case 'sass':
+        await buildAllSass();
+        break;
+      case 'assets':
+        await copyAssets();
+        break;
+      case 'js':
+        await buildJavaScript(gitrev);
+        break;
+      case 'build':
+        await copyAssets();
+        await buildAllSass();
+        await buildJavaScript(gitrev);
+        console.log('✅ Full build completed');
+        break;
+      default:
+        console.log('Available commands: sass, assets, js, build');
+        process.exit(1);
+    }
+  } catch (error) {
+    console.error('Build failed:', error.message);
+    process.exit(1);
+  }
+}
+
+// Check if running as build command
+const buildCommand = process.argv[2];
+if (buildCommand && ['sass', 'assets', 'js', 'build'].includes(buildCommand)) {
+  runBuildCommand(buildCommand);
+} else {
+  // Start server
+  copyAssets().then(() => {
+    // Create middlewares
+    const js = createJavaScriptMiddleware();
+    const css = createSassMiddleware();
+
+    // Static file server
+    const statics = express.static(StaticPath);
+    
+    const server = express();
+    server.get('/', (req, res) => {
+      fs.copy(path.join(PkgRoot, 'index.html'), path.join(StaticPath, 'index.html')).then(
+        () => res.sendFile(path.join(PkgRoot, StaticDir, 'index.html'))
+      );
+    });
+    server.use(js);
+    server.use(css);
+    server.use(statics);
+
+    server.listen(3000);
+    console.log('🚀 Server running on http://localhost:3000');
+  }).catch(err => {
+    console.error(err)
+    process.exit(1);
+  });
+}
