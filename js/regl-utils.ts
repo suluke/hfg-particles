@@ -1,10 +1,13 @@
 export class Framebuffer {
-  constructor(regl) {
+  public texture: any;
+  public framebuffer: any;
+
+  constructor(regl: any) {
     this.texture = regl.texture({ width: 1, height: 1, min: 'linear', mag: 'linear' }); // call resize before first use !
     this.framebuffer = regl.framebuffer({ color: this.texture, depth: false, stencil: false, depthStencil: false });
   }
 
-  resize(width, height) {
+  resize(width: number, height: number): void {
     this.framebuffer.resize(width, height);
   }
 }

@@ -2,12 +2,22 @@ if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
   throw new Error('The File APIs are not fully supported in this browser.');
 }
 
+type ChangeListener = (url: string) => void;
+
 export default class ImgSelect {
+  private changeListeners: ChangeListener[];
+  private input: HTMLInputElement;
+  private FR: FileReader;
+
   constructor() {
     // properties:
     this.changeListeners = [];
-    this.input = document.getElementById('btn-file-select');
+    this.input = document.getElementById('btn-file-select') as HTMLInputElement;
     this.FR = new FileReader();
+    
+    if (!this.input) {
+      throw new Error('Element with id "btn-file-select" not found');
+    }
 
     // drag-n-drop support
     const html = document.documentElement;

@@ -1,9 +1,9 @@
 import RendererPipeline from './pipeline';
 import { ScalingInfo, mapImageToParticles } from './scaling';
 
-function domImgToCanvas(img) {
+function domImgToCanvas(img: HTMLImageElement): HTMLCanvasElement {
   const fullresCanvas = document.createElement('canvas');
-  const fullresContext = fullresCanvas.getContext('2d');
+  const fullresContext = fullresCanvas.getContext('2d')!;
   fullresCanvas.width = img.naturalWidth;
   fullresCanvas.height = img.naturalHeight;
   // flipped y-axis
@@ -14,22 +14,31 @@ function domImgToCanvas(img) {
 }
 
 class ParticleData {
-  constructor(imageData, regl, scalingInfo) {
+  public rgba: Uint8ClampedArray | null;
+
+  constructor(imageData: ImageData, regl: any, scalingInfo: ScalingInfo) {
     this.rgba = mapImageToParticles(imageData, scalingInfo).data;
   }
-  destroy() {
+
+  destroy(): void {
     this.rgba = null;
   }
 }
 
 class ParticleDataStoreEntry {
-  constructor(imageCanvas, imageScaling, imageCropping, particleData) {
+  public imageCanvas: HTMLCanvasElement | null;
+  public imageScaling: string;
+  public imageCropping: any;
+  public particleData: ParticleData | null;
+
+  constructor(imageCanvas: HTMLCanvasElement | null, imageScaling: string, imageCropping: any, particleData: ParticleData | null = null) {
     this.imageCanvas = imageCanvas || null;
     this.imageScaling = imageScaling;
     this.imageCropping = imageCropping;
     this.particleData = particleData || null;
   }
-  destroy() {
+
+  destroy(): void {
     if (this.particleData !== null) {
       this.particleData.destroy();
       this.particleData = null;
