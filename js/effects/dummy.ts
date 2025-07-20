@@ -1,10 +1,12 @@
-import Effect, { ConfigUI, fract } from './effect';
+import Effect, { ConfigUI, fract, EffectConfig } from './effect';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Dummy';
 const EffectDescription = 'An effect that has no effect - useful to extend the timeline length without having anything happen';
 
 class DummyConfigUI extends ConfigUI {
+  private element: HTMLElement;
+
   constructor() {
     super();
     const classPrefix = 'effect-dummy';
@@ -17,31 +19,33 @@ class DummyConfigUI extends ConfigUI {
     const ui = this.element;
   }
 
-  getElement() {
+  getElement(): HTMLElement {
     return this.element;
   }
 
-  getConfig() {
+  getConfig(): EffectConfig {
     return {};
   }
 
-  applyConfig(config) {
+  applyConfig(config: EffectConfig): void {
   }
 }
 
 export default class DummyEffect extends Effect {
-  static register(instance, props, uniforms, vertexShader) {
+  private static _configUI: DummyConfigUI;
+
+  static override register(instance: any, props: any, uniforms: any, vertexShader: string): void {
   }
 
-  static getDisplayName() {
+  static override getDisplayName(): string {
     return EffectName;
   }
 
-  static getDescription() {
+  static override getDescription(): string {
     return EffectDescription;
   }
 
-  static getConfigUI() {
+  static override getConfigUI(): DummyConfigUI {
     if (!this._configUI) {
       this._configUI = new DummyConfigUI();
     }
@@ -49,11 +53,11 @@ export default class DummyEffect extends Effect {
     return this._configUI;
   }
 
-  static getDefaultConfig() {
+  static override getDefaultConfig(): EffectConfig {
     return {};
   }
 
-  static getRandomConfig() {
+  static override getRandomConfig(): EffectConfig {
     return {};
   }
 }

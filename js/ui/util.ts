@@ -1,9 +1,15 @@
-export function parseHtml(html) {
+type WrapConfig = {
+  depth: number;
+  open: string;
+  close: string;
+};
+
+export function parseHtml(html: string): HTMLElement {
   // eslint-disable-next-line no-param-reassign
   html = html.trim();
   /* code adapted from jQuery */
-  const wrapper = (depth, open, close) => ({ depth, open, close });
-  const wrapMap = {
+  const wrapper = (depth: number, open: string, close: string): WrapConfig => ({ depth, open, close });
+  const wrapMap: Record<string, WrapConfig> = {
     option: wrapper(1, "<select multiple='multiple'>", '</select>'),
     legend: wrapper(1, '<fieldset>', '</fieldset>'),
     area:   wrapper(1, '<map>', '</map>'),
@@ -23,7 +29,7 @@ export function parseHtml(html) {
   wrapMap.colgroup = wrapMap.thead;
   wrapMap.caption = wrapMap.thead;
   wrapMap.th = wrapMap.td;
-  let element = document.createElement('div');
+  let element: HTMLElement = document.createElement('div');
   const match = /<\s*(\w+).*?>/g.exec(html);
   if (match != null) {
     const tag = match[1];
@@ -41,24 +47,24 @@ export function parseHtml(html) {
           'is nested illegaly.'
         );
       }
-      element = element.lastChild;
+      element = element.lastChild as HTMLElement;
     }
   } else {
     // if only text is passed
     element.innerHTML = html;
-    element = element.lastChild;
+    element = element.lastChild as HTMLElement;
   }
 
   return element;
 }
 
-export function clearChildNodes(node) {
+export function clearChildNodes(node: HTMLElement): void {
   while (node.firstChild) {
     node.removeChild(node.firstChild);
   }
 }
 
-export function imageScalingMarkup(classPrefix) {
+export function imageScalingMarkup(classPrefix: string): string {
   return `
     <fieldset>
       <legend>Image scaling</legend>

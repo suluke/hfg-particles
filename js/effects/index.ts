@@ -1,3 +1,4 @@
+import Effect from './effect';
 import HueDisplaceEffect from './hue-displace';
 import ConvergePointEffect from './converge-point';
 import ConvergeCircleEffect from './converge-circle';
@@ -23,7 +24,7 @@ import RotateEffect from './rotate';
 // should be last
 import DummyEffect from './dummy';
 
-const effectList = [
+const effectList: Array<any> = [
   HueDisplaceEffect,
   ConvergePointEffect,
   ConvergeCircleEffect,
@@ -49,13 +50,14 @@ const effectList = [
   // Should be last
   DummyEffect
 ];
-const byId = {};
+
+const byId: Record<string, any> = {};
 for (let i = 0; i < effectList.length; i++) {
   byId[effectList[i].getId()] = effectList[i];
 }
 
 // Best website: http://tools.medialab.sciences-po.fr/iwanthue/index.php
-const Colors = [
+const Colors: Array<[number, number, number]> = [
   [211,79,52],
   [98,112,225],
   [90,183,78],
@@ -77,7 +79,8 @@ const Colors = [
   [159,68,100],
   [221,135,188]
 ];
-function getColorIndexForEffect(effect) {
+
+function getColorIndexForEffect(effect: any): number {
   const idx = effectList.indexOf(effect);
   if (idx < 0) {
     throw new Error('Cannot get color for unregistered effect');
@@ -88,10 +91,12 @@ function getColorIndexForEffect(effect) {
   }
   return idx;
 }
-function getColorClassnameForEffect(effect) {
+
+function getColorClassnameForEffect(effect: any): string {
   return `effect-color-${getColorIndexForEffect(effect) + 1}`;
 }
-function getColorForEffect(effect) {
+
+function getColorForEffect(effect: any): [number, number, number] {
   return Colors[getColorIndexForEffect(effect)];
 }
 

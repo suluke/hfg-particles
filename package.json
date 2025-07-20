@@ -10,9 +10,10 @@
     "build:sass": "node server.js sass",
     "build:assets": "node server.js assets",
     "build:js": "node server.js js",
-    "test": "npm run lint && npm run tests",
-    "lint": "npx eslint --ext .js,.bundle js || true",
-    "format": "npx eslint --fix --ext .js,.bundle js || true",
+    "test": "npm run lint && npm run typecheck && npm run tests",
+    "lint": "npx eslint --ext .js,.bundle,.ts js",
+    "lint:fix": "npx eslint --fix --ext .js,.bundle,.ts js",
+    "typecheck": "npx tsc --noEmit",
     "tests": "echo 'no tests available yet'",
     "deploy": "cd static && (git commit -am \"Update build to commit $(cd .. && git rev-parse --short HEAD)\" || true) && git push"
   },
