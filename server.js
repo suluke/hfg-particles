@@ -2,6 +2,7 @@ const express         = require('express');
 const rollup          = require('rollup');
 const sass            = require('sass');
 const buble           = require('@rollup/plugin-buble');
+const typescript      = require('@rollup/plugin-typescript');
 const fs              = require('fs-extra');
 const resolve         = require('@rollup/plugin-node-resolve');
 const commonjs        = require('@rollup/plugin-commonjs');
@@ -62,17 +63,39 @@ function getGitRevision() {
 }
 
 function createRollupConfig(gitrev, inputFile = 'main.bundle', outputFile = 'main.js') {
+  // Try TypeScript extension first, then fallback to original
+  const tsInput = path.join(PkgRoot, 'js', inputFile + '.ts');
+  const jsInput = path.join(PkgRoot, 'js', inputFile);
+  const inputPath = require('fs').existsSync(tsInput) ? tsInput : jsInput;
+  
   return {
-    input: path.join(PkgRoot, 'js', inputFile),
+    input: inputPath,
     output: {
       file: path.join(StaticPath, outputFile),
-      format: 'iife'
+      format: 'iife',
+      sourcemap: true
     },
     plugins: [
       string({ include: '**/*.md' }),
       json(),
+      typescript({
+        target: 'ES2018',
+        module: 'ESNext',
+        lib: ['ES2018', 'DOM'],
+        moduleResolution: 'node',
+        allowJs: true,
+        strict: true,
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+        forceConsistentCasingInFileNames: true,
+        skipLibCheck: true,
+        sourceMap: true,
+        inlineSources: true,
+        declaration: false,
+        declarationMap: false
+      }),
       replace({
-        include: 'js/config.js',
+        include: ['js/config.js', 'js/config.ts'],
         delimiters: [ '<@', '@>' ],
         values: {
           TIMESTAMP: new Date().toISOString(),

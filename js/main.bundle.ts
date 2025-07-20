@@ -18,7 +18,10 @@ const errorManager = new ErrorManager(function() {
 
   // some constants
   const imageLoadingClass = 'loading-image';
-  const canvas = document.getElementById('main-canvas');
+  const canvas = document.getElementById('main-canvas') as HTMLCanvasElement;
+  if (!canvas) {
+    throw new Error('Canvas element with id "main-canvas" not found');
+  }
   const ctx = canvas.getContext('webgl');
 
   // initialize rendering core
@@ -49,13 +52,13 @@ const errorManager = new ErrorManager(function() {
     if (window.location.hash) {
       const hash = window.location.hash.substring(1);
       let hashDict = hash.split('&')
-      .reduce((acc, item) => {
+      .reduce((acc: Record<string, string>, item) => {
         var parts = item.split('=');
         acc[parts[0]] = parts[1];
         return acc;
       }, {});
-      if (hashDict.preset !== undefined && allPresets[hashDict.preset]) {
-        const preset = allPresets[hashDict.preset];
+      if (hashDict.preset !== undefined && (allPresets as any)[hashDict.preset]) {
+        const preset = (allPresets as any)[hashDict.preset];
         menu.applyConfig(preset.config);
         menu.submit();
         window.location.hash = '';
@@ -79,7 +82,7 @@ const errorManager = new ErrorManager(function() {
   window.addEventListener('resize', adjustCanvasSize);
   adjustCanvasSize();
 
-  const earlyConfig = menu.submittedConfig;
+  const earlyConfig = menu.submittedConfig as any;
   let isInitialPageLoad = true;
   const srcImage = document.createElement('img');
   srcImage.crossOrigin = 'Anonymous'; // http://stackoverflow.com/a/27840082/1468532
@@ -95,9 +98,10 @@ const errorManager = new ErrorManager(function() {
       // or the dimensions of the default image (adapted to the user's
       // screen aspect ratio)
       const screenAR = window.innerWidth / window.innerHeight;
+      const submittedConfig = menu.submittedConfig as any;
       const particleCounts = {
-        xParticlesCount: menu.submittedConfig.xParticlesCount || srcImage.naturalWidth,
-        yParticlesCount: menu.submittedConfig.yParticlesCount || Math.round(srcImage.naturalHeight / screenAR)
+        xParticlesCount: submittedConfig.xParticlesCount || srcImage.naturalWidth,
+        yParticlesCount: submittedConfig.yParticlesCount || Math.round(srcImage.naturalHeight / screenAR)
       };
       // We want to get the default particle count from the default image,
       // but what the user specified before the page was reloaded should
@@ -105,14 +109,14 @@ const errorManager = new ErrorManager(function() {
       // Modifying the default config this late seems hacky, but what else
       // can we do?
       menu.defaultConfig = Object.assign(menu.defaultConfig, particleCounts);
-      menu.applyConfig(Object.assign(menu.submittedConfig, particleCounts));
+      menu.applyConfig(Object.assign(submittedConfig, particleCounts));
       menu.submit();
       document.documentElement.classList.remove(imageLoadingClass);
     } else {
       imgLoadDialog.load(srcImage)
       .then(({ imageScaling, imageCropping }) => {
         renderer.getState().setDefaultDomImage(srcImage, imageScaling, imageCropping);
-        menu.applyConfig(Object.assign({}, menu.submittedConfig, {
+        menu.applyConfig(Object.assign({}, menu.submittedConfig as any, {
           defaultImageScaling: imageScaling, defaultImageCropping: imageCropping
         }));
         // Trigger state.adaptToConfig (rebuilds default particle data) and
@@ -135,7 +139,7 @@ const errorManager = new ErrorManager(function() {
     document.documentElement.classList.remove(imageLoadingClass);
   };
 
-  imgSelect.addChangeListener((url) => {
+  imgSelect.addChangeListener((url: string) => {
     // Prevent messed-up app states caused by multiple parallel image loads
     if (!document.documentElement.classList.contains(imageLoadingClass)) {
       srcImage.src = url;
@@ -143,7 +147,7 @@ const errorManager = new ErrorManager(function() {
     }
   });
 
-  menu.addChangeListener((config) => {
+  menu.addChangeListener((config: any) => {
     renderer.setConfig(config);
     menu.persist();
   });
