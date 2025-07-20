@@ -52,13 +52,9 @@ class SmearConfigUI extends ConfigUI {
 }
 
 class SmearAgent extends AccumulationAgent {
-  constructor(instance) {
-    super(instance);
-  }
   getFragmentCode(uniforms) {
-    const invTextureSize = uniforms.addUniform('invTextureSize', 'vec2', (ctx, props) => {
-      return [1 / props.state.getWidth(), 1 / props.state.getHeight()];
-    });
+    const invTextureSize = uniforms.addUniform('invTextureSize', 'vec2', (ctx, props) => [1 / props.state.getWidth(), 1 / props.state.getHeight()]);
+
     return `
       vec2 smearDir = vec2(-texcoord.y + .5, texcoord.x - .5);
       vec3 color = texture2D(historyTexture, texcoord + smearDir * ${invTextureSize} * 8.).rgb;
@@ -91,7 +87,7 @@ export default class SmearEffect extends AccumulationEffect {
   static getDefaultConfig() {
     return {
       fadein: 100,
-      fadeout: 500
+      fadeout: 500,
     };
   }
 

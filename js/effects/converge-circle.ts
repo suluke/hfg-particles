@@ -95,13 +95,13 @@ export default class ConvergeCircleEffect extends Effect {
 
   static getDefaultConfig() {
     return {
-      rotationSpeed: 0
+      rotationSpeed: 0,
     };
   }
 
   static getRandomConfig() {
     return {
-      rotationSpeed: Math.random()
-    }
-  };
+      rotationSpeed: Math.random(),
+    };
+  }
 }

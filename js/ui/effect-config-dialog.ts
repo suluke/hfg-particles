@@ -40,14 +40,14 @@ export default class EffectConfigDialog {
       evt.stopPropagation();
       this.hide();
       this.ui.getConfigAsync()
-      .then((config) => {
-        this.resolve({
-          config:      config,
-          timeBegin:   parseInt(this.startTimeInput.value, 10),
-          timeEnd:     parseInt(this.endTimeInput.value, 10),
-          repetitions: parseInt(this.repetitionsInput.value, 10),
+        .then((config) => {
+          this.resolve({
+            config,
+            timeBegin: parseInt(this.startTimeInput.value, 10),
+            timeEnd: parseInt(this.endTimeInput.value, 10),
+            repetitions: parseInt(this.repetitionsInput.value, 10),
+          });
         });
-      });
     });
     this.cancelBtn.addEventListener('click', (evt) => {
       evt.stopPropagation();
@@ -64,10 +64,12 @@ export default class EffectConfigDialog {
   show() {
     this.parentNode.appendChild(this.element);
   }
+
   hide() {
     this.dialog.removeChild(this.ui.getElement());
     this.parentNode.removeChild(this.element);
   }
+
   promptUser(entry) {
     return new Promise((res, rej) => {
       this.resolve = res;
@@ -82,7 +84,7 @@ export default class EffectConfigDialog {
         this.repetitionsInput.parentNode.style.display = 'none';
       } else {
         this.endTimeInput.parentNode.style.display = 'inline';
-        this.repetitionsInput.parentNode.style.display =  entry.effect.supportsRepetition() ? 'inline' : 'none';
+        this.repetitionsInput.parentNode.style.display = entry.effect.supportsRepetition() ? 'inline' : 'none';
       }
       this.ui = ui;
       this.dialog.prepend(ui.getElement());

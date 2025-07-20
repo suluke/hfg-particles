@@ -8,8 +8,8 @@ const EffectDescription = 'Changes the particle data to a configurable image (fi
 const States = {
   INVALID: 0,
   VALID: 1,
-  LOADING: 2
-}
+  LOADING: 2,
+};
 
 class ChangeImageConfigUI extends ConfigUI {
   constructor() {
@@ -94,27 +94,28 @@ class ChangeImageConfigUI extends ConfigUI {
   }
 
   getConfigAsync() {
-    const sourceTy = [].find.call(this.radioButtons, (btn) => btn.checked).value;
+    const sourceTy = [].find.call(this.radioButtons, btn => btn.checked).value;
     const imageScaling = this.scalingSelect.value;
     const imageCropping = {
       x: this.cropXSelect.value,
-      y: this.cropYSelect.value
+      y: this.cropYSelect.value,
     };
     if (this.state === States.VALID) {
       return Promise.resolve({
         sourceTy,
         imageScaling,
         imageCropping,
-        url: this.previewImg.src
+        url: this.previewImg.src,
       });
-    } else if (this.state === States.INVALID) {
+    } if (this.state === States.INVALID) {
       return Promise.resolve({
         sourceTy,
         imageScaling,
         imageCropping,
-        url: null
+        url: null,
       });
     }
+
     return new Promise((res) => {
       this.onload = () => this.getConfigAsync().then(res);
     });
@@ -132,7 +133,7 @@ class ChangeImageConfigUI extends ConfigUI {
       btn.checked = (btn.value === config.sourceTy);
     });
     this.scalingSelect.value = config.imageScaling || 'crop-to-viewport';
-    const imageCropping = config.imageCropping || {x: 'crop-both', y: 'crop-both'};
+    const imageCropping = config.imageCropping || { x: 'crop-both', y: 'crop-both' };
     this.cropXSelect.value = imageCropping.x;
     this.cropYSelect.value = imageCropping.y;
   }
@@ -146,16 +147,16 @@ export default class ChangeImageEffect extends Effect {
       srcImage.src = instance.config.url;
       srcImage.onload = () => {
         const particleData = props.state.createParticleDataFromDomImg(
-          srcImage, instance.config.imageScaling, instance.config.imageCropping
+          srcImage, instance.config.imageScaling, instance.config.imageCropping,
         );
         let alive = true;
-        let prevWasChange = false;
+        const prevWasChange = false;
         const checkTime = () => {
           if (!alive) {
             return;
           }
           const tDist = props.clock.getTime() - instance.timeBegin;
-          if (0 <= tDist && tDist <= props.clock.getDelta()) {
+          if (tDist >= 0 && tDist <= props.clock.getDelta()) {
             props.state.setParticleData(particleData);
           }
           window.requestAnimationFrame(checkTime);
@@ -195,8 +196,8 @@ export default class ChangeImageEffect extends Effect {
       imageScaling: 'crop-to-viewport',
       imageCropping: {
         x: 'crop-both',
-        y: 'crop-both'
-      }
+        y: 'crop-both',
+      },
     };
   }
 

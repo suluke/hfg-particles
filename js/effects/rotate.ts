@@ -81,8 +81,9 @@ export default class RotateEffect extends Effect {
   static register(instance, props, uniforms, vertexShader) {
     let angle = instance.config.angle || 0;
     const angleUnit = instance.config.angleUnit || 'deg';
-    if (angleUnit !== 'rad')
+    if (angleUnit !== 'rad') {
       angle = angle / 360 * 2 * Math.PI;
+    }
     const origX = instance.config.originX || 0;
     const origY = instance.config.originY || 0;
     // GL is column-major!
@@ -94,6 +95,7 @@ export default class RotateEffect extends Effect {
       matAlloc[1] = Math.sin(teta);
       matAlloc[3] = -Math.sin(teta);
       matAlloc[4] = Math.cos(teta);
+
       return matAlloc;
     };
     const rotate = uniforms.addUniform('rotationMat', 'mat3', matrix);

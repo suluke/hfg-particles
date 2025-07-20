@@ -1,4 +1,6 @@
-import { Shader, Uniforms, Attributes, Varyings } from './regl-utils';
+import {
+  Shader, Uniforms, Attributes, Varyings,
+} from './regl-utils';
 import { reportError } from './error-manager';
 
 const gl_rgb2hsv = `
@@ -29,13 +31,15 @@ const gl_rgb2hsv = `
 
 type BuildContext = {
   config: any;
-  state: any; 
+  state: any;
   clock: any;
 };
 
 export default class CommandBuilder {
   private config: any;
+
   private state: any;
+
   private clock: any;
 
   buildCommand(props: BuildContext): Promise<any> {
@@ -49,10 +53,10 @@ export default class CommandBuilder {
 
   createDefaultUniforms() {
     const uniforms = new Uniforms();
-    uniforms.addUniform('invScreenAspectRatio', 'float', (ctx) => ctx.viewportHeight / ctx.viewportWidth);
-    uniforms.addUniform('particleSize', 'float', (ctx) => (ctx.viewportWidth / this.config.xParticlesCount) * this.config.particleScaling);
+    uniforms.addUniform('invScreenAspectRatio', 'float', ctx => ctx.viewportHeight / ctx.viewportWidth);
+    uniforms.addUniform('particleSize', 'float', ctx => (ctx.viewportWidth / this.config.xParticlesCount) * this.config.particleScaling);
     uniforms.addUniform('globalTime', 'int', (ctx, props) => props.clock.getTime());
-    uniforms.addUniform('viewport', 'vec2', (ctx) => [ctx.viewportWidth, ctx.viewportHeight]);
+    uniforms.addUniform('viewport', 'vec2', ctx => [ctx.viewportWidth, ctx.viewportHeight]);
     uniforms.addUniform('background_color', 'vec4', () => this.config.backgroundColor);
     return uniforms;
   }
@@ -83,7 +87,7 @@ export default class CommandBuilder {
     const fragmentShader = new Shader();
     fragmentShader.varyings += 'varying vec3 color;\n';
     fragmentShader.globals += 'const float PI = 3.14159265;\n';
-    fragmentShader.functions += gl_rgb2hsv
+    fragmentShader.functions += gl_rgb2hsv;
     return fragmentShader;
   }
 
@@ -92,35 +96,37 @@ export default class CommandBuilder {
       const uniforms = {};
       const attributes = {
         texcoord: () => this.state.texcoordsBuffer,
-        rgba_int: () => this.state.getColorBuffer()
+        rgba_int: () => this.state.getColorBuffer(),
       };
       const defaultUniforms = this.createDefaultUniforms();
       const vert = CommandBuilder.prepareVertexShader();
       defaultUniforms.compile(vert, uniforms);
       const frag = CommandBuilder.prepareFragmentShader();
       defaultUniforms.compile(frag, null); // default uniforms are already registered
-                                           // in uniforms object, therefore pass null
+      // in uniforms object, therefore pass null
       const result = {
-        primitive:  'points',
+        primitive: 'points',
         // TODO This cannot be changed ad-hoc. A new command would be necessary.
         // regl.elements (http://regl.party/api#elements) could be an alternative here
-        count:      this.config.xParticlesCount * this.config.yParticlesCount,
+        count: this.config.xParticlesCount * this.config.yParticlesCount,
         attributes,
         uniforms,
-        depth: { enable: false }
+        depth: { enable: false },
       };
 
       switch (this.config.particleOverlap) {
         case 'add':
           result.blend = {
             enable: true,
-            func:   { src: 'one', dst: 'one' }
+            func: { src: 'one', dst: 'one' },
           };
           break;
         case 'alpha blend':
           result.blend = {
             enable: true,
-            func:   { srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1 }
+            func: {
+              srcRGB: 'src alpha', srcAlpha: 1, dstRGB: 'one minus src alpha', dstAlpha: 1,
+            },
           };
           break;
         default:
@@ -158,9 +164,9 @@ export default class CommandBuilder {
             return nextEffect();
           }
           const effect = track[j];
-          j = j + 1;
+          j += 1;
           return effect;
-        }
+        };
       })();
       let globalId = 0;
       const registerEffects = (res, rej) => {
@@ -175,30 +181,30 @@ export default class CommandBuilder {
         vert.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {\n`;
         frag.mainBody += `if (${effectConfig.timeBegin} <= globalTime && globalTime <= ${effectConfig.timeEnd}) {\n`;
         effectClass.registerAsync(effectConfig, this.props, effectUniforms, vert, frag, effectAttributes, effectVaryings)
-        .then(() => {
-          vert.mainBody += '}\n';
-          frag.mainBody += '}\n';
+          .then(() => {
+            vert.mainBody += '}\n';
+            frag.mainBody += '}\n';
 
-          effectUniforms.compile(vert, uniforms);
-          effectUniforms.compile(frag, null);
-          effectAttributes.compile(vert, attributes);
-          effectVaryings.compile(vert);
-          effectVaryings.compile(frag);
-          globalId += 1;
-          registerEffects(res, rej);
-        }, (err) => {
-          reportError(err);
-          vert.mainBody += '// error during registration\n}\n';
-          frag.mainBody += '// error during registration\n}\n';
+            effectUniforms.compile(vert, uniforms);
+            effectUniforms.compile(frag, null);
+            effectAttributes.compile(vert, attributes);
+            effectVaryings.compile(vert);
+            effectVaryings.compile(frag);
+            globalId += 1;
+            registerEffects(res, rej);
+          }, (err) => {
+            reportError(err);
+            vert.mainBody += '// error during registration\n}\n';
+            frag.mainBody += '// error during registration\n}\n';
 
-          effectUniforms.compile(vert, uniforms);
-          effectUniforms.compile(frag, null);
-          effectAttributes.compile(vert, attributes);
-          effectVaryings.compile(vert);
-          effectVaryings.compile(frag);
-          globalId += 1;
-          registerEffects(res, rej);
-        });
+            effectUniforms.compile(vert, uniforms);
+            effectUniforms.compile(frag, null);
+            effectAttributes.compile(vert, attributes);
+            effectVaryings.compile(vert);
+            effectVaryings.compile(frag);
+            globalId += 1;
+            registerEffects(res, rej);
+          });
       };
       return new Promise(registerEffects).then(() => {
         vert.mainBody += `
@@ -208,24 +214,24 @@ export default class CommandBuilder {
         `;
         const particleShape = this.config.particleShape || 'circle';
         const particleFading = this.config.particleFading || 'fade-out';
-        const particleOverlap =  this.config.particleOverlap || 'add';
+        const particleOverlap = this.config.particleOverlap || 'add';
         const insideShape = {
           circle: 'ceil(1. - point_dist)',
           square: '1.',
           // PI/3 = 60 degrees = inner angle of equilateral triangle
-          triangle: 'gl_PointCoord.y < 0.933 && gl_PointCoord.y >= 0.067 + abs(point_coord.x/2.) * tan(PI/3.) ? 1. : 0.'
+          triangle: 'gl_PointCoord.y < 0.933 && gl_PointCoord.y >= 0.067 + abs(point_coord.x/2.) * tan(PI/3.) ? 1. : 0.',
         }[particleShape];
         const fadingFactor = {
-          none:       {circle: '1.', square: '1.', triangle: '1.'},
+          none: { circle: '1.', square: '1.', triangle: '1.' },
           'fade-out': {
             circle: '(cos(PI * point_dist) + 1.) / 2.',
             square: '1. - max(abs(point_coord.x), abs(point_coord.y))',
-            triangle: '1. - length(vec2(.5, .289) - gl_PointCoord)'
-          }
+            triangle: '1. - length(vec2(.5, .289) - gl_PointCoord)',
+          },
         }[particleFading][particleShape];
         const colorAssign = {
-          add:           'gl_FragColor = vec4(rgb * fadingFactor, 1);\n',
-          'alpha blend': 'gl_FragColor = vec4(rgb, fadingFactor);\n'
+          add: 'gl_FragColor = vec4(rgb * fadingFactor, 1);\n',
+          'alpha blend': 'gl_FragColor = vec4(rgb, fadingFactor);\n',
         }[particleOverlap];
         frag.mainBody += `
           float insideShape = ${insideShape};

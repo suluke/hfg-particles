@@ -43,8 +43,9 @@ class ParticleSizeByHueConfigUI extends ConfigUI {
   getConfig() {
     const config = {
       scaling: parseFloat(this.scalingInput.value),
-      hueRotation: parseInt(this.hueRotationInput.value) / 100 * 2 * Math.PI,
+      hueRotation: parseInt(this.hueRotationInput.value, 10) / 100 * 2 * Math.PI,
     };
+
     return config;
   }
 
@@ -63,17 +64,19 @@ export default class ParticleSizeByHueEffect extends Effect {
     // starts at 0, goes down to 1
     const easeInProgress = uniforms.addUniform('easeInProgress', 'float', (ctx, props) => {
       const time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+
       return Math.min(1, time / (easeInTime / instance.getPeriod()));
     });
     // starts at 1, goes down to 0
     const easeOutProgress = uniforms.addUniform('easeOutProgress', 'float', (ctx, props) => {
       const time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+
       return Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
     });
     const easeFuncs = {
       none: '1.',
       sine: `(1. - cos(PI * min(${easeInProgress}, ${easeOutProgress}))) / 2.`,
-      linear: `min(${easeInProgress}, ${easeOutProgress})`
+      linear: `min(${easeInProgress}, ${easeOutProgress})`,
     };
     const easeFunc = easeFuncs[instance.config.easeFunc || 'sine'];
     vertexShader.mainBody += `
@@ -109,7 +112,7 @@ export default class ParticleSizeByHueEffect extends Effect {
       hueRotation: 0,
       easeInTime: 1000,
       easeOutTime: 1000,
-      easeFunc: 'sine'
+      easeFunc: 'sine',
     };
   }
 
@@ -119,7 +122,7 @@ export default class ParticleSizeByHueEffect extends Effect {
       hueRotation: Math.random() * 2 * Math.PI,
       easeInTime: 1000,
       easeOutTime: 1000,
-      easeFunc: ['sine', 'linear', 'none'][Math.floor(Math.random() * 3)]
+      easeFunc: ['sine', 'linear', 'none'][Math.floor(Math.random() * 3)],
     };
   }
 }

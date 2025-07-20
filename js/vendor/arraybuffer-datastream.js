@@ -15,49 +15,58 @@ export default class ArrayBufferDataStream {
     this.data = new Uint8Array(length);
     this.pos = 0;
   }
+
   seek(offset) {
     this.pos = offset;
   }
+
   writeBytes(arr) {
-    for (var i = 0; i < arr.length; i++) {
+    for (let i = 0; i < arr.length; i++) {
       this.data[this.pos++] = arr[i];
     }
   }
+
   writeByte(b) {
     this.data[this.pos++] = b;
   }
+
   // Alias:
   writeU8(b) {
     this.writeByte(b);
   }
+
   writeU16BE(u) {
     this.data[this.pos++] = u >> 8;
     this.data[this.pos++] = u;
   }
+
   writeDoubleBE(d) {
-    var
+    const
       bytes = new Uint8Array(new Float64Array([d]).buffer);
 
-    for (var i = bytes.length - 1; i >= 0; i--) {
+    for (let i = bytes.length - 1; i >= 0; i--) {
       this.writeByte(bytes[i]);
     }
   }
+
   writeFloatBE(d) {
-    var
+    const
       bytes = new Uint8Array(new Float32Array([d]).buffer);
 
-    for (var i = bytes.length - 1; i >= 0; i--) {
+    for (let i = bytes.length - 1; i >= 0; i--) {
       this.writeByte(bytes[i]);
     }
   }
+
   /**
    * Write an ASCII string to the stream
    */
   writeString(s) {
-    for (var i = 0; i < s.length; i++) {
+    for (let i = 0; i < s.length; i++) {
       this.data[this.pos++] = s.charCodeAt(i);
     }
   }
+
   /**
    * Write the given 32-bit integer to the stream as an EBML variable-length integer using the given byte width
    * (use measureEBMLVarInt).
@@ -71,22 +80,22 @@ export default class ArrayBufferDataStream {
     switch (width) {
       case 1:
         this.writeU8((1 << 7) | i);
-      break;
+        break;
       case 2:
         this.writeU8((1 << 6) | (i >> 8));
         this.writeU8(i);
-      break;
+        break;
       case 3:
         this.writeU8((1 << 5) | (i >> 16));
         this.writeU8(i >> 8);
         this.writeU8(i);
-      break;
+        break;
       case 4:
         this.writeU8((1 << 4) | (i >> 24));
         this.writeU8(i >> 16);
         this.writeU8(i >> 8);
         this.writeU8(i);
-      break;
+        break;
       case 5:
         /*
          * JavaScript converts its doubles to 32-bit integers for bitwise operations, so we need to do a
@@ -97,11 +106,12 @@ export default class ArrayBufferDataStream {
         this.writeU8(i >> 16);
         this.writeU8(i >> 8);
         this.writeU8(i);
-      break;
+        break;
       default:
-        throw new RuntimeException("Bad EBML VINT size " + width);
+        throw new RuntimeException(`Bad EBML VINT size ${width}`);
     }
   }
+
   /**
    * Return the number of bytes needed to encode the given integer as an EBML VINT.
    */
@@ -111,21 +121,22 @@ export default class ArrayBufferDataStream {
        * "all bits set to one" is a reserved value. Same thing for the other cases below:
        */
       return 1;
-    } else if (val < (1 << 14) - 1) {
+    } if (val < (1 << 14) - 1) {
       return 2;
-    } else if (val < (1 << 21) - 1) {
+    } if (val < (1 << 21) - 1) {
       return 3;
-    } else if (val < (1 << 28) - 1) {
+    } if (val < (1 << 28) - 1) {
       return 4;
-    } else if (val < 34359738367) { // 2 ^ 35 - 1 (can address 32GB)
+    } if (val < 34359738367) { // 2 ^ 35 - 1 (can address 32GB)
       return 5;
-    } else {
-      throw new RuntimeException("EBML VINT size not supported " + val);
     }
-  };
+    throw new RuntimeException(`EBML VINT size not supported ${val}`);
+  }
+
   writeEBMLVarInt(i) {
     this.writeEBMLVarIntWidth(i, this.measureEBMLVarInt(i));
   }
+
   /**
    * Write the given unsigned 32-bit integer to the stream in big-endian order using the given byte width.
    * No error checking is performed to ensure that the supplied width is correct for the integer.
@@ -152,11 +163,12 @@ export default class ArrayBufferDataStream {
         this.writeU8(u >> 8);
       case 1:
         this.writeU8(u);
-      break;
+        break;
       default:
-        throw new RuntimeException("Bad UINT size " + width);
+        throw new RuntimeException(`Bad UINT size ${width}`);
     }
   }
+
   /**
    * Return the number of bytes needed to hold the non-zero bits of the given unsigned integer.
    */
@@ -164,26 +176,26 @@ export default class ArrayBufferDataStream {
     // Force to 32-bit unsigned integer
     if (val < (1 << 8)) {
       return 1;
-    } else if (val < (1 << 16)) {
+    } if (val < (1 << 16)) {
       return 2;
-    } else if (val < (1 << 24)) {
+    } if (val < (1 << 24)) {
       return 3;
-    } else if (val < 4294967296) {
+    } if (val < 4294967296) {
       return 4;
-    } else {
-      return 5;
     }
+
+    return 5;
   }
+
   /**
    * Return a view on the portion of the buffer from the beginning to the current seek position as a Uint8Array.
    */
   getAsDataArray() {
     if (this.pos < this.data.byteLength) {
       return this.data.subarray(0, this.pos);
-    } else if (this.pos == this.data.byteLength) {
+    } if (this.pos == this.data.byteLength) {
       return this.data;
-    } else {
-      throw "ArrayBufferDataStream's pos lies beyond end of buffer";
     }
+    throw "ArrayBufferDataStream's pos lies beyond end of buffer";
   }
 }

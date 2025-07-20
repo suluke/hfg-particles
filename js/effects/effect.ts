@@ -11,6 +11,27 @@ export type EffectRegistrationParams = {
 };
 
 /**
+ * Base class for config UIs
+ */
+export abstract class ConfigUI {
+  abstract getElement(): HTMLElement;
+
+  abstract getConfig(): EffectConfig;
+
+  getConfigAsync(): Promise<EffectConfig> {
+    return new Promise((resolve) => {
+      resolve(this.getConfig());
+    });
+  }
+
+  abstract applyConfig(config: EffectConfig): void;
+
+  notifyChange(): void {
+    // TODO
+  }
+}
+
+/**
  * Base class for effects
  */
 export default abstract class Effect {
@@ -54,26 +75,6 @@ export default abstract class Effect {
 
   static isEventOnly(): boolean {
     return false;
-  }
-}
-
-/**
- * Base class for config UIs
- */
-export abstract class ConfigUI {
-  abstract getElement(): HTMLElement;
-  abstract getConfig(): EffectConfig;
-
-  getConfigAsync(): Promise<EffectConfig> {
-    return new Promise((resolve) => {
-      resolve(this.getConfig());
-    });
-  }
-
-  abstract applyConfig(config: EffectConfig): void;
-
-  notifyChange(): void {
-    // TODO
   }
 }
 

@@ -1,18 +1,21 @@
-import WebMWriter from '../vendor/webm-writer-0.2.0.js'
+import WebMWriter from '../vendor/webm-writer-0.2.0';
 import { parseHtml } from './util';
 
 class FfmpegLoader {
   constructor() {
-    this.STATES = {IDLE: 1, PENDING: 2, LOADED: 3, ERROR: 0};
+    this.STATES = {
+      IDLE: 1, PENDING: 2, LOADED: 3, ERROR: 0,
+    };
     this.state = this.STATES.IDLE;
     this.ffmpeg = null;
     this.observers = [];
     this.error = null;
   }
+
   startLoading() {
     const worker = new Worker('ffmpeg-worker-mp4.js');
     this.state = this.STATES.PENDING;
-    worker.onmessage = ({data: msg}) => {
+    worker.onmessage = ({ data: msg }) => {
       if (msg.type === 'ready') {
         this.state = this.STATES.LOADED;
         this.ffmpeg = worker;
@@ -31,6 +34,7 @@ class FfmpegLoader {
       this.observers = [];
     };
   }
+
   getFFMPEG() {
     return new Promise((resolve, reject) => {
       if (this.state === this.STATES.LOADED) {
@@ -38,16 +42,16 @@ class FfmpegLoader {
       } else if (this.state === this.STATES.ERROR) {
         reject(this.error);
       } else if (this.state === this.STATES.IDLE) {
-        this.observers.push({resolve, reject});
+        this.observers.push({ resolve, reject });
         this.startLoading();
       } else if (this.state === this.STATES.PENDING) {
-        this.observers.push({resolve, reject});
+        this.observers.push({ resolve, reject });
       } else {
         throw new Error('Illegal FfmpegLoader state encountered');
       }
     });
   }
-};
+}
 
 const ffmpegLoader = new FfmpegLoader();
 
@@ -63,7 +67,7 @@ class FfmpegRecorder {
     const maxDim = 640;
     const scaledW = Math.round(renderW > renderH ? maxDim : renderW / renderH * maxDim) & (~1);
     const scaledH = Math.round(renderW > renderH ? renderH / renderW * maxDim : maxDim) & (~1);
-    this.scalingCanvas.width  = scaledW;
+    this.scalingCanvas.width = scaledW;
     this.scalingCanvas.height = scaledH;
     const scalingCtx = this.scalingCanvas.getContext('2d');
     this.ffmpeg = ffmpeg;
@@ -92,12 +96,15 @@ class FfmpegRecorder {
       }
     };
   }
+
   start() {
     this.renderer.addFrameListener(this.frameCallback);
   }
+
   stop() {
     this.renderer.removeFrameListener(this.frameCallback);
   }
+
   compile(onProgress) {
     return new Promise((resolve, reject) => {
       const frameCount = this.frames.length;
@@ -110,45 +117,47 @@ class FfmpegRecorder {
       this.ffmpeg.onmessage = (e) => {
         const msg = e.data;
         switch (msg.type) {
-        case 'stdout':
-          stdout += msg.data + "\n";
-          break;
-        case 'stderr':
-          if (progressRegex.test(msg.data)) {
-            const res = progressRegex.exec(msg.data);
-            if (onProgress) {
-              onProgress(res[1] / frameCount);
+          case 'stdout':
+            stdout += `${msg.data}\n`;
+            break;
+          case 'stderr':
+            if (progressRegex.test(msg.data)) {
+              const res = progressRegex.exec(msg.data);
+              if (onProgress) {
+                onProgress(res[1] / frameCount);
+              }
             }
-          }
-          stderr += msg.data + "\n";
-          break;
-        case 'exit':
-          exitCode = msg.data;
-          break;
-        case 'done':
-          if (exitCode === 0) {
-            const video = msg.data.MEMFS[0].data;
-            const blob = new Blob([video]);
-            const url = window.URL.createObjectURL(blob);
-            resolve({blob, url});
-          } else {
-            console.log(`FFMPEG exited with code ${exitCode}`);
-            reject(new Error(stderr));
-          }
-          break;
+            stderr += `${msg.data}\n`;
+            break;
+          case 'exit':
+            exitCode = msg.data;
+            break;
+          case 'done':
+            if (exitCode === 0) {
+              const video = msg.data.MEMFS[0].data;
+              const blob = new Blob([video]);
+              const url = window.URL.createObjectURL(blob);
+              resolve({ blob, url });
+            } else {
+              console.log(`FFMPEG exited with code ${exitCode}`);
+              reject(new Error(stderr));
+            }
+            break;
         }
       };
 
-      /// Pad the given number n to have the desired width
+      // / Pad the given number n to have the desired width
       const pad = (n, width) => {
         n = `${n}`;
         if (n.length >= width) {
           if (n.length > width) {
             console.warn('Number too big for padding to width');
           }
+
           return n;
         }
         const padding = new Array(width - n.length + 1).join('0');
+
         return `${padding}${n}`;
       };
 
@@ -156,12 +165,12 @@ class FfmpegRecorder {
       const MEMFS = [];
       let frameNum = 0;
       const padWidth = Math.ceil(Math.log10(frameCount));
-      const { width:w, height:h } = this.dimensions;
+      const { width: w, height: h } = this.dimensions;
       while (this.frames.length > 0) {
         const frame = this.frames.shift();
         const file = {
           name: `img${pad(frameNum++, padWidth)}.jpg`,
-          data: frame
+          data: frame,
         };
         MEMFS.push(file);
       }
@@ -170,10 +179,10 @@ class FfmpegRecorder {
       this.ffmpeg.postMessage({
         type: 'run',
         arguments: [
-          '-r', `${this.fps}`, '-f', 'image2', '-s', `${w}x${h}`, '-i', filePattern, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '25', 'out.mp4'
+          '-r', `${this.fps}`, '-f', 'image2', '-s', `${w}x${h}`, '-i', filePattern, '-vcodec', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '25', 'out.mp4',
         ],
         MEMFS,
-        TOTAL_MEMORY: 100000000
+        TOTAL_MEMORY: 100000000,
       });
     });
   }
@@ -221,6 +230,7 @@ class FfmpegRecorderActivationDialog {
       this.reject(new Error('User canceled recorder activation'));
     });
   }
+
   promptUser() {
     return new Promise((resolve, reject) => {
       this.resolve = resolve;
@@ -228,6 +238,7 @@ class FfmpegRecorderActivationDialog {
       this.parentNode.appendChild(this.elm);
     });
   }
+
   hide() {
     this.parentNode.removeChild(this.elm);
   }
@@ -239,7 +250,7 @@ class WebMRecorder {
     this.renderer = renderer;
     this.writer = new WebMWriter({
       quality: 0.95,
-      frameRate: this.fps
+      frameRate: this.fps,
     });
     const scalingCanvas = document.createElement('canvas');
     const renderW = renderer.getState().getWidth();
@@ -247,7 +258,7 @@ class WebMRecorder {
     const maxDim = 640;
     const scaledW = Math.round(renderW > renderH ? maxDim : renderW / renderH * maxDim) & (~1);
     const scaledH = Math.round(renderW > renderH ? renderH / renderW * maxDim : maxDim) & (~1);
-    scalingCanvas.width  = scaledW;
+    scalingCanvas.width = scaledW;
     scalingCanvas.height = scaledH;
     const scalingCtx = scalingCanvas.getContext('2d');
     // We want to do realtime encoding. Therefore, it is important how long
@@ -291,14 +302,17 @@ class WebMRecorder {
   start() {
     this.renderer.addFrameListener(this.frameCallback);
   }
+
   stop() {
     this.renderer.removeFrameListener(this.frameCallback);
   }
 
   compile() {
     return this.writer.complete().then((blob) => {
-      if (blob === null)
-        return { blob: null, url: null};
+      if (blob === null) {
+        return { blob: null, url: null };
+      }
+
       return { blob, url: window.URL.createObjectURL(blob) };
     });
   }
@@ -306,9 +320,9 @@ class WebMRecorder {
   // https://stackoverflow.com/a/27232658/1468532
   static isSupported() {
     const canvas = document.createElement('canvas');
-    if (!!(canvas.getContext && canvas.getContext('2d'))) {
-        // was able or not to get WebP representation
-        return canvas.toDataURL('image/webp').indexOf('data:image/webp') == 0;
+    if (canvas.getContext && canvas.getContext('2d')) {
+      // was able or not to get WebP representation
+      return canvas.toDataURL('image/webp').indexOf('data:image/webp') == 0;
     }
     // very old browser like IE 8, canvas not supported
     return false;
@@ -334,9 +348,13 @@ export default class RecordButton {
     this.elm = elm;
     if (WebMRecorder.isSupported()) {
       this.elm.classList.remove('disabled');
-      this.btn.addEventListener('click', (...args) => { this.onClick(...args); });
+      this.btn.addEventListener('click', (...args) => {
+        this.onClick(...args);
+      });
     } else {
-      this.activateListener = () => { this.showActivationDialog(); }
+      this.activateListener = () => {
+        this.showActivationDialog();
+      };
       btn.addEventListener('click', this.activateListener);
     }
   }
@@ -346,8 +364,9 @@ export default class RecordButton {
   }
 
   disable() {
-    if (this.elm.parentNode)
+    if (this.elm.parentNode) {
       this.elm.parentNode.removeChild(this.elm);
+    }
   }
 
   showActivationDialog() {
@@ -362,7 +381,9 @@ export default class RecordButton {
   }
 
   activate() {
-    this.btn.addEventListener('click', (...args) => { this.onClick(...args); });
+    this.btn.addEventListener('click', (...args) => {
+      this.onClick(...args);
+    });
     ffmpegLoader.getFFMPEG()
       .then((ffmpeg) => {
         this.elm.classList.remove('disabled');
@@ -374,10 +395,11 @@ export default class RecordButton {
 
   onClick() {
     if (this.recorder === null) {
-      if (this.ffmpeg !== null)
+      if (this.ffmpeg !== null) {
         this.recorder = new FfmpegRecorder(this.renderer, this.ffmpeg);
-      else
+      } else {
         this.recorder = new WebMRecorder(this.renderer);
+      }
       if (this.dlLink !== null) {
         this.dlLink.parentNode.removeChild(this.dlLink);
       }
@@ -392,13 +414,16 @@ export default class RecordButton {
       // compiling the video at least used to take quite some time, so
       // let's put it in the next event loop iteration
       window.setTimeout(() => {
-        this.recorder.compile((progress) => { console.log(progress); })
-          .then(({blob, url}) => {
+        this.recorder.compile((progress) => {
+          console.log(progress);
+        })
+          .then(({ blob, url }) => {
             // If a recorder does not record a single frame (e.g. because the
             // renderer was paused the whole time) it's ok to return null
             // as result
-            if (blob === null || url === null)
+            if (blob === null || url === null) {
               return;
+            }
             const outfile = this.ffmpeg === null ? 'video.webm' : 'video.mp4';
             const dlLink = document.createElement('a');
             dlLink.setAttribute('href', url);
@@ -411,8 +436,9 @@ export default class RecordButton {
           })
           .then(() => {
             this.elm.classList.remove('processing');
-            if (!wasPaused)
+            if (!wasPaused) {
               this.renderer.getClock().setPaused(false);
+            }
           });
         this.recorder = null;
       }, 0);

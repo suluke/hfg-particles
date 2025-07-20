@@ -72,7 +72,7 @@ class DefaultImageControl extends Control {
   constructor(menu) {
     super(menu);
     this.defaultImageScaling = 'crop-to-viewport';
-    this.defaultImageCropping = {x: 'crop-both', y: 'crop-both'};
+    this.defaultImageCropping = { x: 'crop-both', y: 'crop-both' };
   }
 
   updateConfig(config) {
@@ -84,7 +84,7 @@ class DefaultImageControl extends Control {
 
   applyConfig(config) {
     this.defaultImageScaling = config.defaultImageScaling || 'crop-to-viewport';
-    this.defaultImageCropping = config.defaultImageCropping || {x: 'crop-both', y: 'crop-both'};
+    this.defaultImageCropping = config.defaultImageCropping || { x: 'crop-both', y: 'crop-both' };
   }
 }
 
@@ -193,11 +193,12 @@ class ExportAppstateButton extends Control {
     this.elm = document.getElementById('menu-btn-exportstate');
     this.elm.addEventListener('click', () => {
       const toExport = Object.assign({
-        schemaVersion: Config.export_schema_version
+        schemaVersion: Config.export_schema_version,
       }, this.menu.submittedConfig);
       ExportAppstateButton.saveJson('particles.json', JSON.stringify(toExport, null, 2));
     });
   }
+
   static saveJson(filename, data) {
     const blob = new Blob([data], { type: 'application/json' });
     if (navigator.msSaveOrOpenBlob) {
@@ -211,8 +212,10 @@ class ExportAppstateButton extends Control {
       document.body.removeChild(elm);
     }
   }
+
   // eslint-disable-next-line class-methods-use-this
   updateConfig(/* config */) {}
+
   // eslint-disable-next-line class-methods-use-this
   applyConfig(/* config */) {}
 }
@@ -252,8 +255,10 @@ class ImportAppstateButton extends Control {
       this.FR.readAsText(file);
     });
   }
+
   // eslint-disable-next-line class-methods-use-this
   updateConfig(/* config */) {}
+
   // eslint-disable-next-line class-methods-use-this
   applyConfig(/* config */) {}
 }
@@ -270,8 +275,10 @@ class ResetAppstateButton extends Control {
       this.menu.submit();
     });
   }
+
   // eslint-disable-next-line class-methods-use-this
   updateConfig(/* config */) {}
+
   // eslint-disable-next-line class-methods-use-this
   applyConfig(/* config */) {}
 }
@@ -280,7 +287,7 @@ const ControlsList = [
   BgColorPicker, ParticleCountControl, DefaultImageControl,
   ParticleSizeControl, ParticleShapeControl, ParticleEdgeFadeControl, ParticleOverlapControl,
   PresetSelect,
-  ExportAppstateButton, ImportAppstateButton, ResetAppstateButton
+  ExportAppstateButton, ImportAppstateButton, ResetAppstateButton,
 ];
 
 class EffectListItem {
@@ -293,8 +300,8 @@ class EffectListItem {
     this.dragCopy = parseHtml(`
       <div class="effect-list-item drag-drop-copy">${effect.getDisplayName()}</div>
     `);
-    
-    const dragCopy = this.dragCopy;
+
+    const { dragCopy } = this;
     const showDragCopy = (x, y) => {
       document.getElementById('modal-container').appendChild(dragCopy);
       dragCopy.style.width = `${this.element.offsetWidth}px`;
@@ -314,14 +321,14 @@ class EffectListItem {
 
     this.element.addEventListener('mousedown', (evt) => {
       showDragCopy(evt.clientX, evt.clientY);
-      const onDrag = (evt) => updateDragCopy(evt.clientX, evt.clientY);
+      const onDrag = evt => updateDragCopy(evt.clientX, evt.clientY);
       const onDragend = (evt) => {
         document.documentElement.removeEventListener('mouseup', onDragend);
         document.documentElement.removeEventListener('mousemove', onDrag);
         hideDragCopy();
         this.timeline.dropNewEffect(
           this.effect, evt.clientX, evt.clientY, this.element.offsetWidth,
-          this.element.offsetHeight
+          this.element.offsetHeight,
         );
       };
       document.documentElement.addEventListener('mouseup', onDragend);
@@ -346,7 +353,7 @@ class EffectListItem {
         hideDragCopy();
         this.timeline.dropNewEffect(
           this.effect, evt.changedTouches[0].clientX, evt.changedTouches[0].clientY,
-          this.element.offsetWidth, this.element.offsetHeight
+          this.element.offsetWidth, this.element.offsetHeight,
         );
       };
       document.documentElement.addEventListener('touchend', onDragend);
@@ -366,6 +373,7 @@ class EffectListItem {
     };
     document.documentElement.addEventListener('touchmove', preventCancel, { passive: false });
   }
+
   getElement() {
     return this.element;
   }
@@ -392,8 +400,9 @@ class EffectList {
         let match = true;
         for (let j = 0; j < filters.length; j++) {
           const filter = filters[j];
-          if (filter.length === 0)
+          if (filter.length === 0) {
             continue;
+          }
           const inName = name.indexOf(filter) >= 0;
           const inDesc = desc.indexOf(filter) >= 0;
           if (!inName && !inDesc) {
@@ -431,14 +440,14 @@ export default class MainMenu {
     this.timeline = new Timeline(this);
     this.effectList = new EffectList(this); // requires timeline
 
-    const menu = this.menu;
-    const toggle = this.toggle;
-    const applyBtn = this.applyBtn;
+    const { menu } = this;
+    const { toggle } = this;
+    const { applyBtn } = this;
 
     // Close menu if clicked outside
     document.addEventListener('click', (evt) => {
-      if (!menu.contains(evt.target) &&
-          !document.getElementById('modal-container').contains(evt.target)
+      if (!menu.contains(evt.target)
+          && !document.getElementById('modal-container').contains(evt.target)
       ) {
         toggle.checked = false;
       }
@@ -449,8 +458,9 @@ export default class MainMenu {
         this.toggle.checked = false;
       }
       this.submit();
-      if (this.submittedConfig.duration > 0)
+      if (this.submittedConfig.duration > 0) {
         this.clock.setPaused(false);
+      }
     });
 
     for (let i = 0; i < ControlsList.length; i++) {
@@ -492,12 +502,15 @@ export default class MainMenu {
     const ctrl = new CtrlClass(this);
     this.controls.push(ctrl);
   }
+
   addChangeListener(listener) {
     this.changeListeners.push(listener);
   }
+
   persist() {
-    if (window.localStorage)
+    if (window.localStorage) {
       window.localStorage.setItem('savedConfig', JSON.stringify(this.submittedConfig, null, 2));
+    }
   }
 
   isCoverFullWidth() {

@@ -17,7 +17,7 @@ export default class BlobBuffer {
     this.fd = null;
     this.fs = null;
 
-    if (typeof FileWriter !== "undefined" && destination instanceof FileWriter) {
+    if (typeof FileWriter !== 'undefined' && destination instanceof FileWriter) {
       this.fileWriter = destination;
     } else if (fs && destination) {
       this.fd = destination;
@@ -30,37 +30,36 @@ export default class BlobBuffer {
     // One more than the index of the highest byte ever written
     this.length = 0;
   }
+
   // Returns a promise that converts the blob to an ArrayBuffer
   static readBlobAsBuffer(blob) {
-    return new Promise(function (resolve, reject) {
-      var
+    return new Promise((resolve, reject) => {
+      const
         reader = new FileReader();
 
-      reader.addEventListener("loadend", function () {
+      reader.addEventListener('loadend', () => {
         resolve(reader.result);
       });
 
       reader.readAsArrayBuffer(blob);
     });
   }
+
   static convertToUint8Array(thing) {
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
       if (thing instanceof Uint8Array) {
         resolve(thing);
       } else if (thing instanceof ArrayBuffer || ArrayBuffer.isView(thing)) {
         resolve(new Uint8Array(thing));
       } else if (thing instanceof Blob) {
-        resolve(BlobBuffer.readBlobAsBuffer(thing).then(function (buffer) {
-          return new Uint8Array(buffer);
-        }));
+        resolve(BlobBuffer.readBlobAsBuffer(thing).then(buffer => new Uint8Array(buffer)));
       } else {
-        //Assume that Blob will know how to read this thing
-        resolve(BlobBuffer.readBlobAsBuffer(new Blob([thing])).then(function (buffer) {
-          return new Uint8Array(buffer);
-        }));
+        // Assume that Blob will know how to read this thing
+        resolve(BlobBuffer.readBlobAsBuffer(new Blob([thing])).then(buffer => new Uint8Array(buffer)));
       }
     });
   }
+
   /**
    * Seek to the given absolute offset.
    *
@@ -69,27 +68,29 @@ export default class BlobBuffer {
    */
   seek(offset) {
     if (offset < 0) {
-      throw "Offset may not be negative";
+      throw 'Offset may not be negative';
     }
     if (isNaN(offset)) {
-      throw "Offset may not be NaN";
+      throw 'Offset may not be NaN';
     }
     if (offset > this.length) {
-      throw "Seeking beyond the end of file is not allowed";
+      throw 'Seeking beyond the end of file is not allowed';
     }
 
     this.pos = offset;
   }
+
   static measureData(data) {
-    var
+    const
       result = data.byteLength || data.length || data.size;
 
     if (!Number.isInteger(result)) {
-      throw "Failed to determine size of element";
+      throw 'Failed to determine size of element';
     }
 
     return result;
   }
+
   /**
    * Write the Blob-convertible data to the buffer at the current seek position.
    *
@@ -97,60 +98,62 @@ export default class BlobBuffer {
    * be fully contained by the extent of a previous write).
    */
   write(data) {
-    const { buffer, fd, fs, fileWriter } = this;
-    var
+    const {
+      buffer, fd, fs, fileWriter,
+    } = this;
+    const
       newEntry = {
         offset: this.pos,
-        data: data,
-        length: BlobBuffer.measureData(data)
-      },
-      isAppend = newEntry.offset >= this.length;
+        data,
+        length: BlobBuffer.measureData(data),
+      };
+    const isAppend = newEntry.offset >= this.length;
 
     this.pos += newEntry.length;
     this.length = Math.max(this.length, this.pos);
 
     // After previous writes complete, perform our write
-    this.writePromise = this.writePromise.then(function () {
+    this.writePromise = this.writePromise.then(() => {
       if (fd) {
-        return new Promise(function(resolve, reject) {
-          BlobBuffer.convertToUint8Array(newEntry.data).then(function(dataArray) {
-            var
-              totalWritten = 0,
-              buffer = Buffer.from(dataArray.buffer),
+        return new Promise((resolve, reject) => {
+          BlobBuffer.convertToUint8Array(newEntry.data).then((dataArray) => {
+            let
+              totalWritten = 0;
+            const buffer = Buffer.from(dataArray.buffer);
 
-              handleWriteComplete = function(err, written, buffer) {
-                totalWritten += written;
+            const handleWriteComplete = function (err, written, buffer) {
+              totalWritten += written;
 
-                if (totalWritten >= buffer.length) {
-                  resolve();
-                } else {
-                  // We still have more to write...
-                  fs.write(fd, buffer, totalWritten, buffer.length - totalWritten, newEntry.offset + totalWritten, handleWriteComplete);
-                }
-              };
+              if (totalWritten >= buffer.length) {
+                resolve();
+              } else {
+                // We still have more to write...
+                fs.write(fd, buffer, totalWritten, buffer.length - totalWritten, newEntry.offset + totalWritten, handleWriteComplete);
+              }
+            };
 
             fs.write(fd, buffer, 0, buffer.length, newEntry.offset, handleWriteComplete);
           });
         });
-      } else if (fileWriter) {
-        return new Promise(function (resolve, reject) {
+      } if (fileWriter) {
+        return new Promise((resolve, reject) => {
           fileWriter.onwriteend = resolve;
 
           fileWriter.seek(newEntry.offset);
           fileWriter.write(new Blob([newEntry.data]));
         });
-      } else if (!isAppend) {
+      } if (!isAppend) {
         // We might be modifying a write that was already buffered in memory.
 
         // Slow linear search to find a block we might be overwriting
-        for (var i = 0; i < buffer.length; i++) {
+        for (let i = 0; i < buffer.length; i++) {
           var
             entry = buffer[i];
 
           // If our new entry overlaps the old one in any way...
           if (!(newEntry.offset + newEntry.length <= entry.offset || newEntry.offset >= entry.offset + entry.length)) {
             if (newEntry.offset < entry.offset || newEntry.offset + newEntry.length > entry.offset + entry.length) {
-              throw new Error("Overwrite crosses blob boundaries");
+              throw new Error('Overwrite crosses blob boundaries');
             }
 
             if (newEntry.offset == entry.offset && newEntry.length == entry.length) {
@@ -159,16 +162,17 @@ export default class BlobBuffer {
 
               // We're done
               return;
-            } else {
-              return BlobBuffer.convertToUint8Array(entry.data)
-                .then(function (entryArray) {
-                  entry.data = entryArray;
-                  return BlobBuffer.convertToUint8Array(newEntry.data);
-                }).then(function (newEntryArray) {
-                  newEntry.data = newEntryArray;
-                  entry.data.set(newEntry.data, newEntry.offset - entry.offset);
-                });
             }
+
+            return BlobBuffer.convertToUint8Array(entry.data)
+              .then((entryArray) => {
+                entry.data = entryArray;
+
+                return BlobBuffer.convertToUint8Array(newEntry.data);
+              }).then((newEntryArray) => {
+                newEntry.data = newEntryArray;
+                entry.data.set(newEntry.data, newEntry.offset - entry.offset);
+              });
           }
         }
         // Else fall through to do a simple append, as we didn't overwrite any pre-existing blocks
@@ -177,6 +181,7 @@ export default class BlobBuffer {
       buffer.push(newEntry);
     });
   }
+
   /**
    * Finish all writes to the buffer, returning a promise that signals when that is complete.
    *
@@ -189,20 +194,18 @@ export default class BlobBuffer {
     const { buffer } = this;
     const { fd, fileWriter } = this;
     if (fd || fileWriter) {
-      this.writePromise = this.writePromise.then(function () {
-        return null;
-      });
+      this.writePromise = this.writePromise.then(() => null);
     } else {
       // After writes complete we need to merge the buffer to give to the caller
-      this.writePromise = this.writePromise.then(function () {
-        var
+      this.writePromise = this.writePromise.then(() => {
+        const
           result = [];
 
-        for (var i = 0; i < buffer.length; i++) {
+        for (let i = 0; i < buffer.length; i++) {
           result.push(buffer[i].data);
         }
 
-        return new Blob(result, {mimeType: mimeType});
+        return new Blob(result, { mimeType });
       });
     }
 

@@ -1,8 +1,8 @@
-/// The functions in this file are mainly responsible for interpreting
-/// ScalingInfo when mapping image/canvas pixel data onto the particle
-/// grid. ScalingInfo itself is a simple description format to give
-/// users the possibility to describe this mapping in an intuitive yet
-/// limited fashion.
+// / The functions in this file are mainly responsible for interpreting
+// / ScalingInfo when mapping image/canvas pixel data onto the particle
+// / grid. ScalingInfo itself is a simple description format to give
+// / users the possibility to describe this mapping in an intuitive yet
+// / limited fashion.
 
 export class ScalingInfo {
   constructor(particleCounts, imageScaling, imageCropping, viewport) {
@@ -34,6 +34,7 @@ function getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo) {
   r.vAspectRatio = scalingInfo.viewport.width / scalingInfo.viewport.height;
   // particle aspect ratio
   r.pAspectRatio = r.vAspectRatio / r.dAspectRatio;
+
   return r;
 }
 
@@ -48,7 +49,7 @@ function getCropImageToViewportParams(imageCanvas, scalingInfo) {
     } else if (scalingInfo.imageCropping.y === 'crop-bottom') {
       r.sy = 0;
     } else {
-      throw new Error('Illegal value for scalingInfo.imageCropping.y: ' + scalingInfo.imageCropping.x);
+      throw new Error(`Illegal value for scalingInfo.imageCropping.y: ${scalingInfo.imageCropping.x}`);
     }
   } else { // source width will exceed dest width
     r.sWidth = r.sHeight * r.vAspectRatio;
@@ -59,9 +60,10 @@ function getCropImageToViewportParams(imageCanvas, scalingInfo) {
     } else if (scalingInfo.imageCropping.x === 'crop-right') {
       r.sx = 0;
     } else {
-      throw new Error('Illegal value for scalingInfo.imageCropping.x: ' + scalingInfo.imageCropping.x);
+      throw new Error(`Illegal value for scalingInfo.imageCropping.x: ${scalingInfo.imageCropping.x}`);
     }
   }
+
   return r;
 }
 
@@ -78,20 +80,21 @@ function getFitWidthParams(imageCanvas, scalingInfo) {
     } else if (scalingInfo.imageCropping.y === 'crop-bottom') {
       r.dy = 0;
     } else {
-      throw new Error('Illegal value for scalingInfo.imageCropping.y: ' + scalingInfo.imageCropping.y);
+      throw new Error(`Illegal value for scalingInfo.imageCropping.y: ${scalingInfo.imageCropping.y}`);
     }
   } else { // pixels rows at the top and/or bottom will need to be discarded
     r.sHeight = imageCanvas.width / r.vAspectRatio;
     if (scalingInfo.imageCropping.y === 'crop-both') {
       r.sy = (imageCanvas.height - r.sHeight) / 2;
     } else if (scalingInfo.imageCropping.y === 'crop-top') {
-      r.sy = imageCanvas.height  - r.sHeight;
+      r.sy = imageCanvas.height - r.sHeight;
     } else if (scalingInfo.imageCropping.y === 'crop-bottom') {
       r.sy = 0;
     } else {
-      throw new Error('Illegal value for scalingInfo.imageCropping.y: ' + scalingInfo.imageCropping.y);
+      throw new Error(`Illegal value for scalingInfo.imageCropping.y: ${scalingInfo.imageCropping.y}`);
     }
   }
+
   return r;
 }
 
@@ -108,7 +111,7 @@ function getFitHeightParams(imageCanvas, scalingInfo) {
     } else if (scalingInfo.imageCropping.x === 'crop-right') {
       r.dx = 0;
     } else {
-      throw new Error('Illegal value for scalingInfo.imageCropping.x: ' + scalingInfo.imageCropping.x);
+      throw new Error(`Illegal value for scalingInfo.imageCropping.x: ${scalingInfo.imageCropping.x}`);
     }
   } else { // pixels columns to the left and/or right will need to be discarded
     r.sWidth = imageCanvas.height * r.vAspectRatio;
@@ -119,9 +122,10 @@ function getFitHeightParams(imageCanvas, scalingInfo) {
     } else if (scalingInfo.imageCropping.x === 'crop-right') {
       r.sx = 0;
     } else {
-      throw new Error('Illegal value for scalingInfo.imageCropping.x: ' + scalingInfo.imageCropping.x);
+      throw new Error(`Illegal value for scalingInfo.imageCropping.x: ${scalingInfo.imageCropping.x}`);
     }
   }
+
   return r;
 }
 
@@ -129,7 +133,7 @@ export function mapImageToParticles(imageCanvas, scalingInfo) {
   const w = scalingInfo.particleCounts.x;
   const h = scalingInfo.particleCounts.y;
   if (w < 1 || h < 1) {
-    throw new Error('Illegal values for particle counts: x=' + w + ', y=' + h);
+    throw new Error(`Illegal values for particle counts: x=${w}, y=${h}`);
   }
   const scalingCanvas = document.createElement('canvas');
   const scalingContext = scalingCanvas.getContext('2d');
@@ -150,11 +154,12 @@ export function mapImageToParticles(imageCanvas, scalingInfo) {
   } else if (scalingInfo.imageScaling === 'scale-to-viewport') {
     scalingParams = getDefaultPixelParticleMappingParams(imageCanvas, scalingInfo);
   } else {
-    throw new Error('Illegal value for scalingInfo.imageScaling: "' + scalingInfo.imageScaling + '"');
+    throw new Error(`Illegal value for scalingInfo.imageScaling: "${scalingInfo.imageScaling}"`);
   }
   scalingCanvas.width = w;
   scalingCanvas.height = h;
   const P = scalingParams;
   scalingContext.drawImage(imageCanvas, P.sx, P.sy, P.sWidth, P.sHeight, P.dx, P.dy, P.dWidth, P.dHeight);
+
   return scalingContext.getImageData(0, 0, scalingCanvas.width, scalingCanvas.height);
 }

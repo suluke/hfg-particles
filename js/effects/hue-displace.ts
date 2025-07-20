@@ -74,11 +74,10 @@ export default class HueDisplaceEffect extends Effect {
   static register(instance, props, uniforms, vertexShader) {
     if (instance.config.distance !== 0) {
       const distance = uniforms.addUniform('hueDisplaceDistance', 'float', instance.config.distance);
-      const time = uniforms.addUniform('hueDisplaceTime', 'float', (ctx, props) =>
-        ((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()) * 2 * Math.PI);
+      const time = uniforms.addUniform('hueDisplaceTime', 'float', (ctx, props) => ((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()) * 2 * Math.PI);
       const directionOffset = uniforms.addUniform('hueDisplaceDirectionOffset', 'float', (ctx, props) => {
-        let result = instance.config.rotate *
-          ((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()) * 2 * Math.PI;
+        let result = instance.config.rotate
+          * ((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()) * 2 * Math.PI;
         if (instance.config.randomDirectionOffset) {
           if (instance.config.randomDirectionOffsetValue === undefined) {
             // eslint-disable-next-line no-param-reassign
@@ -117,19 +116,19 @@ export default class HueDisplaceEffect extends Effect {
 
   static getDefaultConfig() {
     return {
-      distance:              0.1,
-      scaleByValue:          0,
+      distance: 0.1,
+      scaleByValue: 0,
       randomDirectionOffset: false,
-      rotate:                0
+      rotate: 0,
     };
   }
 
   static getRandomConfig() {
     return {
-      distance:              Math.random(),
-      scaleByValue:          Math.random(),
-      randomDirectionOffset: Math.random() > .5 ? true : false,
-      rotate:                Math.random()
+      distance: Math.random(),
+      scaleByValue: Math.random(),
+      randomDirectionOffset: Math.random() > 0.5,
+      rotate: Math.random(),
     };
   }
 }

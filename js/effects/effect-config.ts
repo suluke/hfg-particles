@@ -1,11 +1,15 @@
-import { effectsById } from '../effects/index';
+import { effectsById } from './index';
 import Effect, { EffectConfig as EffectConfigType } from './effect';
 
 export default class EffectConfig {
   public id: string;
+
   public timeBegin: number;
+
   public timeEnd: number;
+
   public repetitions: number;
+
   public config: EffectConfigType;
 
   constructor(id: string, timeBegin: number, timeEnd: number, repetitions: number, config: EffectConfigType) {
@@ -35,8 +39,7 @@ export default class EffectConfig {
   static deserialize(obj: any): EffectConfig {
     if (obj.constructor.name === this.name) {
       return obj;
-    } else {
-      return new EffectConfig(obj.id, obj.timeBegin, obj.timeEnd, obj.repetitions, obj.config);
     }
+    return new EffectConfig(obj.id, obj.timeBegin, obj.timeEnd, obj.repetitions, obj.config);
   }
 }

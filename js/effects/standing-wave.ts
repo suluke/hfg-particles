@@ -96,22 +96,22 @@ export default class StandingWaveEffect extends Effect {
     const timeInterpolation = instance.config.timeInterpolation || 'sine';
     const waveFunction = instance.config.waveFunction || 'sine';
     const dimension = instance.config.dimension || 'x';
-    const otherDim = {x: 'y', y: 'x'}[dimension];
+    const otherDim = { x: 'y', y: 'x' }[dimension];
     if (maxAmplitude !== 0) {
       const time = uniforms.addUniform('time', 'float', (ctx, props) => fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod()));
       const timeInterpolations = {
         // 'linear' is a triangle function that interpolates the points (0,0),(0.25,1),(0.5,0),(0.75,-1),(1,0)
         // i.e. |/\___
         //      |  \/
-        linear: `abs(fract(t + 0.75) - 0.5) * 4. - 1.`,
-        sine: `sin(t * 2. * PI)`
+        linear: 'abs(fract(t + 0.75) - 0.5) * 4. - 1.',
+        sine: 'sin(t * 2. * PI)',
       };
-      const timeInterpolStr = timeInterpolations[timeInterpolation] || timeInterpolations['linear'];
+      const timeInterpolStr = timeInterpolations[timeInterpolation] || timeInterpolations.linear;
       const waveFunctions = {
-        linear: `abs(fract(x + 0.75) - 0.5) * 4. - 1.`,
-        sine: `sin(x * 2. * PI)`
+        linear: 'abs(fract(x + 0.75) - 0.5) * 4. - 1.',
+        sine: 'sin(x * 2. * PI)',
       };
-      const waveFuncStr = waveFunctions[waveFunction] || waveFunctions['linear'];
+      const waveFuncStr = waveFunctions[waveFunction] || waveFunctions.linear;
       // eslint-disable-next-line no-param-reassign
       vertexShader.mainBody += `
         float t = ${time};
@@ -147,7 +147,7 @@ export default class StandingWaveEffect extends Effect {
       waveCount: 20,
       timeInterpolation: 'linear',
       waveFunction: 'linear',
-      dimension: 'y'
+      dimension: 'y',
     };
   }
 
@@ -157,7 +157,7 @@ export default class StandingWaveEffect extends Effect {
       waveCount: 1 + Math.random() * 30,
       timeInterpolation: ['linear', 'sine'][Math.round(Math.random())],
       waveFunction: ['linear', 'sine'][Math.round(Math.random())],
-      dimension: ['y', 'x'][Math.round(Math.random())]
+      dimension: ['y', 'x'][Math.round(Math.random())],
     };
   }
 }

@@ -53,7 +53,7 @@ class ParticleDisplaceConfigUI extends ConfigUI {
     return {
       direction: parseFloat(this.directionInput.value),
       directionUnit: this.directionUnitInput.value,
-      distance: parseFloat(this.distanceInput.value)
+      distance: parseFloat(this.distanceInput.value),
     };
   }
 
@@ -107,7 +107,7 @@ export default class ParticleDisplaceEffect extends Effect {
       distance: 0.5,
       easeInTime: 1000,
       easeOutTime: 1000,
-      easeFunc: 'sine'
+      easeFunc: 'sine',
     };
   }
 
@@ -118,7 +118,7 @@ export default class ParticleDisplaceEffect extends Effect {
       distance: Math.random() - 0.5,
       easeInTime: 1000,
       easeOutTime: 1000,
-      easeFunc: ['sine', 'linear'][Math.floor(Math.random() * 2)]
+      easeFunc: ['sine', 'linear'][Math.floor(Math.random() * 2)],
     };
   }
 }

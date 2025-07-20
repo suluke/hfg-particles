@@ -25,14 +25,23 @@ type PipelineConfig = {
  */
 export default class Renderer {
   private webgl: WebGLRenderingContext;
+
   private regl: ReglInstance;
+
   private state: RendererState;
+
   private config: any | null;
+
   private commandBuilder: CommandBuilder;
+
   private clock: RendererClock;
+
   private resizeListeners: ResizeListener[];
+
   private frameListeners: FrameListener[];
+
   private frameTime: number;
+
   private pipelineCfg: PipelineConfig;
 
   constructor(webgl: WebGLRenderingContext) {
@@ -49,35 +58,30 @@ export default class Renderer {
     this.frameListeners = [];
     // low pass filtered FPS measurement found on stackoverflow.com/a/5111475/1468532
     this.frameTime = 0;
-    this.pipelineCfg = {config: null, state: this.state, clock: this.clock};
+    this.pipelineCfg = { config: null, state: this.state, clock: this.clock };
     this.regl.frame(() => {
-      if (!this.state.isValid() || this.clock.isPaused())
-        return;
+      if (!this.state.isValid() || this.clock.isPaused()) return;
       this.renderFrame();
     });
     const OnPausedResize = () => {
       // Wait for the resize event to be applied everywhere
       window.setTimeout((() => this.renderFrame()), 0);
-    }
+    };
     this.clock.addPauseListener((paused: boolean) => {
-      if (paused)
-        this.addResizeListener(OnPausedResize);
-      else
-        this.removeResizeListener(OnPausedResize);
+      if (paused) this.addResizeListener(OnPausedResize);
+      else this.removeResizeListener(OnPausedResize);
     });
   }
 
   private renderFrame(): void {
     const FILTER_STRENGTH = 20;
     this.clock.frame();
-    if (!this.clock.isPaused())
-      this.frameTime += (this.clock.getDelta() - this.frameTime) / FILTER_STRENGTH;
-    this.pipelineCfg.config = this.config,
-    this.pipelineCfg.state  = this.state,
-    this.pipelineCfg.clock  = this.clock
+    if (!this.clock.isPaused()) this.frameTime += (this.clock.getDelta() - this.frameTime) / FILTER_STRENGTH;
+    this.pipelineCfg.config = this.config;
+    this.pipelineCfg.state = this.state;
+    this.pipelineCfg.clock = this.clock;
     this.state.pipeline.run(this.pipelineCfg);
-    for (let i = 0; i < this.frameListeners.length; i++)
-      this.frameListeners[i](this.webgl.canvas as HTMLCanvasElement, this.frameTime);
+    for (let i = 0; i < this.frameListeners.length; i++) this.frameListeners[i](this.webgl.canvas as HTMLCanvasElement, this.frameTime);
   }
 
   resize(width: number, height: number): void {
@@ -94,10 +98,8 @@ export default class Renderer {
 
   removeResizeListener(listener: ResizeListener): void {
     const idx = this.resizeListeners.indexOf(listener);
-    if (idx > -1)
-      this.resizeListeners.splice(idx, 1);
-    else
-      console.warn('Could not find resize listener to be removed');
+    if (idx > -1) this.resizeListeners.splice(idx, 1);
+    else console.warn('Could not find resize listener to be removed');
   }
 
   getClock(): RendererClock {
@@ -109,17 +111,16 @@ export default class Renderer {
     // TODO: rebuild command only when necessary
     this.state.adaptToConfig(config);
     this.commandBuilder.buildCommand({
-        config: this.config,
-        state:  this.state,
-        clock:  this.clock
+      config: this.config,
+      state: this.state,
+      clock: this.clock,
     })
-    .then((command: any) => {
-      this.clock.reset();
-      this.clock.setPeriod(this.config.duration);
-      this.state.pipeline.compile(this.regl(command));
-      if (this.clock.isPaused())
-        this.renderFrame();
-    }, (error: any) => console.error(error));
+      .then((command: any) => {
+        this.clock.reset();
+        this.clock.setPeriod(this.config.duration);
+        this.state.pipeline.compile(this.regl(command));
+        if (this.clock.isPaused()) this.renderFrame();
+      }, (error: any) => console.error(error));
   }
 
   getState(): RendererState {

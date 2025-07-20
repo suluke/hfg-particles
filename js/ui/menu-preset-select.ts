@@ -6,7 +6,7 @@ export default class MenuPresetSelectControl {
     this.menu = menu;
     this.elm = document.querySelector('.menu-select-preset-control');
     const select = this.elm.querySelector('select');
-    let IDs = Object.keys(listedPresets);
+    const IDs = Object.keys(listedPresets);
     const options = document.createDocumentFragment();
     for (let i = 0; i < IDs.length; i++) {
       const preset = listedPresets[IDs[i]];
@@ -24,9 +24,11 @@ export default class MenuPresetSelectControl {
       select.value = '';
     });
   }
+
   // eslint-disable-next-line class-methods-use-this
   updateConfig(config) {
   }
+
   // eslint-disable-next-line class-methods-use-this
   applyConfig(config) {
   }

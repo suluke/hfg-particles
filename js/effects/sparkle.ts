@@ -54,7 +54,7 @@ class SparkleConfigUI extends ConfigUI {
     config.scaleMin = parseInt(this.minScaleInput.value, 10) / 100;
     config.scaleMax = parseInt(this.maxScaleInput.value, 10) / 100;
     config.ratio = parseInt(this.ratioInput.value, 10) / 100;
-    config.duration = parseInt(this.durationInput.value);
+    config.duration = parseInt(this.durationInput.value, 10);
 
     return config;
   }
@@ -70,7 +70,9 @@ class SparkleConfigUI extends ConfigUI {
 export default class SparkleEffect extends Effect {
   static register(instance, props, uniforms, vertexShader, frag, attributes) {
     // Params
-    const { scaleMin, scaleMax, ratio, duration } = instance.config;
+    const {
+      scaleMin, scaleMax, ratio, duration,
+    } = instance.config;
 
     if (scaleMin >= 1 && scaleMax <= 1) {
       return;
@@ -104,11 +106,11 @@ export default class SparkleEffect extends Effect {
     const particlesCount = props.config.xParticlesCount * props.config.yParticlesCount;
     const periodData = new Float32Array(particlesCount);
     const offsetData = new Float32Array(particlesCount);
-    for(let i = 0; i < particlesCount; i++) {
+    for (let i = 0; i < particlesCount; i++) {
       // The period is based on duration (clear).
       // Divide by ratio to get a reduced effect with smaller ratios.
       // Randomize the period by shifting it a bit in any direction.
-      periodData[i] = Math.max((1 + (Math.random() * 2 - 1) * .25) * duration / ratio, duration);
+      periodData[i] = Math.max((1 + (Math.random() * 2 - 1) * 0.25) * duration / ratio, duration);
       offsetData[i] = Math.random() * periodData[i];
     }
 
@@ -129,13 +131,13 @@ export default class SparkleEffect extends Effect {
       progressFun = `
         float dMax = float(${scaleMax}) - 1.;
         float progressFun = 1. + (1. - cos(2. * PI * x)) * dMax / 2.;
-      `
+      `;
     } else if (scaleMax <= 1) {
       progressFun = `
         float dMin = 1. - float(${scaleMin});
         float progressFun = 1. + cos(2. * PI * x) * dMin / 2.;
-      `
-    } 
+      `;
+    }
 
     // eslint-disable-next-line no-param-reassign
     vertexShader.mainBody += `
@@ -148,7 +150,7 @@ export default class SparkleEffect extends Effect {
         if (float(globalTime) >= firstPeriodBegin
           && (lastPeriodLength >= float(${duration}) || float(globalTime) < lastPeriodBegin)) {
           float t = mod(float(globalTime) - float(${instance.timeBegin}) + ${offset}, ${period});
-          float x = t > float(${duration}) ? 0. : t * ${1/duration};
+          float x = t > float(${duration}) ? 0. : t * ${1 / duration};
           ${progressFun}
           pointSize *= progressFun;
           color *= progressFun;
@@ -178,7 +180,7 @@ export default class SparkleEffect extends Effect {
       scaleMin: 0.5,
       scaleMax: 2,
       ratio: 0.7,
-      duration: 700
+      duration: 700,
     };
   }
 
@@ -187,7 +189,7 @@ export default class SparkleEffect extends Effect {
       scaleMin: parseFloat(Math.random().toFixed(3)),
       scaleMax: parseFloat(Math.max(1, Math.random() * 15).toFixed(3)),
       ratio: parseFloat(Math.random().toFixed(3)),
-      duration: Math.max(500, Math.round(Math.random() * 5000))
+      duration: Math.max(500, Math.round(Math.random() * 5000)),
     };
   }
 }

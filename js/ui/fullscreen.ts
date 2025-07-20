@@ -3,28 +3,28 @@ declare global {
   interface Document {
     mozFullScreen?: boolean;
     webkitIsFullScreen?: boolean;
-    msFullscreenElement?: Element;
-    fullScreenElement?: Element;
+    msFullscreenElement?: globalThis.Element;
+    fullScreenElement?: globalThis.Element;
     mozRequestFullScreen?: () => Promise<void>;
     webkitRequestFullScreen?: (allowKeyboardInput?: number) => Promise<void>;
     cancelFullScreen?: () => Promise<void>;
     mozCancelFullScreen?: () => Promise<void>;
     webkitCancelFullScreen?: () => Promise<void>;
   }
-  
+
   interface HTMLElement {
     mozRequestFullScreen?: () => Promise<void>;
     webkitRequestFullScreen?: (allowKeyboardInput?: number) => Promise<void>;
   }
-  
+
   interface Element {
     ALLOW_KEYBOARD_INPUT?: number;
   }
 }
 
 function isFullscreen(): boolean {
-  return !!(document.fullscreen || (document as any).mozFullScreen ||
-    (document as any).webkitIsFullScreen || (document as any).msFullscreenElement);
+  return !!(document.fullscreen || (document as any).mozFullScreen
+    || (document as any).webkitIsFullScreen || (document as any).msFullscreenElement);
 }
 
 function updateFullscreenClass(): void {
@@ -37,8 +37,8 @@ function updateFullscreenClass(): void {
 }
 
 function toggleFullScreen(): void {
-  if ((document.fullScreenElement && document.fullScreenElement !== null) ||
-   (!(document as any).mozFullScreen && !(document as any).webkitIsFullScreen)) {
+  if ((document.fullScreenElement && document.fullScreenElement !== null)
+   || (!(document as any).mozFullScreen && !(document as any).webkitIsFullScreen)) {
     if (document.documentElement.requestFullscreen) {
       document.documentElement.requestFullscreen();
     } else if ((document.documentElement as any).mozRequestFullScreen) {
@@ -71,20 +71,22 @@ export class FullscreenButton {
 
 export class DoubleClickFullscreen {
   private element: HTMLElement;
+
   private clicks: number;
+
   private resetTimeout: number | false;
 
   constructor() {
     this.element = document.querySelector('.img-paste-box') as HTMLElement;
     this.clicks = 0;
     this.resetTimeout = false;
-    
+
     if (!this.element) {
       throw new Error('Element with class .img-paste-box not found');
     }
-    
+
     this.element.addEventListener('click', () => {
-      this.clicks = this.clicks + 1;
+      this.clicks += 1;
       if (this.clicks > 1) {
         this.reset();
         toggleFullScreen();

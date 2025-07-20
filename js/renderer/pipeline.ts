@@ -1,4 +1,6 @@
-import { Framebuffer, FullscreenRectCommand, Shader, Uniforms } from '../regl-utils';
+import {
+  Framebuffer, FullscreenRectCommand, Shader, Uniforms,
+} from '../regl-utils';
 
 class PaintResultCommand extends FullscreenRectCommand {
   constructor(getResult) {
@@ -28,7 +30,7 @@ class AccumulationCommand extends FullscreenRectCommand {
     stdUniforms.addUniform('historyTexture', 'sampler2D', () => getHistory().texture);
     stdUniforms.addUniform('globalTime', 'int', (ctx, props) => props.clock.getTime());
     stdUniforms.compile(frag, this.uniforms);
-    frag.varyings += 'varying vec2 texcoord;\n'
+    frag.varyings += 'varying vec2 texcoord;\n';
     frag.mainBody = `
       vec3 historyColor = texture2D(historyTexture, texcoord).rgb;
       vec3 particleColor = texture2D(particleTexture, texcoord).rgb;
@@ -48,6 +50,7 @@ class AccumulationCommand extends FullscreenRectCommand {
     this.frag = frag.compile();
     this.framebuffer = () => getOutput().framebuffer;
   }
+
   static fragmentCodeForAgents(agents, shader, uniforms) {
     const code = [];
 
@@ -55,15 +58,15 @@ class AccumulationCommand extends FullscreenRectCommand {
       const agent = agents[i];
       const agentUniforms = new Uniforms(i);
       const fadeWeightUniform = agentUniforms.addUniform('fadeWeight', 'float', (ctx, props) => {
-        const timeBegin = agent.instance.timeBegin;
-        const timeEnd = agent.instance.timeEnd;
-        const fadein = agent.instance.config.fadein;
-        const fadeout = agent.instance.config.fadeout;
+        const { timeBegin } = agent.instance;
+        const { timeEnd } = agent.instance;
+        const { fadein } = agent.instance.config;
+        const { fadeout } = agent.instance.config;
         const t = props.clock.getTime();
         // t in [timeBegin, timeEnd] (guranteed by if below)
-        return t < (timeBegin + fadein) ? (t - timeBegin) / fadein :
-          t > (timeEnd - fadeout) ? 1 - (t - (timeEnd - fadeout)) / fadeout :
-          1;
+        return t < (timeBegin + fadein) ? (t - timeBegin) / fadein
+          : t > (timeEnd - fadeout) ? 1 - (t - (timeEnd - fadeout)) / fadeout
+            : 1;
       });
       code.push(`
         if (${agent.instance.timeBegin} <= globalTime && globalTime <= ${agent.instance.timeEnd}) {
@@ -75,6 +78,7 @@ class AccumulationCommand extends FullscreenRectCommand {
       `);
       agentUniforms.compile(shader, uniforms);
     }
+
     return code.join('\n');
   }
 }
@@ -98,28 +102,33 @@ export default class RendererPipeline {
     this.accumulationCommand = null;
     this.paintResultCommand = this.regl(new PaintResultCommand(getResult));
   }
+
   addAccumulationAgent(agent) {
     this.accumulationAgents.push(agent);
   }
+
   compile(cmd) {
     this.mainCommand = cmd;
     const getParticles = () => this.particleBuffer;
     const getHistory = () => this.accuHistoryBuffer;
     const getOut = () => this.resultBuffer;
     this.accumulationCommand = this.regl(
-      new AccumulationCommand(getParticles, getHistory, getOut, this.accumulationAgents)
+      new AccumulationCommand(getParticles, getHistory, getOut, this.accumulationAgents),
     );
   }
+
   reset(clearColor) {
     this.accumulationAgents.length = 0;
     this.mainCommand = null;
     this.clearColor = clearColor;
   }
+
   resize(width, height) {
     this.particleBuffer.resize(width, height);
     this.accuHistoryBuffer.resize(width, height);
     this.resultBuffer.resize(width, height);
   }
+
   run(props) {
     if (!this.mainCommand) {
       return;
@@ -134,7 +143,7 @@ export default class RendererPipeline {
       // should still be resultBuffer
       [this.accuHistoryBuffer, this.resultBuffer] = [this.resultBuffer, this.accuHistoryBuffer];
       this.particleBuffer.framebuffer.use(() => {
-        this.regl.clear({color: this.clearColor});
+        this.regl.clear({ color: this.clearColor });
         this.mainCommand(props);
       });
 
@@ -142,6 +151,7 @@ export default class RendererPipeline {
       this.paintResultCommand(props);
     }
   }
+
   isValid() {
     return this.mainCommand !== null;
   }

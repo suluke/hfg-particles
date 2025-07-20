@@ -56,24 +56,25 @@ class TimelineEntry {
     this.openConfigBtn.addEventListener('click', () => {
       if (this.clickPrevented) {
         this.clickPrevented = false;
+
         return;
       }
       this.timeline.effectConfigDialog.promptUser(this)
-      .then(
-        (newState) => {
-          this.loadState(newState);
-          this.timeline.notifyChange();
-        },
-        (deleted) => {
-          if (deleted) {
-            if (deleted !== true) {
+        .then(
+          (newState) => {
+            this.loadState(newState);
+            this.timeline.notifyChange();
+          },
+          (deleted) => {
+            if (deleted) {
+              if (deleted !== true) {
               // Another error occurred
-              reportError(deleted);
+                reportError(deleted);
+              }
+              this.remove();
             }
-            this.remove();
-          }
-        }
-      );
+          },
+        );
     });
   }
 
@@ -85,8 +86,8 @@ class TimelineEntry {
 
   setupHorizontalDragging() {
     this.element.addEventListener('mousedown', (evt) => {
-      if (evt.target.classList.contains('timeline-entry-begin-time-adjust') ||
-          evt.target.classList.contains('timeline-entry-end-time-adjust')) {
+      if (evt.target.classList.contains('timeline-entry-begin-time-adjust')
+          || evt.target.classList.contains('timeline-entry-end-time-adjust')) {
         return;
       }
       const startX = evt.clientX;
@@ -125,8 +126,8 @@ class TimelineEntry {
     // Cross-timeline dragging and dropping is more complicated, so we
     // handle it independently from horizontal dragging
     this.element.addEventListener('mousedown', (evt) => {
-      if (evt.target.classList.contains('timeline-entry-begin-time-adjust') ||
-          evt.target.classList.contains('timeline-entry-end-time-adjust')) {
+      if (evt.target.classList.contains('timeline-entry-begin-time-adjust')
+          || evt.target.classList.contains('timeline-entry-end-time-adjust')) {
         return;
       }
       const onDrag = (evt) => {
@@ -172,7 +173,7 @@ class TimelineEntry {
 
     const beginHandle = this.element.querySelector('.timeline-entry-begin-time-adjust');
     TimelineEntry.setupAdjustHandle(beginHandle, (delta) => {
-      let newBegin = Math.max(0, this.timeBegin + ((delta / this.timeline.pxPerSecond) * 1000));
+      const newBegin = Math.max(0, this.timeBegin + ((delta / this.timeline.pxPerSecond) * 1000));
       if (newBegin < this.timeEnd) {
         this.timeBegin = Math.round(newBegin);
         this.timeline.notifyChange();
@@ -194,18 +195,21 @@ class TimelineEntry {
     this.repetitions = state.repetitions;
     this.config = state.config;
   }
+
   getElement() {
     return this.element;
   }
+
   getConfiguration() {
     return new EffectConfig(
       this.effect.getId(),
       this.timeBegin,
       this.timeEnd,
       this.repetitions,
-      this.config
+      this.config,
     );
   }
+
   renderStyles() {
     const li = this.getElement();
     const left = (this.timeBegin / 1000) * this.timeline.pxPerSecond;
@@ -245,21 +249,23 @@ class TimelineTrack {
 
     const elm = this.getTrackElement();
     const rect = elm.getBoundingClientRect();
-    if (clientX >= rect.left && clientX <= rect.right &&
-        clientY >= rect.top && clientY <= rect.bottom) {
+    if (clientX >= rect.left && clientX <= rect.right
+        && clientY >= rect.top && clientY <= rect.bottom) {
       const entry = new TimelineEntry(effect, this.timeline);
       const timeBegin = Math.round(Math.max(0, clientX - (width / 2) - rect.left) / (this.timeline.pxPerSecond / 1000));
       entry.loadState({
         timeBegin,
-        timeEnd:     timeBegin + 1000,
+        timeEnd: timeBegin + 1000,
         repetitions: 1,
-        config:      effect.getDefaultConfig()
+        config: effect.getDefaultConfig(),
       });
       this.addEntry(entry);
       this.renderHtml();
       this.timeline.notifyChange();
+
       return true;
     }
+
     return false;
   }
 
@@ -270,9 +276,11 @@ class TimelineTrack {
   getElements() {
     return this.elements;
   }
+
   getTrackElement() {
     return this.elements[1];
   }
+
   renderHtml() {
     const lis = document.createDocumentFragment();
     for (let i = 0; i < this.entryList.length; i++) {
@@ -283,6 +291,7 @@ class TimelineTrack {
     clearChildNodes(this.entryListElm);
     this.entryListElm.appendChild(lis);
   }
+
   renderStyles() {
     let maxEnd = 0;
     for (let i = 0; i < this.entryList.length; i++) {
@@ -320,7 +329,7 @@ class Timeticks {
       for (let i = 0; i < this.scaleChangeListeners.length; i++) {
         this.scaleChangeListeners[i](this.getPxPerSecond());
       }
-    }
+    };
     this.zoomInBtn.addEventListener('click', () => {
       this.zoomLevel *= 1.5;
       onZoomlevelChange();
@@ -336,39 +345,43 @@ class Timeticks {
       this.clock.setTime(t);
     });
   }
+
   getTimelineBorderWidth() {
     const tickWidth = this.firstTick.offsetWidth;
+
     return Math.round((tickWidth / 2) + 5);
   }
+
   adjustPosition() {
-    const cssRules = this.stylesheet.cssRules;
+    const { cssRules } = this.stylesheet;
     const borderWidth = this.getTimelineBorderWidth();
     const selectorPath = '.menu-timeline-container .menu-timeline-scrollable-container .menu-timeline-content';
     this.stylesheet.insertRule(`
       ${selectorPath} tr > th:first-child + th {
         border-left-width: ${borderWidth}px;
-      }`, cssRules.length
-    );
+      }`, cssRules.length);
     this.stylesheet.insertRule(`
       ${selectorPath} tr > td:first-child + td {
         border-left-width: ${borderWidth}px;
-      }`, cssRules.length
-    );
+      }`, cssRules.length);
     this.stylesheet.insertRule(`
       .menu-timeline-timetick {
         transform: translateX(-50%);
       }
     `, cssRules.length);
   }
+
   /**
    * @return px
    */
   getOptimalTimetickSpace() {
     return 2 * this.firstTick.offsetWidth;
   }
+
   getPxPerSecond() {
     return this.getOptimalTimetickSpace() * this.zoomLevel;
   }
+
   /**
    * @return ms
    */
@@ -387,23 +400,28 @@ class Timeticks {
       if (time * multiplyNext * pxPerMillis <= tickSpace) {
         break;
       } else {
-        time = time * multiplyNext;
+        time *= multiplyNext;
         // alternate between 0.5 and 0.1
         multiplyNext = multiplyNext === 0.5 ? 0.2 : 0.5;
       }
     }
+
     return time;
   }
+
   addScaleChangeListener(listener) {
     this.scaleChangeListeners.push(listener);
   }
+
   setDuration(duration) {
     this.duration = duration;
     this.render();
   }
+
   static msToStr(ms) {
-    let zeroPad = function(num, places) {
+    const zeroPad = function (num, places) {
       const zero = places - num.toString().length + 1;
+
       return Array(+(zero > 0 && zero)).join('0') + num;
     };
     let rem = ms;
@@ -415,9 +433,10 @@ class Timeticks {
 
     return `${zeroPad(m, 2)}:${zeroPad(s, 2)}:${zeroPad(cs, 2)}`;
   }
+
   render() {
-    if (this.duration !== this.renderedDuration ||
-        this.zoomLevel !== this.renderedZoomLevel) {
+    if (this.duration !== this.renderedDuration
+        || this.zoomLevel !== this.renderedZoomLevel) {
       this.renderedDuration = this.duration;
       this.renderedZoomLevel = this.zoomLevel;
       const container = this.firstTick.parentNode;
@@ -434,6 +453,7 @@ class Timeticks {
       } while (time <= this.duration);
     }
   }
+
   getElement() {
     return this.element;
   }
@@ -456,6 +476,7 @@ class TimeIndicator {
     };
     updateLoop();
   }
+
   updateStyles() {
     if (!this.menu.isVisible()) {
       return;
@@ -473,7 +494,7 @@ class TimeIndicator {
 
 class PauseButton {
   constructor(menu) {
-    const clock = menu.clock;
+    const { clock } = menu;
     this.clock = clock;
     this.element = document.querySelector('.menu-timeline-pause');
     this.element.addEventListener('click', () => {
@@ -488,8 +509,9 @@ class PauseButton {
       }
     });
     window.document.addEventListener('keydown', (e) => {
-      if (this.element.disabled)
+      if (this.element.disabled) {
         return;
+      }
       if (e.key === ' ') {
         clock.tooglePause();
       }
@@ -498,13 +520,16 @@ class PauseButton {
       if (config.duration === 0) {
         this.disable();
         clock.setPaused(true);
-      } else
+      } else {
         this.enable();
+      }
     });
   }
+
   enable() {
     this.element.disabled = false;
   }
+
   disable() {
     this.element.disabled = true;
   }
@@ -514,7 +539,7 @@ class RandomplayButton {
   constructor(timeline) {
     this.timeline = timeline;
     this.menu = timeline.menu;
-    this.clock = this.menu.clock
+    this.clock = this.menu.clock;
     this.onClockWrap = null;
     this.element = document.getElementById('menu-timeline-randomplay');
     this.didJustCreateNewTimeline = false;
@@ -533,6 +558,7 @@ class RandomplayButton {
       }
     });
   }
+
   start() {
     if (this.onClockWrap === null) {
       this.element.checked = true;
@@ -543,6 +569,7 @@ class RandomplayButton {
       this.clock.setPaused(false);
     }
   }
+
   stop() {
     if (this.onClockWrap !== null) {
       this.element.checked = false;
@@ -584,7 +611,7 @@ class RandomplayButton {
     config.duration = 0;
 
     for (let i = 0; i < effectList.length; i++) {
-      if (effectList[i].getId() == "FlickrImageEffect") {
+      if (effectList[i].getId() == 'FlickrImageEffect') {
         continue;
       }
 
@@ -596,15 +623,15 @@ class RandomplayButton {
         timeBegin,
         timeBegin + duration,
         1,
-        effectList[i].getRandomConfig()
+        effectList[i].getRandomConfig(),
       )]);
 
       config.duration = Math.max(config.duration, timeBegin + duration);
     }
     RandomplayButton.trimTimeline(config.effects);
 
-    //TODO: does not work...
-    //config.effects.push([new EffectConfig("FlickrImageEffect", 0, config.duration, 1, { searchTerm: '' })]);
+    // TODO: does not work...
+    // config.effects.push([new EffectConfig("FlickrImageEffect", 0, config.duration, 1, { searchTerm: '' })]);
 
     return config;
   }
@@ -621,6 +648,7 @@ class TimeDisplay {
     };
     updateLoop();
   }
+
   update() {
     if (!this.menu.isVisible()) {
       return;
@@ -657,6 +685,7 @@ export default class Timeline {
       this.renderStyles();
     });
   }
+
   loadTimeline(trackList) {
     this.trackList = [];
     for (let i = 0; i < trackList.length; i++) {
@@ -675,7 +704,7 @@ export default class Timeline {
         }
       }
     }
-    this.assertEmptyLastTrack(false)
+    this.assertEmptyLastTrack(false);
     this.renderHtml();
     this.renderStyles();
     this.timeticks.setDuration(this.getTotalDuration());
@@ -688,18 +717,20 @@ export default class Timeline {
       track.renderHtml();
       const row = document.createElement('tr');
       const trackElms = track.getElements();
-      trackElms.forEach((elm) => row.appendChild(elm));
+      trackElms.forEach(elm => row.appendChild(elm));
       rows.appendChild(row);
     }
     clearChildNodes(this.trackListElm);
     this.trackListElm.appendChild(rows);
   }
+
   renderStyles() {
     for (let i = 0; i < this.trackList.length; i++) {
       const track = this.trackList[i];
       track.renderStyles();
     }
   }
+
   forEachEntry(callback) {
     for (let i = 0; i < this.trackList.length; i++) {
       for (let j = 0; j < this.trackList[i].entryList.length; j++) {
@@ -707,6 +738,7 @@ export default class Timeline {
       }
     }
   }
+
   getEffects() {
     const configs = [];
     for (let i = 0; i < this.trackList.length; i++) {
@@ -719,17 +751,20 @@ export default class Timeline {
 
     return configs;
   }
+
   getTotalDuration() {
     let maxEnd = 0;
-    this.forEachEntry((entry) => maxEnd = Math.max(maxEnd, entry.timeEnd));
+    this.forEachEntry(entry => maxEnd = Math.max(maxEnd, entry.timeEnd));
+
     return maxEnd;
   }
+
   assertEmptyLastTrack(render = true) {
     let changed = false;
     const tracks = this.trackList;
-    while (tracks.length > 1 &&
-           tracks[tracks.length - 1].entryList.length === 0 &&
-           tracks[tracks.length - 2].entryList.length === 0
+    while (tracks.length > 1
+           && tracks[tracks.length - 1].entryList.length === 0
+           && tracks[tracks.length - 2].entryList.length === 0
     ) {
       tracks.splice(tracks.length - 1, 1);
       changed = true;
@@ -745,12 +780,14 @@ export default class Timeline {
       this.renderStyles();
     }
   }
+
   notifyChange() {
     this.timeticks.setDuration(this.getTotalDuration());
     this.assertEmptyLastTrack();
     this.renderStyles();
     this.menu.notifyChange();
   }
+
   deleteEntry(remove) {
     this.forEachEntry((entry, track, trackIndex) => {
       if (entry === remove) {
@@ -758,17 +795,21 @@ export default class Timeline {
       }
     });
   }
+
   dropNewEffect(effect, clientX, clientY, width, height) {
     for (let i = 0; i < this.trackList.length; i++) {
       if (this.trackList[i].dropNewEffect(effect, clientX, clientY, width, height)) {
         return true;
       }
     }
+
     return false;
   }
+
   isLocked() {
     return this.locked;
   }
+
   setLocked(locked = true) {
     if (this.locked !== locked) {
       this.locked = locked;

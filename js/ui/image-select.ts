@@ -6,7 +6,9 @@ type ChangeListener = (url: string) => void;
 
 export default class ImgSelect {
   private changeListeners: ChangeListener[];
+
   private input: HTMLInputElement;
+
   private FR: FileReader;
 
   constructor() {
@@ -14,14 +16,14 @@ export default class ImgSelect {
     this.changeListeners = [];
     this.input = document.getElementById('btn-file-select') as HTMLInputElement;
     this.FR = new FileReader();
-    
+
     if (!this.input) {
       throw new Error('Element with id "btn-file-select" not found');
     }
 
     // drag-n-drop support
     const html = document.documentElement;
-    const input = this.input;
+    const { input } = this;
     const dragClass = 'dragging-file';
     html.addEventListener('dragenter', (e) => {
       html.classList.add(dragClass);
@@ -42,23 +44,23 @@ export default class ImgSelect {
     });
     html.addEventListener('drop', (e) => {
       html.classList.remove(dragClass);
-      const fileItem = [].find.call(e.dataTransfer.items, (item) => item.kind === 'file');
+      const fileItem = [].find.call(e.dataTransfer.items, item => item.kind === 'file');
       if (fileItem) {
         this.fileToUrl(fileItem.getAsFile())
-        .then((url) => {
-          this.changeListeners.forEach((listener) => listener(url));
-        }, (msg) => {
+          .then((url) => {
+            this.changeListeners.forEach(listener => listener(url));
+          }, (msg) => {
           // TODO
-          console.error(msg);
-        });
+            console.error(msg);
+          });
         e.preventDefault();
 
         return;
       }
-      const urlItem = [].find.call(e.dataTransfer.items, (item) => (item.kind === 'string' && item.type === 'text/uri-list'));
+      const urlItem = [].find.call(e.dataTransfer.items, item => (item.kind === 'string' && item.type === 'text/uri-list'));
       if (urlItem) {
         urlItem.getAsString((url) => {
-          this.changeListeners.forEach((listener) => listener(url));
+          this.changeListeners.forEach(listener => listener(url));
         });
         e.preventDefault();
       }
@@ -67,15 +69,15 @@ export default class ImgSelect {
     // Try to catch clipboard pastes
     [].forEach.call(document.body.querySelectorAll('.img-paste-box'), (box) => {
       box.addEventListener('paste', (e) => {
-        const fileItem = [].find.call(e.clipboardData.items, (item) => item.kind === 'file');
+        const fileItem = [].find.call(e.clipboardData.items, item => item.kind === 'file');
         if (fileItem) {
           this.fileToUrl(fileItem.getAsFile())
-          .then((url) => {
-            this.changeListeners.forEach((listener) => listener(url));
-          }, (msg) => {
+            .then((url) => {
+              this.changeListeners.forEach(listener => listener(url));
+            }, (msg) => {
             // TODO
-            console.error(msg);
-          });
+              console.error(msg);
+            });
         }
         e.preventDefault();
       });
@@ -93,7 +95,7 @@ export default class ImgSelect {
         box.readonly = true; // Force keyboard to hide on input field.
         box.disabled = true; // Force keyboard to hide on textarea field.
         setTimeout(() => {
-          box.blur();  //actually close the keyboard
+          box.blur(); // actually close the keyboard
           // Remove readonly attribute after keyboard is hidden.
           box.readonly = false;
           box.disabled = false;
@@ -106,12 +108,12 @@ export default class ImgSelect {
       const file = evt.target.files[0];
       if (file) {
         this.fileToUrl(file)
-        .then((url) => {
-          this.changeListeners.forEach((listener) => listener(url));
-        }, (msg) => {
+          .then((url) => {
+            this.changeListeners.forEach(listener => listener(url));
+          }, (msg) => {
           // TODO
-          console.error(msg);
-        });
+            console.error(msg);
+          });
       }
     });
   }
@@ -120,7 +122,7 @@ export default class ImgSelect {
     return new Promise((res, rej) => {
       // TODO why would this be null?
       if (file === null) {
-        rej('File was null');
+        rej(new Error('File was null'));
       }
       if (this.FR.readyState === 1) {
         this.FR.abort();
@@ -136,6 +138,7 @@ export default class ImgSelect {
   addChangeListener(listener) {
     this.changeListeners.push(listener);
   }
+
   clear() {
     this.input.value = null;
   }

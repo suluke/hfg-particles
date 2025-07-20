@@ -1,7 +1,7 @@
 // Source: https://gist.github.com/k-gun/c2ea7c49edf7b757fe9561ba37cb19ca
 (function setupClasslistPolyfill() {
   // helpers
-  const regExp = (name) => new RegExp(`(^| )${name}( |$)`);
+  const regExp = name => new RegExp(`(^| )${name}( |$)`);
   const forEach = (list, fn, scope) => {
     for (let i = 0; i < list.length; i++) {
       fn.call(scope, list[i]);
@@ -23,8 +23,7 @@
     },
     remove(...args) {
       forEach(args, (name) => {
-        this.element.className =
-          this.element.className.replace(regExp(name), '');
+        this.element.className = this.element.className.replace(regExp(name), '');
       }, this);
     },
     toggle(name) {
@@ -38,7 +37,7 @@
     replace(oldName, newName) {
       this.remove(oldName);
       this.add(newName);
-    }
+    },
   };
 
   // IE8/9, Safari
@@ -46,7 +45,7 @@
     Object.defineProperty(Element.prototype, 'classList', {
       get() {
         return new ClassList(this);
-      }
+      },
     });
   }
 

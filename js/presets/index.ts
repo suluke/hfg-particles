@@ -6,10 +6,12 @@ import Preset2 from './preset-2.json';
 
 const LISTED_PRESETS_ID_BEGIN = 1000; // better safe than sorry
 
-/// This class encapsulates all data that describes a preset
+// / This class encapsulates all data that describes a preset
 class Preset {
   public name: string;
+
   public config: AppConfig;
+
   public id: number;
 
   constructor(name: string, config: AppConfig, id: number = -1) {
@@ -19,14 +21,14 @@ class Preset {
   }
 }
 
-/// Shorthand for preset construction
+// / Shorthand for preset construction
 function preset(name: string, config: AppConfig, id: number = -1): Preset {
   return new Preset(name, config, id);
 }
 const filePresets: Preset[] = [
   // Import built-in presets here
   preset('Webcam + Effects', Preset1 as AppConfig),
-  preset('Webcam + Standing wave', Preset2 as AppConfig)
+  preset('Webcam + Standing wave', Preset2 as AppConfig),
 ];
 
 // Create the exported listedPresets dict
@@ -37,7 +39,7 @@ for (let i = 0; i < filePresets.length; i++) {
   listedPresets[preset.id] = preset;
 }
 
-/// Helper function to create a preset only for one single effect
+// / Helper function to create a preset only for one single effect
 function makePresetFromEffect(effect: any): AppConfig {
   const config = createConfig();
   const timeline = config.effects;

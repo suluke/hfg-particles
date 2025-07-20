@@ -43,7 +43,7 @@ class ParticlesReduceConfigUI extends ConfigUI {
   getConfig() {
     return {
       amount: parseFloat(this.reductionAmountInput.value) / 100,
-      animation: this.reductionAnimationInput.value
+      animation: this.reductionAnimationInput.value,
     };
   }
 
@@ -55,8 +55,8 @@ class ParticlesReduceConfigUI extends ConfigUI {
 
 export default class ParticlesReduceEffect extends Effect {
   static register(instance, props, uniforms, vertexShader) {
-    const amount = instance.config.amount;
-    const animation = instance.config.animation;
+    const { amount } = instance.config;
+    const { animation } = instance.config;
     if (amount < 1) {
       // This works as follows:
       // We assume we want to render a different particle grid which is
@@ -66,7 +66,7 @@ export default class ParticlesReduceEffect extends Effect {
       // we refer to it as "super-grid"
       const px = props.config.xParticlesCount;
       const py = props.config.yParticlesCount;
-      const AR =  px / py;
+      const AR = px / py;
       let newH = Math.sqrt(amount * py * py);
       const newW = Math.round(newH * AR);
       newH = Math.round(newH);
@@ -77,7 +77,7 @@ export default class ParticlesReduceEffect extends Effect {
 
       const easeFunc = Ease.setupShaderEasing(instance, uniforms);
 
-      const transitionByAmount = {'amount': true, 'fade-out': false}[animation];
+      const transitionByAmount = { amount: true, 'fade-out': false }[animation];
 
       vertexShader.mainBody += `
         float ease = ${easeFunc};
@@ -113,7 +113,7 @@ export default class ParticlesReduceEffect extends Effect {
           rgb = ${transitionByAmount ? 'vec3(0.)' : 'rgb * vec3(1. - ease)'};
         }
       `;
-    } 
+    }
   }
 
   static getDisplayName() {
@@ -135,14 +135,14 @@ export default class ParticlesReduceEffect extends Effect {
   static getDefaultConfig() {
     return {
       amount: 0.5,
-      animation: 'fade-out'
+      animation: 'fade-out',
     };
   }
 
   static getRandomConfig() {
     return {
       amount: Math.random(),
-      animation: ['fade-out', 'amount'][Math.floor(Math.random() * 2)]
+      animation: ['fade-out', 'amount'][Math.floor(Math.random() * 2)],
     };
   }
 }

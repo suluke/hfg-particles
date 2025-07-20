@@ -52,14 +52,9 @@ class SmoothTrailsConfigUI extends ConfigUI {
 }
 
 class SmoothTrailsAgent extends AccumulationAgent {
-  constructor(instance) {
-    super(instance);
-  }
-
   getFragmentCode(uniforms) {
-    const kernelSize = uniforms.addUniform('kernelSize', 'vec2', (ctx, props) => {
-      return [4 / props.state.getWidth(), 4 / props.state.getHeight()];
-    });
+    const kernelSize = uniforms.addUniform('kernelSize', 'vec2', (ctx, props) => [4 / props.state.getWidth(), 4 / props.state.getHeight()]);
+
     return `
       vec3 color = /* texture2D(historyTexture, vec2(texcoord.x, texcoord.y)).rgb * .2 + */
         texture2D(historyTexture, vec2(texcoord.x + ${kernelSize}.x, texcoord.y)).rgb * .25 +
@@ -95,7 +90,7 @@ export default class SmoothTrailsEffect extends AccumulationEffect {
   static getDefaultConfig() {
     return {
       fadein: 100,
-      fadeout: 500
+      fadeout: 500,
     };
   }
 

@@ -31,13 +31,13 @@ export function create(): AppConfig {
     defaultImageScaling: 'crop-to-viewport',
     defaultImageCropping: {
       x: 'crop-both',
-      y: 'crop-both'
+      y: 'crop-both',
     },
     particleScaling: 1,
     particleShape: 'circle',
     particleFading: 'none',
     particleOverlap: 'alpha blend',
     effects: [],
-    duration: 10000
+    duration: 10000,
   };
 }

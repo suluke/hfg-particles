@@ -1,10 +1,15 @@
 export class Framebuffer {
   public texture: any;
+
   public framebuffer: any;
 
   constructor(regl: any) {
-    this.texture = regl.texture({ width: 1, height: 1, min: 'linear', mag: 'linear' }); // call resize before first use !
-    this.framebuffer = regl.framebuffer({ color: this.texture, depth: false, stencil: false, depthStencil: false });
+    this.texture = regl.texture({
+      width: 1, height: 1, min: 'linear', mag: 'linear',
+    }); // call resize before first use !
+    this.framebuffer = regl.framebuffer({
+      color: this.texture, depth: false, stencil: false, depthStencil: false,
+    });
   }
 
   resize(width: number, height: number): void {
@@ -24,7 +29,7 @@ export class FullscreenRectCommand {
       }
     `;
     this.attributes = {
-      v_texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]]
+      v_texcoord: [[0, 0], [1, 0], [0, 1], [1, 1]],
     };
     this.depth = false;
     this.primitive = 'triangle strip';
@@ -46,8 +51,7 @@ export class Shader {
 
   addFunction(name, code) {
     if (this.functionLookup[name]) {
-      if (this.functionLookup[name] != code)
-        throw new Error(`Registered same shader function name twice but with different code: ${name}`);
+      if (this.functionLookup[name] != code) throw new Error(`Registered same shader function name twice but with different code: ${name}`);
     } else {
       this.functions += code;
       this.functionLookup[name] = code;
@@ -87,19 +91,21 @@ class ShaderData {
     this.id = id;
     this.type = type;
   }
+
   add(name, type, value) {
     const entry = { name, type, value };
     this.data.push(entry);
 
     return this.getNameFor(entry);
   }
+
   getNameFor(entry) {
     if (this.id === undefined) {
       return entry.name;
-    } else {
-      return `${entry.name}_${this.id}`;
     }
+    return `${entry.name}_${this.id}`;
   }
+
   getCompiled(shader, storage = null) {
     const shaderStr = [];
     for (let i = 0; i < this.data.length; i++) {
@@ -110,7 +116,7 @@ class ShaderData {
         storage[this.getNameFor(entry)] = entry.value;
       }
     }
-    return shaderStr.join('\n') + '\n';
+    return `${shaderStr.join('\n')}\n`;
   }
 }
 
@@ -118,9 +124,11 @@ export class Uniforms extends ShaderData {
   constructor(id) {
     super(id, 'uniform');
   }
+
   addUniform(name, type, value) {
     return this.add(name, type, value);
   }
+
   compile(shader, uniforms = null) {
     // eslint-disable-next-line no-param-reassign
     shader.uniforms += this.getCompiled(shader, uniforms);
@@ -131,9 +139,11 @@ export class Attributes extends ShaderData {
   constructor(id) {
     super(id, 'attribute');
   }
+
   addAttribute(name, type, value) {
     return this.add(name, type, value);
   }
+
   compile(shader, attributes = null) {
     // eslint-disable-next-line no-param-reassign
     shader.attributes += this.getCompiled(shader, attributes);
@@ -144,9 +154,11 @@ export class Varyings extends ShaderData {
   constructor(id) {
     super(id, 'varying');
   }
+
   addVarying(name, type) {
     return this.add(name, type, null);
   }
+
   compile(shader) {
     // eslint-disable-next-line no-param-reassign
     shader.varyings += this.getCompiled(shader, null);

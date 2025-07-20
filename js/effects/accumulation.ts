@@ -1,10 +1,11 @@
 import Effect from './effect';
-import { FullscreenRectCommand } from '../regl-utils'
+import { FullscreenRectCommand } from '../regl-utils';
 
 export class AccumulationAgent {
   constructor(instance) {
     this.instance = instance;
   }
+
   getFragmentCode() {
     throw new Error('Not implemented');
   }

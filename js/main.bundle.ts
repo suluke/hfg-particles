@@ -8,12 +8,12 @@ import MainMenu from './ui/menu';
 import Renderer from './renderer';
 import ErrorManager from './error-manager';
 import Config from './config';
-import { allPresets } from './presets/index.js';
+import { allPresets } from './presets/index';
 
 // We want this to be constant and browsers seem to change it on zoom
-const DevicePixelRatio = window.devicePixelRatio || 1.;
+const DevicePixelRatio = window.devicePixelRatio || 1.0;
 
-const errorManager = new ErrorManager(function() {
+const errorManager = new ErrorManager(() => {
   console.info(Config);
 
   // some constants
@@ -51,12 +51,12 @@ const errorManager = new ErrorManager(function() {
   function tryLoadFromHash() {
     if (window.location.hash) {
       const hash = window.location.hash.substring(1);
-      let hashDict = hash.split('&')
-      .reduce((acc: Record<string, string>, item) => {
-        var parts = item.split('=');
-        acc[parts[0]] = parts[1];
-        return acc;
-      }, {});
+      const hashDict = hash.split('&')
+        .reduce((acc: Record<string, string>, item) => {
+          const parts = item.split('=');
+          acc[parts[0]] = parts[1];
+          return acc;
+        }, {});
       if (hashDict.preset !== undefined && (allPresets as any)[hashDict.preset]) {
         const preset = (allPresets as any)[hashDict.preset];
         menu.applyConfig(preset.config);
@@ -72,7 +72,7 @@ const errorManager = new ErrorManager(function() {
   loaded = loaded || tryLoadFromHash();
   loaded = loaded || tryLoadFromLocalStorage();
 
-  window.addEventListener("hashchange", tryLoadFromHash);
+  window.addEventListener('hashchange', tryLoadFromHash);
 
   const adjustCanvasSize = () => {
     canvas.width = window.innerWidth * DevicePixelRatio;
@@ -92,7 +92,7 @@ const errorManager = new ErrorManager(function() {
       isInitialPageLoad = false;
       renderer.getState().setDefaultDomImage(
         srcImage, earlyConfig.defaultImageScaling,
-        earlyConfig.defaultImageCropping
+        earlyConfig.defaultImageCropping,
       );
       // particleCounts are either what has been loaded from localStorage
       // or the dimensions of the default image (adapted to the user's
@@ -101,7 +101,7 @@ const errorManager = new ErrorManager(function() {
       const submittedConfig = menu.submittedConfig as any;
       const particleCounts = {
         xParticlesCount: submittedConfig.xParticlesCount || srcImage.naturalWidth,
-        yParticlesCount: submittedConfig.yParticlesCount || Math.round(srcImage.naturalHeight / screenAR)
+        yParticlesCount: submittedConfig.yParticlesCount || Math.round(srcImage.naturalHeight / screenAR),
       };
       // We want to get the default particle count from the default image,
       // but what the user specified before the page was reloaded should
@@ -114,25 +114,25 @@ const errorManager = new ErrorManager(function() {
       document.documentElement.classList.remove(imageLoadingClass);
     } else {
       imgLoadDialog.load(srcImage)
-      .then(({ imageScaling, imageCropping }) => {
-        renderer.getState().setDefaultDomImage(srcImage, imageScaling, imageCropping);
-        menu.applyConfig(Object.assign({}, menu.submittedConfig as any, {
-          defaultImageScaling: imageScaling, defaultImageCropping: imageCropping
-        }));
-        // Trigger state.adaptToConfig (rebuilds default particle data) and
-        // unpause the renderer clock
-        menu.submit();
-      }, () => {
+        .then(({ imageScaling, imageCropping }) => {
+          renderer.getState().setDefaultDomImage(srcImage, imageScaling, imageCropping);
+          menu.applyConfig(Object.assign({}, menu.submittedConfig as any, {
+            defaultImageScaling: imageScaling, defaultImageCropping: imageCropping,
+          }));
+          // Trigger state.adaptToConfig (rebuilds default particle data) and
+          // unpause the renderer clock
+          menu.submit();
+        }, () => {
         /* User canceled loading image */
         // If we don't clear, changeListeners may not fire if same image is selected again
-        imgSelect.clear();
-      })
-      .then(() => {
+          imgSelect.clear();
+        })
+        .then(() => {
         // do this both on cancel and on accept (= .finally())
-        document.documentElement.classList.remove(imageLoadingClass);
-      }, (e) => {
-        console.warn(e);
-      });
+          document.documentElement.classList.remove(imageLoadingClass);
+        }, (e) => {
+          console.warn(e);
+        });
     }
   };
   srcImage.onerror = () => {
@@ -153,7 +153,7 @@ const errorManager = new ErrorManager(function() {
   });
 
   // FPS display
-  let fpsUpdater = window.setInterval(() => {
+  const fpsUpdater = window.setInterval(() => {
     document.title = `Particles (${renderer.getFPS()} fps)`;
   }, 2000);
 });

@@ -5,10 +5,11 @@ export default class BetaFeaturesToggle {
     const features = [new RecordButton(renderer)];
     this.elm = menu.menu.querySelector('.menu-beta-features input');
     menu.addChangeListener((config) => {
-      if ('enableBetaFeatures' in config)
+      if ('enableBetaFeatures' in config) {
         this.elm.checked = config.enableBetaFeatures;
-      else
+      } else {
         config.enableBetaFeatures = this.elm.checked;
+      }
     });
     const onChange = (evt) => {
       const enabled = this.elm.checked;
@@ -16,10 +17,11 @@ export default class BetaFeaturesToggle {
       menu.persist();
       for (let i = 0; i < features.length; i++) {
         const feature = features[i];
-        if (enabled)
+        if (enabled) {
           feature.enable();
-        else
+        } else {
           feature.disable();
+        }
       }
     };
     this.elm.addEventListener('change', onChange);

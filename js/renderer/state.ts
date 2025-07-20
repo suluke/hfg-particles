@@ -27,8 +27,11 @@ class ParticleData {
 
 class ParticleDataStoreEntry {
   public imageCanvas: HTMLCanvasElement | null;
+
   public imageScaling: string;
+
   public imageCropping: any;
+
   public particleData: ParticleData | null;
 
   constructor(imageCanvas: HTMLCanvasElement | null, imageScaling: string, imageCropping: any, particleData: ParticleData | null = null) {
@@ -50,7 +53,7 @@ class ParticleDataStoreEntry {
 /**
  * Encapsulates the parts of the render pipeline which are subject to
  * dynamic change, i.e. data that can be changed by effects.
- * 
+ *
  * In contrast to this, data inside a `config` object is always immutable
  * (as long as the user does not request changes to be applied - which
  * generates a new `config` object).
@@ -68,7 +71,7 @@ export default class RendererState {
     // Properties
     this.config = null;
     this.particleData = -1;
-    this.particleDataStore = [new ParticleDataStoreEntry(null, '', {x: '', y: ''}, null)];
+    this.particleDataStore = [new ParticleDataStoreEntry(null, '', { x: '', y: '' }, null)];
     this.buffers = [];
     this.textures = [];
     this.hooks = [];
@@ -78,6 +81,7 @@ export default class RendererState {
     this.colorBuffer = null;
     this.dataInBuffer = -1;
   }
+
   adaptToConfig(config) {
     this.config = config;
     this.pipeline.reset(config.backgroundColor);
@@ -90,28 +94,28 @@ export default class RendererState {
       this.texcoordsBuffer.destroy();
     }
     const pixelIndices = Array.from(Array(pw * ph).keys());
-    const texcoords = pixelIndices.map((i) => [((i % pw) + 0.5) / pw, (Math.floor(i / pw) + 0.5) / ph]);
+    const texcoords = pixelIndices.map(i => [((i % pw) + 0.5) / pw, (Math.floor(i / pw) + 0.5) / ph]);
     this.texcoordsBuffer = this.regl.buffer(texcoords);
     // colorBuffer
     if (this.colorBuffer !== null) {
       this.colorBuffer.destroy();
     }
     this.dataInBuffer = -1;
-    this.colorBuffer = this.regl.buffer({usage: 'stream', type: 'uint8', length: 4 * ph * pw});
+    this.colorBuffer = this.regl.buffer({ usage: 'stream', type: 'uint8', length: 4 * ph * pw });
 
     // Update default particle data
     const DPD = this.particleDataStore[0];
     const defaultImg = DPD.imageCanvas;
     if (defaultImg !== null) {
       const scalingInfo = new ScalingInfo(
-        {x: pw, y: ph},
+        { x: pw, y: ph },
         DPD.imageScaling, DPD.imageCropping,
-        {width: this.getWidth(), height: this.getHeight()}
+        { width: this.getWidth(), height: this.getHeight() },
       );
       DPD.destroy();
       this.particleDataStore[0] = new ParticleDataStoreEntry(
         defaultImg, scalingInfo.imageScaling, scalingInfo.imageCropping,
-        new ParticleData(defaultImg, this.regl, scalingInfo)
+        new ParticleData(defaultImg, this.regl, scalingInfo),
       );
     }
     // release resources
@@ -134,32 +138,36 @@ export default class RendererState {
       this.hooks[i]();
     }
   }
+
   setParticleData(id) {
     this.particleData = id;
   }
+
   createParticleData(imgData, imageScaling, imageCropping) {
     if (!imageScaling) {
       console.warn('No imageScaling given. Falling back to default value');
-      imageScaling = 'crop-to-viewport'
+      imageScaling = 'crop-to-viewport';
     }
     if (!imageCropping) {
       console.warn('No imageCropping given. Falling back to default value');
-      imageCropping = {x: 'crop-both', y: 'crop-both'};
+      imageCropping = { x: 'crop-both', y: 'crop-both' };
     }
     const scalingInfo = new ScalingInfo(
-      {x: this.config.xParticlesCount, y: this.config.yParticlesCount},
+      { x: this.config.xParticlesCount, y: this.config.yParticlesCount },
       imageScaling, imageCropping,
-      {width: this.getWidth(), height: this.getHeight()}
+      { width: this.getWidth(), height: this.getHeight() },
     );
     this.particleDataStore.push(new ParticleDataStoreEntry(
       imgData, imageScaling, imageCropping,
-      new ParticleData(imgData, this.regl, scalingInfo)
+      new ParticleData(imgData, this.regl, scalingInfo),
     ));
     return this.particleDataStore.length - 1;
   }
+
   createParticleDataFromDomImg(domImg, imageScaling, imageCropping) {
     return this.createParticleData(domImgToCanvas(domImg), imageScaling, imageCropping);
   }
+
   destroyParticleData(id) {
     // Some effects (like webcam) may be a bit late to the party after
     // the state has been reset
@@ -169,6 +177,7 @@ export default class RendererState {
       console.warn('Trying to destroy ParticleData that doesn\'t exist');
     }
   }
+
   getColorBuffer() {
     if (this.particleData < 0) {
       return null;
@@ -180,22 +189,26 @@ export default class RendererState {
     }
     return this.colorBuffer;
   }
+
   createBuffer(...args) {
     const buf = this.regl.buffer(...args);
     this.buffers.push(buf);
     return { id: this.buffers.length - 1, buffer: buf };
   }
+
   createTexture(...args) {
     const tex = this.regl.texture(...args);
     this.textures.push(tex);
     return { id: this.textures.length - 1, texture: tex };
   }
+
   isValid() {
     return this.particleData >= 0 && this.pipeline.isValid();
   }
-  /// Sets the image, but will not change the current default particle
-  /// data. Rebuilding the default particle data will only happen on
-  /// adaptToConfig
+
+  // / Sets the image, but will not change the current default particle
+  // / data. Rebuilding the default particle data will only happen on
+  // / adaptToConfig
   setDefaultDomImage(domImage, imageScaling, imageCropping) {
     const DefaultEntry = this.particleDataStore[0];
     DefaultEntry.imageCanvas = domImgToCanvas(domImage);
@@ -203,23 +216,27 @@ export default class RendererState {
     DefaultEntry.imageCropping = imageCropping;
     this.particleData = 0;
   }
-  /// Hooks are run after the state has adapted to a new config object
+
+  // / Hooks are run after the state has adapted to a new config object
   addHook(hook) {
     this.hooks.push(hook);
   }
-  /// Changes the viewport dimension
-  /// Not to be confused with the particle grid size. See
-  /// config.xParticlesCount and config.yParticlesCount for that
+
+  // / Changes the viewport dimension
+  // / Not to be confused with the particle grid size. See
+  // / config.xParticlesCount and config.yParticlesCount for that
   resize(width, height) {
     this.width = width;
     this.height = height;
     this.pipeline.resize(width, height);
   }
-  /// @return viewport width
+
+  // / @return viewport width
   getWidth() {
     return this.width;
   }
-  /// @return viewport height
+
+  // / @return viewport height
   getHeight() {
     return this.height;
   }

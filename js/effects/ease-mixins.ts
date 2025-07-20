@@ -27,8 +27,9 @@ export default class Ease {
     `);
     const fragment = document.createDocumentFragment();
     while (markup.childNodes.length > 0) {
-      fragment.appendChild(markup.firstChild)
+      fragment.appendChild(markup.firstChild);
     }
+
     return fragment;
   }
 
@@ -52,6 +53,7 @@ export default class Ease {
     config.easeInTime = parseInt(configUI.easeInInput.value, 10);
     config.easeOutTime = parseInt(configUI.easeOutInput.value, 10);
     config.easeFunc = configUI.easeFuncInput.value;
+
     return config;
   }
 
@@ -62,16 +64,16 @@ export default class Ease {
   }
 
   static extend(configUI, classPrefix) {
-    let container = configUI.getElement();
+    const container = configUI.getElement();
     container.appendChild(Ease.makeConfigMarkup(classPrefix));
     Ease.extendWithConfigInputs(configUI, classPrefix);
     const oldGetConfig = configUI.getConfig;
     const oldApplyConfig = configUI.applyConfig;
 
-    configUI.getConfig = function() {
+    configUI.getConfig = function () {
       return Ease.extendConfig(configUI, oldGetConfig.call(configUI));
     };
-    configUI.applyConfig = function(config) {
+    configUI.applyConfig = function (config) {
       Ease.applyConfig(configUI, config);
       oldApplyConfig.call(configUI, config);
     };
@@ -82,12 +84,13 @@ export default class Ease {
     const easeOutTime = Math.min(instance.config.easeOutTime || 1000, instance.getPeriod() - easeInTime);
     const time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
     const easeInProgress = Math.min(1, time / (easeInTime / instance.getPeriod()));
-    const easeOutProgress =  Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
+    const easeOutProgress = Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
     const easeFuncs = {
-      none: 1.,
-      sine: (1. - Math.cos(Math.PI * Math.min(easeInProgress, easeOutProgress))) / 2.,
-      linear: Math.min(easeInProgress, easeOutProgress)
+      none: 1.0,
+      sine: (1.0 - Math.cos(Math.PI * Math.min(easeInProgress, easeOutProgress))) / 2.0,
+      linear: Math.min(easeInProgress, easeOutProgress),
     };
+
     return easeFuncs[instance.config.easeFunc || 'none'];
   }
 
@@ -97,20 +100,22 @@ export default class Ease {
     // starts at 0, goes up to 1
     const easeInProgress = uniforms.addUniform('easeInProgress', 'float', (ctx, props) => {
       const time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+
       return Math.min(1, time / (easeInTime / instance.getPeriod()));
     });
     // starts at 1, goes down to 0
     const easeOutProgress = uniforms.addUniform('easeOutProgress', 'float', (ctx, props) => {
       const time = fract((props.clock.getTime() - instance.timeBegin) / instance.getPeriod());
+
       return Math.min(1, (1 - time) / (easeOutTime / instance.getPeriod()));
     });
     const easeFuncs = {
       none: '1.',
       sine: `(1. - cos(PI * min(${easeInProgress}, ${easeOutProgress}))) / 2.`,
-      linear: `min(${easeInProgress}, ${easeOutProgress})`
+      linear: `min(${easeInProgress}, ${easeOutProgress})`,
     };
     const easeFunc = easeFuncs[instance.config.easeFunc || 'none'];
+
     return easeFunc;
   }
 }
-

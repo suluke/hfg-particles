@@ -1,7 +1,7 @@
+import { ImageCapture } from 'image-capture/lib/imagecapture';
 import Effect, { ConfigUI, fract } from './effect';
 import { reportError } from '../error-manager';
 import { parseHtml, imageScalingMarkup } from '../ui/util';
-import { ImageCapture } from 'image-capture/lib/imagecapture';
 
 const EffectName = 'Webcam';
 const EffectDescription = 'Make use of the user\'s webcam as the particles\' color values';
@@ -63,13 +63,14 @@ class WebcamConfigUI extends ConfigUI {
     const imageScaling = this.scalingSelect.value;
     const imageCropping = {
       x: this.cropXSelect.value,
-      y: this.cropYSelect.value
+      y: this.cropYSelect.value,
     };
+
     return {
       maxRetries: parseInt(this.maxRetriesInput.value, 10),
       retryTimeout: parseInt(this.retryTimeoutInput.value, 10),
       imageScaling,
-      imageCropping
+      imageCropping,
     };
   }
 
@@ -77,7 +78,7 @@ class WebcamConfigUI extends ConfigUI {
     this.maxRetriesInput.value = config.maxRetries || 3;
     this.retryTimeoutInput.value = config.retryTimeout || 1000;
     this.scalingSelect.value = config.imageScaling || 'crop-to-viewport';
-    const imageCropping = config.imageCropping || {x: 'crop-both', y: 'crop-both'};
+    const imageCropping = config.imageCropping || { x: 'crop-both', y: 'crop-both' };
     this.cropXSelect.value = imageCropping.x;
     this.cropYSelect.value = imageCropping.y;
   }
@@ -98,36 +99,43 @@ class WebcamEffectImpl {
   }
 
   isActive() {
-    const instance = this.instance;
-    const clock = this.props.clock;
+    const { instance } = this;
+    const { clock } = this.props;
     const time = clock.getTime();
+
     return this.isAlive() && !clock.isPaused() && instance.timeBegin <= time && time <= instance.timeEnd;
   }
+
   isAlive() {
     return this.alive;
   }
+
   start() {
     this.alive = true;
     // Shutdown hook
     this.props.state.addHook(() => this.kill());
+
     return this.createStream()
-    .then((stream) => {
-            this.stream = stream;
-            return this.createTrack();
-          },
-          (err) => Promise.reject(err))
-    .then((track) => {
-            this.track = track;
-            this.capture = new ImageCapture(this.track);
-            return this.tryStartGrabbing();
-          },
-          (err) => Promise.reject(err));
+      .then((stream) => {
+        this.stream = stream;
+
+        return this.createTrack();
+      },
+      err => Promise.reject(err))
+      .then((track) => {
+        this.track = track;
+        this.capture = new ImageCapture(this.track);
+
+        return this.tryStartGrabbing();
+      },
+      err => Promise.reject(err));
   }
+
   kill() {
     this.alive = false;
     // FIXME understand and document when this can happen.
     // E.g. when the getUserMedia() request is ignored in icognito mode
-    const stream = this.stream;
+    const { stream } = this;
     if (stream !== null) {
       const allTracks = stream.getTracks();
       for (let i = 0; i < allTracks.length; i++) {
@@ -136,16 +144,18 @@ class WebcamEffectImpl {
     }
     this.stream = null;
   }
+
   grabLoop() {
     // When we are sure grabbing images works (which happens further
     // below) we call this function to grab frames repeatedly in a loop
     if (this.isAlive()) {
-      const track = this.track;
-      const capture = this.capture;
+      const { track } = this;
+      const { capture } = this;
       if (track.muted) {
         this.kill();
         console.warn('Video stream muted. Spinning up new WebcamEffectImpl...');
         new WebcamEffectImpl(this.instance, this.props).start();
+
         return;
       }
       // FIXME if we don't grab frames, Chrome will soon make the
@@ -153,16 +163,17 @@ class WebcamEffectImpl {
       // Otherwise, we could test here if we are active and do a
       // no-op instead of grabFrame
       capture.grabFrame()
-      .then((frame) => {
-        this.processFrame(frame);
-        // Queue this into the next animation frame so we don't
-        // explode the call stack with recursive calls
-        window.requestAnimationFrame(() => this.grabLoop());
-      }, (err) => {
-        reportError(new Error('Cannot grab images from the camera'));
-      });
+        .then((frame) => {
+          this.processFrame(frame);
+          // Queue this into the next animation frame so we don't
+          // explode the call stack with recursive calls
+          window.requestAnimationFrame(() => this.grabLoop());
+        }, (err) => {
+          reportError(new Error('Cannot grab images from the camera'));
+        });
     }
   }
+
   tryStartGrabbing() {
     // As it turns out, having the video alone is not a guarantee that
     // we can actually grab images (at least on FF). So let's make sure
@@ -170,31 +181,32 @@ class WebcamEffectImpl {
     return new Promise((res, rej) => {
       const testGrab = (err) => {
         this.capture.grabFrame()
-        .then((frame) => {
+          .then((frame) => {
           // Success, resolve and start grabbing!
-          this.processFrame(frame);
-          this.grabLoop();
-          res();
-        }, (err) => {
+            this.processFrame(frame);
+            this.grabLoop();
+            res();
+          }, (err) => {
           // Aw, no image :( Maybe try again?
-          if (this.retries < this.instance.config.maxRetries) {
-            this.retries = this.retries + 1;
-            window.setTimeout(testGrab, this.instance.config.retryTimeout);
-          } else {
+            if (this.retries < this.instance.config.maxRetries) {
+              this.retries += 1;
+              window.setTimeout(testGrab, this.instance.config.retryTimeout);
+            } else {
             // We finally have to give up :/
-            rej(new Error('Cannot grab images from camera'));
-          }
-        });
+              rej(new Error('Cannot grab images from camera'));
+            }
+          });
       };
       testGrab();
     });
   }
+
   processFrame(image) {
     // This is where the magic happens
     if (this.isActive()) {
-      const canvas = this.canvas;
-      const state = this.props.state;
-      const config = this.instance.config;
+      const { canvas } = this;
+      const { state } = this.props;
+      const { config } = this.instance;
       const w = image.width;
       const h = image.height;
       // FIXME the camera resolution shouldn't change all that often
@@ -213,33 +225,35 @@ class WebcamEffectImpl {
       this.particleData = pd;
     }
   }
+
   createStream() {
     const mediaConstraints = {
       audio: false,
-      video: true // we want video
+      video: true, // we want video
     };
     // Let's ask the browser if we can haz video
     return navigator.mediaDevices.getUserMedia(mediaConstraints);
   }
+
   createTrack() {
     const videoTracks = this.stream.getVideoTracks();
     if (videoTracks.length === 0) {
-      return Promise.reject('No video tracks in user media');
+      return Promise.reject(new Error('No video tracks in user media'));
     }
     // We got a video feed!
     // Let's try to adapt it to our needs a little bit more
     const videoTrack = videoTracks[0];
-    const state = this.props.state;
+    const { state } = this.props;
     const constraints = {
       width: state.getWidth(),
       height: state.getHeight(),
       aspectRatio: state.getWidth() / state.getHeight(),
-      facingMode: 'user'
+      facingMode: 'user',
     };
     // According to MDN, this shouldn't ever reject.
     // TODO maybe add an assertion for that
     return videoTrack.applyConstraints(constraints)
-      .then(() => Promise.resolve(videoTrack), (err) => Promise.reject(err));
+      .then(() => Promise.resolve(videoTrack), err => Promise.reject(err));
   }
 }
 
@@ -269,7 +283,7 @@ export default class WebcamEffect extends Effect {
       maxRetries: 3,
       retryTimeout: 1000,
       imageScaling: 'crop-to-viewport',
-      imageCropping: {x: 'crop-both', y: 'crop-both'}
+      imageCropping: { x: 'crop-both', y: 'crop-both' },
     };
   }
 

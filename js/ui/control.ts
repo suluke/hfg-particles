@@ -7,10 +7,12 @@ export default class Control {
   constructor(menu) {
     this.menu = menu;
   }
+
   // eslint-disable-next-line class-methods-use-this
   updateConfig(/* config */) {
     throw new Error('Method not implemented');
   }
+
   // eslint-disable-next-line class-methods-use-this
   applyConfig(/* config */) {
     throw new Error('Method not implemented');

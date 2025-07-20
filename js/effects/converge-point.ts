@@ -13,7 +13,6 @@ class ConvergePointConfigUI extends ConfigUI {
       </fieldset>
     `);
     const ui = this.element;
-
   }
 
   getElement() {

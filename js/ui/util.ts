@@ -12,16 +12,16 @@ export function parseHtml(html: string): HTMLElement {
   const wrapMap: Record<string, WrapConfig> = {
     option: wrapper(1, "<select multiple='multiple'>", '</select>'),
     legend: wrapper(1, '<fieldset>', '</fieldset>'),
-    area:   wrapper(1, '<map>', '</map>'),
-    param:  wrapper(1, '<object>', '</object>'),
-    thead:  wrapper(1, '<table>', '</table>'),
-    tr:     wrapper(2, '<table><tbody>', '</tbody></table>'),
-    col:    wrapper(2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'),
-    td:     wrapper(3, '<table><tbody><tr>', '</tr></tbody></table>'),
+    area: wrapper(1, '<map>', '</map>'),
+    param: wrapper(1, '<object>', '</object>'),
+    thead: wrapper(1, '<table>', '</table>'),
+    tr: wrapper(2, '<table><tbody>', '</tbody></table>'),
+    col: wrapper(2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'),
+    td: wrapper(3, '<table><tbody><tr>', '</tr></tbody></table>'),
 
     // IE6-8 can't serialize link, script, style, or any html5 (NoScope) tags,
     // unless wrapped in a div with non-breaking characters in front of it.
-    _default: wrapper(1, '<div>', '</div>')
+    _default: wrapper(1, '<div>', '</div>'),
   };
   wrapMap.optgroup = wrapMap.option;
   wrapMap.tbody = wrapMap.thead;
@@ -42,9 +42,9 @@ export function parseHtml(html: string): HTMLElement {
     for (let d = 0; d < depth; d++) {
       if (element.firstChild !== element.lastChild) {
         throw new Error(
-          'util.parseHtml requires one single top level element.' +
-          'NOTE: This error might also occur if your tag structure ' +
-          'is nested illegaly.'
+          'util.parseHtml requires one single top level element.'
+          + 'NOTE: This error might also occur if your tag structure '
+          + 'is nested illegaly.',
         );
       }
       element = element.lastChild as HTMLElement;
@@ -95,5 +95,5 @@ export function imageScalingMarkup(classPrefix: string): string {
         </select>
       </label>
     </fieldset>
-  `
+  `;
 }

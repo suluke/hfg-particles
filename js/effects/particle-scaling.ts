@@ -34,19 +34,19 @@ class ParticlesScalingConfigUI extends ConfigUI {
 
   getConfig() {
     return {
-      scale: parseInt(this.scaleInput.value || 100) / 100
+      scale: parseInt(this.scaleInput.value || '100', 10) / 100,
     };
   }
 
   applyConfig(config) {
-    const scale = config.scale || 1.;
+    const scale = config.scale || 1.0;
     this.scaleInput.value = Math.round(scale * 100);
   }
 }
 
 export default class ParticlesScalingEffect extends Effect {
   static register(instance, props, uniforms, vertexShader) {
-    const scale = instance.config.scale || 1.;
+    const scale = instance.config.scale || 1.0;
     const easeFunc = Ease.setupShaderEasing(instance, uniforms);
     vertexShader.mainBody += `
       float ease = ${easeFunc};

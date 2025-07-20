@@ -2,9 +2,9 @@ import Effect, { ConfigUI, fract } from './effect';
 import { parseHtml } from '../ui/util';
 
 const EffectName = 'Reset Default Image';
-const EffectDescription = 'This effect changes the currently active image ' +
-                          'back to the default image (i.e. what came from ' +
-                          'the server or was uploaded by the user)';
+const EffectDescription = 'This effect changes the currently active image '
+                          + 'back to the default image (i.e. what came from '
+                          + 'the server or was uploaded by the user)';
 
 class ResetDefaultImageConfigUI extends ConfigUI {
   constructor() {
@@ -33,13 +33,13 @@ class ResetDefaultImageConfigUI extends ConfigUI {
 export default class ResetDefaultImageEffect extends Effect {
   static register(instance, props, uniforms, vertexShader) {
     let alive = true;
-    let prevWasChange = false;
+    const prevWasChange = false;
     const checkTime = () => {
       if (!alive) {
         return;
       }
       const tDist = props.clock.getTime() - instance.timeBegin;
-      if (0 <= tDist && tDist <= props.clock.getDelta()) {
+      if (tDist >= 0 && tDist <= props.clock.getDelta()) {
         props.state.setParticleData(0);
       }
       window.requestAnimationFrame(checkTime);

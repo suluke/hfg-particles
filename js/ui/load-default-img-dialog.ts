@@ -31,16 +31,17 @@ export default class LoadImgDialog {
         imageScaling: this.scalingSelect.value,
         imageCropping: {
           x: this.cropXSelect.value,
-          y: this.cropYSelect.value
-        }
+          y: this.cropYSelect.value,
+        },
       });
     });
     const cancelBtn = this.elm.querySelector(`.${cancelLoadBtnClass}`);
     cancelBtn.addEventListener('click', () => {
       this.hide();
-      this.reject();
+      this.reject(new Error('User canceled'));
     });
   }
+
   load(img) {
     return new Promise((res, rej) => {
       this.resolve = res;
@@ -49,6 +50,7 @@ export default class LoadImgDialog {
       this.parentNode.appendChild(this.elm);
     });
   }
+
   hide() {
     this.parentNode.removeChild(this.elm);
   }

@@ -52,9 +52,6 @@ class TrailsConfigUI extends ConfigUI {
 }
 
 class TrailsAgent extends AccumulationAgent {
-  constructor(instance) {
-    super(instance);
-  }
   getFragmentCode(uniforms) {
     return `
       accumulationEffectResult = mix(particleColor, historyColor, 0.7);
@@ -86,7 +83,7 @@ export default class TrailsEffect extends AccumulationEffect {
   static getDefaultConfig() {
     return {
       fadein: 100,
-      fadeout: 500
+      fadeout: 500,
     };
   }
 

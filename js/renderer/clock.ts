@@ -3,11 +3,17 @@ type PauseListener = (paused: boolean) => void;
 
 export default class RendererClock {
   private time: number;
+
   private delta: number;
+
   private absTime: number;
+
   private period: number;
+
   private paused: boolean;
+
   private wrapListeners: WrapListener[];
+
   private pauseListeners: PauseListener[];
 
   constructor() {

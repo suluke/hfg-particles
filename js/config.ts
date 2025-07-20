@@ -5,9 +5,9 @@ export type Config = {
 };
 
 const config: Config = {
-  timestamp:             '<@TIMESTAMP@>',
-  git_rev:               '<@GIT_REV@>',
-  export_schema_version: 0
+  timestamp: '<@TIMESTAMP@>',
+  git_rev: '<@GIT_REV@>',
+  export_schema_version: 0,
 };
 
 export default config;

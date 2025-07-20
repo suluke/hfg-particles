@@ -1,5 +1,6 @@
 export class NonFatalError extends Error {
   public msg: string;
+
   public data: any;
 
   constructor(msg: string, data?: any) {
@@ -28,5 +29,5 @@ export default class ErrorManager {
 
 export function reportError(error: Error): void {
   // assert that this doesn't get lost inside some promise
-  window.setTimeout(function() { throw error; }, 0);
+  window.setTimeout(() => { throw error; }, 0);
 }
