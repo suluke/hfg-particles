@@ -1,0 +1,16 @@
+# This directory stores preprocessed training/validation/test splits
+# Generated after font rendering and dataset splitting
+
+# Files created here:
+# - train.npz (training split)
+# - val.npz (validation split) 
+# - test.npz (test split)
+
+# Each .npz file contains:
+# - images: (N, 48, 48) uint8 glyph bitmaps
+# - targets: (N, 64) float32 line segment coordinates (16 segments × 4 coords)
+# - chars: (N,) character codes
+
+# Note: Initially targets are dummy random data
+# In a full implementation, targets would be ground truth line segments
+# extracted from font vector data or manual annotation

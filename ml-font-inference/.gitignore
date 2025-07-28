@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Model files and data
+checkpoints/*.pth
+data/rendered/*.npz
+data/processed/*.npz
+!data/fonts/.gitkeep
+!data/rendered/.gitkeep
+!data/processed/.gitkeep
+!checkpoints/.gitkeep
+!outputs/.gitkeep
+!scripts/.gitkeep
+
+# Training outputs
+outputs/tensorboard/
+outputs/*.png
+outputs/*.jpg
+outputs/*.jpeg
+
+# OS
+.DS_Store
+Thumbs.db

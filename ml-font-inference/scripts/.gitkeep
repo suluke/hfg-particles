@@ -1,0 +1,5 @@
+# This directory contains development and utility scripts
+
+# Files here:
+# - setup_dev.sh (development environment setup)
+# - Additional utility scripts for data processing, model analysis, etc.
