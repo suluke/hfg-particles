@@ -26,7 +26,14 @@ class Trainer:
     
     def __init__(self, config: dict):
         self.config = config
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
+        # Device selection with Apple Silicon (MPS) support
+        if torch.backends.mps.is_available():
+            self.device = torch.device('mps')
+        elif torch.cuda.is_available():
+            self.device = torch.device('cuda')
+        else:
+            self.device = torch.device('cpu')
         print(f"Using device: {self.device}")
         
         # Create model with adaptive line width
@@ -36,6 +43,16 @@ class Trainer:
             input_size=config['input_size'],
             adaptive_line_width=config.get('adaptive_line_width', True)
         ).to(self.device)
+        
+        # Model compilation for performance (PyTorch 2.0+)
+        if config.get('compile_model', True) and hasattr(torch, 'compile'):
+            try:
+                print("Compiling model for optimized performance...")
+                self.model = torch.compile(self.model, mode='default')
+                print("✅ Model compilation successful")
+            except Exception as e:
+                print(f"⚠️  Model compilation failed (will continue without): {e}")
+                # Continue without compilation
         
         # Print model info
         if hasattr(self.model, 'get_model_info'):
@@ -100,7 +117,7 @@ class Trainer:
             batch_size=self.config['batch_size'],
             shuffle=True,
             num_workers=self.config['num_workers'],
-            pin_memory=True if self.device.type == 'cuda' else False,
+            pin_memory=True if self.device.type in ['cuda', 'mps'] else False,
             persistent_workers=False  # Reduces CPU overhead
         )
         
@@ -115,7 +132,7 @@ class Trainer:
             batch_size=self.config['batch_size'],
             shuffle=False,
             num_workers=self.config['num_workers'],
-            pin_memory=True if self.device.type == 'cuda' else False,
+            pin_memory=True if self.device.type in ['cuda', 'mps'] else False,
             persistent_workers=False  # Reduces CPU overhead
         )
         
@@ -134,18 +151,24 @@ class Trainer:
         }
         num_batches = 0
         
+        # Gradient accumulation settings
+        accumulation_steps = self.config.get('gradient_accumulation_steps', 4)
+        effective_batch_size = self.config['batch_size'] * accumulation_steps
+        
         pbar = tqdm(self.train_loader, desc=f'Epoch {self.epoch}')
+        pbar.set_postfix({'eff_bs': effective_batch_size, 'acc_steps': accumulation_steps})
+        
+        self.optimizer.zero_grad()  # Reset at epoch start
         
         for batch_idx, (images, targets) in enumerate(pbar):
             images = images.to(self.device)
             targets = targets.to(self.device)
             
             # Forward pass
-            self.optimizer.zero_grad()
             model_output = self.model(images)
             
             # Handle adaptive line width output
-            if self.model.adaptive_line_width:
+            if hasattr(self.model, 'adaptive_line_width') and self.model.adaptive_line_width:
                 line_segments, line_widths = model_output
                 # Debug: Print line width stats
                 if batch_idx == 0:  # Only first batch to avoid spam
@@ -158,26 +181,30 @@ class Trainer:
             # Use differentiable rendering loss: render predicted line segments and compare to input images
             loss_dict = self.loss_fn(line_segments, images, line_widths)
             
-            loss = loss_dict['total_loss']
+            loss = loss_dict['total_loss'] / accumulation_steps  # Scale loss for accumulation
             
             # Backward pass
             loss.backward()
             
-            # Gradient clipping
-            if self.config['grad_clip'] > 0:
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.config['grad_clip'])
-            
-            self.optimizer.step()
-            
-            # Accumulate losses
+            # Accumulate losses (unscaled for logging)
             for key, value in loss_dict.items():
                 total_losses[key] += value.item()
             num_batches += 1
             
+            # Update parameters every accumulation_steps
+            if (batch_idx + 1) % accumulation_steps == 0 or (batch_idx + 1) == len(self.train_loader):
+                # Gradient clipping
+                if self.config['grad_clip'] > 0:
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.config['grad_clip'])
+                
+                self.optimizer.step()
+                self.optimizer.zero_grad()
+            
             # Update progress bar
             pbar.set_postfix({
-                'loss': f"{loss.item():.4f}",
-                'lr': f"{self.optimizer.param_groups[0]['lr']:.2e}"
+                'loss': f"{loss_dict['total_loss'].item():.4f}",
+                'lr': f"{self.optimizer.param_groups[0]['lr']:.2e}",
+                'eff_bs': effective_batch_size
             })
             
             # Log to TensorBoard
@@ -396,6 +423,10 @@ def get_default_config():
         'weight_decay': 5e-4,  # More regularization
         'grad_clip': 1.0,
         
+        # Performance optimizations
+        'compile_model': True,  # Enable torch.compile for performance
+        'gradient_accumulation_steps': 4,  # Effective batch size = batch_size * accumulation_steps
+        
         # Loss function
         'line_width': 0.07,  # Increased from 0.06 to help with horizontal line learning
         'adaptive_line_width': True,   # Predict line width per character for font weight adaptation
@@ -450,9 +481,27 @@ def main():
     if args.model_type:
         config['model_type'] = args.model_type
     
-    # Optimize config for CPU if no GPU available
-    if not torch.cuda.is_available():
-        print("GPU not available, optimizing for CPU training...")
+    # Optimize config based on available device
+    if torch.backends.mps.is_available():
+        print("Apple Silicon Mac (MPS) detected, optimizing for MPS training...")
+        config['batch_size'] = min(config['batch_size'], 16)  # Apple Silicon has unified memory
+        config['num_workers'] = 4  # Apple Silicon benefits from more workers
+    elif torch.cuda.is_available():
+        print("CUDA GPU detected, using GPU-optimized settings...")
+        # Keep default GPU settings
+    else:
+        print("Using CPU training, optimizing for CPU...")
+        
+        # CPU Threading optimization
+        import multiprocessing as mp
+        cpu_count = mp.cpu_count()
+        
+        # Set optimal thread counts for PyTorch CPU operations
+        torch.set_num_threads(max(1, cpu_count // 2))  # Use half of available cores for computation
+        torch.set_num_interop_threads(2)  # Limit inter-op parallelism
+        
+        print(f"CPU optimization: Using {torch.get_num_threads()} compute threads on {cpu_count} core system")
+        
         config['batch_size'] = min(config['batch_size'], 8)
         config['num_workers'] = 1
         config['vis_interval'] = 20  # Less frequent visualization
