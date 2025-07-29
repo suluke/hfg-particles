@@ -46,6 +46,23 @@ make train         # Train with default settings
 make clean         # Clean generated files
 ```
 
+### Single Font Visualization
+
+Generate a visualization comparing original font rendering vs ML line segments for any font:
+
+```bash
+# Activate environment
+conda activate ml-font-inference
+
+# Generate visualization for a specific font (requires existing best.pth model)
+python scripts/run_single_font_pipeline.py --font-path /path/to/font.ttf
+```
+
+This creates a side-by-side comparison PNG in `outputs/font_visualization_{fontname}.png` showing:
+- Left: Original font rendering
+- Right: ML model's line segment reconstruction
+- Grid layout with all printable ASCII characters (32-126)
+
 ## Project Structure
 
 - `src/` - Source code

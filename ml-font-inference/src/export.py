@@ -13,9 +13,9 @@ import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend
 from tqdm import tqdm
 
-from model import create_model
-from dataset import FontRenderer
-from renderer import DifferentiableLineRenderer, visualize_rendering
+from .model import create_model
+from .dataset import FontRenderer
+from .renderer import DifferentiableLineRenderer, visualize_rendering
 
 
 class FontExporter:
@@ -42,8 +42,15 @@ class FontExporter:
             input_size=config['input_size']
         ).to(self.device)
         
-        # Load weights
-        self.model.load_state_dict(checkpoint['model_state_dict'])
+        # Load weights, handling torch compilation prefix
+        state_dict = checkpoint['model_state_dict']
+        
+        # Remove _orig_mod. prefix if present (from torch.compile)
+        if any(key.startswith('_orig_mod.') for key in state_dict.keys()):
+            state_dict = {key.replace('_orig_mod.', ''): value 
+                         for key, value in state_dict.items()}
+        
+        self.model.load_state_dict(state_dict)
         self.model.eval()
         
         print(f"Loaded model from {self.model_path}")
