@@ -5,6 +5,8 @@ Training script for font line segment inference model.
 import os
 import argparse
 import time
+import signal
+import sys
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -26,6 +28,7 @@ class Trainer:
     
     def __init__(self, config: dict):
         self.config = config
+        self.interrupted = False
         
         # Device selection with Apple Silicon (MPS) support
         if torch.backends.mps.is_available():
@@ -155,8 +158,15 @@ class Trainer:
         accumulation_steps = self.config.get('gradient_accumulation_steps', 4)
         effective_batch_size = self.config['batch_size'] * accumulation_steps
         
+        # Mixed precision settings
+        use_mixed_precision = self.config.get('mixed_precision', False) and self.device.type == 'cpu'
+        scaler = torch.cpu.amp.GradScaler() if use_mixed_precision else None
+        
         pbar = tqdm(self.train_loader, desc=f'Epoch {self.epoch}')
-        pbar.set_postfix({'eff_bs': effective_batch_size, 'acc_steps': accumulation_steps})
+        postfix = {'eff_bs': effective_batch_size, 'acc_steps': accumulation_steps}
+        if use_mixed_precision:
+            postfix['amp'] = 'ON'
+        pbar.set_postfix(postfix)
         
         self.optimizer.zero_grad()  # Reset at epoch start
         
@@ -164,27 +174,49 @@ class Trainer:
             images = images.to(self.device)
             targets = targets.to(self.device)
             
-            # Forward pass
-            model_output = self.model(images)
-            
-            # Handle adaptive line width output
-            if hasattr(self.model, 'adaptive_line_width') and self.model.adaptive_line_width:
-                line_segments, line_widths = model_output
-                # Debug: Print line width stats
-                if batch_idx == 0:  # Only first batch to avoid spam
-                    print(f"Line width stats: min={line_widths.min().item():.4f}, max={line_widths.max().item():.4f}, mean={line_widths.mean().item():.4f}")
-                    print(f"Line segment stats: min={line_segments.min().item():.4f}, max={line_segments.max().item():.4f}")
+            # Forward pass with optional mixed precision
+            if use_mixed_precision:
+                with torch.autocast(device_type='cpu', dtype=torch.bfloat16):
+                    model_output = self.model(images)
+                    
+                    # Handle adaptive line width output
+                    if hasattr(self.model, 'adaptive_line_width') and self.model.adaptive_line_width:
+                        line_segments, line_widths = model_output
+                        # Debug: Print line width stats
+                        if batch_idx == 0:  # Only first batch to avoid spam
+                            print(f"Line width stats: min={line_widths.min().item():.4f}, max={line_widths.max().item():.4f}, mean={line_widths.mean().item():.4f}")
+                            print(f"Line segment stats: min={line_segments.min().item():.4f}, max={line_segments.max().item():.4f}")
+                    else:
+                        line_segments = model_output
+                        line_widths = None
+                    
+                    # Use differentiable rendering loss (kept in FP32 for precision)
+                    loss_dict = self.loss_fn(line_segments.float(), images.float(), 
+                                           line_widths.float() if line_widths is not None else None)
             else:
-                line_segments = model_output
-                line_widths = None
-            
-            # Use differentiable rendering loss: render predicted line segments and compare to input images
-            loss_dict = self.loss_fn(line_segments, images, line_widths)
+                model_output = self.model(images)
+                
+                # Handle adaptive line width output
+                if hasattr(self.model, 'adaptive_line_width') and self.model.adaptive_line_width:
+                    line_segments, line_widths = model_output
+                    # Debug: Print line width stats
+                    if batch_idx == 0:  # Only first batch to avoid spam
+                        print(f"Line width stats: min={line_widths.min().item():.4f}, max={line_widths.max().item():.4f}, mean={line_widths.mean().item():.4f}")
+                        print(f"Line segment stats: min={line_segments.min().item():.4f}, max={line_segments.max().item():.4f}")
+                else:
+                    line_segments = model_output
+                    line_widths = None
+                
+                # Use differentiable rendering loss
+                loss_dict = self.loss_fn(line_segments, images, line_widths)
             
             loss = loss_dict['total_loss'] / accumulation_steps  # Scale loss for accumulation
             
-            # Backward pass
-            loss.backward()
+            # Backward pass with optional mixed precision
+            if use_mixed_precision:
+                scaler.scale(loss).backward()
+            else:
+                loss.backward()
             
             # Accumulate losses (unscaled for logging)
             for key, value in loss_dict.items():
@@ -193,19 +225,32 @@ class Trainer:
             
             # Update parameters every accumulation_steps
             if (batch_idx + 1) % accumulation_steps == 0 or (batch_idx + 1) == len(self.train_loader):
-                # Gradient clipping
-                if self.config['grad_clip'] > 0:
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.config['grad_clip'])
+                if use_mixed_precision:
+                    # Gradient clipping with mixed precision
+                    if self.config['grad_clip'] > 0:
+                        scaler.unscale_(self.optimizer)
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.config['grad_clip'])
+                    
+                    scaler.step(self.optimizer)
+                    scaler.update()
+                else:
+                    # Gradient clipping
+                    if self.config['grad_clip'] > 0:
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.config['grad_clip'])
+                    
+                    self.optimizer.step()
                 
-                self.optimizer.step()
                 self.optimizer.zero_grad()
             
             # Update progress bar
-            pbar.set_postfix({
+            postfix = {
                 'loss': f"{loss_dict['total_loss'].item():.4f}",
                 'lr': f"{self.optimizer.param_groups[0]['lr']:.2e}",
                 'eff_bs': effective_batch_size
-            })
+            }
+            if use_mixed_precision:
+                postfix['amp'] = 'ON'
+            pbar.set_postfix(postfix)
             
             # Log to TensorBoard
             if self.writer and batch_idx % self.config['log_interval'] == 0:
@@ -340,6 +385,9 @@ class Trainer:
     
     def train(self):
         """Main training loop."""
+        # Setup signal handler for graceful interrupts
+        self.setup_signal_handler()
+        
         start_epoch = self.epoch
         end_epoch = self.epoch + self.config['num_epochs']
         
@@ -348,60 +396,100 @@ class Trainer:
         else:
             print(f"Resuming training from epoch {start_epoch}, will train for {self.config['num_epochs']} more epochs (until epoch {end_epoch})")
         
-        for epoch in range(start_epoch, end_epoch):
-            self.epoch = epoch
+        print("💡 Press Ctrl+C to gracefully stop training and save checkpoint")
+        
+        try:
+            for epoch in range(start_epoch, end_epoch):
+                self.epoch = epoch
+                
+                # Check for interrupt signal
+                if self.interrupted:
+                    print(f"Training interrupted at epoch {epoch}. Saving checkpoint...")
+                    break
+                
+                # Train
+                train_losses = self.train_epoch()
+                self.train_losses.append(train_losses['total_loss'])
+                
+                # Check for interrupt after training epoch
+                if self.interrupted:
+                    print(f"Training interrupted after epoch {epoch}. Saving checkpoint...")
+                    break
+                
+                # Validate
+                val_losses = self.validate()
+                self.val_losses.append(val_losses['total_loss'])
+                
+                # Update learning rate
+                self.scheduler.step(val_losses['total_loss'])
+                
+                # Restart learning rate if it's too low (stuck in local minimum)
+                current_lr = self.optimizer.param_groups[0]['lr']
+                if current_lr < self.config.get('lr_restart_threshold', 1e-6):
+                    new_lr = self.config['learning_rate'] * 0.1  # Restart at 10% of original
+                    for param_group in self.optimizer.param_groups:
+                        param_group['lr'] = new_lr
+                    print(f"Learning rate restarted: {current_lr:.2e} → {new_lr:.2e}")
+                
+                # Check if best model
+                is_best = val_losses['total_loss'] < self.best_val_loss
+                if is_best:
+                    self.best_val_loss = val_losses['total_loss']
+                
+                # Save checkpoint
+                if (epoch + 1) % self.config['save_interval'] == 0:
+                    self.save_checkpoint(is_best)
+                
+                # Log to TensorBoard
+                if self.writer:
+                    self.writer.add_scalar('epoch/train_loss', train_losses['total_loss'], epoch)
+                    self.writer.add_scalar('epoch/val_loss', val_losses['total_loss'], epoch)
+                    self.writer.add_scalar('epoch/learning_rate', self.optimizer.param_groups[0]['lr'], epoch)
+                
+                # Visualize predictions
+                if (epoch + 1) % self.config['vis_interval'] == 0:
+                    self.visualize_predictions()
+                
+                # Print epoch summary with fixed weights
+                print(f"Epoch {epoch}: Train Loss: {train_losses['total_loss']:.6f}, "
+                      f"Val Loss: {val_losses['total_loss']:.6f}, "
+                      f"Best Val: {self.best_val_loss:.6f}, "
+                      f"Weights: FG={self.loss_fn.fg_weight:.1f}/BG={self.loss_fn.bg_weight:.1f}")
+                
+                # Check for interrupt after epoch summary
+                if self.interrupted:
+                    print(f"Training interrupted after epoch {epoch}. Saving checkpoint...")
+                    break
             
-            # Train
-            train_losses = self.train_epoch()
-            self.train_losses.append(train_losses['total_loss'])
+            if not self.interrupted:
+                print("Training completed!")
+        
+        except KeyboardInterrupt:
+            # Fallback in case signal handler doesn't work
+            print(f"\nKeyboardInterrupt caught. Saving checkpoint at epoch {self.epoch}...")
+            self.interrupted = True
+        
+        finally:
+            # Always save final checkpoint
+            print("💾 Saving final checkpoint...")
+            self.save_checkpoint(is_best=False)
             
-            # Validate
-            val_losses = self.validate()
-            self.val_losses.append(val_losses['total_loss'])
+            if self.interrupted:
+                print(f"✅ Training safely interrupted and checkpoint saved at epoch {self.epoch}")
+                print(f"💫 Resume with: make train (will auto-resume from epoch {self.epoch + 1})")
             
-            # Update learning rate
-            self.scheduler.step(val_losses['total_loss'])
-            
-            # Restart learning rate if it's too low (stuck in local minimum)
-            current_lr = self.optimizer.param_groups[0]['lr']
-            if current_lr < self.config.get('lr_restart_threshold', 1e-6):
-                new_lr = self.config['learning_rate'] * 0.1  # Restart at 10% of original
-                for param_group in self.optimizer.param_groups:
-                    param_group['lr'] = new_lr
-                print(f"Learning rate restarted: {current_lr:.2e} → {new_lr:.2e}")
-            
-            # Check if best model
-            is_best = val_losses['total_loss'] < self.best_val_loss
-            if is_best:
-                self.best_val_loss = val_losses['total_loss']
-            
-            # Save checkpoint
-            if (epoch + 1) % self.config['save_interval'] == 0:
-                self.save_checkpoint(is_best)
-            
-            # Log to TensorBoard
             if self.writer:
-                self.writer.add_scalar('epoch/train_loss', train_losses['total_loss'], epoch)
-                self.writer.add_scalar('epoch/val_loss', val_losses['total_loss'], epoch)
-                self.writer.add_scalar('epoch/learning_rate', self.optimizer.param_groups[0]['lr'], epoch)
-            
-            # Visualize predictions
-            if (epoch + 1) % self.config['vis_interval'] == 0:
-                self.visualize_predictions()
-            
-            # Print epoch summary with fixed weights
-            print(f"Epoch {epoch}: Train Loss: {train_losses['total_loss']:.6f}, "
-                  f"Val Loss: {val_losses['total_loss']:.6f}, "
-                  f"Best Val: {self.best_val_loss:.6f}, "
-                  f"Weights: FG={self.loss_fn.fg_weight:.1f}/BG={self.loss_fn.bg_weight:.1f}")
+                self.writer.close()
+    
+    def setup_signal_handler(self):
+        """Setup signal handler for graceful shutdown on Ctrl+C."""
+        def signal_handler(signum, frame):
+            print(f"\n🛑 Received interrupt signal. Saving checkpoint...")
+            self.interrupted = True
+            # Don't exit immediately - let the training loop handle it
         
-        print("Training completed!")
-        
-        # Final save
-        self.save_checkpoint(is_best=False)
-        
-        if self.writer:
-            self.writer.close()
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
 
 
 def get_default_config():
@@ -426,6 +514,7 @@ def get_default_config():
         # Performance optimizations
         'compile_model': True,  # Enable torch.compile for performance
         'gradient_accumulation_steps': 4,  # Effective batch size = batch_size * accumulation_steps
+        'mixed_precision': False,  # Enable mixed precision training (CPU only)
         
         # Loss function
         'line_width': 0.07,  # Increased from 0.06 to help with horizontal line learning
